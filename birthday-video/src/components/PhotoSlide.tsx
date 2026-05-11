@@ -15,17 +15,17 @@ export const PhotoSlide: React.FC<PhotoSlideProps> = ({ scene, globalStartFrame,
   const duration = globalEndFrame - globalStartFrame;
   const localFrame = frame - globalStartFrame;
 
-  const fadeInDuration = Math.min(fps * 0.8, duration * 0.2);
-  const fadeOutDuration = Math.min(fps * 0.8, duration * 0.2);
+  const fadeIn = fps * 1.2;
+  const fadeOut = fps * 1.2;
 
   const opacity = interpolate(
     localFrame,
-    [0, fadeInDuration, duration - fadeOutDuration, duration],
+    [0, fadeIn, duration - fadeOut, duration],
     [0, 1, 1, 0],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
 
-  const progress = localFrame / duration;
+  const progress = Math.max(0, Math.min(1, localFrame / duration));
 
   let scale = 1;
   let translateX = 0;
@@ -33,46 +33,41 @@ export const PhotoSlide: React.FC<PhotoSlideProps> = ({ scene, globalStartFrame,
 
   switch (scene.kenBurns) {
     case 'zoom-in':
-      scale = interpolate(progress, [0, 1], [1, 1.12]);
+      scale = interpolate(progress, [0, 1], [1, 1.18]);
       break;
     case 'zoom-out':
-      scale = interpolate(progress, [0, 1], [1.12, 1]);
+      scale = interpolate(progress, [0, 1], [1.18, 1]);
       break;
     case 'pan-left':
-      scale = 1.08;
-      translateX = interpolate(progress, [0, 1], [2, -2]);
+      scale = 1.12;
+      translateX = interpolate(progress, [0, 1], [3, -3]);
       break;
     case 'pan-right':
-      scale = 1.08;
+      scale = 1.12;
+      translateX = interpolate(progress, [0, 1], [-3, 3]);
+      break;
+    case 'pan-up':
+      scale = 1.12;
+      translateY = interpolate(progress, [0, 1], [3, -3]);
+      break;
+    case 'diagonal':
+      scale = interpolate(progress, [0, 1], [1, 1.14]);
       translateX = interpolate(progress, [0, 1], [-2, 2]);
+      translateY = interpolate(progress, [0, 1], [2, -2]);
       break;
   }
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        inset: 0,
-        opacity,
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ position: 'absolute', inset: 0, opacity, overflow: 'hidden' }}>
       <Img
         src={staticFile(`photos/${scene.photo}`)}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
+          objectPosition: 'center top',
           transform: `scale(${scale}) translateX(${translateX}%) translateY(${translateY}%)`,
           transformOrigin: 'center center',
-        }}
-      />
-      {/* Dark gradient overlay for text readability */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.05) 40%, rgba(0,0,0,0.6) 75%, rgba(0,0,0,0.85) 100%)',
         }}
       />
     </div>

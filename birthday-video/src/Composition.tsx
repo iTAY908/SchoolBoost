@@ -1,39 +1,33 @@
 import React from 'react';
-import {
-  useCurrentFrame,
-  useVideoConfig,
-  Audio,
-  AbsoluteFill,
-  staticFile,
-} from 'remotion';
-import { LYRICS } from './data/lyrics';
+import { useCurrentFrame, useVideoConfig, Audio, AbsoluteFill, staticFile } from 'remotion';
 import { SCENES } from './data/scenes';
 import { PhotoSlide } from './components/PhotoSlide';
-import { LyricLine } from './components/LyricLine';
-import { Sparkles } from './components/Sparkles';
+import { BokehLayer } from './components/BokehLayer';
+import { FloatingParticles } from './components/FloatingParticles';
+import { LightLeak } from './components/LightLeak';
+import { CinematicOverlay } from './components/CinematicOverlay';
 import { IntroScene } from './components/IntroScene';
+
+// Light leak transition times (at each scene change)
+const TRANSITION_TIMES = SCENES.slice(1).map((s) => s.startSec + 1);
 
 export const BirthdayVideo: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const introDurationSec = 4;
-  const introFrames = introDurationSec * fps;
-
   const currentTimeSec = frame / fps;
-  const activeLyric = LYRICS.find(
-    (l) => currentTimeSec >= l.startSec && currentTimeSec < l.endSec
-  );
-  const isSparkleSection = activeLyric?.effect === 'sparkle';
+  const introDurationSec = 5;
+  const introFrames = introDurationSec * fps;
 
   return (
     <AbsoluteFill style={{ backgroundColor: '#000' }}>
       <Audio src={staticFile('song.mp3')} />
 
+      {/* Photo slides with Ken Burns */}
       {SCENES.map((scene, i) => {
         const startFrame = Math.round(scene.startSec * fps);
         const endFrame = Math.round(scene.endSec * fps);
-        const isVisible = frame >= startFrame - fps && frame < endFrame + fps;
+        const isVisible = frame >= startFrame - fps * 1.5 && frame < endFrame + fps * 1.5;
         if (!isVisible) return null;
         return (
           <PhotoSlide
@@ -45,36 +39,35 @@ export const BirthdayVideo: React.FC = () => {
         );
       })}
 
-      {isSparkleSection && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'radial-gradient(ellipse at center, rgba(255,215,0,0.05) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }}
+      {/* Bokeh circles floating in background */}
+      <BokehLayer />
+
+      {/* Tiny floating particles */}
+      <FloatingParticles />
+
+      {/* Cinematic color grade, vignette, grain */}
+      <CinematicOverlay />
+
+      {/* Light leaks on every transition */}
+      {TRANSITION_TIMES.map((t, i) => (
+        <LightLeak
+          key={i}
+          triggerAtSec={t}
+          color={i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? '#FF8C00' : '#FFF5CC'}
         />
+      ))}
+
+      {/* Intro overlay (first 5 seconds) */}
+      {frame < introFrames + fps * 1.2 && <IntroScene />}
+
+      {/* Closing fade to black */}
+      {currentTimeSec > 158 && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: '#000',
+          opacity: Math.min(1, (currentTimeSec - 158) / 4),
+        }} />
       )}
-
-      <Sparkles active={isSparkleSection} />
-
-      {LYRICS.map((lyric, i) => {
-        const startFrame = Math.round(lyric.startSec * fps);
-        const endFrame = Math.round(lyric.endSec * fps);
-        if (frame < startFrame || frame > endFrame) return null;
-        return <LyricLine key={i} lyric={lyric} />;
-      })}
-
-      {frame < introFrames + fps && <IntroScene />}
-
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          boxShadow: 'inset 0 0 150px rgba(0,0,0,0.5)',
-          pointerEvents: 'none',
-        }}
-      />
     </AbsoluteFill>
   );
 };

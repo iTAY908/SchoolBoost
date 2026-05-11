@@ -5,153 +5,128 @@ export const IntroScene: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const introDuration = fps * 4;
+  const introDuration = fps * 5;
 
-  // Background photo fade in
-  const bgOpacity = interpolate(frame, [0, fps * 0.8], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
+  const bgOpacity = interpolate(frame, [0, fps * 1.2], [0, 1], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  // "16" number big entrance
   const numberEntrance = spring({
-    frame: frame - fps * 0.3,
+    frame: frame - fps * 0.5,
     fps,
-    config: { damping: 10, stiffness: 100, mass: 1.2 },
+    config: { damping: 12, stiffness: 80, mass: 1.5 },
   });
-  const numberScale = interpolate(numberEntrance, [0, 1], [0.2, 1]);
-  const numberOpacity = interpolate(frame, [fps * 0.3, fps * 1.2], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  // Title text slide up
-  const titleEntrance = spring({
-    frame: frame - fps * 1.0,
-    fps,
-    config: { damping: 12, stiffness: 120 },
-  });
-  const titleY = interpolate(titleEntrance, [0, 1], [60, 0]);
-  const titleOpacity = interpolate(frame, [fps * 1.0, fps * 1.8], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
+  const numberScale = interpolate(numberEntrance, [0, 1], [0.1, 1]);
+  const numberOpacity = interpolate(frame, [fps * 0.5, fps * 1.5], [0, 1], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  // Subtitle
-  const subtitleOpacity = interpolate(frame, [fps * 1.8, fps * 2.5], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
+  const titleOpacity = interpolate(frame, [fps * 1.8, fps * 2.8], [0, 1], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+  const titleY = interpolate(frame, [fps * 1.8, fps * 2.8], [30, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  // Pulse glow on number
-  const pulse = Math.sin(frame * 0.1) * 0.03 + 1;
-
-  // Overall fade out at end
-  const overallOpacity = interpolate(frame, [introDuration - fps * 0.6, introDuration], [1, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
+  const nameOpacity = interpolate(frame, [fps * 2.8, fps * 3.6], [0, 1], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
+
+  const overallOpacity = interpolate(frame, [introDuration - fps * 1, introDuration], [1, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+
+  const pulse = Math.sin(frame * 0.08) * 0.02 + 1;
+  const glowIntensity = Math.sin(frame * 0.06) * 20 + 60;
 
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: overallOpacity }}>
-      {/* Background */}
       <div style={{ position: 'absolute', inset: 0, opacity: bgOpacity }}>
         <Img
           src={staticFile('photos/60dc236f-1000065510.png')}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
         />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%)',
-          }}
-        />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(ellipse at 50% 40%, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 100%)',
+        }} />
       </div>
 
-      {/* Golden particles effect */}
-      <div
-        style={{
+      {/* Animated golden ring behind 16 */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        opacity: numberOpacity,
+      }}>
+        <div style={{
+          width: 420, height: 420, borderRadius: '50%',
+          border: `3px solid rgba(255,215,0,${Math.sin(frame * 0.05) * 0.3 + 0.4})`,
+          boxShadow: `0 0 ${glowIntensity}px rgba(255,215,0,0.3), inset 0 0 ${glowIntensity * 0.5}px rgba(255,215,0,0.1)`,
+          transform: `scale(${numberScale * pulse})`,
           position: 'absolute',
-          inset: 0,
-          background: `radial-gradient(ellipse at center, rgba(255,215,0,0.08) 0%, transparent 70%)`,
-        }}
-      />
+        }} />
+        <div style={{
+          width: 380, height: 380, borderRadius: '50%',
+          border: '1px solid rgba(255,215,0,0.2)',
+          transform: `scale(${numberScale * pulse * 1.05}) rotate(${frame * 0.3}deg)`,
+          position: 'absolute',
+        }} />
+      </div>
 
-      {/* "16" big number */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 0,
-        }}
-      >
-        <div
-          style={{
-            opacity: numberOpacity,
-            transform: `scale(${numberScale * pulse})`,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 320,
-              fontWeight: 900,
-              color: '#FFD700',
-              textShadow: '0 0 60px #FFD700, 0 0 120px #FFD70066, 0 4px 30px rgba(0,0,0,0.9)',
-              fontFamily: 'Arial Black, Arial, sans-serif',
-              lineHeight: 0.9,
-              display: 'block',
-            }}
-          >
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        gap: 0,
+      }}>
+        {/* "16" */}
+        <div style={{
+          opacity: numberOpacity,
+          transform: `scale(${numberScale * pulse})`,
+        }}>
+          <span style={{
+            fontSize: 280, fontWeight: 900, color: '#FFD700',
+            textShadow: `0 0 ${glowIntensity}px #FFD700, 0 0 ${glowIntensity * 2}px #FFD70066, 0 0 ${glowIntensity * 0.5}px #FFF`,
+            fontFamily: '"Arial Black", Arial, sans-serif',
+            lineHeight: 0.9, display: 'block',
+            letterSpacing: -8,
+          }}>
             16
           </span>
         </div>
 
+        {/* Divider line */}
+        <div style={{
+          opacity: titleOpacity,
+          width: interpolate(frame, [fps * 1.8, fps * 2.6], [0, 300], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          height: 1,
+          background: 'linear-gradient(90deg, transparent, #FFD700, transparent)',
+          marginTop: 10, marginBottom: 20,
+        }} />
+
         {/* "יום הולדת שמח" */}
-        <div
-          style={{
-            opacity: titleOpacity,
-            transform: `translateY(${titleY}px)`,
-            marginTop: -20,
-          }}
-        >
-          <p
-            style={{
-              fontSize: 90,
-              fontWeight: 900,
-              color: '#FFFFFF',
-              textShadow: '0 0 30px rgba(255,215,0,0.5), 0 2px 20px rgba(0,0,0,0.9)',
-              margin: 0,
-              textAlign: 'center',
-              fontFamily: 'Arial, "Noto Sans Hebrew", sans-serif',
-              direction: 'rtl',
-              letterSpacing: 2,
-            }}
-          >
+        <div style={{ opacity: titleOpacity, transform: `translateY(${titleY}px)` }}>
+          <p style={{
+            fontSize: 72, fontWeight: 700, color: '#FFFFFF',
+            textShadow: '0 0 40px rgba(255,215,0,0.6), 0 2px 30px rgba(0,0,0,0.9)',
+            margin: 0, textAlign: 'center',
+            fontFamily: '"Arial", "Noto Sans Hebrew", sans-serif',
+            direction: 'rtl', letterSpacing: 4,
+          }}>
             יום הולדת שמח
           </p>
         </div>
 
         {/* Name */}
-        <div style={{ opacity: subtitleOpacity, marginTop: 20 }}>
-          <p
-            style={{
-              fontSize: 60,
-              fontWeight: 700,
-              color: '#FFD700',
-              textShadow: '0 0 20px rgba(255,215,0,0.7), 0 2px 15px rgba(0,0,0,0.9)',
-              margin: 0,
-              textAlign: 'center',
-              fontFamily: 'Arial, "Noto Sans Hebrew", sans-serif',
-              direction: 'rtl',
-              letterSpacing: 4,
-            }}
-          >
-            ✨ איתי ✨
+        <div style={{ opacity: nameOpacity, marginTop: 16 }}>
+          <p style={{
+            fontSize: 52, fontWeight: 400, color: '#FFD700',
+            textShadow: '0 0 30px rgba(255,215,0,0.8)',
+            margin: 0, textAlign: 'center',
+            fontFamily: '"Arial", "Noto Sans Hebrew", sans-serif',
+            direction: 'rtl', letterSpacing: 12,
+            textTransform: 'uppercase',
+          }}>
+            ✦ איתי ✦
           </p>
         </div>
       </div>
