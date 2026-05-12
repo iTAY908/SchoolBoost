@@ -14,6 +14,7 @@ import { FloatingEmojis } from './components/FloatingEmojis';
 import { Balloons } from './components/Balloons';
 import { StarBurst } from './components/StarBurst';
 import { NameBanners } from './components/NameBanner';
+import { GreetingCard } from './components/GreetingCard';
 
 const TRANSITION_TIMES = SCENES.slice(1).map((s) => s.startSec + 1);
 
@@ -66,6 +67,10 @@ export const BirthdayVideo: React.FC = () => {
       {/* === LAYER 7: Text overlays === */}
       <CelebrationCards />
       <NameBanners />
+
+      {/* === LAYER 7b: Greeting book opening === */}
+      <GreetingCard triggerAtSec={22} />
+      <GreetingCard triggerAtSec={105} />
 
       {/* === LAYER 8: Intro === */}
       {frame < introFrames + fps * 1.5 && <IntroScene />}
