@@ -145,15 +145,15 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ triggerAtSec }) => {
               </p>
               <div style={{ width: 80, height: 1, background: 'linear-gradient(90deg, transparent, #b8860b, transparent)',
                 opacity: line2Opacity }} />
-              <p style={{ fontSize: 16, color: '#4a3000', direction: 'rtl',
+              <p style={{ fontSize: 15, color: '#4a3000', direction: 'rtl',
                 fontFamily: 'Arial, "Noto Sans Hebrew", sans-serif', margin: 0, textAlign: 'center',
-                opacity: line3Opacity, lineHeight: 1.7 }}>
-                בגיל 16 אתה<br />מיוחד, חזק,<br />ומלא עתיד ✨
+                opacity: line3Opacity, lineHeight: 1.8 }}>
+                בגיל 16 כל חלום<br />שלך הוא אפשרי.<br />אתה חזק, מיוחד<br />ומלא כוח ✨
               </p>
-              <p style={{ fontSize: 16, color: '#4a3000', direction: 'rtl',
+              <p style={{ fontSize: 15, color: '#4a3000', direction: 'rtl',
                 fontFamily: 'Arial, "Noto Sans Hebrew", sans-serif', margin: 0, textAlign: 'center',
-                opacity: line4Opacity, lineHeight: 1.7 }}>
-                שתמשיך לדהור<br />קדימה! 🏍️
+                opacity: line4Opacity, lineHeight: 1.8 }}>
+                תמשיך לרדוף<br />אחרי החלומות שלך<br />ולא לוותר! 🏍️🔥
               </p>
             </div>
 

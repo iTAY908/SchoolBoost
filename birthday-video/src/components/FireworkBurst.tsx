@@ -4,26 +4,30 @@ import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
 const COLORS = ['#FFD700', '#FF4466', '#44AAFF', '#FF8800', '#FFFFFF', '#CC44FF', '#44EE88', '#FF3333'];
 
 interface Burst {
-  cx: number; // % from left
-  cy: number; // % from top
+  cx: number;
+  cy: number;
   triggerSec: number;
 }
 
 const BURSTS: Burst[] = [
-  { cx: 50, cy: 45, triggerSec: 0.5 },
-  { cx: 20, cy: 35, triggerSec: 1.2 },
-  { cx: 80, cy: 30, triggerSec: 1.8 },
-  { cx: 35, cy: 55, triggerSec: 2.4 },
-  { cx: 65, cy: 40, triggerSec: 2.9 },
-  { cx: 50, cy: 45, triggerSec: 51 },
+  // Start of photo slideshow (27-30s)
+  { cx: 50, cy: 45, triggerSec: 27   },
+  { cx: 20, cy: 35, triggerSec: 27.7 },
+  { cx: 80, cy: 30, triggerSec: 28.3 },
+  { cx: 35, cy: 55, triggerSec: 29   },
+  { cx: 65, cy: 40, triggerSec: 29.6 },
+  // Moto/family photos burst (51-52s)
+  { cx: 50, cy: 45, triggerSec: 51   },
   { cx: 25, cy: 30, triggerSec: 51.6 },
   { cx: 75, cy: 35, triggerSec: 52.1 },
-  { cx: 50, cy: 45, triggerSec: 124 },
-  { cx: 30, cy: 40, triggerSec: 124.7 },
-  { cx: 70, cy: 38, triggerSec: 125.3 },
-  { cx: 50, cy: 50, triggerSec: 157 },
-  { cx: 20, cy: 35, triggerSec: 157.8 },
-  { cx: 80, cy: 40, triggerSec: 158.5 },
+  // Gift box note zoom (120-121s)
+  { cx: 50, cy: 45, triggerSec: 120  },
+  { cx: 30, cy: 40, triggerSec: 120.7 },
+  { cx: 70, cy: 38, triggerSec: 121.3 },
+  // Grand finale (150-152s)
+  { cx: 50, cy: 50, triggerSec: 150  },
+  { cx: 20, cy: 35, triggerSec: 150.8 },
+  { cx: 80, cy: 40, triggerSec: 151.5 },
 ];
 
 const PARTICLES_PER_BURST = 24;

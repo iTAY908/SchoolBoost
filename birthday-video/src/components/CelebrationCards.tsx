@@ -12,15 +12,15 @@ interface Card {
 }
 
 const CARDS: Card[] = [
-  { text: 'המלך', subtext: 'איתי', startSec: 10, endSec: 15, color: '#FFD700', emoji: '👑', size: 110 },
-  { text: 'גיל 16', subtext: 'מזל טוב!', startSec: 28, endSec: 33, color: '#FF88DD', emoji: '🎂', size: 100 },
-  { text: 'ספורטאי', subtext: 'מוטוקרוס #22', startSec: 46, endSec: 51, color: '#FF8800', emoji: '🏍️', size: 90 },
-  { text: 'חבר', subtext: 'מהלב', startSec: 64, endSec: 69, color: '#44AAFF', emoji: '❤️', size: 100 },
-  { text: 'כוכב', subtext: 'שיאיר חזק', startSec: 82, endSec: 87, color: '#CC44FF', emoji: '⭐', size: 100 },
-  { text: 'הצלחה', subtext: 'בכל הדרכים', startSec: 100, endSec: 105, color: '#44EE88', emoji: '🚀', size: 90 },
-  { text: 'יום הולדת', subtext: 'שמח איתי! 🎊', startSec: 119, endSec: 124, color: '#FFD700', emoji: '🎉', size: 90 },
-  { text: 'אין כמוך', subtext: '16 שנה מדהים', startSec: 138, endSec: 143, color: '#FF4466', emoji: '💫', size: 90 },
-  { text: '16 🎂', subtext: 'שנה מושלמת', startSec: 156, endSec: 162, color: '#FFD700', emoji: '✨', size: 110 },
+  { text: 'המלך',       subtext: 'איתי',             startSec: 27,  endSec: 32,  color: '#FFD700', emoji: '👑',  size: 110 },
+  { text: 'גיל 16',     subtext: 'מזל טוב!',          startSec: 40,  endSec: 45,  color: '#FF88DD', emoji: '🎂',  size: 100 },
+  { text: 'ספורטאי',   subtext: 'מוטוקרוס #22',       startSec: 47,  endSec: 52,  color: '#FF8800', emoji: '🏍️', size: 90  },
+  { text: 'חבר',        subtext: 'מהלב',              startSec: 62,  endSec: 67,  color: '#44AAFF', emoji: '❤️',  size: 100 },
+  { text: 'כוכב',       subtext: 'שיאיר חזק',         startSec: 75,  endSec: 80,  color: '#CC44FF', emoji: '⭐',  size: 100 },
+  { text: 'הצלחה',     subtext: 'בכל הדרכים',         startSec: 137, endSec: 142, color: '#44EE88', emoji: '🚀',  size: 90  },
+  { text: 'יום הולדת', subtext: 'שמח איתי! 🎊',       startSec: 145, endSec: 150, color: '#FFD700', emoji: '🎉',  size: 90  },
+  { text: 'אין כמוך',  subtext: '16 שנה מדהים',       startSec: 152, endSec: 157, color: '#FF4466', emoji: '💫',  size: 90  },
+  { text: '16 🎂',      subtext: 'שנה מושלמת',         startSec: 159, endSec: 165, color: '#FFD700', emoji: '✨',  size: 110 },
 ];
 
 const Card: React.FC<{ card: Card }> = ({ card }) => {
@@ -56,7 +56,6 @@ const Card: React.FC<{ card: Card }> = ({ card }) => {
       textAlign: 'center',
       zIndex: 20,
     }}>
-      {/* Glowing background circle */}
       <div style={{
         position: 'absolute',
         inset: -40,

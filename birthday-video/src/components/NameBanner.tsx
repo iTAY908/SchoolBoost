@@ -1,7 +1,6 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 
-// A glowing "ITAY ✦ 16" banner that appears periodically at top/bottom
 interface Banner {
   text: string;
   startSec: number;
@@ -11,12 +10,12 @@ interface Banner {
 }
 
 const BANNERS: Banner[] = [
-  { text: '🎉 איתי 🎉', startSec: 6, endSec: 10, position: 'top', color: '#FFD700' },
-  { text: '★ HAPPY 16 ★', startSec: 35, endSec: 40, position: 'bottom', color: '#FF88DD' },
-  { text: '✦ המלך איתי ✦', startSec: 72, endSec: 76, position: 'top', color: '#FFD700' },
-  { text: '🎂 16 יום הולדת 🎂', startSec: 105, endSec: 110, position: 'bottom', color: '#44AAFF' },
-  { text: '⭐ איתי לייס ⭐', startSec: 135, endSec: 140, position: 'top', color: '#44EE88' },
-  { text: '🔥 מזל טוב! 🔥', startSec: 155, endSec: 163, position: 'bottom', color: '#FFD700' },
+  { text: '🎉 איתי 🎉',           startSec: 27,  endSec: 31,  position: 'top',    color: '#FFD700' },
+  { text: '★ HAPPY 16 ★',        startSec: 43,  endSec: 47,  position: 'bottom', color: '#FF88DD' },
+  { text: '✦ המלך איתי ✦',       startSec: 68,  endSec: 72,  position: 'top',    color: '#FFD700' },
+  { text: '🎂 16 יום הולדת 🎂',  startSec: 109, endSec: 113, position: 'bottom', color: '#44AAFF' },
+  { text: '⭐ איתי לייס ⭐',      startSec: 136, endSec: 140, position: 'top',    color: '#44EE88' },
+  { text: '🔥 מזל טוב! 🔥',      startSec: 153, endSec: 163, position: 'bottom', color: '#FFD700' },
 ];
 
 const BannerItem: React.FC<{ banner: Banner }> = ({ banner }) => {
@@ -42,7 +41,7 @@ const BannerItem: React.FC<{ banner: Banner }> = ({ banner }) => {
   });
 
   const glow = Math.sin(localFrame * 0.1) * 10 + 25;
-  const scroll = (localFrame * 1.5) % (width * 2); // scrolling shimmer
+  const scroll = (localFrame * 1.5) % (width * 2);
 
   return (
     <div style={{
@@ -53,14 +52,12 @@ const BannerItem: React.FC<{ banner: Banner }> = ({ banner }) => {
       opacity,
       zIndex: 30,
     }}>
-      {/* Banner background */}
       <div style={{
         background: `linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.7) 15%, rgba(0,0,0,0.7) 85%, transparent 100%)`,
         paddingTop: 16, paddingBottom: 16,
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Shimmer line */}
         <div style={{
           position: 'absolute',
           top: 0, bottom: 0,
@@ -70,7 +67,6 @@ const BannerItem: React.FC<{ banner: Banner }> = ({ banner }) => {
           transform: 'skewX(-20deg)',
         }} />
 
-        {/* Top border line */}
         <div style={{
           position: 'absolute', top: 0, left: '10%', right: '10%',
           height: 2,
@@ -91,7 +87,6 @@ const BannerItem: React.FC<{ banner: Banner }> = ({ banner }) => {
           {banner.text}
         </p>
 
-        {/* Bottom border line */}
         <div style={{
           position: 'absolute', bottom: 0, left: '10%', right: '10%',
           height: 2,

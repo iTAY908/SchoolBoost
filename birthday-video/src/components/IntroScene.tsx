@@ -1,43 +1,46 @@
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring, Img, staticFile } from 'remotion';
 
-export const IntroScene: React.FC = () => {
+export const IntroScene: React.FC<{ startSec?: number }> = ({ startSec = 0 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
+  const lf = frame - startSec * fps; // localFrame
   const introDuration = fps * 5;
 
-  const bgOpacity = interpolate(frame, [0, fps * 1.2], [0, 1], {
+  if (lf < 0 || lf > introDuration + fps) return null;
+
+  const bgOpacity = interpolate(lf, [0, fps * 1.2], [0, 1], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
   const numberEntrance = spring({
-    frame: frame - fps * 0.5,
+    frame: lf - fps * 0.5,
     fps,
     config: { damping: 12, stiffness: 80, mass: 1.5 },
   });
   const numberScale = interpolate(numberEntrance, [0, 1], [0.1, 1]);
-  const numberOpacity = interpolate(frame, [fps * 0.5, fps * 1.5], [0, 1], {
+  const numberOpacity = interpolate(lf, [fps * 0.5, fps * 1.5], [0, 1], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  const titleOpacity = interpolate(frame, [fps * 1.8, fps * 2.8], [0, 1], {
+  const titleOpacity = interpolate(lf, [fps * 1.8, fps * 2.8], [0, 1], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
-  const titleY = interpolate(frame, [fps * 1.8, fps * 2.8], [30, 0], {
-    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
-  });
-
-  const nameOpacity = interpolate(frame, [fps * 2.8, fps * 3.6], [0, 1], {
+  const titleY = interpolate(lf, [fps * 1.8, fps * 2.8], [30, 0], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  const overallOpacity = interpolate(frame, [introDuration - fps * 1, introDuration], [1, 0], {
+  const nameOpacity = interpolate(lf, [fps * 2.8, fps * 3.6], [0, 1], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
   });
 
-  const pulse = Math.sin(frame * 0.08) * 0.02 + 1;
-  const glowIntensity = Math.sin(frame * 0.06) * 20 + 60;
+  const overallOpacity = interpolate(lf, [introDuration - fps * 1, introDuration], [1, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+
+  const pulse = Math.sin(lf * 0.08) * 0.02 + 1;
+  const glowIntensity = Math.sin(lf * 0.06) * 20 + 60;
 
   return (
     <div style={{ position: 'absolute', inset: 0, opacity: overallOpacity }}>
@@ -60,7 +63,7 @@ export const IntroScene: React.FC = () => {
       }}>
         <div style={{
           width: 420, height: 420, borderRadius: '50%',
-          border: `3px solid rgba(255,215,0,${Math.sin(frame * 0.05) * 0.3 + 0.4})`,
+          border: `3px solid rgba(255,215,0,${Math.sin(lf * 0.05) * 0.3 + 0.4})`,
           boxShadow: `0 0 ${glowIntensity}px rgba(255,215,0,0.3), inset 0 0 ${glowIntensity * 0.5}px rgba(255,215,0,0.1)`,
           transform: `scale(${numberScale * pulse})`,
           position: 'absolute',
@@ -68,7 +71,7 @@ export const IntroScene: React.FC = () => {
         <div style={{
           width: 380, height: 380, borderRadius: '50%',
           border: '1px solid rgba(255,215,0,0.2)',
-          transform: `scale(${numberScale * pulse * 1.05}) rotate(${frame * 0.3}deg)`,
+          transform: `scale(${numberScale * pulse * 1.05}) rotate(${lf * 0.3}deg)`,
           position: 'absolute',
         }} />
       </div>
@@ -97,7 +100,7 @@ export const IntroScene: React.FC = () => {
         {/* Divider line */}
         <div style={{
           opacity: titleOpacity,
-          width: interpolate(frame, [fps * 1.8, fps * 2.6], [0, 300], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
+          width: interpolate(lf, [fps * 1.8, fps * 2.6], [0, 300], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }),
           height: 1,
           background: 'linear-gradient(90deg, transparent, #FFD700, transparent)',
           marginTop: 10, marginBottom: 20,
