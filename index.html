@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alignment Grid — Spring Physics</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d14;
+    color: #e2e2f0;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── Header ─────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 18px;
+    background: #13131e;
+    border-bottom: 1px solid #1e1e2e;
+    flex-shrink: 0;
+    height: 48px;
+  }
+
+  .logo {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .logo-icon {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  .divider { width: 1px; height: 22px; background: #1e1e2e; }
+
+  /* Shape picker */
+  .shape-tray {
+    display: flex;
+    gap: 4px;
+  }
+  .shape-btn {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    border: 1px solid #252535;
+    background: #1a1a2a;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: background 0.12s, border-color 0.12s, transform 0.1s;
+  }
+  .shape-btn:hover {
+    background: #22223a;
+    border-color: #4f46e5;
+    transform: translateY(-1px);
+  }
+  .shape-btn:active { transform: translateY(0); }
+
+  /* Toggle controls */
+  .controls { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+
+  .toggle {
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid #252535;
+    background: #1a1a2a;
+    color: #888;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    letter-spacing: 0.03em;
+  }
+  .toggle.on {
+    background: #1e1e3a;
+    border-color: #4f46e5;
+    color: #a5b4fc;
+  }
+  .toggle:hover { border-color: #4f46e5; color: #c4b5fd; }
+
+  .btn-ghost {
+    padding: 5px 11px;
+    border-radius: 6px;
+    border: 1px solid #252535;
+    background: transparent;
+    color: #666;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .btn-ghost:hover { border-color: #3a3a5a; color: #999; }
+
+  /* ── Canvas ─────────────────────────────────── */
+  #canvas {
+    flex: 1;
+    display: block;
+    cursor: default;
+    touch-action: none;
+  }
+
+  /* ── Status bar ─────────────────────────────── */
+  .statusbar {
+    height: 28px;
+    background: #0d0d14;
+    border-top: 1px solid #1a1a26;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .stat { font-size: 10.5px; color: #444; }
+  .stat span { color: #6366f1; font-weight: 600; }
+  .hint-text {
+    margin-left: auto;
+    font-size: 10.5px;
+    color: #333;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⬡</div>
+    Alignment Grid
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="shape-tray">
+    <button class="shape-btn" title="Add rectangle" onclick="addShape('rect')">▭</button>
+    <button class="shape-btn" title="Add circle"    onclick="addShape('circle')">◯</button>
+    <button class="shape-btn" title="Add triangle"  onclick="addShape('tri')">△</button>
+    <button class="shape-btn" title="Add hexagon"   onclick="addShape('hex')">⬡</button>
+    <button class="shape-btn" title="Add diamond"   onclick="addShape('diamond')">◇</button>
+    <button class="shape-btn" title="Add star"      onclick="addShape('star')">★</button>
+    <button class="shape-btn" title="Add pill"      onclick="addShape('pill')">⬭</button>
+  </div>
+
+  <div class="controls">
+    <button class="toggle on" id="tGrid"   onclick="tog('showGrid',   'tGrid')">Grid</button>
+    <button class="toggle on" id="tSnap"   onclick="tog('showSnap',   'tSnap')">Snap</button>
+    <button class="toggle on" id="tGuides" onclick="tog('showGuides', 'tGuides')">Guides</button>
+    <button class="toggle on" id="tSpring" onclick="tog('showSpring', 'tSpring')">Spring</button>
+    <div class="divider"></div>
+    <button class="btn-ghost" onclick="resetDemo()">Reset</button>
+    <button class="btn-ghost" onclick="clearAll()">Clear</button>
+  </div>
+</header>
+
+<canvas id="canvas"></canvas>
+
+<div class="statusbar">
+  <div class="stat">shapes <span id="sCount">0</span></div>
+  <div class="stat">snapped <span id="sSnapped">0</span></div>
+  <div class="stat">settling <span id="sSettling">0</span></div>
+  <div class="hint-text">Drag shapes · Release to spring-snap · Toolbar adds shapes</div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════╗
+// ║              CONFIGURATION                       ║
+// ╚══════════════════════════════════════════════════╝
+const CFG = {
+  grid:          40,       // grid cell size (px)
+  snapThresh:    26,       // snap detection radius (px)
+  springK:       380,      // spring stiffness
+  springDamp:    24,       // damping coefficient
+  springMass:    1.0,
+  restThresh:    0.15,     // velocity below which we stop simulation
+  restPosTh:     0.08,     // position error below which we stop
+  nudgeVel:      60,       // tiny outward velocity on snap (makes overshoot visible)
+};
+
+// ╔══════════════════════════════════════════════════╗
+// ║              STATE                               ║
+// ╚══════════════════════════════════════════════════╝
+// var so window[flag] in tog() resolves correctly
+var showGrid   = true;
+var showSnap   = true;
+var showGuides = true;
+var showSpring = true;
+
+let shapes   = [];
+let dragging = null;
+let dragOx   = 0, dragOy = 0;      // offset from shape center to mouse
+let guides   = { h: [], v: [] };   // active guide lines
+let activeSnap = null;             // { x, y } of the snap target being previewed
+let uid      = 0;
+
+const PALETTE = [
+  '#6366f1','#ec4899','#f59e0b','#10b981',
+  '#06b6d4','#f43f5e','#8b5cf6','#22d3ee',
+  '#84cc16','#fb923c','#e879f9','#2dd4bf',
+];
+
+// ╔══════════════════════════════════════════════════╗
+// ║              CANVAS SETUP                        ║
+// ╚══════════════════════════════════════════════════╝
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+let W = 0, H = 0;
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  W = rect.width;
+  H = rect.height;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  ctx.scale(dpr, dpr);
+}
+const ro = new ResizeObserver(resize);
+ro.observe(canvas);
+resize();
+
+// ╔══════════════════════════════════════════════════╗
+// ║              SHAPE FACTORY                       ║
+// ╚══════════════════════════════════════════════════╝
+const SIZE_MAP = {
+  rect: 34, circle: 28, tri: 30, hex: 28, diamond: 26, star: 28, pill: 20,
+};
+
+function makeShape(type, x, y) {
+  const color = PALETTE[uid % PALETTE.length];
+  const size  = SIZE_MAP[type] ?? 28;
+  return {
+    id: uid++, type, color, size,
+    // Physics state
+    x, y,           // current position
+    vx: 0, vy: 0,   // velocity
+    tx: x, ty: y,   // spring target
+    settling: false,
+    // Snap state
+    snappedX: false,
+    snappedY: false,
+  };
+}
+
+function resetDemo() {
+  uid = 0;
+  shapes = [];
+  const cx = W / 2, cy = H / 2;
+  const grid = CFG.grid;
+  const placements = [
+    ['rect',   -4, -2], ['circle',  0, -2], ['hex',     4, -2],
+    ['tri',    -4,  2], ['diamond', 0,  2], ['star',    4,  2],
+    ['pill',   -2,  0],
+  ];
+  for (const [type, dx, dy] of placements) {
+    shapes.push(makeShape(type,
+      Math.round(cx / grid + dx) * grid,
+      Math.round(cy / grid + dy) * grid
+    ));
+  }
+}
+
+function addShape(type) {
+  const snap = CFG.grid;
+  const x = Math.round((W * 0.3 + Math.random() * W * 0.4) / snap) * snap;
+  const y = Math.round((H * 0.3 + Math.random() * H * 0.4) / snap) * snap;
+  shapes.push(makeShape(type, x, y));
+}
+
+function clearAll() { shapes = []; uid = 0; }
+
+// ╔══════════════════════════════════════════════════╗
+// ║              TOGGLE HELPERS                      ║
+// ╚══════════════════════════════════════════════════╝
+function tog(flag, btnId) {
+  window[flag] = !window[flag];
+  document.getElementById(btnId).classList.toggle('on', window[flag]);
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              SNAP ENGINE                         ║
+// ╚══════════════════════════════════════════════════╝
+/*
+  Returns { snapX, snapY, guideH, guideV }
+  snapX / snapY = null if no snap found on that axis.
+  guideH = array of Y values for horizontal guides.
+  guideV = array of X values for vertical guides.
+*/
+function computeSnap(s) {
+  const T = CFG.snapThresh;
+  const G = CFG.grid;
+
+  let bestDx = T + 1, bestDy = T + 1;
+  let snapX = null, snapY = null;
+  const guideH = new Set(), guideV = new Set();
+
+  // ── 1. Grid snapping ─────────────────────────────
+  const gx = Math.round(s.x / G) * G;
+  const gy = Math.round(s.y / G) * G;
+  if (Math.abs(s.x - gx) < bestDx) { snapX = gx; bestDx = Math.abs(s.x - gx); }
+  if (Math.abs(s.y - gy) < bestDy) { snapY = gy; bestDy = Math.abs(s.y - gy); }
+
+  // ── 2. Shape-to-shape snapping ───────────────────
+  for (const o of shapes) {
+    if (o.id === s.id) continue;
+    const r  = s.size;
+    const or = o.size;
+
+    // Center alignment
+    const dxC = Math.abs(s.x - o.x);
+    const dyC = Math.abs(s.y - o.y);
+    if (dxC < bestDx) { snapX = o.x; bestDx = dxC; }
+    if (dyC < bestDy) { snapY = o.y; bestDy = dyC; }
+
+    // Edge-to-edge (left of mine = right of other, etc.)
+    const edgeTargetsX = [o.x + or + r, o.x - or - r];
+    const edgeTargetsY = [o.y + or + r, o.y - or - r];
+    for (const ex of edgeTargetsX) {
+      const d = Math.abs(s.x - ex);
+      if (d < bestDx) { snapX = ex; bestDx = d; }
+    }
+    for (const ey of edgeTargetsY) {
+      const d = Math.abs(s.y - ey);
+      if (d < bestDy) { snapY = ey; bestDy = d; }
+    }
+  }
+
+  // ── 3. Build guide lines ─────────────────────────
+  if (snapX !== null) {
+    guideV.add(snapX);
+    // Also show guide through any shape aligned at this X
+    for (const o of shapes) {
+      if (o.id !== s.id && Math.abs(o.x - snapX) < 1) guideV.add(snapX);
+    }
+  }
+  if (snapY !== null) {
+    guideH.add(snapY);
+  }
+  // Show inter-shape alignment guides even if they didn't win
+  for (const o of shapes) {
+    if (o.id === s.id) continue;
+    if (Math.abs(s.x - o.x) <= T) guideV.add(o.x);
+    if (Math.abs(s.y - o.y) <= T) guideH.add(o.y);
+  }
+
+  return {
+    snapX: bestDx <= T ? snapX : null,
+    snapY: bestDy <= T ? snapY : null,
+    guideH: [...guideH],
+    guideV: [...guideV],
+  };
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              SPRING PHYSICS                      ║
+// ╚══════════════════════════════════════════════════╝
+function stepSpring(s, dt) {
+  // Semi-implicit Euler integration
+  const k = CFG.springK, d = CFG.springDamp, m = CFG.springMass;
+
+  const ax = (-k * (s.x - s.tx) - d * s.vx) / m;
+  const ay = (-k * (s.y - s.ty) - d * s.vy) / m;
+
+  s.vx += ax * dt;
+  s.vy += ay * dt;
+  s.x  += s.vx * dt;
+  s.y  += s.vy * dt;
+
+  const speed = Math.hypot(s.vx, s.vy);
+  const err   = Math.hypot(s.x - s.tx, s.y - s.ty);
+
+  if (speed < CFG.restThresh && err < CFG.restPosTh) {
+    s.x = s.tx; s.y = s.ty;
+    s.vx = 0;   s.vy = 0;
+    s.settling = false;
+  }
+}
+
+function updatePhysics(dt) {
+  for (const s of shapes) {
+    if (s === dragging || !s.settling) continue;
+    stepSpring(s, dt);
+  }
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              DRAWING                             ║
+// ╚══════════════════════════════════════════════════╝
+function drawGrid() {
+  const G = CFG.grid;
+  ctx.save();
+  ctx.fillStyle = '#1e1e2e';
+  for (let x = G; x < W; x += G) {
+    for (let y = G; y < H; y += G) {
+      ctx.fillRect(x - 0.75, y - 0.75, 1.5, 1.5);
+    }
+  }
+  ctx.restore();
+}
+
+function drawGuides() {
+  ctx.save();
+  ctx.lineWidth = 1;
+
+  // Horizontal guides — magenta
+  if (guides.h.length) {
+    ctx.strokeStyle = 'rgba(236,72,153,0.55)';
+    ctx.setLineDash([5, 5]);
+    for (const y of guides.h) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+  }
+
+  // Vertical guides — cyan
+  if (guides.v.length) {
+    ctx.strokeStyle = 'rgba(6,182,212,0.55)';
+    ctx.setLineDash([5, 5]);
+    for (const x of guides.v) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+  }
+
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawSnapTarget(x, y, color) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([3, 4]);
+  ctx.beginPath();
+  ctx.arc(x, y, 11, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // crosshair
+  ctx.setLineDash([]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.beginPath();
+  ctx.moveTo(x - 7, y); ctx.lineTo(x + 7, y);
+  ctx.moveTo(x, y - 7); ctx.lineTo(x, y + 7);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function shapePath(ctx, s, x, y) {
+  const { type, size } = s;
+  ctx.beginPath();
+  switch (type) {
+    case 'rect': {
+      const w = size * 1.8, h = size * 1.2;
+      ctx.roundRect(x - w / 2, y - h / 2, w, h, 5);
+      break;
+    }
+    case 'circle':
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      break;
+    case 'tri': {
+      const h = size * 1.05;
+      ctx.moveTo(x,           y - h);
+      ctx.lineTo(x + h * 0.866, y + h * 0.5);
+      ctx.lineTo(x - h * 0.866, y + h * 0.5);
+      ctx.closePath();
+      break;
+    }
+    case 'hex': {
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i - Math.PI / 6;
+        const px = x + Math.cos(a) * size;
+        const py = y + Math.sin(a) * size;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      break;
+    }
+    case 'diamond': {
+      const rx = size * 0.82, ry = size * 1.28;
+      ctx.moveTo(x,      y - ry);
+      ctx.lineTo(x + rx, y);
+      ctx.lineTo(x,      y + ry);
+      ctx.lineTo(x - rx, y);
+      ctx.closePath();
+      break;
+    }
+    case 'star': {
+      const outerR = size, innerR = size * 0.42;
+      for (let i = 0; i < 10; i++) {
+        const a = (Math.PI / 5) * i - Math.PI / 2;
+        const r = i % 2 === 0 ? outerR : innerR;
+        const px = x + Math.cos(a) * r;
+        const py = y + Math.sin(a) * r;
+        i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      break;
+    }
+    case 'pill': {
+      const pr = size * 0.75, pw = size * 2.0;
+      ctx.roundRect(x - pw / 2, y - pr, pw, pr * 2, pr);
+      break;
+    }
+  }
+}
+
+function drawShape(s) {
+  const isDragging  = s === dragging;
+  const isSettling  = s.settling;
+  const px = s.x, py = s.y;
+
+  ctx.save();
+
+  // Shadow / glow
+  if (isDragging) {
+    ctx.shadowColor = s.color;
+    ctx.shadowBlur  = 24;
+  } else if (isSettling && showSpring) {
+    const energy = Math.hypot(s.vx, s.vy) / 200; // 0–1 ish
+    ctx.shadowColor = s.color;
+    ctx.shadowBlur  = 6 + energy * 18;
+  }
+
+  // Fill
+  ctx.globalAlpha = isDragging ? 0.88 : 1;
+  ctx.fillStyle   = s.color;
+  shapePath(ctx, s, px, py);
+  ctx.fill();
+
+  // Stroke
+  ctx.shadowBlur  = 0;
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = isDragging
+    ? 'rgba(255,255,255,0.6)'
+    : 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = isDragging ? 2 : 1;
+  shapePath(ctx, s, px, py);
+  ctx.stroke();
+
+  // Center dot while active
+  if (isDragging || isSettling) {
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath();
+    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+// Spring trail — draw faint ghost at target while settling
+function drawSpringTrail(s) {
+  if (!s.settling || !showSpring) return;
+  const dist = Math.hypot(s.x - s.tx, s.y - s.ty);
+  if (dist < 1) return;
+  const alpha = Math.min(dist / 60, 0.35);
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  shapePath(ctx, s, s.tx, s.ty);
+  ctx.strokeStyle = s.color;
+  ctx.lineWidth   = 1.5;
+  ctx.setLineDash([3, 4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // zigzag spring line
+  const steps  = 8;
+  const totDx  = s.tx - s.x;
+  const totDy  = s.ty - s.y;
+  const segLen = Math.hypot(totDx, totDy) || 1;
+  const ux     = totDx / segLen;   // unit along spring
+  const uy     = totDy / segLen;
+  const nxU    = -uy;              // unit perpendicular
+  const nyU    =  ux;
+  const amp    = Math.min(segLen * 0.16, 10); // perpendicular amplitude
+
+  ctx.globalAlpha = alpha * 0.55;
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(s.x, s.y);
+  for (let i = 1; i < steps; i++) {
+    const t    = i / steps;
+    const sign = i % 2 === 0 ? 1 : -1;
+    ctx.lineTo(
+      s.x + totDx * t + nxU * amp * sign,
+      s.y + totDy * t + nyU * amp * sign
+    );
+  }
+  ctx.lineTo(s.tx, s.ty);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              MAIN LOOP                           ║
+// ╚══════════════════════════════════════════════════╝
+let lastTime = 0;
+
+function frame(t) {
+  const dt = Math.min((t - lastTime) / 1000, 1 / 30);
+  lastTime = t;
+
+  updatePhysics(dt);
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  if (showGrid)   drawGrid();
+  if (showGuides) drawGuides();
+
+  // Spring trails (behind shapes)
+  if (showSpring) {
+    for (const s of shapes) if (s !== dragging) drawSpringTrail(s);
+  }
+
+  // Shapes (non-dragging)
+  for (const s of shapes) if (s !== dragging) drawShape(s);
+
+  // Snap preview target
+  if (dragging && activeSnap) {
+    drawSnapTarget(activeSnap.x, activeSnap.y, dragging.color);
+  }
+
+  // Dragging shape on top
+  if (dragging) drawShape(dragging);
+
+  // Status bar
+  const snapped   = shapes.filter(s => s.snappedX || s.snappedY).length;
+  const settling  = shapes.filter(s => s.settling).length;
+  document.getElementById('sCount').textContent   = shapes.length;
+  document.getElementById('sSnapped').textContent = snapped;
+  document.getElementById('sSettling').textContent = settling;
+
+  requestAnimationFrame(frame);
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              HIT TEST                            ║
+// ╚══════════════════════════════════════════════════╝
+function hitTest(mx, my) {
+  for (let i = shapes.length - 1; i >= 0; i--) {
+    const s = shapes[i];
+    const dx = mx - s.x, dy = my - s.y;
+    let hit = false;
+    switch (s.type) {
+      case 'circle':
+        hit = Math.hypot(dx, dy) <= s.size; break;
+      case 'rect': {
+        const w = s.size * 0.9, h = s.size * 0.6;
+        hit = Math.abs(dx) <= w && Math.abs(dy) <= h; break;
+      }
+      case 'pill': {
+        const pw = s.size, ph = s.size * 0.75;
+        hit = Math.abs(dx) <= pw && Math.abs(dy) <= ph; break;
+      }
+      default:
+        hit = Math.hypot(dx, dy) <= s.size * 1.15;
+    }
+    if (hit) return s;
+  }
+  return null;
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║              INPUT                               ║
+// ╚══════════════════════════════════════════════════╝
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  if (e.touches) {
+    return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+  }
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+function onDown(e) {
+  const { x, y } = getPos(e);
+  const hit = hitTest(x, y);
+  if (!hit) return;
+
+  dragging = hit;
+  hit.settling = false;
+  // Carry existing velocity on grab so spring energy dissipates naturally
+  dragOx = x - hit.x;
+  dragOy = y - hit.y;
+  canvas.style.cursor = 'grabbing';
+
+  // Bring to front
+  shapes.splice(shapes.indexOf(hit), 1);
+  shapes.push(hit);
+}
+
+function onMove(e) {
+  e.preventDefault();
+  const { x, y } = getPos(e);
+
+  if (!dragging) {
+    canvas.style.cursor = hitTest(x, y) ? 'grab' : 'default';
+    return;
+  }
+
+  dragging.x = x - dragOx;
+  dragging.y = y - dragOy;
+
+  if (showSnap) {
+    const snap = computeSnap(dragging);
+    guides.h = snap.guideH;
+    guides.v = snap.guideV;
+
+    const tx = snap.snapX !== null ? snap.snapX : dragging.x;
+    const ty = snap.snapY !== null ? snap.snapY : dragging.y;
+    dragging.tx = tx;
+    dragging.ty = ty;
+
+    activeSnap = (snap.snapX !== null || snap.snapY !== null) ? { x: tx, y: ty } : null;
+  } else {
+    guides.h = []; guides.v = [];
+    dragging.tx = dragging.x;
+    dragging.ty = dragging.y;
+    activeSnap = null;
+  }
+}
+
+function onUp() {
+  if (!dragging) return;
+
+  const s = dragging;
+  dragging = null;
+  canvas.style.cursor = 'default';
+  guides.h = []; guides.v = [];
+  activeSnap = null;
+
+  // Launch spring: if the target differs from current position, spring will pull it there.
+  // Give a small nudge velocity away from target so the overshoot is visible.
+  if (showSpring) {
+    const ddx = s.x - s.tx;
+    const ddy = s.y - s.ty;
+    const dist = Math.hypot(ddx, ddy);
+    if (dist > 0.5) {
+      // Tiny outward velocity so spring overshoots slightly
+      const nv = CFG.nudgeVel;
+      s.vx = (ddx / dist) * nv;
+      s.vy = (ddy / dist) * nv;
+    }
+    s.settling = true;
+  } else {
+    // Hard snap
+    s.x = s.tx; s.y = s.ty;
+    s.vx = 0; s.vy = 0;
+    s.settling = false;
+  }
+
+  // Record snap state
+  const snap = computeSnap(s);
+  s.snappedX = snap.snapX !== null;
+  s.snappedY = snap.snapY !== null;
+}
+
+function onLeave() { onUp(); }
+
+canvas.addEventListener('mousedown',  onDown);
+canvas.addEventListener('mousemove',  onMove);
+canvas.addEventListener('mouseup',    onUp);
+canvas.addEventListener('mouseleave', onLeave);
+
+canvas.addEventListener('touchstart', onDown, { passive: false });
+canvas.addEventListener('touchmove',  onMove, { passive: false });
+canvas.addEventListener('touchend',   onUp,   { passive: false });
+
+// ╔══════════════════════════════════════════════════╗
+// ║              BOOT                                ║
+// ╚══════════════════════════════════════════════════╝
+// Wait for canvas to have real dimensions
+requestAnimationFrame(() => {
+  resize();
+  resetDemo();
+  requestAnimationFrame(frame);
+});
+</script>
+</body>
+</html>
