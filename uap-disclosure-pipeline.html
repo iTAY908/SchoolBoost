@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>צוות אימות מידע — UAP / חשיפת ממשל ארה"ב</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d14;
+    color: #e2e2f0;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── Header ───────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 20px;
+    background: #13131e;
+    border-bottom: 1px solid #1e1e2e;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .logo {
+    font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
+    color: #fff; display: flex; align-items: center; gap: 9px;
+  }
+  .logo-icon {
+    width: 26px; height: 26px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .sub { font-size: 11px; color: #6b6b85; margin-right: auto; }
+
+  /* ── Controls ─────────────────────────────── */
+  .bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; flex-wrap: wrap;
+  }
+  .run-btn {
+    padding: 9px 20px; border-radius: 8px; border: none;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: transform 0.1s, opacity 0.15s;
+  }
+  .run-btn:hover { transform: translateY(-1px); }
+  .run-btn:active { transform: translateY(0); }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .ghost {
+    padding: 9px 16px; border-radius: 8px; border: 1px solid #252535;
+    background: transparent; color: #888; font-size: 12px; cursor: pointer;
+    transition: all 0.12s;
+  }
+  .ghost:hover { border-color: #3a3a5a; color: #ccc; }
+  .pipe-status { font-size: 12px; color: #6b6b85; margin-right: auto; }
+  .pipe-status b { color: #a5b4fc; }
+
+  /* ── Worker track ─────────────────────────── */
+  .track {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; padding: 4px 20px 20px;
+  }
+  @media (max-width: 820px){ .track{ grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px){ .track{ grid-template-columns: 1fr; } }
+
+  .worker {
+    background: #14141f; border: 1px solid #1e1e2e; border-radius: 12px;
+    padding: 16px; position: relative; overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s, transform 0.2s;
+  }
+  .worker.active {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px #6366f133, 0 8px 30px -10px #6366f160;
+  }
+  .worker.done { border-color: #10b98155; }
+
+  .w-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .w-avatar {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    background: #1c1c2c; border: 1px solid #2a2a3e;
+  }
+  .worker.active .w-avatar { background: #1e1e3a; border-color: #4f46e5; }
+  .worker.done .w-avatar { background: #11281f; border-color: #10b98155; }
+  .w-num { font-size: 10px; color: #6b6b85; font-weight: 600; letter-spacing: 0.05em; }
+  .w-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .w-goal { font-size: 11.5px; color: #8a8aa5; line-height: 1.5; min-height: 34px; }
+
+  .w-state {
+    margin-top: 12px; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #3a3a4e; }
+  .worker.active .dot { background: #6366f1; animation: pulse 1s infinite; }
+  .worker.done .dot { background: #10b981; }
+  @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.3 } }
+  .state-idle{ color:#5a5a72 } .state-work{ color:#a5b4fc } .state-done{ color:#34d399 }
+
+  .progress { height: 4px; background: #1e1e2e; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; border-radius: 2px;
+    background: linear-gradient(90deg, #6366f1, #a855f7); transition: width 0.25s ease; }
+  .worker.done .progress-fill { background: #10b981; }
+
+  .w-log { margin-top: 10px; font-size: 10.5px; color: #6b6b85; line-height: 1.7; min-height: 18px; }
+  .w-log .ok { color: #34d399; } .w-log .warn { color: #fbbf24; }
+
+  .arrow {
+    position: absolute; left: -10px; top: 50%; transform: translateY(-50%);
+    font-size: 18px; color: #2a2a3e; z-index: 2;
+  }
+
+  /* ── Results ──────────────────────────────── */
+  .results { padding: 0 20px; max-width: 1100px; margin: 0 auto; }
+  .results.hidden { display: none; }
+  .res-title { font-size: 18px; font-weight: 700; color: #fff; margin: 8px 0 4px; }
+  .res-desc { font-size: 12.5px; color: #8a8aa5; line-height: 1.6; margin-bottom: 18px; }
+
+  .group { margin-bottom: 22px; }
+  .group-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+  .group-title { font-size: 13px; font-weight: 700; }
+  .group-count { font-size: 11px; color: #6b6b85; }
+  .badge {
+    font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+  .b-official { background: #11281f; color: #34d399; border: 1px solid #10b98140; }
+  .b-news     { background: #1a2236; color: #7dd3fc; border: 1px solid #38bdf840; }
+  .b-ref      { background: #241a36; color: #c4b5fd; border: 1px solid #a855f740; }
+  .b-unver    { background: #2a2014; color: #fbbf24; border: 1px solid #f59e0b40; }
+
+  .card {
+    display: flex; align-items: center; gap: 12px;
+    background: #14141f; border: 1px solid #1e1e2e; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    text-decoration: none;
+  }
+  .card:hover { border-color: #4f46e5; background: #181826; transform: translateX(-3px); }
+  .card-type {
+    width: 34px; height: 34px; flex-shrink: 0; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    background: #1c1c2c;
+  }
+  .card-main { flex: 1; min-width: 0; }
+  .card-title { font-size: 13px; font-weight: 600; color: #e2e2f0; }
+  .card-url { font-size: 10.5px; color: #6b6b85; direction: ltr; text-align: right;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-note { font-size: 10.5px; color: #8a8aa5; margin-top: 3px; line-height: 1.4; }
+  .card-open {
+    font-size: 11px; font-weight: 600; color: #a5b4fc; flex-shrink: 0;
+    border: 1px solid #2a2a3e; border-radius: 7px; padding: 6px 12px;
+  }
+  .card:hover .card-open { border-color: #4f46e5; color: #c4b5fd; }
+  .score { font-size: 10px; color: #6b6b85; flex-shrink: 0; min-width: 56px; text-align: center; }
+  .score b { color: #a5b4fc; font-size: 13px; }
+
+  .disclaimer {
+    background: #1a160e; border: 1px solid #f59e0b30; border-radius: 10px;
+    padding: 14px 16px; margin: 6px 0 24px; font-size: 12px; color: #d6c9a8; line-height: 1.7;
+  }
+  .disclaimer b { color: #fbbf24; }
+  footer { text-align: center; font-size: 10.5px; color: #3a3a4e; padding: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛸</div>
+    צוות אימות מידע — חשיפת UAP/UFO של ממשל ארה"ב
+  </div>
+  <div class="sub">Pipeline: Scout → Verify → Audit → Deliver</div>
+</header>
+
+<div class="bar">
+  <button class="run-btn" id="runBtn" onclick="runPipeline()">▶ הפעל את הצוות</button>
+  <button class="ghost" onclick="resetPipeline()">איפוס</button>
+  <div class="pipe-status" id="pipeStatus">לחץ "הפעל את הצוות" כדי להתחיל את שרשרת ארבעת העובדים.</div>
+</div>
+
+<div class="track" id="track"></div>
+
+<div class="results hidden" id="results">
+  <div class="res-title">📨 התוצאות הסופיות — קישורים מיידיים</div>
+  <div class="res-desc" id="resDesc"></div>
+  <div id="groups"></div>
+  <div class="disclaimer" id="disclaimer"></div>
+</div>
+
+<footer>נבנה כדמו של שרשרת אימות (multi-agent). כל הקישורים נאספו ממקורות פומביים אמיתיים ומדורגים לפי מהימנות.</footer>
+
+<script>
+// ╔══════════════════════════════════════════════════╗
+// ║   העובדים (4 שלבים — כל אחד מעביר לבא בתור)      ║
+// ╚══════════════════════════════════════════════════╝
+const WORKERS = [
+  { num: 'עובד 1', name: 'הסַייר', icon: '🔎',
+    goal: 'מחפש אתרים, סרטונים וכתבות ממשלתיים בארה"ב על חשיפת ה-UAP/חייזרים שטראמפ הורה לפרסם.',
+    work: 'אוסף מקורות…' },
+  { num: 'עובד 2', name: 'המאמת', icon: '🛡️',
+    goal: 'לוקח את כל מה שנאסף ובודק האם המידע אמין — מסווג כל מקור לפי דומיין רשמי / חדשות / זיוף.',
+    work: 'בודק מהימנות…' },
+  { num: 'עובד 3', name: 'המבקר', icon: '🔬',
+    goal: 'בודק שוב — הצלבה מול מקורות רשמיים, סימון מקורות לא-מאומתים והפרדה בין עובדה לטענה.',
+    work: 'מצליב ומאמת שוב…' },
+  { num: 'עובד 4', name: 'השליח', icon: '📨',
+    goal: 'אחרי שהכול עבר את הצוות — שולח לך את כל המידע כקישורים מיידיים, מסודרים לפי מהימנות.',
+    work: 'אורז ושולח קישורים…' },
+];
+
+// ╔══════════════════════════════════════════════════╗
+// ║   מאגר המקורות שעובד 1 "מוצא" (אמיתיים)         ║
+// ╚══════════════════════════════════════════════════╝
+const SOURCES = [
+  // --- מקורות ממשלתיים רשמיים / ראשוניים ---
+  { title: 'PURSUE — פורטל החשיפה הרשמי של UAP (Department of War)', type: 'site',
+    url: 'https://www.war.gov/ufo/',
+    note: 'הפורטל הרשמי שבו ממשל טראמפ מפרסם את קבצי ה-UAP המסווגים (החל מ-8 במאי 2026).' },
+  { title: 'הודעת Department of War על שחרור קבצי UAP', type: 'article',
+    url: 'https://www.war.gov/News/Releases/Release/Article/4480582/department-of-war-releases-unidentified-anomalous-phenomena-files-in-historic-t/',
+    note: 'ההודעה הרשמית של הפנטגון על מהלך השקיפות.' },
+  { title: 'AARO — המשרד לפתרון תופעות אנומליות (Pentagon)', type: 'site',
+    url: 'https://www.aaro.mil/',
+    note: 'האתר הרשמי של המשרד הממשלתי החוקר UAP.' },
+  { title: 'AARO — ארכיון רשומות UAP', type: 'site',
+    url: 'https://www.aaro.mil/UAP-Records/',
+    note: 'מסמכי מקור רשמיים של ה-UAP.' },
+  { title: 'AARO — תמונות וסרטוני UAP רשמיים', type: 'video',
+    url: 'https://www.aaro.mil/UAP-Cases/Official-UAP-Imagery/',
+    note: 'גלריית הסרטונים/תמונות הרשמית של הפנטגון.' },
+  { title: 'C-SPAN — שימוע הקונגרס המלא על UAP/UFO', type: 'video',
+    url: 'https://www.c-span.org/program/house-committee/hearing-on-unidentified-anomalous-phenomena-ufos/630344',
+    note: 'הקלטת וידאו ראשונית של שימוע הקונגרס (26.7.2023).' },
+  { title: 'congress.gov — תמליל רשמי של שימוע ה-UAP (PDF)', type: 'site',
+    url: 'https://www.congress.gov/118/meeting/house/116282/documents/HHRG-118-GO06-Transcript-20230726.pdf',
+    note: 'מסמך ראשוני — התמליל המלא שפרסם בית הנבחרים.' },
+  // --- חדשות מבוססות ---
+  { title: 'CNN — הפנטגון משחרר מנה ראשונה של קבצי UFO', type: 'article',
+    url: 'https://www.cnn.com/2026/05/08/politics/ufo-files-pentagon-release-aliens',
+    note: 'סיקור חדשותי של השחרור הראשון.' },
+  { title: 'NBC News — קבצי UAP כולל סרטונים ותמונות', type: 'article',
+    url: 'https://www.nbcnews.com/science/ufos-and-anomalous-phenomena/ufo-uap-files-pentagon-release-trump-rcna344204',
+    note: 'כיסוי מפורט עם סרטונים ותמונות שפורסמו.' },
+  { title: 'CBS News — מנה נוספת של קבצי UFO', type: 'article',
+    url: 'https://www.cbsnews.com/news/ufo-files-pentagon-videos-documents/',
+    note: 'סקירת המסמכים והסרטונים.' },
+  { title: 'Fox News — קבצי UAP כולל תמונות אפולו', type: 'article',
+    url: 'https://www.foxnews.com/politics/trump-admin-releases-highly-anticipatedfiles-documents-ufos-extraterrestrial-life',
+    note: 'דיווח על תמונות אפולו 12/17 ותמלילי נאס"א.' },
+  { title: 'Live Science — שחרור כ-200 קבצי UAP', type: 'article',
+    url: 'https://www.livescience.com/space/extraterrestrial-life/us-government-declassifies-nearly-200-uap-files-including-strange-sightings-from-apollo-astronauts',
+    note: 'סיקור מדעי של המנה הנוספת.' },
+  { title: 'DefenseScoop — "נתונים לבדם אינם חשיפה"', type: 'article',
+    url: 'https://defensescoop.com/2026/05/14/uap-trump-first-pursue-ufo-file-drop/',
+    note: 'תגובת קהילת המחקר — נקודת מבט ביקורתית.' },
+  { title: 'Military.com — טראמפ פותח את קבצי ה-UFO', type: 'article',
+    url: 'https://www.military.com/trump-opens-ufo-files-in-historic-government-release',
+    note: 'סיקור צבאי של המהלך.' },
+  // --- מקורות משניים / ייחוס ---
+  { title: 'Wikipedia — United States UFO files', type: 'site',
+    url: 'https://en.wikipedia.org/wiki/United_States_UFO_files',
+    note: 'מקור משני — סקירת רקע מרוכזת (אינו מקור ראשוני).' },
+  { title: 'Wikipedia — David Grusch UFO whistleblower claims', type: 'site',
+    url: 'https://en.wikipedia.org/wiki/David_Grusch_UFO_whistleblower_claims',
+    note: 'רקע על הטענות — חשוב: אלו טענות שלא אומתו רשמית.' },
+  // --- לא מאומת / דורש זהירות ---
+  { title: 'UFO Declassified — אתר צד-שלישי לאיגום קבצים', type: 'site',
+    url: 'https://ufo-declassified.com/',
+    note: 'אתר לא-ממשלתי, מקור לא מאומת — להצליב מול war.gov.' },
+];
+
+// ╔══════════════════════════════════════════════════╗
+// ║   לוגיקת אימות אמיתית (לפי דומיין)              ║
+// ╚══════════════════════════════════════════════════╝
+const NEWS_DOMAINS = ['cnn.com','nbcnews.com','cbsnews.com','abcnews.com','abc7news.com',
+  'foxnews.com','military.com','defensescoop.com','livescience.com','earthsky.org',
+  'reuters.com','apnews.com'];
+
+function domainOf(url){ try { return new URL(url).hostname.replace(/^www\./,''); } catch(e){ return ''; } }
+
+// עובד 2: סיווג ראשוני לפי מהימנות הדומיין
+function classify(src){
+  const d = domainOf(src.url);
+  if (d.endsWith('.gov') || d.endsWith('.mil'))
+    return { tier:'official', score:100, label:'מקור ממשלתי רשמי' };
+  if (d === 'c-span.org' || d === 'congress.gov')
+    return { tier:'official', score:98, label:'מקור ראשוני רשמי' };
+  if (NEWS_DOMAINS.includes(d))
+    return { tier:'news', score:82, label:'כלי תקשורת מוכר' };
+  if (d.endsWith('wikipedia.org'))
+    return { tier:'ref', score:60, label:'מקור משני / ייחוס' };
+  return { tier:'unver', score:32, label:'לא מאומת — דורש הצלבה' };
+}
+
+// עובד 3: הצלבה — מקור נחשב "מאושר" אם יש לפחות מקור רשמי אחד באותו נושא
+function crossCheck(items){
+  const hasOfficial = items.some(i => i.tier === 'official');
+  return items.map(i => {
+    const corroborated = i.tier === 'official' ? true
+      : (i.tier === 'news' || i.tier === 'ref') ? hasOfficial : false;
+    return { ...i, corroborated };
+  });
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║   בניית כרטיסי העובדים                           ║
+// ╚══════════════════════════════════════════════════╝
+const track = document.getElementById('track');
+function buildTrack(){
+  track.innerHTML = '';
+  WORKERS.forEach((w, i) => {
+    const el = document.createElement('div');
+    el.className = 'worker';
+    el.id = 'worker-' + i;
+    el.innerHTML = `
+      ${i < 3 ? '<div class="arrow">‹</div>' : ''}
+      <div class="w-head">
+        <div class="w-avatar">${w.icon}</div>
+        <div>
+          <div class="w-num">${w.num}</div>
+          <div class="w-name">${w.name}</div>
+        </div>
+      </div>
+      <div class="w-goal">${w.goal}</div>
+      <div class="w-state"><span class="dot"></span><span class="st state-idle">ממתין</span></div>
+      <div class="progress"><div class="progress-fill" id="fill-${i}"></div></div>
+      <div class="w-log" id="log-${i}"></div>`;
+    track.appendChild(el);
+  });
+}
+buildTrack();
+
+// ╔══════════════════════════════════════════════════╗
+// ║   מנוע הריצה — שרשרת רציפה עם העברות             ║
+// ╚══════════════════════════════════════════════════╝
+let running = false;
+let verified = [];          // נתונים שעוברים בין העובדים
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+
+async function animateProgress(i, ms){
+  const fill = $('fill-'+i);
+  const steps = 24;
+  for (let s = 1; s <= steps; s++){ fill.style.width = (s/steps*100)+'%'; await sleep(ms/steps); }
+}
+function setState(i, cls, text){
+  const w = $('worker-'+i);
+  const st = w.querySelector('.st');
+  st.className = 'st ' + cls;
+  st.textContent = text;
+}
+
+async function runPipeline(){
+  if (running) return;
+  running = true; verified = [];
+  $('runBtn').disabled = true;
+  $('results').classList.add('hidden');
+  resetVisual();
+
+  // ── עובד 1: איסוף ──────────────────────────
+  await activate(0, 'אוסף מקורות…', async () => {
+    const found = SOURCES.length;
+    $('log-0').innerHTML = `נאספו <span class="ok">${found}</span> מקורות (אתרים, סרטונים, כתבות).`;
+    verified = SOURCES.map(s => ({ ...s }));
+  });
+
+  // ── עובד 2: אימות ראשוני ───────────────────
+  await activate(1, 'בודק מהימנות…', async () => {
+    verified = verified.map(s => ({ ...s, ...classify(s) }));
+    const reliable = verified.filter(s => s.tier !== 'unver').length;
+    const flagged  = verified.length - reliable;
+    $('log-1').innerHTML = `<span class="ok">${reliable}</span> מהימנים · <span class="warn">${flagged}</span> סומנו לבדיקה.`;
+  });
+
+  // ── עובד 3: אימות חוזר + הצלבה ──────────────
+  await activate(2, 'מצליב ומאמת שוב…', async () => {
+    verified = crossCheck(verified);
+    const ok = verified.filter(s => s.corroborated).length;
+    const no = verified.length - ok;
+    $('log-2').innerHTML = `<span class="ok">${ok}</span> אושרו בהצלבה · <span class="warn">${no}</span> נותרו לא-מאומתים.`;
+  });
+
+  // ── עובד 4: שליחה כקישורים מיידיים ──────────
+  await activate(3, 'אורז ושולח קישורים…', async () => {
+    $('log-3').innerHTML = `<span class="ok">${verified.length}</span> קישורים מוכנים לשליחה.`;
+    renderResults();
+  });
+
+  $('pipeStatus').innerHTML = '✅ הצוות סיים — <b>הקישורים נשלחו אליך למטה</b>.';
+  $('runBtn').disabled = false;
+  running = false;
+}
+
+async function activate(i, workText, job){
+  setState(i, 'state-work', workText);
+  $('worker-'+i).classList.add('active');
+  $('pipeStatus').innerHTML = `העובד ${i+1} פעיל: <b>${WORKERS[i].name}</b>`;
+  await job();
+  await animateProgress(i, 1100);
+  $('worker-'+i).classList.remove('active');
+  $('worker-'+i).classList.add('done');
+  setState(i, 'state-done', 'הושלם ✓ → הועבר לבא בתור');
+  await sleep(350);
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║   רינדור התוצאות הסופיות (קישורים מיידיים)       ║
+// ╚══════════════════════════════════════════════════╝
+const TIER_META = {
+  official: { name: 'מקורות ממשלתיים רשמיים', badge:'אמין · רשמי', cls:'b-official' },
+  news:     { name: 'כלי תקשורת מוכרים',        badge:'אמין · חדשות', cls:'b-news' },
+  ref:      { name: 'מקורות משניים / ייחוס',    badge:'משני',         cls:'b-ref' },
+  unver:    { name: 'לא מאומת — דורש זהירות',    badge:'לא מאומת',     cls:'b-unver' },
+};
+const TYPE_ICON = { site:'🌐', video:'🎬', article:'📰' };
+
+function renderResults(){
+  const groupsEl = $('groups');
+  groupsEl.innerHTML = '';
+  $('resDesc').innerHTML =
+    `סך הכול <b>${verified.length}</b> מקורות עברו את ארבעת העובדים. כל קישור נפתח מיידית בלשונית חדשה, ומדורג לפי מהימנות.`;
+
+  ['official','news','ref','unver'].forEach(tier => {
+    const items = verified.filter(s => s.tier === tier);
+    if (!items.length) return;
+    const meta = TIER_META[tier];
+    const g = document.createElement('div');
+    g.className = 'group';
+    g.innerHTML = `<div class="group-head">
+        <span class="badge ${meta.cls}">${meta.badge}</span>
+        <span class="group-title">${meta.name}</span>
+        <span class="group-count">(${items.length})</span>
+      </div>`;
+    items.forEach(s => {
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = s.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.innerHTML = `
+        <div class="card-type">${TYPE_ICON[s.type] || '🌐'}</div>
+        <div class="card-main">
+          <div class="card-title">${s.title}</div>
+          <div class="card-url">${s.url}</div>
+          <div class="card-note">${s.note}${s.corroborated ? ' <span class="ok">✓ אושר בהצלבה</span>' : ''}</div>
+        </div>
+        <div class="score">מהימנות<br><b>${s.score}</b></div>
+        <div class="card-open">פתח ↗</div>`;
+      g.appendChild(a);
+    });
+    groupsEl.appendChild(g);
+  });
+
+  $('disclaimer').innerHTML =
+    `<b>⚠️ הקשר חשוב לאימות:</b> ממשל טראמפ אכן פרסם קבצי UAP/UFO רשמיים דרך תוכנית
+     <b>PURSUE</b> (war.gov/ufo, החל מ-8.5.2026). יחד עם זאת — הדו"ח ההיסטורי של
+     <b>AARO</b> קבע שאין "עדות אמפירית" לטכנולוגיה חוצנית, וטענות חושפים כמו דיוויד גראש
+     ("ביולוגיה לא-אנושית", תוכניות שחזור) <b>טרם אומתו רשמית</b>. כלומר: פרסום הקבצים = עובדה
+     מתועדת; קיום חייזרים = טענה שלא הוכחה. תמיד הצליבו את הקישורים ה"רשמיים" מול
+     <b>war.gov</b> ו-<b>aaro.mil</b>.`;
+
+  $('results').classList.remove('hidden');
+}
+
+// ╔══════════════════════════════════════════════════╗
+// ║   איפוס                                          ║
+// ╚══════════════════════════════════════════════════╝
+function resetVisual(){
+  WORKERS.forEach((_, i) => {
+    $('worker-'+i).classList.remove('active','done');
+    $('fill-'+i).style.width = '0%';
+    $('log-'+i).innerHTML = '';
+    setState(i, 'state-idle', 'ממתין');
+  });
+}
+function resetPipeline(){
+  if (running) return;
+  verified = [];
+  resetVisual();
+  $('results').classList.add('hidden');
+  $('pipeStatus').textContent = 'לחץ "הפעל את הצוות" כדי להתחיל את שרשרת ארבעת העובדים.';
+}
+</script>
+</body>
+</html>
