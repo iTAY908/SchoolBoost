@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מדפסת תלת-מימד — המדריך המלא</title>
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --bg2:#11192b;
+    --ink:#eef2ff;
+    --muted:#9aa6c4;
+    --brand:#6366f1;
+    --brand2:#a855f7;
+    --accent:#22d3ee;
+    --good:#34d399;
+    --bad:#f87171;
+    --warn:#fbbf24;
+    --card:#151d31;
+    --line:#26304a;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Segoe UI','Assistant','Rubik',system-ui,sans-serif;
+    overflow:hidden;
+  }
+
+  /* ── Stage ─────────────────────────────── */
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    flex-direction:column;
+    padding:6vh 8vw 11vh;
+    opacity:0;
+    transform:translateY(20px);
+    transition:opacity .45s ease, transform .45s ease;
+    overflow:auto;
+  }
+  .slide.active{display:flex;opacity:1;transform:translateY(0);}
+  .slide::-webkit-scrollbar{width:0;}
+
+  /* radial mood background */
+  .slide::before{
+    content:"";position:absolute;inset:0;z-index:-1;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(99,102,241,.20), transparent 60%),
+      radial-gradient(800px 500px at 0% 110%, rgba(168,85,247,.16), transparent 60%),
+      linear-gradient(160deg,var(--bg) 0%, var(--bg2) 100%);
+  }
+
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:clamp(.7rem,1.3vw,.95rem);
+    letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);font-weight:700;margin-bottom:14px;
+  }
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--accent);border-radius:2px;}
+
+  h1{font-size:clamp(2rem,6vw,4.6rem);line-height:1.05;font-weight:800;letter-spacing:-.01em;}
+  h2{font-size:clamp(1.5rem,4vw,3rem);font-weight:800;margin-bottom:6px;line-height:1.1;}
+  .lead{color:var(--muted);font-size:clamp(1rem,1.9vw,1.5rem);max-width:60ch;line-height:1.6;}
+  .sub{color:var(--muted);font-size:clamp(.95rem,1.6vw,1.25rem);margin-bottom:30px;}
+
+  .grad{background:linear-gradient(120deg,var(--brand) 0%,var(--brand2) 55%,var(--accent) 100%);
+        -webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  /* ── Cards / grids ─────────────────────── */
+  .grid{display:grid;gap:18px;margin-top:8px;}
+  .g2{grid-template-columns:repeat(2,1fr);}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g4{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+
+  .card{
+    background:linear-gradient(180deg,var(--card),#121a2c);
+    border:1px solid var(--line);
+    border-radius:18px;padding:22px 22px;
+    position:relative;overflow:hidden;
+  }
+  .card .ic{font-size:1.9rem;margin-bottom:10px;display:block;}
+  .card h3{font-size:clamp(1.05rem,1.9vw,1.4rem);margin-bottom:8px;font-weight:700;}
+  .card p{color:var(--muted);font-size:clamp(.9rem,1.5vw,1.08rem);line-height:1.55;}
+  .card .price{font-size:clamp(1.3rem,2.5vw,2rem);font-weight:800;color:var(--accent);margin-top:6px;}
+  .card.pop{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset, 0 16px 40px rgba(99,102,241,.18);}
+
+  ul.bullets{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:10px;}
+  ul.bullets li{display:flex;gap:13px;align-items:flex-start;font-size:clamp(1rem,1.7vw,1.3rem);line-height:1.5;}
+  ul.bullets li .b{flex:0 0 auto;width:30px;height:30px;border-radius:9px;
+    display:grid;place-items:center;font-weight:800;font-size:1rem;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;}
+  ul.bullets li small{display:block;color:var(--muted);font-weight:400;font-size:.85em;margin-top:3px;}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:clamp(.85rem,1.5vw,1.12rem);}
+  thead th{background:rgba(99,102,241,.16);color:#fff;font-weight:700;padding:14px 16px;text-align:right;border-bottom:2px solid var(--brand);}
+  tbody td{padding:13px 16px;border-bottom:1px solid var(--line);color:var(--ink);}
+  tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
+  td.num{color:var(--accent);font-weight:700;white-space:nowrap;}
+
+  .pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px;}
+  @media(max-width:760px){.pros-cons{grid-template-columns:1fr;}}
+  .panel{border-radius:18px;padding:22px;border:1px solid var(--line);}
+  .panel.good{background:linear-gradient(180deg,rgba(52,211,153,.10),rgba(52,211,153,.02));border-color:rgba(52,211,153,.4);}
+  .panel.bad{background:linear-gradient(180deg,rgba(248,113,113,.10),rgba(248,113,113,.02));border-color:rgba(248,113,113,.4);}
+  .panel h3{font-size:1.4rem;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .panel ul{list-style:none;display:flex;flex-direction:column;gap:12px;}
+  .panel li{display:flex;gap:11px;font-size:clamp(.95rem,1.5vw,1.18rem);line-height:1.45;color:var(--ink);}
+  .panel.good li::before{content:"✓";color:var(--good);font-weight:800;}
+  .panel.bad li::before{content:"✕";color:var(--bad);font-weight:800;}
+
+  .swatches{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;}
+  .sw{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+      border-radius:12px;padding:10px 16px;font-size:1.05rem;}
+  .dot{width:22px;height:22px;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12);}
+
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:18px;}
+  @media(max-width:760px){.steps{grid-template-columns:1fr 1fr;}}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;position:relative;}
+  .step .n{font-size:2.4rem;font-weight:800;color:rgba(99,102,241,.55);line-height:1;}
+  .step h4{margin:6px 0;font-size:1.15rem;}
+  .step p{color:var(--muted);font-size:.98rem;line-height:1.45;}
+
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px;}
+  @media(max-width:760px){.stat-row{grid-template-columns:1fr;}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;}
+  .stat .big{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;}
+  .stat .lbl{color:var(--muted);margin-top:4px;}
+
+  /* TOC */
+  .toc{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px;margin-top:18px;max-width:80ch;}
+  @media(max-width:760px){.toc{grid-template-columns:1fr;}}
+  .toc div{display:flex;gap:14px;align-items:center;font-size:clamp(1rem,1.7vw,1.25rem);
+    padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);}
+  .toc div span{color:var(--brand2);font-weight:800;}
+
+  .badge{display:inline-block;background:rgba(34,211,238,.12);color:var(--accent);
+    border:1px solid rgba(34,211,238,.4);border-radius:999px;padding:4px 14px;font-size:.85rem;font-weight:700;margin-top:18px;}
+
+  .title-deco{position:absolute;left:7vw;bottom:14vh;font-size:clamp(4rem,16vw,12rem);opacity:.10;filter:blur(.5px);}
+
+  /* ── Chrome (nav / progress) ───────────── */
+  .progress{position:fixed;top:0;right:0;height:4px;background:linear-gradient(90deg,var(--brand),var(--brand2),var(--accent));z-index:50;transition:width .35s ease;width:0;}
+  .hud{position:fixed;bottom:18px;left:0;right:0;z-index:50;display:flex;justify-content:center;align-items:center;gap:18px;pointer-events:none;}
+  .hud .btn{pointer-events:auto;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);
+    background:rgba(20,28,48,.85);color:#fff;font-size:1.2rem;cursor:pointer;display:grid;place-items:center;
+    backdrop-filter:blur(8px);transition:.2s;}
+  .hud .btn:hover{background:var(--brand);border-color:var(--brand);transform:translateY(-2px);}
+  .counter{pointer-events:auto;background:rgba(20,28,48,.85);border:1px solid var(--line);border-radius:999px;
+    padding:8px 18px;font-size:.95rem;color:var(--muted);font-variant-numeric:tabular-nums;backdrop-filter:blur(8px);}
+  .counter b{color:#fff;}
+  .brandmark{position:fixed;top:16px;right:26px;z-index:50;display:flex;align-items:center;gap:9px;font-weight:800;font-size:.95rem;letter-spacing:.02em;}
+  .brandmark i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--brand),var(--brand2));font-style:normal;font-size:.95rem;}
+  .hint{position:fixed;bottom:20px;right:26px;z-index:50;color:var(--muted);font-size:.8rem;opacity:.7;}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="brandmark"><i>🖨️</i> מדפסת תלת-מימד · המדריך המלא</div>
+
+<div class="stage" id="stage">
+
+  <!-- 1 · שער -->
+  <section class="slide active">
+    <div class="eyebrow">מצגת מקצועית · 2026</div>
+    <h1>מדפסת <span class="grad">תלת-מימד</span><br>המדריך המלא</h1>
+    <p class="lead" style="margin-top:22px">כל מה שצריך לדעת — איך זה עובד, כמה זה עולה, מחירי הצבעים, איפה קונים, איך משתמשים, ומה היתרונות והחסרונות.</p>
+    <span class="badge">24 שקופיות · מתחילים ומתקדמים</span>
+    <div class="title-deco">⬡</div>
+  </section>
+
+  <!-- 2 · תוכן עניינים -->
+  <section class="slide">
+    <div class="eyebrow">סקירה</div>
+    <h2>מה נלמד היום?</h2>
+    <div class="toc">
+      <div><span>01</span> מהי מדפסת תלת-מימד ואיך היא עובדת</div>
+      <div><span>02</span> סוגי הטכנולוגיות וחלקי המדפסת</div>
+      <div><span>03</span> חומרי הגלם והצבעים</div>
+      <div><span>04</span> כמה עולה מדפסת — טווחי מחירים</div>
+      <div><span>05</span> כמה עולים הצבעים והפילמנט</div>
+      <div><span>06</span> איפה אפשר לקנות</div>
+      <div><span>07</span> איך משתמשים — שלב אחר שלב</div>
+      <div><span>08</span> שימושים, יתרונות וחסרונות</div>
+    </div>
+  </section>
+
+  <!-- 3 · מה זה -->
+  <section class="slide">
+    <div class="eyebrow">הגדרה</div>
+    <h2>מהי מדפסת תלת-מימד?</h2>
+    <p class="lead">מכשיר שיוצר חפצים פיזיים תלת-ממדיים מתוך קובץ דיגיטלי, על ידי <b>בנייה שכבה על גבי שכבה</b> (Additive Manufacturing — ייצור מצטבר).</p>
+    <div class="grid g3" style="margin-top:26px">
+      <div class="card"><span class="ic">💡</span><h3>מהרעיון למוצר</h3><p>מעצבים מודל במחשב — והמדפסת הופכת אותו לחפץ אמיתי שאפשר להחזיק ביד.</p></div>
+      <div class="card"><span class="ic">🧱</span><h3>שכבה על שכבה</h3><p>החומר מותך ומונח בשכבות דקיקות (0.1–0.3 מ"מ) שמצטברות לצורה השלמה.</p></div>
+      <div class="card"><span class="ic">♾️</span><h3>כמעט כל צורה</h3><p>אפשר לייצר צורות מורכבות שבלתי אפשרי לייצר בשיטות מסורתיות.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 · איך עובד -->
+  <section class="slide">
+    <div class="eyebrow">עקרון הפעולה</div>
+    <h2>איך זה עובד?</h2>
+    <p class="sub">תהליך FDM — הטכנולוגיה הנפוצה ביותר בבית</p>
+    <ul class="bullets">
+      <li><span class="b">1</span><div>חוט פלסטיק (פילמנט) נמשך אל ראש החימום של המדפסת.<small>הראש מתחמם ל-190°–250° צלזיוס</small></div></li>
+      <li><span class="b">2</span><div>הפלסטיק נמס והופך לנוזל סמיך שיוצא מהפיה (Nozzle).</div></li>
+      <li><span class="b">3</span><div>הראש זז על צירי X-Y ומניח את החומר בדיוק במקום הנכון.</div></li>
+      <li><span class="b">4</span><div>משטח ההדפסה יורד מעט, והשכבה הבאה מונחת מעל — וכך הלאה עד שהחפץ מוכן.</div></li>
+    </ul>
+  </section>
+
+  <!-- 5 · טכנולוגיות -->
+  <section class="slide">
+    <div class="eyebrow">טכנולוגיות</div>
+    <h2>סוגי מדפסות תלת-מימד</h2>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card pop"><span class="ic">🧵</span><h3>FDM / FFF</h3><p>חוט פלסטיק שנמס ומונח בשכבות. הזולה והנפוצה ביותר — מצוינת לבית, לימוד ותחביב.</p><div class="price">הכי נפוץ</div></div>
+      <div class="card"><span class="ic">💧</span><h3>SLA / רזין</h3><p>שרף נוזלי שמתקשה באמצעות אור UV. דיוק גבוה במיוחד — מתאים למיניאטורות ותכשיטים.</p><div class="price">דיוק גבוה</div></div>
+      <div class="card"><span class="ic">⚡</span><h3>SLS</h3><p>אבקה שמותכת בלייזר. חוזק תעשייתי וללא תמיכות — יקרה ומיועדת לתעשייה.</p><div class="price">תעשייתי</div></div>
+    </div>
+  </section>
+
+  <!-- 6 · חלקי המדפסת -->
+  <section class="slide">
+    <div class="eyebrow">אנטומיה</div>
+    <h2>מה יש בתוך המדפסת?</h2>
+    <div class="grid g4" style="margin-top:22px">
+      <div class="card"><span class="ic">🔥</span><h3>ראש החימום</h3><p>ה-Hotend שממיס את הפילמנט ומוציא אותו דרך הפיה.</p></div>
+      <div class="card"><span class="ic">🛏️</span><h3>משטח ההדפסה</h3><p>ה-Bed, לרוב מחומם, שעליו נבנה החפץ.</p></div>
+      <div class="card"><span class="ic">⚙️</span><h3>מנועים וצירים</h3><p>מנועי Stepper שמזיזים את הראש בצירי X-Y-Z בדיוק רב.</p></div>
+      <div class="card"><span class="ic">🧠</span><h3>בקר ולוח אם</h3><p>המוח שמתרגם את הקובץ לתנועות ומבקר טמפרטורה.</p></div>
+    </div>
+  </section>
+
+  <!-- 7 · סוגי פילמנט -->
+  <section class="slide">
+    <div class="eyebrow">חומרי גלם</div>
+    <h2>סוגי הפילמנט (החומר)</h2>
+    <table>
+      <thead><tr><th>חומר</th><th>תכונות</th><th>למה מתאים</th><th>רמת קושי</th></tr></thead>
+      <tbody>
+        <tr><td><b>PLA</b></td><td>קל להדפסה, ידידותי לסביבה, לא עמיד לחום</td><td>מתחילים, דגמים, צעצועים</td><td class="num">קל</td></tr>
+        <tr><td><b>PETG</b></td><td>חזק, עמיד למים וכימיקלים</td><td>חלקים פונקציונליים</td><td class="num">בינוני</td></tr>
+        <tr><td><b>ABS</b></td><td>עמיד לחום ולמכות, ריח חזק בהדפסה</td><td>חלקי מכונה, לגו</td><td class="num">מתקדם</td></tr>
+        <tr><td><b>TPU</b></td><td>גמיש כמו גומי</td><td>כיסויים, גלגלים, צירים</td><td class="num">מתקדם</td></tr>
+        <tr><td><b>Resin</b></td><td>פירוט מדהים, שביר ורעיל לפני ייבוש</td><td>מיניאטורות, תכשיטים</td><td class="num">מתקדם</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 8 · עלות מדפסת מבוא -->
+  <section class="slide">
+    <div class="eyebrow">תקציב</div>
+    <h2>כמה עולה <span class="grad">מדפסת</span>?</h2>
+    <p class="lead">המחיר תלוי בגודל, בדיוק ובטכנולוגיה. הנה החלוקה לפי רמות — בשקלים (₪).</p>
+    <div class="stat-row">
+      <div class="stat"><div class="big grad">600–1,200₪</div><div class="lbl">דגם בסיסי / מתחילים</div></div>
+      <div class="stat"><div class="big grad">1,200–3,000₪</div><div class="lbl">דגם ביתי איכותי</div></div>
+      <div class="stat"><div class="big grad">3,000₪+</div><div class="lbl">מקצועי / רזין מתקדם</div></div>
+    </div>
+  </section>
+
+  <!-- 9 · טבלת מחירי מדפסות -->
+  <section class="slide">
+    <div class="eyebrow">השוואת מחירים</div>
+    <h2>מדפסות לפי קטגוריה</h2>
+    <table>
+      <thead><tr><th>קטגוריה</th><th>טווח מחירים</th><th>למי מתאים</th><th>דוגמאות נפוצות</th></tr></thead>
+      <tbody>
+        <tr><td>כניסה (FDM)</td><td class="num">600–1,200 ₪</td><td>מתחילים, ילדים, לימוד</td><td>Ender-3, Anycubic Kobra</td></tr>
+        <tr><td>ביתי מתקדם (FDM)</td><td class="num">1,200–3,000 ₪</td><td>תחביבנים רציניים</td><td>Bambu Lab A1, Prusa MINI</td></tr>
+        <tr><td>פרימיום (FDM)</td><td class="num">3,000–6,000 ₪</td><td>מהירות ודיוק גבוהים</td><td>Bambu Lab X1, Prusa MK4</td></tr>
+        <tr><td>רזין (SLA)</td><td class="num">800–3,000 ₪</td><td>מיניאטורות, פירוט עדין</td><td>Anycubic Photon, Elegoo Mars</td></tr>
+        <tr><td>מקצועי / תעשייתי</td><td class="num">10,000 ₪+</td><td>עסקים וייצור</td><td>SLS, מדפסות תעשייה</td></tr>
+      </tbody>
+    </table>
+    <span class="badge">המחירים מוערכים נכון ל-2026 ועשויים להשתנות</span>
+  </section>
+
+  <!-- 10 · מחירי צבעים מבוא -->
+  <section class="slide">
+    <div class="eyebrow">צבעים וחומר</div>
+    <h2>כמה עולים <span class="grad">הצבעים</span>?</h2>
+    <p class="lead">ה"צבעים" הם למעשה גלילי פילמנט בצבעים שונים. גליל סטנדרטי שוקל <b>1 ק"ג</b> ומספיק להמון הדפסות.</p>
+    <div class="swatches">
+      <div class="sw"><span class="dot" style="background:#e5e7eb"></span> לבן</div>
+      <div class="sw"><span class="dot" style="background:#111827"></span> שחור</div>
+      <div class="sw"><span class="dot" style="background:#ef4444"></span> אדום</div>
+      <div class="sw"><span class="dot" style="background:#3b82f6"></span> כחול</div>
+      <div class="sw"><span class="dot" style="background:#22c55e"></span> ירוק</div>
+      <div class="sw"><span class="dot" style="background:#eab308"></span> צהוב</div>
+      <div class="sw"><span class="dot" style="background:linear-gradient(135deg,#f59e0b,#fbbf24,#fff)"></span> זהב/מטאלי</div>
+      <div class="sw"><span class="dot" style="background:linear-gradient(135deg,#a855f7,#22d3ee,#f472b6)"></span> שקוף/מתחלף</div>
+    </div>
+  </section>
+
+  <!-- 11 · טבלת מחירי צבעים -->
+  <section class="slide">
+    <div class="eyebrow">מחירון פילמנט</div>
+    <h2>מחירי הצבעים (גליל 1 ק"ג)</h2>
+    <table>
+      <thead><tr><th>סוג הצבע / חומר</th><th>מחיר לגליל 1 ק"ג</th><th>הערות</th></tr></thead>
+      <tbody>
+        <tr><td>PLA — צבעים בסיסיים</td><td class="num">70–110 ₪</td><td>לבן, שחור, אדום, כחול וכו'</td></tr>
+        <tr><td>PETG</td><td class="num">90–140 ₪</td><td>חזק ועמיד יותר</td></tr>
+        <tr><td>צבעים מיוחדים (מטאלי / זוהר)</td><td class="num">110–180 ₪</td><td>זהב, כסף, זוהר בחושך</td></tr>
+        <tr><td>Silk / משי מבריק</td><td class="num">100–160 ₪</td><td>גימור מבריק ואלגנטי</td></tr>
+        <tr><td>שקוף / Rainbow מתחלף</td><td class="num">120–200 ₪</td><td>אפקטים מיוחדים</td></tr>
+        <tr><td>שרף (Resin) — ליטר</td><td class="num">120–250 ₪</td><td>למדפסות SLA</td></tr>
+      </tbody>
+    </table>
+    <span class="badge">טיפ: גליל 1 ק"ג מספיק לעשרות חפצים קטנים</span>
+  </section>
+
+  <!-- 12 · עלות לחפץ + נלוות -->
+  <section class="slide">
+    <div class="eyebrow">עלות אמיתית</div>
+    <h2>כמה באמת עולה הדפסה אחת?</h2>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><span class="ic">🧩</span><h3>חפץ קטן</h3><p>~20–50 גרם חומר</p><div class="price">2–6 ₪</div></div>
+      <div class="card"><span class="ic">🏺</span><h3>חפץ בינוני</h3><p>~100–200 גרם חומר</p><div class="price">10–25 ₪</div></div>
+      <div class="card"><span class="ic">⚡</span><h3>חשמל לשעה</h3><p>צריכה נמוכה מאוד</p><div class="price">~0.3 ₪</div></div>
+    </div>
+    <p class="sub" style="margin-top:24px">💡 עלויות נלוות: החלפת פיה (~15₪), משטח הדפסה, ותחזוקה קלה אחת לכמה חודשים.</p>
+  </section>
+
+  <!-- 13 · איפה קונים מדפסת -->
+  <section class="slide">
+    <div class="eyebrow">רכישה · מדפסות</div>
+    <h2>איפה קונים מדפסת?</h2>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card"><span class="ic">🌐</span><h3>אתרים בינלאומיים</h3><p>AliExpress, Amazon, Bambu Lab, Creality, Elegoo — לרוב הזולים ביותר, אך עם זמן משלוח.</p></div>
+      <div class="card"><span class="ic">🇮🇱</span><h3>חנויות בישראל</h3><p>חנויות אלקטרוניקה ותלת-מימד מקומיות — אחריות, תמיכה בעברית ושירות מהיר.</p></div>
+      <div class="card"><span class="ic">🛒</span><h3>זאפ / יד2 / מרקטפלייס</h3><p>השוואת מחירים ורכישה יד-שנייה במחיר משתלם למתחילים.</p></div>
+      <div class="card"><span class="ic">🏬</span><h3>רשתות חשמל גדולות</h3><p>חלק מהרשתות מוכרות דגמים פופולריים עם אחריות יצרן מלאה.</p></div>
+    </div>
+  </section>
+
+  <!-- 14 · איפה קונים צבעים -->
+  <section class="slide">
+    <div class="eyebrow">רכישה · חומרים</div>
+    <h2>איפה קונים את הצבעים?</h2>
+    <ul class="bullets">
+      <li><span class="b">🌐</span><div>חנויות אונליין מתמחות בפילמנט — מבחר ענק של צבעים וסוגים.</div></li>
+      <li><span class="b">📦</span><div>AliExpress / Amazon — זול במיוחד בקנייה כמותית של מספר גלילים.</div></li>
+      <li><span class="b">🏪</span><div>חנויות תלת-מימד בישראל — איכות מובטחת ויעוץ מקצועי.</div></li>
+      <li><span class="b">⭐</span><div>טיפ: קנו פילמנט ממותג ידוע (eSun, Bambu, Polymaker) — איכות יציבה פחות תקלות.</div></li>
+    </ul>
+  </section>
+
+  <!-- 15 · איך משתמשים סקירה -->
+  <section class="slide">
+    <div class="eyebrow">תהליך עבודה</div>
+    <h2>איך משתמשים? — 4 שלבים</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h4>מודל תלת-מימד</h4><p>מורידים או מעצבים קובץ STL.</p></div>
+      <div class="step"><div class="n">2</div><h4>Slicing</h4><p>הופכים את המודל להוראות למדפסת.</p></div>
+      <div class="step"><div class="n">3</div><h4>הדפסה</h4><p>מעמיסים פילמנט ולוחצים Print.</p></div>
+      <div class="step"><div class="n">4</div><h4>עיבוד אחרי</h4><p>מנקים, מסירים תמיכות ומשייפים.</p></div>
+    </div>
+  </section>
+
+  <!-- 16 · שלב 1 -->
+  <section class="slide">
+    <div class="eyebrow">שלב 1</div>
+    <h2>משיגים מודל תלת-מימד</h2>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><span class="ic">📥</span><h3>הורדה מוכנה</h3><p>אתרים כמו Thingiverse, Printables ו-MakerWorld מציעים מיליוני דגמים חינמיים.</p></div>
+      <div class="card"><span class="ic">✏️</span><h3>עיצוב עצמי</h3><p>בתוכנות כמו Tinkercad (קל למתחילים), Fusion 360 או Blender.</p></div>
+      <div class="card"><span class="ic">📷</span><h3>סריקה תלת-מימד</h3><p>סורקים חפץ קיים והופכים אותו לקובץ דיגיטלי.</p></div>
+    </div>
+  </section>
+
+  <!-- 17 · שלב 2 -->
+  <section class="slide">
+    <div class="eyebrow">שלב 2</div>
+    <h2>חיתוך — Slicing</h2>
+    <p class="lead">תוכנת Slicer (כמו Cura, PrusaSlicer או Bambu Studio) מתרגמת את המודל ל-G-code — שפת ההוראות של המדפסת.</p>
+    <ul class="bullets" style="margin-top:18px">
+      <li><span class="b">⚙️</span><div>בוחרים גובה שכבה (איכות מול מהירות).</div></li>
+      <li><span class="b">🕸️</span><div>קובעים אחוז מילוי פנימי (Infill) — חוזק מול חיסכון בחומר.</div></li>
+      <li><span class="b">🌡️</span><div>מגדירים טמפרטורות ומהירות לפי סוג הפילמנט.</div></li>
+    </ul>
+  </section>
+
+  <!-- 18 · שלב 3 -->
+  <section class="slide">
+    <div class="eyebrow">שלב 3</div>
+    <h2>מדפיסים!</h2>
+    <ul class="bullets">
+      <li><span class="b">🧵</span><div>מעמיסים את גליל הפילמנט ומשחילים את החוט לתוך הראש.</div></li>
+      <li><span class="b">📐</span><div>מיישרים את משטח ההדפסה (Bed Leveling) — קריטי להצלחה.</div></li>
+      <li><span class="b">▶️</span><div>שולחים את הקובץ מ-USB/כרטיס/רשת ולוחצים Print.</div></li>
+      <li><span class="b">👀</span><div>עוקבים אחרי השכבות הראשונות — שם נקבעת ההצלחה.</div></li>
+    </ul>
+  </section>
+
+  <!-- 19 · שלב 4 -->
+  <section class="slide">
+    <div class="eyebrow">שלב 4</div>
+    <h2>עיבוד לאחר ההדפסה</h2>
+    <div class="grid g4" style="margin-top:22px">
+      <div class="card"><span class="ic">✂️</span><h3>הסרת תמיכות</h3><p>מסירים בעדינות את החומר התומך שנדפס מתחת לבליטות.</p></div>
+      <div class="card"><span class="ic">🪵</span><h3>שיוף</h3><p>מחליקים שכבות עם נייר זכוכית לגימור חלק.</p></div>
+      <div class="card"><span class="ic">🎨</span><h3>צביעה</h3><p>אפשר לצבוע בצבעי אקריליק או ספריי.</p></div>
+      <div class="card"><span class="ic">🔩</span><h3>הרכבה</h3><p>מחברים חלקים בדבק או בורגים לחפץ שלם.</p></div>
+    </div>
+  </section>
+
+  <!-- 20 · שימושים -->
+  <section class="slide">
+    <div class="eyebrow">מה אפשר ליצור?</div>
+    <h2>שימושים אינסופיים</h2>
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card"><span class="ic">🏠</span><h3>בבית</h3><p>מתלים, מחזיקים, חלקי חילוף, כלי מטבח ואביזרים מותאמים אישית.</p></div>
+      <div class="card"><span class="ic">🎮</span><h3>תחביב</h3><p>מיניאטורות, דגמים, קוספליי, צעצועים ומתנות ייחודיות.</p></div>
+      <div class="card"><span class="ic">🎓</span><h3>חינוך</h3><p>כלי לימוד מצוין להנדסה, עיצוב וחשיבה יצירתית.</p></div>
+      <div class="card"><span class="ic">💼</span><h3>עסקים</h3><p>אבטיפוס מהיר, מוצרים מותאמים ומכירה אונליין.</p></div>
+      <div class="card"><span class="ic">⚕️</span><h3>רפואה</h3><p>תותבות, מודלים אנטומיים והתאמות אישיות.</p></div>
+      <div class="card"><span class="ic">🔧</span><h3>הנדסה</h3><p>חלקים פונקציונליים, כלים ייעודיים ותיקונים.</p></div>
+    </div>
+  </section>
+
+  <!-- 21 · יתרונות וחסרונות -->
+  <section class="slide">
+    <div class="eyebrow">שיקול דעת</div>
+    <h2>יתרונות מול חסרונות</h2>
+    <div class="pros-cons">
+      <div class="panel good"><h3>✅ יתרונות</h3>
+        <ul>
+          <li>יצירת כמעט כל צורה בבית</li>
+          <li>חיסכון — מייצרים חלפים במקום לקנות</li>
+          <li>התאמה אישית מלאה לכל צורך</li>
+          <li>אבטיפוס מהיר וזול לרעיונות</li>
+          <li>ידידותי לסביבה (פחות פסולת, PLA מתכלה)</li>
+          <li>קהילה ענקית ומשאבים חינמיים</li>
+        </ul>
+      </div>
+      <div class="panel bad"><h3>⛔ חסרונות</h3>
+        <ul>
+          <li>עקומת למידה — צריך סבלנות בהתחלה</li>
+          <li>הדפסות איטיות (שעות לחפץ אחד)</li>
+          <li>חלקים עלולים להיות פחות חזקים מייצור תעשייתי</li>
+          <li>דורש תחזוקה וכיול מדי פעם</li>
+          <li>ריח ואוורור (בעיקר ABS ורזין)</li>
+          <li>גודל ההדפסה מוגבל לפי המדפסת</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 · טיפים לבחירה -->
+  <section class="slide">
+    <div class="eyebrow">למתחילים</div>
+    <h2>איך לבחור מדפסת ראשונה?</h2>
+    <ul class="bullets">
+      <li><span class="b">✅</span><div>התחילו ב-<b>FDM</b> עם <b>PLA</b> — הכי קל וסלחני.</div></li>
+      <li><span class="b">📏</span><div>בדקו את <b>נפח ההדפסה</b> — שיתאים לגודל החפצים שתרצו.</div></li>
+      <li><span class="b">🤝</span><div>בחרו דגם עם <b>קהילה גדולה</b> — קל למצוא עזרה ומדריכים.</div></li>
+      <li><span class="b">🔄</span><div>העדיפו <b>כיול אוטומטי (Auto-leveling)</b> — חוסך תסכול ענק.</div></li>
+      <li><span class="b">💰</span><div>אל תקנו את הזול ביותר — איכות בינונית חוסכת כסף בטווח הארוך.</div></li>
+    </ul>
+  </section>
+
+  <!-- 23 · סיכום -->
+  <section class="slide">
+    <div class="eyebrow">סיכום</div>
+    <h2>הנקודות החשובות</h2>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card pop"><span class="ic">🖨️</span><h3>נגיש מאי-פעם</h3><p>מדפסת ביתית טובה מתחילה ב-~1,000₪ — ההשקעה משתלמת.</p></div>
+      <div class="card"><span class="ic">🎨</span><h3>חומר זול</h3><p>גליל צבע 1 ק"ג ב-70–180₪ מספיק להמון הדפסות.</p></div>
+      <div class="card"><span class="ic">🛠️</span><h3>4 שלבים פשוטים</h3><p>מודל ← חיתוך ← הדפסה ← עיבוד. כל אחד יכול ללמוד.</p></div>
+      <div class="card"><span class="ic">🚀</span><h3>אפשרויות אינסופיות</h3><p>מתחביב ועד עסק — תלוי רק בדמיון שלכם.</p></div>
+    </div>
+  </section>
+
+  <!-- 24 · תודה -->
+  <section class="slide">
+    <div class="eyebrow">סוף</div>
+    <h1>תודה <span class="grad">רבה!</span></h1>
+    <p class="lead" style="margin-top:22px">עכשיו יש לכם את כל הידע כדי להתחיל את המסע בעולם התלת-מימד.</p>
+    <span class="badge">יש שאלות? זה הזמן 🙋</span>
+    <div class="title-deco">⬢</div>
+  </section>
+
+</div>
+
+<div class="hud">
+  <button class="btn" id="prev" aria-label="הקודם">›</button>
+  <div class="counter"><b id="cur">1</b> / <span id="total">24</span></div>
+  <button class="btn" id="next" aria-label="הבא">‹</button>
+</div>
+<div class="hint">השתמשו בחיצים ⬅ ➡ או רווח למעבר בין שקופיות</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const total=slides.length;
+  let i=0;
+  document.getElementById('total').textContent=total;
+  const progress=document.getElementById('progress');
+  const cur=document.getElementById('cur');
+
+  function show(n){
+    i=Math.max(0,Math.min(total-1,n));
+    slides.forEach((s,idx)=>s.classList.toggle('active',idx===i));
+    progress.style.width=((i+1)/total*100)+'%';
+    cur.textContent=i+1;
+  }
+  // RTL: visually "next" arrow on right side advances forward
+  document.getElementById('next').onclick=()=>show(i+1);
+  document.getElementById('prev').onclick=()=>show(i-1);
+
+  document.addEventListener('keydown',e=>{
+    if(['ArrowLeft','PageDown',' '].includes(e.key)){e.preventDefault();show(i+1);}
+    else if(['ArrowRight','PageUp'].includes(e.key)){e.preventDefault();show(i-1);}
+    else if(e.key==='Home'){show(0);}
+    else if(e.key==='End'){show(total-1);}
+  });
+
+  // swipe on touch
+  let sx=null;
+  document.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(sx===null)return;
+    const dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)>50){ dx<0 ? show(i+1) : show(i-1); }
+    sx=null;
+  },{passive:true});
+
+  show(0);
+</script>
+</body>
+</html>
