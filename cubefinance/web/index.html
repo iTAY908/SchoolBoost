@@ -337,6 +337,39 @@
   .sync.busy { color: var(--warning); }
   .sync.off { color: var(--dim); }
 
+  /* ===== Design polish (applies everywhere) ===== */
+  .btn { background: linear-gradient(135deg, #8072ff, #6c5ce7); box-shadow: 0 10px 24px -12px var(--primary); }
+  .btn:hover { background: linear-gradient(135deg, #8f82ff, #7669f0); }
+  .pill-btn { background: linear-gradient(135deg, #8072ff, #6c5ce7); box-shadow: 0 8px 18px -10px var(--primary); }
+  .pill-btn:hover { background: linear-gradient(135deg, #8f82ff, #7669f0); }
+  .hero { box-shadow: 0 20px 50px -30px #000, inset 0 1px 0 #ffffff0a; }
+  .cube { box-shadow: 0 4px 14px -10px #000; transition: transform .18s, border-color .2s, box-shadow .2s; }
+  .cube:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -14px #000; }
+  .cube .chip { box-shadow: inset 0 0 0 1px #ffffff12; }
+  .section-t { display: flex; align-items: center; gap: 8px; }
+  .section-t::before { content: ""; width: 4px; height: 15px; border-radius: 2px; background: linear-gradient(var(--primary), #46e0b4); }
+  .fab { background: linear-gradient(140deg, #8072ff, #6c5ce7); }
+  .fab:hover { background: linear-gradient(140deg, #8f82ff, #7669f0); }
+
+  /* ===== Mobile: fill the screen with ONE natural scroll (no phone frame) =====
+     The nested phone-in-phone frame created a second scroll region that fought
+     touch scrolling. On narrow screens we drop the frame + pitch so the app is
+     the full viewport and its own .view is the single scroll context. */
+  @media (max-width: 760px) {
+    body { display: block; }
+    .stage { padding: 0; gap: 0; max-width: none; display: block; }
+    .pitch { display: none; }
+    .notch { display: none; }
+    .device {
+      width: 100%; max-width: 100%;
+      height: 100vh; height: 100dvh; max-height: none;
+      border: 0; border-radius: 0; padding: 0; box-shadow: none;
+    }
+    .screen { border-radius: 0; height: 100vh; height: 100dvh; }
+    .pad { padding: 30px 18px 24px; }
+    .prog-head { padding: 30px 18px 0; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
