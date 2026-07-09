@@ -8,7 +8,7 @@
 // footer button label reflects the final step.
 // ============================================================================
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -43,29 +43,21 @@ type Draft = {
   initialBalance: string;
 };
 
-const emptyDraft: Draft = {
-  age: '',
-  employed: null,
-  monthlyIncome: '',
-  livesWithParents: null,
-  rent: '',
-  arnona: '',
-  utilities: '',
-  houseCommittee: '',
-  initialBalance: '',
-};
-
 type StepId = 'age' | 'employment' | 'income' | 'housing' | 'housingCosts' | 'balance';
 
 export default function OnboardingFlow() {
-  const [draft, setDraft] = useState<Draft>(emptyDraft);
-  const [index, setIndex] = useState(0);
+  // Draft + step live in the persisted store, so a user who leaves mid-signup
+  // and returns (even hours later) lands on the exact step with their answers.
+  const draft = useStore((s) => s.onboardingDraft);
+  const index = useStore((s) => s.onboardingStep);
+  const setDraft = useStore((s) => s.setDraft);
+  const setStep = useStore((s) => s.setStep);
   const fade = useRef(new Animated.Value(1)).current;
   const submitOnboarding = useStore((s) => s.submitOnboarding);
   const calculating = useStore((s) => s.calculating);
   const error = useStore((s) => s.error);
 
-  const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));
+  const set = (patch: Partial<Draft>) => setDraft(patch);
 
   // The active step list is derived from answers — this IS the conditional
   // rendering. Steps appear/disappear as the user makes choices.
@@ -84,7 +76,7 @@ export default function OnboardingFlow() {
 
   const animateTo = (next: number) => {
     Animated.timing(fade, { toValue: 0, duration: 120, useNativeDriver: true }).start(() => {
-      setIndex(next);
+      setStep(next);
       Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
     });
   };

@@ -6,8 +6,10 @@
 // ============================================================================
 
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../api/client';
-import { Cube, Profile, Alert, ChatMessage } from './types';
+import { Cube, Profile, Alert, ChatMessage, OnboardingDraft, EMPTY_DRAFT } from './types';
 
 interface TransferEvent {
   allocations: { key: string; name: string; amount: number }[];
@@ -23,8 +25,14 @@ interface AppState {
   alerts: Alert[];
   chat: ChatMessage[];
 
+  // --- onboarding progress (persisted, so registration resumes) ---
+  onboardingDraft: OnboardingDraft;
+  onboardingStep: number;
+  lastSavedAt: number | null;
+
   // --- status flags ---
   onboarded: boolean;
+  hydrated: boolean; // true once persisted state has been read back from disk
   calculating: boolean;
   transferring: boolean;
   chatStreaming: boolean;
@@ -34,6 +42,8 @@ interface AppState {
   lastTransfer: TransferEvent | null;
 
   // --- actions ---
+  setDraft: (patch: Partial<OnboardingDraft>) => void;
+  setStep: (n: number) => void;
   submitOnboarding: (profile: Profile) => Promise<void>;
   transfer: (amount: number) => Promise<void>;
   spend: (cubeKey: string, amount: number) => Promise<void>;
@@ -42,7 +52,9 @@ interface AppState {
   reset: () => void;
 }
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>()(
+  persist(
+    (set, get) => ({
   profile: null,
   cubes: [],
   mainAccount: 0,
@@ -50,12 +62,22 @@ export const useStore = create<AppState>((set, get) => ({
   alerts: [],
   chat: [],
 
+  onboardingDraft: EMPTY_DRAFT,
+  onboardingStep: 0,
+  lastSavedAt: null,
+
   onboarded: false,
+  hydrated: false,
   calculating: false,
   transferring: false,
   chatStreaming: false,
   error: null,
   lastTransfer: null,
+
+  // --- Worker 1: persist each answer so registration can be resumed -------
+  setDraft: (patch) =>
+    set({ onboardingDraft: { ...get().onboardingDraft, ...patch }, lastSavedAt: Date.now() }),
+  setStep: (n) => set({ onboardingStep: n, lastSavedAt: Date.now() }),
 
   // --- Worker 1 -> Worker 3: submit questionnaire, receive cubes ----------
   submitOnboarding: async (profile) => {
@@ -146,11 +168,40 @@ export const useStore = create<AppState>((set, get) => ({
       summary: null,
       alerts: [],
       chat: [],
+      onboardingDraft: EMPTY_DRAFT,
+      onboardingStep: 0,
+      lastSavedAt: null,
       onboarded: false,
       error: null,
       lastTransfer: null,
     }),
-}));
+    }),
+    {
+      name: 'cubefinance:v1',
+      storage: createJSONStorage(() => AsyncStorage),
+      version: 1,
+      // Persist only durable data — never the transient flags, functions or
+      // the one-shot transfer animation signal.
+      partialize: (s) => ({
+        profile: s.profile,
+        cubes: s.cubes,
+        mainAccount: s.mainAccount,
+        summary: s.summary,
+        alerts: s.alerts,
+        chat: s.chat,
+        onboarded: s.onboarded,
+        onboardingDraft: s.onboardingDraft,
+        onboardingStep: s.onboardingStep,
+        lastSavedAt: s.lastSavedAt,
+      }),
+      // Fires after the persisted state is read back from AsyncStorage.
+      onRehydrateStorage: () => (restored, error) => {
+        if (error) console.warn('[store] rehydrate failed', error);
+        useStore.setState({ hydrated: true, chatStreaming: false });
+      },
+    }
+  )
+);
 
 // --- Derived selectors (shared by dashboard, chatbot header, alerts) -------
 export const selectTotalBalance = (s: AppState) =>

@@ -318,6 +318,15 @@
   .restart { position: absolute; top: 12px; right: 16px; z-index: 35; background: #ffffff12; border: 1px solid var(--border); color: var(--dim); font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 999px; cursor: pointer; font-family: var(--font); }
   .restart:hover { color: var(--text); }
 
+  .toast {
+    position: absolute; top: 46px; left: 50%; transform: translate(-50%, -14px);
+    z-index: 70; background: #221f3a; border: 1px solid var(--primary-dim);
+    color: var(--text); font-size: 13px; font-weight: 600; padding: 10px 16px;
+    border-radius: 999px; box-shadow: 0 12px 30px -10px #000; white-space: nowrap;
+    opacity: 0; transition: opacity .35s, transform .35s; unicode-bidi: plaintext; pointer-events: none;
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
@@ -634,6 +643,87 @@ const state = {
   stepIndex: 0,
 };
 
+// ============================================================================
+// Persistence — recognise the returning user and resume where they left off.
+// Everything lives in localStorage (no expiry), so leaving mid-onboarding for
+// hours and coming back continues from the exact same step with entered data.
+// ============================================================================
+const STORAGE_KEY = 'cubefinance:v1';
+let userId = null;
+
+function persist() {
+  try {
+    const snapshot = {
+      userId,
+      savedAt: Date.now(),
+      onboarded: state.onboarded,
+      profile: state.profile,
+      cubes: state.cubes,
+      mainAccount: state.mainAccount,
+      summary: state.summary,
+      alerts: state.alerts,
+      chat: state.chat,
+      pending: state.pending,
+      draft: state.draft,
+      stepIndex: state.stepIndex,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+  } catch (_) { /* private mode / storage disabled — run in-memory only */ }
+}
+
+function loadSaved() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
+  if (!saved || !saved.userId) {
+    userId = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    persist();
+    return;
+  }
+  userId = saved.userId;
+  state.onboarded = !!saved.onboarded;
+  state.profile = saved.profile || null;
+  state.cubes = Array.isArray(saved.cubes) ? saved.cubes : [];
+  state.mainAccount = saved.mainAccount || 0;
+  state.summary = saved.summary || null;
+  state.alerts = Array.isArray(saved.alerts) ? saved.alerts : [];
+  state.chat = Array.isArray(saved.chat) ? saved.chat : [];
+  state.pending = saved.pending || null;
+  state.draft = Object.assign(state.draft, saved.draft || {});
+  state.stepIndex = saved.stepIndex || 0;
+  // transient fields never restored:
+  state.chatStreaming = false;
+  state.lastFunded = new Set();
+
+  const hadProgress = state.onboarded || state.stepIndex > 0 ||
+    Object.values(saved.draft || {}).some((v) => v !== '' && v !== null);
+  if (hadProgress) scheduleResumeToast(saved.savedAt);
+}
+
+function elapsedText(since) {
+  const mins = Math.max(0, Math.round((Date.now() - (since || Date.now())) / 60000));
+  if (mins < 1) return 'ממש עכשיו';
+  if (mins < 60) return `לפני ${mins} דק׳`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `לפני ${hrs} שעות`;
+  const days = Math.round(hrs / 24);
+  return `לפני ${days} ימים`;
+}
+
+let pendingToast = null;
+function scheduleResumeToast(savedAt) {
+  const when = elapsedText(savedAt);
+  pendingToast = state.onboarded
+    ? `👋 ברוך שובך! (ביקור אחרון ${when})`
+    : `⏱️ ממשיכים מאיפה שהפסקת · ${when}`;
+}
+function showToast(msg) {
+  const t = el('div', 'toast');
+  t.textContent = msg;
+  screen.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('on'));
+  setTimeout(() => { t.classList.remove('on'); setTimeout(() => t.remove(), 400); }, 3400);
+}
+
 function stepList() {
   const d = state.draft;
   const l = ['age', 'employment'];
@@ -650,6 +740,8 @@ function render() {
   screen.querySelectorAll(':scope > *:not(.coins):not(.restart)').forEach((n) => n.remove());
   const root = state.onboarded ? renderDashboard() : renderOnboarding();
   screen.insertBefore(root, kept);
+  persist();
+  if (pendingToast) { const m = pendingToast; pendingToast = null; setTimeout(() => showToast(m), 250); }
 }
 
 // ---------- Onboarding ----------
@@ -702,7 +794,7 @@ function stepContent(step) {
     const f = el('div', 'field');
     f.innerHTML = `<div class="label">${labelText}</div><div class="input-wrap"><span class="cur">₪</span><input inputmode="numeric" placeholder="${ph}" value="${d[key]}"></div>`;
     const inp = f.querySelector('input');
-    inp.oninput = () => { d[key] = inp.value.replace(/[^0-9.]/g, ''); if (inp.value !== d[key]) inp.value = d[key]; rerenderFooter(); };
+    inp.oninput = () => { d[key] = inp.value.replace(/[^0-9.]/g, ''); if (inp.value !== d[key]) inp.value = d[key]; rerenderFooter(); persist(); };
     if (focus) setTimeout(() => inp.focus(), 60);
     return f;
   };
@@ -1023,14 +1115,18 @@ function botSay(res) {
 function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
 
 restartBtn.onclick = () => {
+  if (!confirm('להתחיל מחדש? כל הנתונים השמורים יימחקו.')) return;
   Object.assign(state, {
     onboarded: false, profile: null, cubes: [], mainAccount: 0, summary: null,
     alerts: [], chat: [], chatStreaming: false, lastFunded: new Set(), pending: null, stepIndex: 0,
     draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
   });
   chatOpen = false; sheetOpen = false;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  userId = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
   render();
 };
 
+loadSaved();
 render();
 </script>

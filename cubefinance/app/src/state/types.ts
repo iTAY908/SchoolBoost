@@ -39,3 +39,29 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
+
+// Raw onboarding answers as strings (lives in the persisted store so a user
+// who abandons registration and returns hours later resumes the same step).
+export interface OnboardingDraft {
+  age: string;
+  employed: boolean | null;
+  monthlyIncome: string;
+  livesWithParents: boolean | null;
+  rent: string;
+  arnona: string;
+  utilities: string;
+  houseCommittee: string;
+  initialBalance: string;
+}
+
+export const EMPTY_DRAFT: OnboardingDraft = {
+  age: '',
+  employed: null,
+  monthlyIncome: '',
+  livesWithParents: null,
+  rent: '',
+  arnona: '',
+  utilities: '',
+  houseCommittee: '',
+  initialBalance: '',
+};
