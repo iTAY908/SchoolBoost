@@ -1,0 +1,888 @@
+<title>CubeFinance — Web Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  /* ==========================================================================
+     CubeFinance — self-contained web preview.
+     Single-theme by deliberate choice: this mirrors the mobile app, which is
+     dark-only (userInterfaceStyle: "dark"). The budget engine, transfer
+     simulation, alerts and rule-based chat are ported to client-side JS, so the
+     whole experience runs with no backend.
+     ========================================================================== */
+  :root {
+    --bg: #0d0d14;
+    --bg-deep: #08080d;
+    --elevated: #16161f;
+    --card: #1c1c28;
+    --card-2: #221f3a;
+    --border: #2a2a3a;
+    --text: #e7e7f2;
+    --dim: #9a9ab0;
+    --primary: #6c5ce7;
+    --primary-dim: #4b3fb8;
+    --danger: #d63031;
+    --warning: #fdcb6e;
+    --success: #00b894;
+    --c-housing: #6c5ce7;
+    --c-essentials: #00b894;
+    --c-savings: #0984e3;
+    --c-investments: #e17055;
+    --c-emergency: #d63031;
+    --c-lifestyle: #fdcb6e;
+    --radius: 16px;
+    --radius-lg: 24px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #1a1533 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #10233a 0%, transparent 50%),
+      var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- desktop chrome around the device --- */
+  .stage {
+    width: 100%;
+    max-width: 1040px;
+    padding: clamp(16px, 4vw, 48px) 20px 64px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .stage { grid-template-columns: 1fr auto; }
+  }
+
+  .pitch { max-width: 440px; }
+  .pitch .eyebrow {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .pitch h1 {
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.02;
+    letter-spacing: -1.5px;
+    margin: 14px 0 16px;
+    text-wrap: balance;
+  }
+  .pitch h1 .grad {
+    background: linear-gradient(120deg, #8f7dff, #57b6ff 60%, #46e0b4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .pitch p { color: var(--dim); font-size: 16px; line-height: 1.55; margin: 0 0 22px; }
+  .pitch .feats { display: flex; flex-direction: column; gap: 12px; }
+  .pitch .feat { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; }
+  .pitch .feat .dot {
+    width: 26px; height: 26px; border-radius: 8px; flex: none;
+    display: grid; place-items: center; font-size: 14px;
+    background: #ffffff10; border: 1px solid var(--border);
+  }
+  .pitch .feat b { color: var(--text); }
+  .pitch .feat span { color: var(--dim); }
+  .pitch .note {
+    margin-top: 26px; font-size: 12.5px; color: var(--dim);
+    border-left: 2px solid var(--primary-dim); padding-left: 12px; line-height: 1.5;
+  }
+
+  /* --- device frame --- */
+  .device {
+    width: 390px;
+    max-width: 92vw;
+    height: 812px;
+    max-height: 88vh;
+    background: var(--bg);
+    border-radius: 44px;
+    padding: 12px;
+    border: 1px solid #33334a;
+    box-shadow:
+      0 0 0 10px #101018,
+      0 40px 90px -30px #000,
+      inset 0 0 0 1px #ffffff08;
+    position: relative;
+    justify-self: center;
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    border-radius: 33px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 26px; background: #000; border-radius: 14px; z-index: 60;
+  }
+
+  /* scroll region */
+  .view { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+  .view::-webkit-scrollbar { width: 0; }
+  .pad { padding: 44px 20px 24px; }
+
+  /* --- typography helpers --- */
+  .brand { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+  h2.title { font-size: 28px; letter-spacing: -.8px; margin: 0 0 6px; line-height: 1.08; text-wrap: balance; }
+  .sub { color: var(--dim); font-size: 14px; line-height: 1.45; margin: 0; }
+  .money { font-variant-numeric: tabular-nums; }
+  .label { font-size: 12px; color: var(--dim); font-weight: 600; margin-bottom: 8px; letter-spacing: .2px; }
+
+  /* --- buttons/inputs --- */
+  .btn {
+    width: 100%; border: none; cursor: pointer; font-family: var(--font);
+    background: var(--primary); color: #fff; font-size: 16px; font-weight: 700;
+    padding: 15px; border-radius: var(--radius); transition: transform .1s, opacity .15s, background .15s;
+  }
+  .btn:hover { background: #7d6dff; }
+  .btn:active { transform: scale(.985); }
+  .btn:disabled { background: var(--border); color: #6f6f85; cursor: not-allowed; }
+  .ghost {
+    background: none; border: none; color: var(--dim); font-weight: 600; font-size: 15px;
+    padding: 12px; width: 100%; cursor: pointer; font-family: var(--font);
+  }
+  .ghost:hover { color: var(--text); }
+
+  .field { margin-bottom: 16px; }
+  .input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 0 16px; transition: border-color .15s;
+  }
+  .input-wrap:focus-within { border-color: var(--primary); }
+  .input-wrap .cur { color: var(--dim); font-size: 20px; font-weight: 700; }
+  .input-wrap input {
+    flex: 1; background: none; border: none; outline: none; color: var(--text);
+    font-size: 20px; font-weight: 700; padding: 15px 0; font-family: var(--font);
+    font-variant-numeric: tabular-nums; width: 100%;
+  }
+  .input-wrap input::placeholder { color: #55556a; }
+
+  .option {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; cursor: pointer; font-family: var(--font);
+    transition: border-color .15s, background .15s;
+  }
+  .option:hover { border-color: #3c3c52; }
+  .option.sel { border-color: var(--primary); background: var(--card-2); }
+  .option .radio {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+    flex: none; display: grid; place-items: center; transition: border-color .15s;
+  }
+  .option.sel .radio { border-color: var(--primary); }
+  .option .radio i { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); display: none; }
+  .option.sel .radio i { display: block; }
+  .option .otext b { display: block; color: var(--dim); font-size: 16px; font-weight: 700; }
+  .option.sel .otext b { color: var(--text); }
+  .option .otext span { color: var(--dim); font-size: 13px; }
+
+  /* --- progress --- */
+  .prog-head { padding: 44px 20px 0; display: flex; flex-direction: column; gap: 12px; }
+  .track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .track > i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width .35s cubic-bezier(.2,.8,.2,1); }
+  .stepcount { font-size: 12px; color: var(--dim); font-weight: 600; }
+
+  .footer { padding: 12px 20px 22px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #ffffff08; }
+
+  .fade { animation: fade .28s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* --- dashboard hero --- */
+  .hero {
+    background: linear-gradient(160deg, #201b3d, #14131d);
+    border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 22px;
+  }
+  .hero .hl { color: var(--dim); font-size: 13px; font-weight: 600; }
+  .hero .hv { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin: 4px 0 0; }
+  .hero .poolrow { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .hero .poolrow .pt { color: var(--dim); font-size: 13px; }
+  .hero .poolrow .pt b { color: var(--text); }
+  .pill-btn {
+    background: var(--primary); color: #fff; border: none; border-radius: 999px;
+    padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font);
+  }
+  .pill-btn:hover { background: #7d6dff; }
+  .pill-btn:disabled { background: var(--border); color: #6f6f85; cursor: not-allowed; }
+
+  .headline { color: var(--dim); font-size: 13.5px; line-height: 1.5; margin: 18px 2px; }
+  .section-t { font-size: 16px; font-weight: 700; margin: 8px 2px 14px; }
+
+  .alertbox { background: #2a1f1f; border: 1px solid #4a2b2b; border-radius: var(--radius); padding: 14px; margin: 4px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+  .alertbox .a { font-size: 13px; font-weight: 600; color: var(--warning); }
+  .alertbox .a.crit { color: var(--danger); }
+
+  /* --- cube card --- */
+  .cube {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+    padding: 16px; margin-bottom: 12px; transition: border-color .2s, transform .2s;
+  }
+  .cube.hl { animation: pop .5s ease; }
+  @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.035)} 100%{transform:scale(1)} }
+  .cube .top { display: flex; align-items: center; gap: 12px; }
+  .cube .chip { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 20px; flex: none; }
+  .cube .nm { font-size: 16px; font-weight: 700; }
+  .cube .nt { font-size: 12px; color: var(--dim); margin-top: 1px; }
+  .cube .pct { margin-left: auto; font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+  .cube .brow { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; }
+  .cube .bal { font-size: 24px; font-weight: 800; }
+  .cube .tgt { font-size: 13px; color: var(--dim); font-weight: 600; }
+  .cube .fixed { margin-left: auto; font-size: 10px; letter-spacing: 1px; font-weight: 800; color: var(--dim); }
+  .cube .ftrack { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+  .cube .ftrack > i { display: block; height: 100%; border-radius: 999px; width: 0; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+  .cube .low { font-size: 12px; font-weight: 700; color: var(--danger); margin-top: 10px; }
+
+  /* --- modal / sheet --- */
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); z-index: 40; display: none; }
+  .overlay.on { display: block; animation: fade .2s ease; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: var(--elevated); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+    padding: 18px 20px 28px; transform: translateY(110%); transition: transform .32s cubic-bezier(.2,.9,.2,1);
+  }
+  .sheet.on { transform: none; }
+  .handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+  .poolchip { display: flex; justify-content: space-between; align-items: center; background: var(--card); border-radius: var(--radius); padding: 14px 16px; margin: 14px 0; }
+  .poolchip .pl { color: var(--dim); font-size: 13px; font-weight: 600; }
+  .poolchip .pv { font-size: 18px; font-weight: 800; }
+  .quickrow { display: flex; gap: 8px; margin-bottom: 6px; }
+  .quick { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; text-align: center; color: var(--text); font-weight: 700; cursor: pointer; font-family: var(--font); font-size: 13px; }
+  .quick:hover { border-color: var(--primary); }
+
+  /* --- coins --- */
+  .coins { position: absolute; inset: 0; z-index: 55; pointer-events: none; overflow: hidden; }
+  .coin { position: absolute; top: -40px; font-size: 28px; will-change: transform, opacity; }
+
+  /* --- FAB + chat --- */
+  .fab {
+    position: absolute; right: 18px; bottom: 22px; z-index: 30;
+    width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--primary); font-size: 28px; display: grid; place-items: center;
+    box-shadow: 0 10px 30px -6px var(--primary);
+  }
+  .fab:hover { background: #7d6dff; }
+  .fab .badge { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--primary); }
+  .fab.pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+  .chatwrap { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; justify-content: flex-end; background: rgba(0,0,0,.4); }
+  .chatwrap.on { display: flex; }
+  .chat {
+    height: 82%; background: var(--bg); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+    display: flex; flex-direction: column; overflow: hidden; transform: translateY(4%); animation: slideup .3s ease;
+  }
+  @keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(4%); } }
+  .chat .ch { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
+  .chat .ch .t { font-size: 17px; font-weight: 700; }
+  .chat .ch .s { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .chat .ch .x { margin-left: auto; background: none; border: none; color: var(--dim); font-size: 20px; cursor: pointer; }
+  .chat .strip { background: #2a1f1f; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--warning); }
+  .msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .msgs::-webkit-scrollbar { width: 0; }
+  .intro { text-align: center; padding: 30px 24px; color: var(--dim); }
+  .intro .e { font-size: 40px; }
+  .intro p { font-size: 14px; line-height: 1.5; margin-top: 8px; }
+  .bubble { max-width: 82%; padding: 11px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
+  .bubble.u { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.b { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
+  .sugg { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
+  .sugg button { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 9px 14px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+  .sugg button:hover { border-color: var(--primary); }
+  .inbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
+  .inbar input:focus { border-color: var(--primary); }
+  .inbar button { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary); color: #fff; font-size: 17px; cursor: pointer; flex: none; }
+  .inbar button:disabled { opacity: .4; cursor: default; }
+
+  .restart { position: absolute; top: 12px; right: 16px; z-index: 35; background: #ffffff12; border: 1px solid var(--border); color: var(--dim); font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 999px; cursor: pointer; font-family: var(--font); }
+  .restart:hover { color: var(--text); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+
+<div class="stage">
+  <div class="pitch">
+    <div class="eyebrow">CubeFinance · Web Preview</div>
+    <h1>Your money, split into <span class="grad">Cubes</span> you can actually see.</h1>
+    <p>
+      A financial planner that turns one balance into clear budget cubes — then
+      lets an AI buddy reason over them. No bank connection: every number is
+      yours to enter.
+    </p>
+    <div class="feats">
+      <div class="feat"><span class="dot">🧭</span><div><b>Guided onboarding</b> <span>— age, work, housing &amp; a balance to track.</span></div></div>
+      <div class="feat"><span class="dot">🧊</span><div><b>Auto-budgeted cubes</b> <span>— math that adapts to your situation.</span></div></div>
+      <div class="feat"><span class="dot">🪙</span><div><b>Simulated transfers</b> <span>— distribute your pool into cubes.</span></div></div>
+      <div class="feat"><span class="dot">💬</span><div><b>Cubey, your buddy</b> <span>— “Can I afford 500 ₪?” answered live.</span></div></div>
+    </div>
+    <p class="note">
+      This is the real app's logic running entirely in your browser — the same
+      budget engine and buddy from the codebase, ported client-side so nothing
+      needs installing. Try it on the right. →
+    </p>
+  </div>
+
+  <div class="device">
+    <div class="notch"></div>
+    <div class="screen" id="screen">
+      <button class="restart" id="restart" style="display:none">↺ Restart</button>
+      <!-- app renders here -->
+      <div class="coins" id="coins"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// Ported core logic (from backend/src/logic + services). Pure, no backend.
+// ============================================================================
+const CUBE_META = {
+  housing:     { name: 'Housing & Bills', color: '#6C5CE7', icon: '🏠' },
+  essentials:  { name: 'Essentials',      color: '#00B894', icon: '🛒' },
+  savings:     { name: 'Savings',         color: '#0984E3', icon: '🐷' },
+  investments: { name: 'Investments',     color: '#E17055', icon: '📈' },
+  emergency:   { name: 'Emergency Fund',  color: '#D63031', icon: '🛡️' },
+  lifestyle:   { name: 'Lifestyle',       color: '#FDCB6E', icon: '✨' },
+};
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const round = (n) => Math.round(n * 100) / 100;
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+
+function ageTilt(age) {
+  const a = clamp(Number(age) || 30, 16, 90);
+  const agg = clamp((60 - a) / 40, 0, 1);
+  return {
+    investments: 0.7 + agg * 0.8,
+    savings: 1.3 - agg * 0.4,
+    emergency: 1.2 - agg * 0.3,
+    lifestyle: 0.9 + agg * 0.2,
+    essentials: 1.0,
+  };
+}
+function normalizeToShare(weights, target) {
+  const total = Object.values(weights).reduce((s, w) => s + w, 0) || 1;
+  const out = {};
+  for (const [k, w] of Object.entries(weights)) out[k] = (w / total) * target;
+  return out;
+}
+function computeBudget(profile) {
+  const income = Math.max(0, Number(profile.monthlyIncome) || 0);
+  const independent = !profile.livesWithParents;
+  const tilt = ageTilt(profile.age);
+  const h = profile.housing || {};
+  const housingCost = independent
+    ? round((+h.rent || 0) + (+h.arnona || 0) + (+h.utilities || 0) + (+h.houseCommittee || 0))
+    : 0;
+  const housingShare = income > 0 ? clamp(housingCost / income, 0, 0.85) : 0;
+  const discretionary = 1 - housingShare;
+
+  let weights = independent
+    ? { essentials: .32*tilt.essentials, savings: .24*tilt.savings, investments: .18*tilt.investments, emergency: .12*tilt.emergency, lifestyle: .14*tilt.lifestyle }
+    : { essentials: .22*tilt.essentials, savings: .30*tilt.savings, investments: .26*tilt.investments, emergency: .10*tilt.emergency, lifestyle: .12*tilt.lifestyle };
+  const shares = normalizeToShare(weights, discretionary);
+
+  const cubes = [];
+  if (independent && housingCost > 0) {
+    cubes.push(buildCube('housing', housingShare, income, { note: 'Fixed monthly obligations', fixed: true }));
+  }
+  const notes = {
+    essentials: 'Food, transport, phone, day-to-day',
+    savings: independent ? 'Short-term goals & buffer' : 'Boosted — no rent to pay',
+    investments: independent ? 'Long-term wealth' : 'Boosted — put youth to work',
+    emergency: 'Rainy-day fund (aim: 3–6 months)',
+    lifestyle: independent ? 'Fun, dining, subscriptions' : 'Boosted — enjoy responsibly',
+  };
+  for (const key of ['essentials','savings','investments','emergency','lifestyle']) {
+    cubes.push(buildCube(key, shares[key], income, { note: notes[key] }));
+  }
+  reconcile(cubes, income);
+  return {
+    income, currency: 'ILS', situation: independent ? 'independent' : 'with_parents',
+    housingCost, cubes,
+    summary: {
+      headline: independent
+        ? 'Independent plan — a dedicated Housing cube covers your fixed bills.'
+        : 'Living-with-parents plan — housing savings redirected into wealth-building cubes.',
+    },
+  };
+}
+function buildCube(key, share, income, extra = {}) {
+  const m = CUBE_META[key];
+  return { key, name: m.name, color: m.color, icon: m.icon,
+    percentage: round(share * 100), monthlyContribution: round(share * income),
+    balance: 0, fixed: false, ...extra };
+}
+function reconcile(cubes, income) {
+  const sum = cubes.reduce((s, c) => s + c.monthlyContribution, 0);
+  const diff = round(income - sum);
+  if (Math.abs(diff) < 0.01) return;
+  const flex = cubes.filter((c) => !c.fixed).sort((a, b) => b.monthlyContribution - a.monthlyContribution)[0];
+  if (flex) { flex.monthlyContribution = round(flex.monthlyContribution + diff);
+    flex.percentage = income > 0 ? round((flex.monthlyContribution / income) * 100) : 0; }
+}
+function simulateTransfer(cubes, amount) {
+  const pool = Math.max(0, Number(amount) || 0);
+  const w = cubes.map((c) => ({ ...c }));
+  const allocations = [];
+  let remaining = pool;
+  for (const c of w) {
+    if (!c.fixed || remaining <= 0) continue;
+    const give = round(Math.min(Math.max(0, c.monthlyContribution - c.balance), remaining));
+    if (give > 0) { c.balance = round(c.balance + give); remaining = round(remaining - give);
+      allocations.push({ key: c.key, amount: give }); }
+  }
+  if (remaining > 0) {
+    const flex = w.filter((c) => !c.fixed);
+    const totalPct = flex.reduce((s, c) => s + c.percentage, 0) || 1;
+    let dist = 0;
+    flex.forEach((c, i) => {
+      const give = i === flex.length - 1 ? round(remaining - dist) : round((c.percentage / totalPct) * remaining);
+      dist = round(dist + give); c.balance = round(c.balance + give);
+      const ex = allocations.find((a) => a.key === c.key);
+      if (ex) ex.amount = round(ex.amount + give); else allocations.push({ key: c.key, amount: give });
+    });
+  }
+  const moved = round(allocations.reduce((s, a) => s + a.amount, 0));
+  return { cubes: w, allocations, moved };
+}
+function evaluateAlerts(cubes) {
+  const out = [];
+  for (const c of cubes) {
+    if (c.balance < 0) out.push({ level: 'critical', message: `${c.name} is overdrawn (${fmt(c.balance)} ₪). Move funds in.` });
+    else if (c.monthlyContribution > 0 && c.balance < c.monthlyContribution * 0.2)
+      out.push({ level: 'warning', message: `${c.name} is running low: ${fmt(c.balance)} of ${fmt(c.monthlyContribution)} ₪.` });
+  }
+  return out;
+}
+function buddyReply(text, state) {
+  const q = (text || '').toLowerCase();
+  const cubes = state.cubes;
+  const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
+  const total = cubes.reduce((s, c) => s + c.balance, 0);
+  const am = q.match(/(\d[\d,]*)/);
+  if (q.includes('afford') && am) {
+    const amount = Number(am[1].replace(/,/g, ''));
+    const life = byKey.lifestyle || cubes.find((c) => !c.fixed);
+    if (!life) return "You haven't set up your cubes yet — finish onboarding first! 🧊";
+    if (amount <= life.balance) return `Yes! 🎉 Spending ${fmt(amount)} ₪ from your ${life.name} cube (balance ${fmt(life.balance)} ₪) leaves you ${fmt(life.balance - amount)} ₪ there. You're good.`;
+    if (amount <= total) return `It's tight. Your ${life.name} cube only has ${fmt(life.balance)} ₪, so ${fmt(amount)} ₪ would overdraw it. You could cover it across cubes (total ${fmt(total)} ₪), but I'd pull the difference from Savings deliberately.`;
+    return `I'd say no for now. ${fmt(amount)} ₪ is more than your total tracked balance of ${fmt(total)} ₪. Let's protect your Emergency and Housing cubes.`;
+  }
+  if (q.includes('rent') || q.includes('adjust') || q.includes('increase')) {
+    const ho = byKey.housing;
+    return ho ? `If your rent changes, update your Housing cube target (currently ${fmt(ho.monthlyContribution)} ₪·mo). The extra usually comes out of Lifestyle first, then Savings.`
+      : `You're living with parents, so there's no Housing cube. If that changes, tell me your new rent and I'll rebuild your cubes.`;
+  }
+  if (q.includes('low') || q.includes('status') || q.includes('doing') || q.includes('overview')) {
+    const lowest = [...cubes].sort((a, b) => a.balance - b.balance)[0];
+    return `Total across cubes: ${fmt(total)} ₪. ${lowest ? `Your lowest cube right now is ${lowest.name} at ${fmt(lowest.balance)} ₪.` : ''} Ask me "can I afford ___?" anytime.`;
+  }
+  return `I'm Cubey 🧊 — your money buddy. I can see your cubes (total ${fmt(total)} ₪). Try: "Can I afford 500 ₪?", "My rent is going up", or "How am I doing?"`;
+}
+
+// ============================================================================
+// App state + rendering (mirrors the Zustand store + screens)
+// ============================================================================
+const screen = document.getElementById('screen');
+const coinsEl = document.getElementById('coins');
+const restartBtn = document.getElementById('restart');
+
+const state = {
+  onboarded: false,
+  profile: null, cubes: [], mainAccount: 0, summary: null, alerts: [],
+  chat: [], chatStreaming: false, lastFunded: new Set(),
+  draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
+  stepIndex: 0,
+};
+
+function stepList() {
+  const d = state.draft;
+  const l = ['age', 'employment'];
+  if (d.employed) l.push('income');
+  l.push('housing');
+  if (d.withParents === false) l.push('housingCosts');
+  l.push('balance');
+  return l;
+}
+
+function render() {
+  restartBtn.style.display = state.onboarded ? 'block' : 'none';
+  const kept = screen.querySelector('.coins');
+  screen.querySelectorAll(':scope > *:not(.coins):not(.restart)').forEach((n) => n.remove());
+  const root = state.onboarded ? renderDashboard() : renderOnboarding();
+  screen.insertBefore(root, kept);
+}
+
+// ---------- Onboarding ----------
+function renderOnboarding() {
+  const steps = stepList();
+  const idx = Math.min(state.stepIndex, steps.length - 1);
+  const step = steps[idx];
+  const isLast = idx === steps.length - 1;
+
+  const wrap = el('div', 'screen-inner');
+  wrap.style.cssText = 'display:flex;flex-direction:column;height:100%';
+
+  const head = el('div', 'prog-head');
+  head.innerHTML = `<div class="brand">🧊 CubeFinance</div>
+    <div class="track"><i style="width:${Math.round(((idx+1)/steps.length)*100)}%"></i></div>
+    <div class="stepcount">Step ${idx+1} of ${steps.length}</div>`;
+
+  const body = el('div', 'view');
+  const pad = el('div', 'pad fade');
+  pad.appendChild(stepContent(step));
+  body.appendChild(pad);
+
+  const foot = el('div', 'footer');
+  const next = el('button', 'btn');
+  next.textContent = isLast ? 'Build my Cubes 🧊' : 'Continue';
+  next.disabled = !canAdvance(step);
+  next.onclick = () => { if (isLast) finishOnboarding(); else { state.stepIndex = idx + 1; render(); } };
+  foot.appendChild(next);
+  if (idx > 0) {
+    const back = el('button', 'ghost'); back.textContent = 'Back';
+    back.onclick = () => { state.stepIndex = idx - 1; render(); };
+    foot.appendChild(back);
+  }
+
+  wrap.append(head, body, foot);
+  return wrap;
+}
+
+function stepContent(step) {
+  const d = state.draft;
+  const c = el('div');
+  const header = (t, s) => `<h2 class="title">${t}</h2><p class="sub">${s}</p>`;
+  const rerenderFooter = () => {
+    const steps = stepList();
+    const cur = steps[Math.min(state.stepIndex, steps.length - 1)];
+    const btn = screen.querySelector('.footer .btn');
+    if (btn) btn.disabled = !canAdvance(cur);
+  };
+  const money = (labelText, key, ph, focus) => {
+    const f = el('div', 'field');
+    f.innerHTML = `<div class="label">${labelText}</div><div class="input-wrap"><span class="cur">₪</span><input inputmode="numeric" placeholder="${ph}" value="${d[key]}"></div>`;
+    const inp = f.querySelector('input');
+    inp.oninput = () => { d[key] = inp.value.replace(/[^0-9.]/g, ''); if (inp.value !== d[key]) inp.value = d[key]; rerenderFooter(); };
+    if (focus) setTimeout(() => inp.focus(), 60);
+    return f;
+  };
+  const opt = (labelText, subText, on, cb) => {
+    const b = el('button', 'option' + (on ? ' sel' : ''));
+    b.innerHTML = `<span class="radio"><i></i></span><span class="otext"><b>${labelText}</b>${subText ? `<span>${subText}</span>` : ''}</span>`;
+    b.onclick = () => { cb(); render(); };
+    return b;
+  };
+
+  if (step === 'age') {
+    c.innerHTML = header('How old are you?', 'Your age helps us tune investment suggestions.');
+    c.appendChild(money('Age', 'age', '28', true));
+  } else if (step === 'employment') {
+    c.innerHTML = header('Do you work?', 'Tells us whether to plan around an income.');
+    c.append(
+      opt("Yes, I'm employed", '', d.employed === true, () => { d.employed = true; }),
+      opt('Not right now', "We'll plan around your balance instead", d.employed === false, () => { d.employed = false; d.income = ''; }),
+    );
+  } else if (step === 'income') {
+    c.innerHTML = header('Monthly income', 'Your estimated take-home each month.');
+    c.appendChild(money('Estimated monthly income', 'income', '10000', true));
+  } else if (step === 'housing') {
+    c.innerHTML = header('Where do you live?', 'This decides whether we build a Housing cube.');
+    c.append(
+      opt('With my parents', 'No rent — we redirect that into savings & investing', d.withParents === true, () => { d.withParents = true; }),
+      opt('Independently', "We'll create a Housing & Bills cube", d.withParents === false, () => { d.withParents = false; }),
+    );
+  } else if (step === 'housingCosts') {
+    c.innerHTML = header('Your monthly home costs', 'Only rent is required — add the rest for a sharper plan.');
+    c.append(
+      money('Rent', 'rent', '3500', true),
+      money('Arnona (city tax)', 'arnona', '300'),
+      money('Utilities (water / electric / gas)', 'utilities', '400'),
+      money("House committee (va'ad bayit)", 'committee', '100'),
+    );
+  } else if (step === 'balance') {
+    c.innerHTML = header('Starting balance', 'Enter the balance you want to track and manage. Simulated — no bank connection.');
+    c.appendChild(money('Balance to track', 'balance', '15000', true));
+    const hint = el('p', 'sub'); hint.style.marginTop = '10px';
+    hint.textContent = 'We\'ll split this across your cubes when you tap “Distribute” on the dashboard.';
+    c.appendChild(hint);
+  }
+  return c;
+}
+
+function canAdvance(step) {
+  const d = state.draft;
+  switch (step) {
+    case 'age': return Number(d.age) >= 16 && Number(d.age) <= 100;
+    case 'employment': return d.employed !== null;
+    case 'income': return Number(d.income) > 0;
+    case 'housing': return d.withParents !== null;
+    case 'housingCosts': return Number(d.rent) > 0;
+    case 'balance': return d.balance !== '' && Number(d.balance) >= 0;
+    default: return false;
+  }
+}
+
+function finishOnboarding() {
+  const d = state.draft;
+  const profile = {
+    age: Number(d.age), employed: !!d.employed, monthlyIncome: Number(d.income) || 0,
+    livesWithParents: !!d.withParents, initialBalance: Number(d.balance) || 0,
+    housing: d.withParents ? undefined : { rent: +d.rent||0, arnona: +d.arnona||0, utilities: +d.utilities||0, houseCommittee: +d.committee||0 },
+  };
+  const budget = computeBudget(profile);
+  state.profile = profile;
+  state.cubes = budget.cubes;
+  state.summary = budget.summary;
+  state.mainAccount = profile.initialBalance;
+  state.onboarded = true;
+  render();
+}
+
+// ---------- Dashboard ----------
+function renderDashboard() {
+  const total = state.cubes.reduce((s, c) => s + c.balance, 0);
+  const wrap = el('div'); wrap.style.cssText = 'display:flex;flex-direction:column;height:100%';
+  const view = el('div', 'view');
+  const pad = el('div', 'pad');
+
+  const brand = el('div', 'brand'); brand.textContent = '🧊 CubeFinance'; brand.style.marginBottom = '16px';
+
+  const hero = el('div', 'hero');
+  hero.innerHTML = `<div class="hl">Total across cubes</div>
+    <div class="hv money">₪${fmt(total)}</div>
+    <div class="poolrow">
+      <div class="pt">Main account: <b class="money">₪${fmt(state.mainAccount)}</b></div>
+    </div>`;
+  const distBtn = el('button', 'pill-btn'); distBtn.textContent = 'Distribute →';
+  distBtn.disabled = state.mainAccount <= 0;
+  distBtn.onclick = openSheet;
+  hero.querySelector('.poolrow').appendChild(distBtn);
+
+  pad.append(brand, hero);
+
+  if (state.summary) { const h = el('p', 'headline'); h.textContent = state.summary.headline; pad.appendChild(h); }
+
+  if (state.alerts.length) {
+    const box = el('div', 'alertbox');
+    state.alerts.forEach((a) => { const p = el('div', 'a' + (a.level === 'critical' ? ' crit' : '')); p.textContent = (a.level === 'critical' ? '🔴 ' : '🟡 ') + a.message; box.appendChild(p); });
+    pad.appendChild(box);
+  }
+
+  const st = el('div', 'section-t'); st.textContent = 'Your Cubes'; pad.appendChild(st);
+  state.cubes.forEach((c) => pad.appendChild(cubeCard(c)));
+
+  const spacer = el('div'); spacer.style.height = '90px'; pad.appendChild(spacer);
+  view.appendChild(pad); wrap.appendChild(view);
+
+  wrap.appendChild(buildSheet());
+  wrap.appendChild(buildFab());
+  wrap.appendChild(buildChat());
+  return wrap;
+}
+
+function cubeCard(c) {
+  const target = c.monthlyContribution || 1;
+  const pctFill = clamp(c.balance / target, 0, 1) * 100;
+  const low = c.balance < target * 0.2;
+  const card = el('div', 'cube' + (state.lastFunded.has(c.key) ? ' hl' : ''));
+  card.innerHTML = `
+    <div class="top">
+      <div class="chip" style="background:${c.color}22">${c.icon}</div>
+      <div><div class="nm">${c.name}</div><div class="nt">${c.note || ''}</div></div>
+      <div class="pct" style="color:${c.color};background:${c.color}22">${c.percentage}%</div>
+    </div>
+    <div class="brow">
+      <span class="bal money" data-to="${c.balance}">₪${fmt(c.balance)}</span>
+      <span class="tgt money">/ ₪${fmt(target)}·mo</span>
+      ${c.fixed ? '<span class="fixed">FIXED</span>' : ''}
+    </div>
+    <div class="ftrack"><i style="background:${low ? 'var(--danger)' : c.color}"></i></div>
+    ${low ? '<div class="low">⚠️ Running low</div>' : ''}`;
+  requestAnimationFrame(() => { const bar = card.querySelector('.ftrack > i'); if (bar) bar.style.width = pctFill + '%'; });
+  return card;
+}
+
+// ---------- Transfer sheet ----------
+let sheetOpen = false;
+function buildSheet() {
+  const overlay = el('div', 'overlay' + (sheetOpen ? ' on' : ''));
+  overlay.id = 'ov';
+  overlay.onclick = closeSheet;
+  const sheet = el('div', 'sheet' + (sheetOpen ? ' on' : ''));
+  sheet.id = 'sheet';
+  sheet.onclick = (e) => e.stopPropagation();
+  sheet.innerHTML = `
+    <div class="handle"></div>
+    <h2 class="title" style="font-size:22px">Distribute funds</h2>
+    <p class="sub">Move money from your main-account pool into your cubes, split by each cube's percentage (fixed cubes funded first).</p>
+    <div class="poolchip"><span class="pl">Main account pool</span><span class="pv money">₪${fmt(state.mainAccount)}</span></div>
+    <div class="field"><div class="label">Amount to distribute</div><div class="input-wrap"><span class="cur">₪</span><input id="amt" inputmode="numeric" value="${Math.round(state.mainAccount)}"></div></div>
+    <div class="quickrow"></div>
+    <button class="btn" id="doTransfer">Distribute</button>
+    <button class="ghost" id="cancelT">Cancel</button>`;
+  const qr = sheet.querySelector('.quickrow');
+  [['25%',.25],['50%',.5],['All',1]].forEach(([lab,f]) => {
+    const b = el('button', 'quick'); b.textContent = lab;
+    b.onclick = () => { sheet.querySelector('#amt').value = Math.round(state.mainAccount * f); syncBtn(); };
+    qr.appendChild(b);
+  });
+  const amt = sheet.querySelector('#amt');
+  const doT = sheet.querySelector('#doTransfer');
+  const syncBtn = () => {
+    const v = Number(amt.value) || 0;
+    doT.textContent = `Distribute ₪${fmt(v)}`;
+    doT.disabled = v <= 0 || v > state.mainAccount;
+  };
+  amt.oninput = () => { amt.value = amt.value.replace(/[^0-9.]/g,''); syncBtn(); };
+  doT.onclick = () => runTransfer(Number(amt.value) || 0);
+  sheet.querySelector('#cancelT').onclick = closeSheet;
+  setTimeout(syncBtn, 0);
+  overlay.appendChild(sheet);
+  return overlay;
+}
+function openSheet() { sheetOpen = true; document.getElementById('ov')?.classList.add('on'); document.getElementById('sheet')?.classList.add('on'); }
+function closeSheet() { sheetOpen = false; document.getElementById('ov')?.classList.remove('on'); document.getElementById('sheet')?.classList.remove('on'); }
+
+function runTransfer(amount) {
+  const res = simulateTransfer(state.cubes, amount);
+  state.cubes = res.cubes;
+  state.mainAccount = Math.max(0, round(state.mainAccount - res.moved));
+  state.alerts = evaluateAlerts(state.cubes);
+  state.lastFunded = new Set(res.allocations.map((a) => a.key));
+  closeSheet();
+  burstCoins();
+  render();
+  animateCounts();
+  setTimeout(() => { state.lastFunded = new Set(); }, 800);
+}
+
+function animateCounts() {
+  screen.querySelectorAll('.bal').forEach((elm) => {
+    const to = Number(elm.dataset.to);
+    const from = 0;
+    const start = performance.now(), dur = 650;
+    function tick(t) {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      elm.textContent = '₪' + fmt(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+function burstCoins() {
+  for (let i = 0; i < 16; i++) {
+    const c = el('div', 'coin'); c.textContent = '🪙';
+    const x = Math.random() * 300 + 30;
+    c.style.left = x + 'px';
+    coinsEl.appendChild(c);
+    const dur = 800 + Math.random() * 500, delay = Math.random() * 250;
+    c.animate([
+      { transform: 'translateY(-40px) rotate(0deg)', opacity: 1 },
+      { transform: `translateY(820px) rotate(${360 + Math.random()*360}deg)`, opacity: 0 },
+    ], { duration: dur, delay, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'forwards' });
+    setTimeout(() => c.remove(), dur + delay + 50);
+  }
+}
+
+// ---------- FAB + chat ----------
+let chatOpen = false;
+function buildFab() {
+  const hasAlerts = state.alerts.length > 0;
+  const fab = el('button', 'fab' + (hasAlerts ? ' pulse' : ''));
+  fab.innerHTML = '🧊' + (hasAlerts ? '<span class="badge"></span>' : '');
+  fab.onclick = () => { chatOpen = true; render(); };
+  return fab;
+}
+const SUGG = ['Can I afford 500 ₪?', 'How am I doing?', 'My rent is going up'];
+function buildChat() {
+  const wrap = el('div', 'chatwrap' + (chatOpen ? ' on' : ''));
+  wrap.onclick = (e) => { if (e.target === wrap) { chatOpen = false; render(); } };
+  const chat = el('div', 'chat');
+  const alertStrip = state.alerts.length ? `<div class="strip">🔔 ${state.alerts[0].message}</div>` : '';
+  chat.innerHTML = `
+    <div class="ch"><div><div class="t">Cubey 🧊</div><div class="s">${state.chatStreaming ? 'typing…' : 'Your financial buddy · knows your cubes'}</div></div><button class="x">✕</button></div>
+    ${alertStrip}
+    <div class="msgs" id="msgs"></div>
+    ${state.chat.length === 0 ? '<div class="sugg" id="sugg"></div>' : ''}
+    <div class="inbar"><input id="chatIn" placeholder="Ask Cubey…" ${state.chatStreaming ? 'disabled' : ''}><button id="send" ${state.chatStreaming ? 'disabled' : ''}>➤</button></div>`;
+  chat.querySelector('.x').onclick = () => { chatOpen = false; render(); };
+  const msgs = chat.querySelector('#msgs');
+  if (state.chat.length === 0) {
+    msgs.innerHTML = `<div class="intro"><div class="e">👋</div><p>Hi! I'm Cubey. I can see your cubes and balances. Ask me anything about your money.</p></div>`;
+    const sg = chat.querySelector('#sugg');
+    SUGG.forEach((s) => { const b = el('button'); b.textContent = s; b.onclick = () => sendChat(s); sg.appendChild(b); });
+  } else {
+    state.chat.forEach((m) => { const b = el('div', 'bubble ' + (m.role === 'user' ? 'u' : 'b')); b.textContent = m.content || '…'; msgs.appendChild(b); });
+  }
+  const input = chat.querySelector('#chatIn');
+  const send = () => { const v = input.value.trim(); if (v) sendChat(v); };
+  chat.querySelector('#send').onclick = send;
+  input.onkeydown = (e) => { if (e.key === 'Enter') send(); };
+  setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; if (!state.chatStreaming) input?.focus(); }, 30);
+  wrap.appendChild(chat);
+  return wrap;
+}
+
+function sendChat(text) {
+  if (state.chatStreaming) return;
+  state.chat.push({ role: 'user', content: text });
+  state.chat.push({ role: 'assistant', content: '' });
+  state.chatStreaming = true;
+  render();
+  const full = buddyReply(text, state);
+  let i = 0;
+  const iv = setInterval(() => {
+    i += 3;
+    state.chat[state.chat.length - 1].content = full.slice(0, i);
+    const msgs = screen.querySelector('#msgs');
+    if (msgs) {
+      const last = msgs.querySelector('.bubble.b:last-child');
+      if (last) last.textContent = state.chat[state.chat.length - 1].content || '…';
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    if (i >= full.length) {
+      clearInterval(iv);
+      state.chat[state.chat.length - 1].content = full;
+      state.chatStreaming = false;
+      render();
+    }
+  }, 18);
+}
+
+// ---------- utils ----------
+function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
+
+restartBtn.onclick = () => {
+  Object.assign(state, {
+    onboarded: false, profile: null, cubes: [], mainAccount: 0, summary: null,
+    alerts: [], chat: [], chatStreaming: false, lastFunded: new Set(), stepIndex: 0,
+    draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
+  });
+  chatOpen = false; sheetOpen = false;
+  render();
+};
+
+render();
+</script>
