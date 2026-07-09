@@ -181,6 +181,28 @@
     .aerr { color: var(--danger); font-size: 13.5px; font-weight: 800; min-height: 18px; margin: 10px 2px 6px;
       unicode-bidi: plaintext; }
     .distbtn.wide { width: 100%; margin-top: 6px; }
+    /* onboarding wizard */
+    .track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .track > i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width .3s cubic-bezier(.2,.8,.2,1); }
+    .stepcount { color: var(--dim); font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+    .ob-opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: right; color: var(--text);
+      background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 15px;
+      margin-bottom: 10px; cursor: pointer; font-family: var(--font); transition: border-color .15s, background .15s; }
+    .ob-opt:hover { border-color: #3c3c52; }
+    .ob-opt.on { border-color: var(--primary); background: var(--card-2); }
+    .ob-opt .obrad { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+      display: grid; place-items: center; flex: none; }
+    .ob-opt.on .obrad { border-color: var(--primary); }
+    .ob-opt .obrad i { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); display: none; }
+    .ob-opt.on .obrad i { display: block; }
+    .ob-opt .obtxt b { display: block; font-weight: 800; color: var(--dim); }
+    .ob-opt.on .obtxt b { color: var(--text); }
+    .ob-opt .obtxt span { color: var(--dim); font-size: 12.5px; }
+    .obback { width: 100%; background: none; border: none; color: var(--dim); font-weight: 600; font-size: 15px;
+      padding: 12px; cursor: pointer; font-family: var(--font); margin-top: 2px; }
+    .obback:hover { color: var(--text); }
+    .obsum { color: var(--dim); font-size: 13.5px; margin-top: 8px; }
+    .obsum b { color: var(--text); }
     .aswitch { text-align: center; color: var(--dim); font-size: 13.5px; margin-top: 14px; }
     .aswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer;
       font-family: var(--font); font-size: 13.5px; }
@@ -223,19 +245,19 @@
     // ---- cube model -------------------------------------------------------
     // Living WITH parents (default): no rent, so the freed money is redirected
     // into wealth-building cubes. Living independently adds a Housing cube.
-    const BASE = [
-      { key: "essentials",  name: "שוטף",            emoji: "🛒", color: "var(--c-essentials)",  w: 0.25, note: "אוכל, תחבורה, חשבונות יומיומיים" },
-      { key: "savings",     name: "חיסכון",          emoji: "💰", color: "var(--c-savings)",     w: 0.25, note: "כרית ביטחון ויעדים לטווח קצר" },
-      { key: "investments", name: "השקעות",          emoji: "📈", color: "var(--c-investments)", w: 0.22, note: "בניית הון לטווח ארוך" },
-      { key: "emergency",   name: "קרן חירום",       emoji: "🛡️", color: "var(--c-emergency)",   w: 0.13, note: "3–6 חודשי הוצאות" },
-      { key: "lifestyle",   name: "בילויים ופנאי",   emoji: "🎉", color: "var(--c-lifestyle)",   w: 0.15, note: "כיף, מסעדות, מנויים" },
-    ];
+    const META = {
+      housing:     { name: "דיור וחשבונות", emoji: "🏠", color: "var(--c-housing)",     note: "הוצאה חודשית קבועה" },
+      essentials:  { name: "שוטף",           emoji: "🛒", color: "var(--c-essentials)",  note: "אוכל, תחבורה, חשבונות" },
+      savings:     { name: "חיסכון",         emoji: "💰", color: "var(--c-savings)",     note: "כרית ביטחון ויעדים" },
+      investments: { name: "השקעות",         emoji: "📈", color: "var(--c-investments)", note: "בניית הון לטווח ארוך" },
+      lifestyle:   { name: "בילויים ופנאי",  emoji: "🎉", color: "var(--c-lifestyle)",   note: "כיף, מסעדות, חברים" },
+    };
 
     const state = {
-      pool: 10000,          // "Total across cubes" main pool, in ₪
-      withParents: true,
-      cubes: [],            // built from BASE with computed percentage + balance
+      pool: 0,              // money to distribute (bank balance or income)
+      cubes: [],            // generated from the profile
       justFunded: new Set(),
+      profile: null,        // { age, hasBank, balance, works, income, withParents, rent, arnona, utilities, committee }
       // auth gate
       screen: "auth",       // 'auth' | 'onboarding' | 'app'
       authUser: null,       // { id, email }
@@ -243,6 +265,37 @@
       authError: "",
       onboarded: false,
     };
+
+    // AI cube generation (verified logic): independent -> locked Housing +
+    // Essentials/Savings/Investments/Lifestyle; with parents -> no Housing, the
+    // freed rent share boosts Savings/Investments/Lifestyle.
+    function generateCubes(p) {
+      const income = p.works ? (Number(p.income) || 0) : 0;
+      const independent = !p.withParents;
+      const housingCost = independent
+        ? (Number(p.rent)||0) + (Number(p.arnona)||0) + (Number(p.utilities)||0) + (Number(p.committee)||0) : 0;
+      const rnd = (n) => Math.round(n * 10) / 10;
+      const mk = (key, pct, amount, locked) => ({
+        key, name: META[key].name, emoji: META[key].emoji, color: META[key].color,
+        note: key === "housing" ? "הוצאה חודשית קבועה (נעול)" : META[key].note,
+        pct, amount: Math.round(amount), locked: !!locked, balance: 0,
+      });
+      const cubes = [];
+      if (independent) {
+        const base = income > 0 ? income : ((Number(p.balance) || 0) || 1);
+        const hs = Math.max(0, Math.min(0.85, housingCost / base));
+        const disc = 1 - hs;
+        const W = { essentials: 0.35, savings: 0.27, investments: 0.20, lifestyle: 0.18 };
+        cubes.push(mk("housing", rnd(hs * 100), housingCost, true));
+        ["essentials","savings","investments","lifestyle"].forEach((k) =>
+          cubes.push(mk(k, rnd(W[k] * disc * 100), W[k] * disc * income)));
+      } else {
+        const W = { essentials: 0.25, savings: 0.30, investments: 0.27, lifestyle: 0.18 };
+        ["essentials","savings","investments","lifestyle"].forEach((k) =>
+          cubes.push(mk(k, rnd(W[k] * 100), W[k] * income)));
+      }
+      return cubes;
+    }
 
     // ====================================================================
     // Mock Auth Service — simulated secure local user store (no real DB).
@@ -293,56 +346,52 @@
       if (state.screen === "auth" || !state.authUser) return;
       try {
         localStorage.setItem(stateKey(), JSON.stringify({
-          pool: state.pool, withParents: state.withParents, onboarded: state.onboarded,
-          balances: Object.fromEntries(state.cubes.map((c) => [c.key, c.balance])),
+          onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
         }));
       } catch (e) {}
     }
     function loadState() {
       let s = null;
       try { s = JSON.parse(localStorage.getItem(stateKey()) || "null"); } catch (e) {}
-      state.pool = s ? (s.pool != null ? s.pool : 10000) : 10000;
-      state.withParents = s ? s.withParents !== false : true;
+      state.profile = s && s.profile ? s.profile : null;
       state.onboarded = !!(s && s.onboarded);
-      buildCubes();
-      if (s && s.balances) state.cubes.forEach((c) => { c.balance = s.balances[c.key] || 0; });
+      state.pool = s && s.pool != null ? s.pool : 0;
+      state.cubes = s && Array.isArray(s.cubes) ? s.cubes : [];
     }
 
     function enterApp(user) {
       state.authUser = user; state.authError = ""; setSession(user.email);
       loadState();
-      state.screen = state.onboarded ? "app" : "onboarding";
+      if (state.onboarded) { state.screen = "app"; }
+      else { startOnboarding(); state.screen = "onboarding"; }
       render();
     }
     function logout() {
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
-      state.onboarded = false; state.pool = 10000; state.withParents = true; buildCubes();
+      state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = [];
       render();
     }
     function initAuth() {
       const email = getSession();
       const users = loadUsers();
       if (email && users[email]) { enterApp({ id: users[email].id, email: users[email].email }); }
-      else { state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup"; buildCubes(); render(); }
+      else { state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup"; render(); }
     }
 
-    function buildCubes() {
-      const prev = Object.fromEntries(state.cubes.map((c) => [c.key, c.balance]));
-      let cubes;
-      if (state.withParents) {
-        cubes = BASE.map((b) => ({ ...b, pct: Math.round(b.w * 1000) / 10 }));
-      } else {
-        // Independent: a Housing cube takes ~35%, the rest keep their relative weights.
-        const housingPct = 35;
-        const rest = 100 - housingPct;
-        cubes = [{ key: "housing", name: "דיור", emoji: "🏠", color: "var(--c-housing)",
-                   pct: housingPct, note: "שכירות, ארנונה וחשבונות" }]
-          .concat(BASE.map((b) => ({ ...b, pct: Math.round(b.w * rest * 10) / 10 })));
-      }
-      // carry balances across a toggle
-      cubes.forEach((c) => { c.balance = prev[c.key] || 0; });
-      state.cubes = cubes;
+    // Onboarding wizard draft (module-scoped; reset when onboarding starts).
+    let ob = null;
+    function startOnboarding() {
+      ob = { i: 0, d: { age: "", hasBank: null, balance: "", works: null, income: "",
+                        withParents: null, rent: "", arnona: "", utilities: "", committee: "" } };
+    }
+    function obSteps() {
+      const d = ob.d, age = Number(d.age);
+      const s = ["age"];
+      if (age >= 16) { s.push("bank"); if (d.hasBank) s.push("balance"); }
+      s.push("work"); if (d.works) s.push("income");
+      s.push("housing"); if (d.withParents === false) s.push("costs");
+      return s;
     }
 
     const totalBalance = () => state.cubes.reduce((s, c) => s + c.balance, 0);
@@ -386,39 +435,110 @@
       v.querySelector("#aToggle").onclick = () => { state.authMode = isSignup ? "login" : "signup"; state.authError = ""; render(); };
     }
 
-    // ---- Onboarding (minimal questionnaire) -------------------------------
+    // ---- Onboarding (multi-step, conditional) -----------------------------
     function renderOnboarding() {
+      if (!ob) startOnboarding();
+      const steps = obSteps();
+      const idx = Math.min(ob.i, steps.length - 1);
+      const step = steps[idx];
+      const isLast = idx === steps.length - 1;
+      const d = ob.d, age = Number(d.age);
+      const digits = (val) => val.replace(/[^0-9]/g, "");
+
+      const canNext = () => {
+        switch (step) {
+          case "age": { const a = Number(d.age); return a >= 5 && a <= 120; }
+          case "bank": return d.hasBank !== null;
+          case "balance": return d.balance !== "" && Number(d.balance) >= 0;
+          case "work": return d.works !== null;
+          case "income": return Number(d.income) > 0;
+          case "housing": return d.withParents !== null;
+          case "costs": return Number(d.rent) > 0;
+          default: return false;
+        }
+      };
+
       const v = $("view"); v.innerHTML = "";
       const wrap = el("div", "authwrap");
-      wrap.innerHTML =
-        '<div class="authcard">' +
-          '<div class="authbrand">🧊 בוא נתחיל</div>' +
-          '<h2 class="authtitle">שאלון קצר</h2>' +
-          '<p class="authsub">שתי שאלות ונבנה לך את הקוביות.</p>' +
-          '<label class="flbl">כמה כסף פנוי לחלוקה החודש?</label>' +
-          '<div class="fld"><span class="cur">₪</span><input id="oInc" inputmode="numeric" placeholder="10000" value="10000"></div>' +
-          '<label class="flbl">מגורים</label>' +
-          '<div class="toggle" id="oToggle">' +
-            '<button class="on" data-p="1">🏠 גר עם ההורים</button>' +
-            '<button data-p="0">🔑 עצמאי/ת</button>' +
-          '</div>' +
-          '<button class="distbtn wide" id="oDone" style="margin-top:18px">בנה את הקוביות 🧊</button>' +
-        '</div>';
+      const money = (id, lbl, ph, val) =>
+        '<label class="flbl">' + lbl + '</label><div class="fld"><span class="cur">₪</span>' +
+        '<input id="' + id + '" inputmode="numeric" placeholder="' + ph + '" value="' + (val || "") + '"></div>';
+      const choice = (p, lbl, sub, on) =>
+        '<button class="ob-opt' + (on ? " on" : "") + '" data-v="' + p + '"><span class="obrad"><i></i></span>' +
+        '<span class="obtxt"><b>' + lbl + '</b>' + (sub ? '<span>' + sub + '</span>' : "") + '</span></button>';
+
+      let inner = '<div class="track" style="margin-bottom:12px"><i style="width:' +
+        Math.round(((idx + 1) / steps.length) * 100) + '%"></i></div>' +
+        '<div class="stepcount">שלב ' + (idx + 1) + ' מתוך ' + steps.length + '</div>';
+
+      if (step === "age") inner += '<h2 class="authtitle">בן כמה את/ה?</h2><p class="authsub">נשאל שאלות מותאמות לגיל שלך.</p>' + money("f", "גיל", "17", d.age);
+      else if (step === "bank") inner += '<h2 class="authtitle">יש לך חשבון בנק?</h2><p class="authsub">מגיל 16 אפשר לנהל יתרה עצמאית.</p>' +
+        choice("1", "כן, יש לי חשבון", "", d.hasBank === true) + choice("0", "לא, אין לי עדיין", "נדלג על שאלת היתרה", d.hasBank === false);
+      else if (step === "balance") inner += '<h2 class="authtitle">מה היתרה לניהול?</h2><p class="authsub">הסכום שתרצה לעקוב אחריו ולחלק (מדומה — ללא חיבור לבנק).</p>' + money("f", "יתרה נוכחית משוערת", "3000", d.balance);
+      else if (step === "work") inner += '<h2 class="authtitle">האם את/ה עובד/ת?</h2><p class="authsub">נבנה את התקציב סביב ההכנסה.</p>' +
+        choice("1", "כן, אני עובד/ת", "", d.works === true) + choice("0", "לא כרגע", "נדלג על שאלת ההכנסה", d.works === false);
+      else if (step === "income") inner += '<h2 class="authtitle">מהי ההכנסה החודשית המשוערת?</h2><p class="authsub">ההכנסה החודשית נטו שלך.</p>' + money("f", "הכנסה חודשית", "10000", d.income);
+      else if (step === "housing") inner += '<h2 class="authtitle">את/ה גר/ה עם ההורים?</h2><p class="authsub">זה קובע אם ניצור קוביית דיור.</p>' +
+        choice("1", "כן, גר/ה עם ההורים", "בלי שכירות — הכסף מופנה לחיסכון והשקעות", d.withParents === true) +
+        choice("0", "לא, גר/ה עצמאי/ת", "ניצור קוביית דיור נעולה", d.withParents === false);
+      else if (step === "costs") {
+        const tot = (Number(d.rent)||0)+(Number(d.arnona)||0)+(Number(d.utilities)||0)+(Number(d.committee)||0);
+        inner += '<h2 class="authtitle">הוצאות הדיור החודשיות</h2><p class="authsub">נסכם אותן לקוביית דיור נעולה.</p>' +
+          money("cRent", "שכר דירה / משכנתא", "3500", d.rent) + money("cArn", "ארנונה", "300", d.arnona) +
+          money("cUtil", "חשמל ומים", "400", d.utilities) + money("cComm", "ועד בית", "100", d.committee) +
+          '<div class="obsum">סה״כ דיור קבוע: <b>₪' + fmt(tot) + '</b></div>';
+      }
+
+      inner += '<button class="distbtn wide" id="obNext" style="margin-top:18px">' + (isLast ? "בנה את הקוביות 🧊" : "המשך") + '</button>';
+      if (idx > 0) inner += '<button class="obback" id="obBack">חזרה</button>';
+      wrap.innerHTML = '<div class="authcard">' + inner + '</div>';
       v.appendChild(wrap);
-      let wp = true;
-      v.querySelectorAll("#oToggle button").forEach((b) => {
-        b.onclick = () => { wp = b.dataset.p === "1"; v.querySelectorAll("#oToggle button").forEach((x) => x.classList.toggle("on", x === b)); };
+
+      const bindNum = (id, key) => { const inp = v.querySelector("#" + id); if (inp) inp.oninput = () => { inp.value = digits(inp.value); d[key] = inp.value; syncNext(); if (step === "costs") updateSum(); }; };
+      if (step === "age") bindNum("f", "age");
+      else if (step === "balance") bindNum("f", "balance");
+      else if (step === "income") bindNum("f", "income");
+      else if (step === "costs") { bindNum("cRent", "rent"); bindNum("cArn", "arnona"); bindNum("cUtil", "utilities"); bindNum("cComm", "committee"); }
+      const autof = v.querySelector(".authcard input"); if (autof) setTimeout(() => autof.focus(), 40);
+
+      v.querySelectorAll(".ob-opt").forEach((b) => {
+        b.onclick = () => {
+          const val = b.dataset.v === "1";
+          if (step === "bank") { d.hasBank = val; if (!val) d.balance = ""; }
+          else if (step === "work") { d.works = val; if (!val) d.income = ""; }
+          else if (step === "housing") d.withParents = val;
+          renderOnboarding();
+        };
       });
-      v.querySelector("#oInc").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); };
-      v.querySelector("#oDone").onclick = () => {
-        state.pool = Number(v.querySelector("#oInc").value) || 10000;
-        state.withParents = wp;
-        state.onboarded = true;
-        buildCubes();
-        state.screen = "app";
-        render();
-        saveState();
+
+      function syncNext() { const nb = v.querySelector("#obNext"); if (nb) nb.disabled = !canNext(); }
+      function updateSum() { const b2 = v.querySelector(".obsum b"); if (b2) b2.textContent = "₪" + fmt((Number(d.rent)||0)+(Number(d.arnona)||0)+(Number(d.utilities)||0)+(Number(d.committee)||0)); }
+      syncNext();
+
+      v.querySelector("#obNext").onclick = () => {
+        if (!canNext()) return;
+        if (isLast) finishOnboarding();
+        else { ob.i = idx + 1; renderOnboarding(); }
       };
+      const back = v.querySelector("#obBack");
+      if (back) back.onclick = () => { ob.i = Math.max(0, idx - 1); renderOnboarding(); };
+    }
+
+    function finishOnboarding() {
+      const d = ob.d;
+      const profile = {
+        age: Number(d.age), hasBank: !!d.hasBank, balance: Number(d.balance) || 0,
+        works: !!d.works, income: Number(d.income) || 0, withParents: !!d.withParents,
+        rent: Number(d.rent) || 0, arnona: Number(d.arnona) || 0,
+        utilities: Number(d.utilities) || 0, committee: Number(d.committee) || 0,
+      };
+      state.profile = profile;
+      state.cubes = generateCubes(profile);
+      state.pool = profile.balance || (profile.works ? profile.income : 0);
+      state.onboarded = true;
+      state.screen = "app";
+      render();
+      saveState();
     }
 
     // ---- Dashboard --------------------------------------------------------
@@ -457,21 +577,12 @@
       };
       btn.textContent = state.pool > 0 ? "חלק ₪" + fmt(state.pool) : "חלק לתקציב";
 
-      // living situation toggle
-      const tg = el("div", "toggle");
-      tg.innerHTML =
-        '<button class="' + (state.withParents ? "on" : "") + '" data-p="1">🏠 גר עם ההורים</button>' +
-        '<button class="' + (!state.withParents ? "on" : "") + '" data-p="0">🔑 עצמאי/ת</button>';
-      tg.querySelectorAll("button").forEach((b) => {
-        b.onclick = () => { state.withParents = b.dataset.p === "1"; buildCubes(); render(); };
-      });
-      v.appendChild(tg);
-
-      // living-with-parents notice
+      // living-with-parents notice (based on the answered profile)
+      const withParents = state.profile ? state.profile.withParents : true;
       const note = el("div", "parents");
-      note.innerHTML = state.withParents
+      note.innerHTML = withParents
         ? '<span class="pi">💡</span><span class="pt">מגורים עם ההורים <b>משחררים את כסף השכירות</b> — הפנינו אותו לקוביות בוני-העושר: <b>חיסכון, השקעות ובילויים</b> קיבלו נתח גדול יותר.</span>'
-        : '<span class="pi">🔑</span><span class="pt">כדייר/ת עצמאי/ת נוצרה קוביית <b>דיור</b> שמכסה שכירות וחשבונות, ושאר הקוביות מתכווצות בהתאם.</span>';
+        : '<span class="pi">🔑</span><span class="pt">כדייר/ת עצמאי/ת נוצרה קוביית <b>דיור וחשבונות</b> נעולה על הסכום שהזנת, ושאר הקוביות חולקו מהתקציב שנשאר.</span>';
       v.appendChild(note);
 
       const st = el("div", "section-t"); st.textContent = "הקוביות שלך"; v.appendChild(st);
@@ -482,17 +593,18 @@
     }
 
     function cubeCard(c) {
-      const target = state.pool > 0 ? state.pool * (c.pct / 100) : (c.balance || 1);
+      const monthly = c.locked ? (c.amount || 0) : (state.pool > 0 ? state.pool * (c.pct / 100) : (c.amount || c.balance || 1));
+      const target = monthly || 1;
       const fill = Math.max(0, Math.min(1, target > 0 ? c.balance / target : 0)) * 100;
       const card = el("div", "cube" + (state.justFunded.has(c.key) ? " pop" : ""));
       card.innerHTML =
         '<div class="top">' +
           '<div class="chip" style="background:' + c.color + '22">' + c.emoji + '</div>' +
-          '<div><div class="nm">' + c.name + '</div><div class="nt">' + c.note + '</div></div>' +
+          '<div><div class="nm">' + c.name + (c.locked ? ' <span title="נעול">🔒</span>' : '') + '</div><div class="nt">' + c.note + '</div></div>' +
           '<div class="pct" style="color:' + c.color + ';background:' + c.color + '22">' + c.pct + '%</div>' +
         '</div>' +
         '<div class="brow"><span class="bal" data-to="' + c.balance + '">₪' + fmt(c.balance) + '</span>' +
-          '<span class="tgt">מתוך ₪' + fmt(target) + ' לחודש</span></div>' +
+          '<span class="tgt">מתוך ₪' + fmt(target) + (c.locked ? ' (נעול)' : ' לחודש') + '</span></div>' +
         '<div class="track"><i style="background:' + c.color + '"></i></div>';
       requestAnimationFrame(() => { const bar = card.querySelector(".track > i"); if (bar) bar.style.width = fill + "%"; });
       return card;
