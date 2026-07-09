@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "CubeFinance",
+    "slug": "cubefinance",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0D0D14",
+    "splash": {
+      "backgroundColor": "#0D0D14",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": {
+      "adaptiveIcon": { "backgroundColor": "#0D0D14" }
+    },
+    "extra": {
+      "note": "Set EXPO_PUBLIC_API_URL to your backend LAN address for device testing."
+    }
+  }
+}
