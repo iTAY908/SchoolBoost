@@ -299,12 +299,16 @@
   .intro { text-align: center; padding: 30px 24px; color: var(--dim); }
   .intro .e { font-size: 40px; }
   .intro p { font-size: 14px; line-height: 1.5; margin-top: 8px; }
-  .bubble { max-width: 82%; padding: 11px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
+  .bubble { max-width: 82%; padding: 11px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; white-space: pre-wrap; unicode-bidi: plaintext; }
+  #chatIn, .sugg button, .qreplies button { unicode-bidi: plaintext; }
   .bubble.u { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
   .bubble.b { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
   .sugg { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
   .sugg button { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 9px 14px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
   .sugg button:hover { border-color: var(--primary); }
+  .qreplies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; align-self: flex-start; max-width: 90%; }
+  .qreplies button { background: var(--card-2); border: 1px solid var(--primary-dim); border-radius: 999px; padding: 9px 13px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background .15s; }
+  .qreplies button:hover { background: var(--primary); }
   .inbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
   .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
   .inbar input:focus { border-color: var(--primary); }
@@ -473,30 +477,146 @@ function evaluateAlerts(cubes) {
   }
   return out;
 }
-function buddyReply(text, state) {
+// ---- conversational buddy (bilingual, with an expense-logging flow) --------
+const isHeb = (s) => /[֐-׿]/.test(s || '');
+
+const CUBE_SYNONYMS = {
+  housing: ['housing', 'rent', 'bills', 'דיור', 'שכירות', 'שכ"ד', 'שכר דירה', 'בית', 'חשבונות', 'ארנונה'],
+  essentials: ['essentials', 'food', 'grocery', 'groceries', 'אוכל', 'מצרכים', 'מכולת', 'בסיס', 'תחבורה', 'סופר'],
+  savings: ['savings', 'saving', 'save', 'חיסכון', 'חסכון', 'לחסוך'],
+  investments: ['investment', 'investments', 'invest', 'השקעות', 'השקעה', 'להשקיע', 'מניות'],
+  emergency: ['emergency', 'חירום', 'חרום'],
+  lifestyle: ['lifestyle', 'fun', 'friend', 'friends', 'ליהנות', 'להנות', 'בילוי', 'בילויים', 'כיף', 'חברים', 'בידור', 'מסעדה', 'מסעדות', 'בית קפה'],
+};
+
+function matchCube(text) {
+  const q = (text || '').toLowerCase();
+  for (const c of state.cubes) {
+    const syns = CUBE_SYNONYMS[c.key] || [];
+    if (syns.some((w) => q.includes(w.toLowerCase())) || q.includes(c.name.toLowerCase())) return c.key;
+  }
+  return null;
+}
+function parseAmount(text) {
+  const m = (text || '').replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+  return m ? Number(m[1]) : null;
+}
+const SPEND_RE = /(spent|spend|paid|bought|cost|בזבזתי|בזבזת|ביזבזתי|הוצאתי|הוצאת|קניתי|שילמתי|שילמת)/i;
+const AFFORD_RE = /(afford|can i (buy|spend)|יכול לקנות|אפשר לקנות|להרשות|יכול לבזבז|אפשר לבזבז|אפשר להוציא)/i;
+const RENT_RE = /(rent|שכירות|שכר דירה|שכ"ד|ארנונה|עולה|לעדכן|adjust|increase)/i;
+const STATUS_RE = /(status|overview|how am i|how'?s|doing|low|balance|מצב|סטטוס|סקירה|איך אני|כמה יש|נמוך|יתרה)/i;
+// Hebrew letters aren't \w, so \b is unreliable — anchor on a trailing space/end/punct instead.
+const GREET_RE = /^(hi|hey|hello|yo|sup|היי|הי|שלום|מה קורה|מה נשמע|אהלן)(\s|$|[!?.,])/i;
+
+function cubeQuick() {
+  return state.cubes.map((c) => ({ label: `${c.icon} ${c.name}`, cubeKey: c.key }));
+}
+
+/** Perform an expense: deduct from a cube, update alerts, return a reply. */
+function doExpense(key, opts = {}) {
+  const heb = opts.heb ?? state.pending?.heb ?? true;
+  const amount = opts.amount ?? state.pending?.amount ?? 0;
+  state.pending = null;
+  const cube = state.cubes.find((c) => c.key === key);
+  if (!cube) return { reply: heb ? 'לא מצאתי את הקובייה הזאת 🤔' : "I couldn't find that cube 🤔" };
+  cube.balance = round(cube.balance - amount);
+  state.alerts = evaluateAlerts(state.cubes);
+  state.lastFunded = new Set([key]);
+  const over = cube.balance < 0;
+  const reply = heb
+    ? `רשמתי ✅ הורדתי ${fmt(amount)} ₪ מהקובייה "${cube.name}". היתרה החדשה: ${fmt(cube.balance)} ₪.` +
+      (over ? ' ⚠️ הקובייה ירדה למינוס — כדאי להעביר אליה כסף מהחשבון הראשי.' : '')
+    : `Logged ✅ I took ${fmt(amount)} ₪ out of your "${cube.name}" cube. New balance: ${fmt(cube.balance)} ₪.` +
+      (over ? ' ⚠️ It went negative — consider moving funds in from your main account.' : '');
+  return { reply };
+}
+
+/** Core responder. Returns { reply, quick? }. May set/clear state.pending. */
+function respond(text) {
+  const heb = isHeb(text);
   const q = (text || '').toLowerCase();
   const cubes = state.cubes;
   const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
   const total = cubes.reduce((s, c) => s + c.balance, 0);
-  const am = q.match(/(\d[\d,]*)/);
-  if (q.includes('afford') && am) {
-    const amount = Number(am[1].replace(/,/g, ''));
+
+  // 0. Awaiting a cube choice for a logged expense?
+  if (state.pending && state.pending.type === 'expense') {
+    const key = matchCube(text);
+    if (key) return doExpense(key, { heb: state.pending.heb });
+    if (/(cancel|בטל|עזוב|לא משנה|nevermind)/i.test(q)) {
+      state.pending = null;
+      return { reply: heb ? 'ביטלתי, לא רשמתי כלום 👍' : 'Cancelled — nothing logged 👍' };
+    }
+    return {
+      reply: heb ? 'לא הבנתי איזו קובייה 🤔 בחר/י אחת מהאפשרויות:' : "I didn't catch which cube 🤔 pick one:",
+      quick: cubeQuick(),
+    };
+  }
+
+  // 1. Affordability
+  if (AFFORD_RE.test(text)) {
+    const amount = parseAmount(text);
+    if (!amount) return { reply: heb ? 'כמה כסף מדובר? כתוב לי סכום ואבדוק 🙂' : 'How much are we talking? Give me a number and I\'ll check 🙂' };
     const life = byKey.lifestyle || cubes.find((c) => !c.fixed);
-    if (!life) return "You haven't set up your cubes yet — finish onboarding first! 🧊";
-    if (amount <= life.balance) return `Yes! 🎉 Spending ${fmt(amount)} ₪ from your ${life.name} cube (balance ${fmt(life.balance)} ₪) leaves you ${fmt(life.balance - amount)} ₪ there. You're good.`;
-    if (amount <= total) return `It's tight. Your ${life.name} cube only has ${fmt(life.balance)} ₪, so ${fmt(amount)} ₪ would overdraw it. You could cover it across cubes (total ${fmt(total)} ₪), but I'd pull the difference from Savings deliberately.`;
-    return `I'd say no for now. ${fmt(amount)} ₪ is more than your total tracked balance of ${fmt(total)} ₪. Let's protect your Emergency and Housing cubes.`;
+    if (!life) return { reply: heb ? 'עדיין אין קוביות — סיים/י את ההרשמה קודם 🧊' : "You haven't set up your cubes yet — finish onboarding first 🧊" };
+    if (amount <= life.balance)
+      return { reply: heb
+        ? `כן! 🎉 הוצאה של ${fmt(amount)} ₪ מהקובייה "${life.name}" (יתרה ${fmt(life.balance)} ₪) תשאיר לך ${fmt(life.balance - amount)} ₪ שם. אפשר בשקט.`
+        : `Yes! 🎉 Spending ${fmt(amount)} ₪ from your "${life.name}" cube (balance ${fmt(life.balance)} ₪) leaves ${fmt(life.balance - amount)} ₪ there. You're good.` };
+    if (amount <= total)
+      return { reply: heb
+        ? `קצת גבולי. בקובייה "${life.name}" יש רק ${fmt(life.balance)} ₪, אז ${fmt(amount)} ₪ יורידו אותה למינוס. יש לך ${fmt(total)} ₪ בסך הכל בקוביות — אם ממש צריך, קח את ההפרש מהחיסכון במודע.`
+        : `It's tight. Your "${life.name}" cube only has ${fmt(life.balance)} ₪, so ${fmt(amount)} ₪ would overdraw it. You have ${fmt(total)} ₪ across cubes — if you must, pull the difference from Savings deliberately.` };
+    return { reply: heb
+      ? `הייתי אומר לא כרגע. ${fmt(amount)} ₪ זה יותר מכל היתרה שלך (${fmt(total)} ₪). בוא נשמור על קוביית החירום והדיור.`
+      : `I'd say no for now. ${fmt(amount)} ₪ is more than your total balance of ${fmt(total)} ₪. Let's protect your Emergency and Housing cubes.` };
   }
-  if (q.includes('rent') || q.includes('adjust') || q.includes('increase')) {
+
+  // 2. Logging an expense: "I spent 200"
+  if (SPEND_RE.test(text)) {
+    const amount = parseAmount(text);
+    if (!amount) return { reply: heb ? 'כמה בזבזת? כתוב לי סכום 🙂' : 'How much did you spend? Give me a number 🙂' };
+    const key = matchCube(text);
+    if (key) return doExpense(key, { heb, amount }); // cube named in the same sentence
+    state.pending = { type: 'expense', amount, heb };
+    return {
+      reply: heb
+        ? `סבבה 🙂 באיזו קובייה בזבזת את ה-${fmt(amount)} ₪?`
+        : `Got it 🙂 which cube did you spend the ${fmt(amount)} ₪ from?`,
+      quick: cubeQuick(),
+    };
+  }
+
+  // 3. Rent / adjust
+  if (RENT_RE.test(text)) {
     const ho = byKey.housing;
-    return ho ? `If your rent changes, update your Housing cube target (currently ${fmt(ho.monthlyContribution)} ₪·mo). The extra usually comes out of Lifestyle first, then Savings.`
-      : `You're living with parents, so there's no Housing cube. If that changes, tell me your new rent and I'll rebuild your cubes.`;
+    if (ho) return { reply: heb
+      ? `אם השכירות משתנה, עדכן/י את היעד של קוביית "דיור" (כרגע ${fmt(ho.monthlyContribution)} ₪ לחודש). התוספת בדרך כלל באה קודם מ-Lifestyle, ואז מהחיסכון.`
+      : `If your rent changes, update your Housing cube target (currently ${fmt(ho.monthlyContribution)} ₪/mo). The extra usually comes out of Lifestyle first, then Savings.` };
+    return { reply: heb
+      ? `אתה גר עם ההורים, אז אין קוביית דיור. אם זה משתנה — תגיד לי את השכירות החדשה ואבנה מחדש את הקוביות.`
+      : `You live with parents, so there's no Housing cube. If that changes, tell me the new rent and I'll rebuild your cubes.` };
   }
-  if (q.includes('low') || q.includes('status') || q.includes('doing') || q.includes('overview')) {
+
+  // 4. Status / how am I doing
+  if (STATUS_RE.test(text)) {
     const lowest = [...cubes].sort((a, b) => a.balance - b.balance)[0];
-    return `Total across cubes: ${fmt(total)} ₪. ${lowest ? `Your lowest cube right now is ${lowest.name} at ${fmt(lowest.balance)} ₪.` : ''} Ask me "can I afford ___?" anytime.`;
+    return { reply: heb
+      ? `סה"כ בקוביות: ${fmt(total)} ₪.${lowest ? ` הקובייה הכי נמוכה כרגע היא "${lowest.name}" עם ${fmt(lowest.balance)} ₪.` : ''} אפשר לשאול אותי "אפשר להרשות 500 ₪?" מתי שרוצה.`
+      : `Total across cubes: ${fmt(total)} ₪.${lowest ? ` Your lowest cube right now is "${lowest.name}" at ${fmt(lowest.balance)} ₪.` : ''} Ask me "can I afford ___?" anytime.` };
   }
-  return `I'm Cubey 🧊 — your money buddy. I can see your cubes (total ${fmt(total)} ₪). Try: "Can I afford 500 ₪?", "My rent is going up", or "How am I doing?"`;
+
+  // 5. Greeting
+  if (GREET_RE.test(text.trim())) {
+    return { reply: heb
+      ? `היי! 👋 אני Cubey, החבר הפיננסי שלך. יש לך ${fmt(total)} ₪ בקוביות. אפשר לספר לי על הוצאה ("בזבזתי 200 ₪"), לשאול "אפשר להרשות 300 ₪?", או "מה המצב שלי?"`
+      : `Hey! 👋 I'm Cubey, your money buddy. You've got ${fmt(total)} ₪ across cubes. Tell me about a spend ("I spent 200 ₪"), ask "can I afford 300 ₪?", or "how am I doing?"` };
+  }
+
+  // 6. Helpful fallback (acknowledges the message)
+  return { reply: heb
+    ? `הבנתי אותך 🙂 אני יודע לעזור עם הכסף שבקוביות (סה"כ ${fmt(total)} ₪). נסה: "בזבזתי 200 ₪ על אוכל", "אפשר להרשות 500 ₪?", או "מה המצב שלי?"`
+    : `I hear you 🙂 I can help with the money in your cubes (total ${fmt(total)} ₪). Try: "I spent 200 ₪ on food", "can I afford 500 ₪?", or "how am I doing?"` };
 }
 
 // ============================================================================
@@ -509,7 +629,7 @@ const restartBtn = document.getElementById('restart');
 const state = {
   onboarded: false,
   profile: null, cubes: [], mainAccount: 0, summary: null, alerts: [],
-  chat: [], chatStreaming: false, lastFunded: new Set(),
+  chat: [], chatStreaming: false, lastFunded: new Set(), pending: null,
   draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
   stepIndex: 0,
 };
@@ -815,7 +935,7 @@ function buildFab() {
   fab.onclick = () => { chatOpen = true; render(); };
   return fab;
 }
-const SUGG = ['Can I afford 500 ₪?', 'How am I doing?', 'My rent is going up'];
+const SUGG = ['בזבזתי 200 ₪ היום', 'אפשר להרשות 500 ₪?', 'מה המצב שלי?'];
 function buildChat() {
   const wrap = el('div', 'chatwrap' + (chatOpen ? ' on' : ''));
   wrap.onclick = (e) => { if (e.target === wrap) { chatOpen = false; render(); } };
@@ -826,15 +946,25 @@ function buildChat() {
     ${alertStrip}
     <div class="msgs" id="msgs"></div>
     ${state.chat.length === 0 ? '<div class="sugg" id="sugg"></div>' : ''}
-    <div class="inbar"><input id="chatIn" placeholder="Ask Cubey…" ${state.chatStreaming ? 'disabled' : ''}><button id="send" ${state.chatStreaming ? 'disabled' : ''}>➤</button></div>`;
+    <div class="inbar"><input id="chatIn" placeholder="כתוב ל-Cubey…" ${state.chatStreaming ? 'disabled' : ''}><button id="send" ${state.chatStreaming ? 'disabled' : ''}>➤</button></div>`;
   chat.querySelector('.x').onclick = () => { chatOpen = false; render(); };
   const msgs = chat.querySelector('#msgs');
   if (state.chat.length === 0) {
-    msgs.innerHTML = `<div class="intro"><div class="e">👋</div><p>Hi! I'm Cubey. I can see your cubes and balances. Ask me anything about your money.</p></div>`;
+    msgs.innerHTML = `<div class="intro"><div class="e">👋</div><p dir="auto">היי! אני Cubey 🧊 — רואה את הקוביות והיתרות שלך. ספר לי על הוצאה ("בזבזתי 200 ₪"), שאל אם אפשר להרשות משהו, או "מה המצב שלי?"</p></div>`;
     const sg = chat.querySelector('#sugg');
     SUGG.forEach((s) => { const b = el('button'); b.textContent = s; b.onclick = () => sendChat(s); sg.appendChild(b); });
   } else {
-    state.chat.forEach((m) => { const b = el('div', 'bubble ' + (m.role === 'user' ? 'u' : 'b')); b.textContent = m.content || '…'; msgs.appendChild(b); });
+    state.chat.forEach((m, mi) => {
+      const b = el('div', 'bubble ' + (m.role === 'user' ? 'u' : 'b'));
+      b.textContent = m.content || '…';
+      msgs.appendChild(b);
+      // Quick-reply buttons under the latest assistant message (e.g. pick a cube).
+      if (m.role === 'assistant' && m.quick && mi === state.chat.length - 1 && !state.chatStreaming) {
+        const qr = el('div', 'qreplies');
+        m.quick.forEach((o) => { const bt = el('button'); bt.textContent = o.label; bt.onclick = () => pickCube(o.cubeKey); qr.appendChild(bt); });
+        msgs.appendChild(qr);
+      }
+    });
   }
   const input = chat.querySelector('#chatIn');
   const send = () => { const v = input.value.trim(); if (v) sendChat(v); };
@@ -848,25 +978,43 @@ function buildChat() {
 function sendChat(text) {
   if (state.chatStreaming) return;
   state.chat.push({ role: 'user', content: text });
-  state.chat.push({ role: 'assistant', content: '' });
+  botSay(respond(text));
+}
+
+// The user tapped a cube quick-reply button to resolve a logged expense.
+function pickCube(key) {
+  if (state.chatStreaming) return;
+  const cube = state.cubes.find((c) => c.key === key);
+  if (!cube) return;
+  state.chat.push({ role: 'user', content: cube.name });
+  botSay(doExpense(key));
+}
+
+// Push an assistant reply and stream it in, then reveal any quick replies.
+function botSay(res) {
+  state.chat.push({ role: 'assistant', content: '', quick: null });
   state.chatStreaming = true;
   render();
-  const full = buddyReply(text, state);
+  const full = res.reply || '';
   let i = 0;
   const iv = setInterval(() => {
     i += 3;
     state.chat[state.chat.length - 1].content = full.slice(0, i);
     const msgs = screen.querySelector('#msgs');
     if (msgs) {
-      const last = msgs.querySelector('.bubble.b:last-child');
+      const bots = msgs.querySelectorAll('.bubble.b');
+      const last = bots[bots.length - 1];
       if (last) last.textContent = state.chat[state.chat.length - 1].content || '…';
       msgs.scrollTop = msgs.scrollHeight;
     }
     if (i >= full.length) {
       clearInterval(iv);
-      state.chat[state.chat.length - 1].content = full;
+      const msg = state.chat[state.chat.length - 1];
+      msg.content = full;
+      msg.quick = res.quick || null;
       state.chatStreaming = false;
       render();
+      setTimeout(() => { state.lastFunded = new Set(); }, 900);
     }
   }, 18);
 }
@@ -877,7 +1025,7 @@ function el(tag, cls) { const n = document.createElement(tag); if (cls) n.classN
 restartBtn.onclick = () => {
   Object.assign(state, {
     onboarded: false, profile: null, cubes: [], mainAccount: 0, summary: null,
-    alerts: [], chat: [], chatStreaming: false, lastFunded: new Set(), stepIndex: 0,
+    alerts: [], chat: [], chatStreaming: false, lastFunded: new Set(), pending: null, stepIndex: 0,
     draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
   });
   chatOpen = false; sheetOpen = false;
