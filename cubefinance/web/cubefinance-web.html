@@ -22,6 +22,7 @@
     * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
     body {
+      direction: rtl; /* robust RTL even if a host strips the html dir attribute */
       font-family: var(--font); color: var(--text);
       background:
         radial-gradient(1000px 500px at 20% -10%, #1a1533 0%, transparent 55%),
