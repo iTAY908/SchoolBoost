@@ -161,6 +161,34 @@
       pointer-events: none; white-space: nowrap; }
     .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
+    /* auth + onboarding */
+    .authwrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 8px; }
+    .authcard { width: 100%; max-width: 340px; background: linear-gradient(165deg, #1b1830, #14131d);
+      border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 26px 20px;
+      box-shadow: 0 30px 70px -40px #000; }
+    .authbrand { font-size: 15px; font-weight: 800; color: var(--primary); }
+    .authtitle { font-size: 26px; font-weight: 900; letter-spacing: -.6px; margin: 12px 0 4px; }
+    .authsub { color: var(--dim); font-size: 14px; margin: 0 0 18px; line-height: 1.4; }
+    .flbl { display: block; color: var(--dim); font-size: 13px; font-weight: 700; margin: 12px 2px 7px; }
+    .fld { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 0 14px; transition: border-color .15s; }
+    .fld:focus-within { border-color: var(--primary); }
+    .fld .cur { color: var(--dim); font-weight: 800; font-size: 16px; }
+    .fld input { flex: 1; background: none; border: none; outline: none; color: var(--text);
+      font-size: 16px; font-weight: 700; padding: 13px 2px; font-family: var(--font); width: 100%;
+      font-variant-numeric: tabular-nums; }
+    .fld input::placeholder { color: #55556a; }
+    .aerr { color: var(--danger); font-size: 13.5px; font-weight: 800; min-height: 18px; margin: 10px 2px 6px;
+      unicode-bidi: plaintext; }
+    .distbtn.wide { width: 100%; margin-top: 6px; }
+    .aswitch { text-align: center; color: var(--dim); font-size: 13.5px; margin-top: 14px; }
+    .aswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer;
+      font-family: var(--font); font-size: 13.5px; }
+    .aswitch button:hover { text-decoration: underline; }
+    .brandrow { display: flex; align-items: center; justify-content: space-between; }
+    .logout { background: none; border: none; color: #ff8f8f; font-weight: 800; font-size: 13px;
+      cursor: pointer; font-family: var(--font); }
+
     @media (max-width: 560px) {
       body { padding: 0; }
       .device { width: 100%; height: 100vh; height: 100dvh; max-height: none; border: 0;
@@ -208,7 +236,96 @@
       withParents: true,
       cubes: [],            // built from BASE with computed percentage + balance
       justFunded: new Set(),
+      // auth gate
+      screen: "auth",       // 'auth' | 'onboarding' | 'app'
+      authUser: null,       // { id, email }
+      authMode: "login",    // 'login' | 'signup'
+      authError: "",
+      onboarded: false,
     };
+
+    // ====================================================================
+    // Mock Auth Service — simulated secure local user store (no real DB).
+    // Passwords are salted + key-stretched with a mock hash (NOT crypto-secure;
+    // a production app must hash server-side). Users live in localStorage.
+    // ====================================================================
+    const USERS_KEY = "cubefinance_web:users";
+    const SESSION_KEY = "cubefinance_web:session";
+    const loadUsers = () => { try { return JSON.parse(localStorage.getItem(USERS_KEY) || "{}"); } catch (e) { return {}; } };
+    const saveUsers = (u) => { try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch (e) {} };
+    function mockHash(s) {
+      let h = 5381;
+      for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+      for (let r = 0; r < 800; r++) h = ((h * 33) ^ (h >>> 7)) >>> 0; // key-stretch
+      return h.toString(16);
+    }
+    const hashPw = (pw, salt) => mockHash(salt + "::" + pw);
+    const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+    const normEmail = (e) => (e || "").trim().toLowerCase();
+
+    function authSignUp(email, pw) {
+      const e = normEmail(email);
+      if (!validEmail(e)) return { error: "כתובת אימייל לא תקינה" };
+      if ((pw || "").length < 4) return { error: "הסיסמה חייבת להכיל לפחות 4 תווים" };
+      const users = loadUsers();
+      if (users[e]) return { error: "האימייל כבר רשום במערכת" }; // Email already registered
+      const salt = Math.random().toString(36).slice(2);
+      const id = "acc_" + mockHash(e).slice(0, 8) + Date.now().toString(36);
+      users[e] = { id, email: e, salt, hash: hashPw(pw, salt), createdAt: Date.now() };
+      saveUsers(users);
+      return { user: { id, email: e } };
+    }
+    function authLogIn(email, pw) {
+      const e = normEmail(email);
+      const users = loadUsers();
+      const u = users[e];
+      if (!u) return { error: "לא נמצא משתמש עם אימייל זה" };
+      if (u.hash !== hashPw(pw, u.salt)) return { error: "שגיאה: סיסמה שגויה" }; // exact required message
+      return { user: { id: u.id, email: u.email } };
+    }
+    const setSession = (e) => { try { localStorage.setItem(SESSION_KEY, normEmail(e)); } catch (x) {} };
+    const clearSession = () => { try { localStorage.removeItem(SESSION_KEY); } catch (x) {} };
+    const getSession = () => { try { return localStorage.getItem(SESSION_KEY); } catch (x) { return null; } };
+
+    // Per-account app state (pool, cubes, onboarding) namespaced by user id.
+    const stateKey = () => "cubefinance_web:state:" + (state.authUser ? state.authUser.id : "anon");
+    function saveState() {
+      if (state.screen === "auth" || !state.authUser) return;
+      try {
+        localStorage.setItem(stateKey(), JSON.stringify({
+          pool: state.pool, withParents: state.withParents, onboarded: state.onboarded,
+          balances: Object.fromEntries(state.cubes.map((c) => [c.key, c.balance])),
+        }));
+      } catch (e) {}
+    }
+    function loadState() {
+      let s = null;
+      try { s = JSON.parse(localStorage.getItem(stateKey()) || "null"); } catch (e) {}
+      state.pool = s ? (s.pool != null ? s.pool : 10000) : 10000;
+      state.withParents = s ? s.withParents !== false : true;
+      state.onboarded = !!(s && s.onboarded);
+      buildCubes();
+      if (s && s.balances) state.cubes.forEach((c) => { c.balance = s.balances[c.key] || 0; });
+    }
+
+    function enterApp(user) {
+      state.authUser = user; state.authError = ""; setSession(user.email);
+      loadState();
+      state.screen = state.onboarded ? "app" : "onboarding";
+      render();
+    }
+    function logout() {
+      clearSession();
+      state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
+      state.onboarded = false; state.pool = 10000; state.withParents = true; buildCubes();
+      render();
+    }
+    function initAuth() {
+      const email = getSession();
+      const users = loadUsers();
+      if (email && users[email]) { enterApp({ id: users[email].id, email: users[email].email }); }
+      else { state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup"; buildCubes(); render(); }
+    }
 
     function buildCubes() {
       const prev = Object.fromEntries(state.cubes.map((c) => [c.key, c.balance]));
@@ -230,14 +347,90 @@
 
     const totalBalance = () => state.cubes.reduce((s, c) => s + c.balance, 0);
 
-    // ---- render -----------------------------------------------------------
+    // ---- render dispatcher ------------------------------------------------
     function render() {
+      $("fab").style.display = state.screen === "app" ? "grid" : "none";
+      if (state.screen === "auth") return renderAuth();
+      if (state.screen === "onboarding") return renderOnboarding();
+      renderDashboard();
+    }
+
+    // ---- Auth screen (Sign Up / Log In) -----------------------------------
+    function renderAuth() {
+      const isSignup = state.authMode === "signup";
+      const v = $("view"); v.innerHTML = "";
+      const wrap = el("div", "authwrap");
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">🧊 CubeFinance</div>' +
+          '<h2 class="authtitle">' + (isSignup ? "יצירת חשבון" : "התחברות") + '</h2>' +
+          '<p class="authsub">' + (isSignup ? "הירשם כדי להתחיל לחלק את הכסף לקוביות." : "התחבר כדי להמשיך לקוביות שלך.") + '</p>' +
+          '<label class="flbl">אימייל</label>' +
+          '<div class="fld"><input id="aEmail" type="email" dir="ltr" placeholder="you@example.com" autocomplete="email"></div>' +
+          '<label class="flbl">סיסמה</label>' +
+          '<div class="fld"><input id="aPass" type="password" dir="ltr" placeholder="••••••" autocomplete="' + (isSignup ? "new-password" : "current-password") + '"></div>' +
+          '<div class="aerr" id="aErr">' + (state.authError || "") + '</div>' +
+          '<button class="distbtn wide" id="aSubmit">' + (isSignup ? "הרשמה" : "התחברות") + '</button>' +
+          '<div class="aswitch">' + (isSignup ? "כבר יש לך חשבון?" : "עדיין אין לך חשבון?") +
+            ' <button id="aToggle">' + (isSignup ? "התחבר" : "הירשם") + '</button></div>' +
+        '</div>';
+      v.appendChild(wrap);
+      const email = v.querySelector("#aEmail"), pass = v.querySelector("#aPass");
+      const submit = () => {
+        const res = isSignup ? authSignUp(email.value, pass.value) : authLogIn(email.value, pass.value);
+        if (res.error) { state.authError = res.error; v.querySelector("#aErr").textContent = res.error; return; }
+        enterApp(res.user); // signup -> onboarding; login -> dashboard or onboarding
+      };
+      v.querySelector("#aSubmit").onclick = submit;
+      pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
+      v.querySelector("#aToggle").onclick = () => { state.authMode = isSignup ? "login" : "signup"; state.authError = ""; render(); };
+    }
+
+    // ---- Onboarding (minimal questionnaire) -------------------------------
+    function renderOnboarding() {
+      const v = $("view"); v.innerHTML = "";
+      const wrap = el("div", "authwrap");
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">🧊 בוא נתחיל</div>' +
+          '<h2 class="authtitle">שאלון קצר</h2>' +
+          '<p class="authsub">שתי שאלות ונבנה לך את הקוביות.</p>' +
+          '<label class="flbl">כמה כסף פנוי לחלוקה החודש?</label>' +
+          '<div class="fld"><span class="cur">₪</span><input id="oInc" inputmode="numeric" placeholder="10000" value="10000"></div>' +
+          '<label class="flbl">מגורים</label>' +
+          '<div class="toggle" id="oToggle">' +
+            '<button class="on" data-p="1">🏠 גר עם ההורים</button>' +
+            '<button data-p="0">🔑 עצמאי/ת</button>' +
+          '</div>' +
+          '<button class="distbtn wide" id="oDone" style="margin-top:18px">בנה את הקוביות 🧊</button>' +
+        '</div>';
+      v.appendChild(wrap);
+      let wp = true;
+      v.querySelectorAll("#oToggle button").forEach((b) => {
+        b.onclick = () => { wp = b.dataset.p === "1"; v.querySelectorAll("#oToggle button").forEach((x) => x.classList.toggle("on", x === b)); };
+      });
+      v.querySelector("#oInc").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); };
+      v.querySelector("#oDone").onclick = () => {
+        state.pool = Number(v.querySelector("#oInc").value) || 10000;
+        state.withParents = wp;
+        state.onboarded = true;
+        buildCubes();
+        state.screen = "app";
+        render();
+        saveState();
+      };
+    }
+
+    // ---- Dashboard --------------------------------------------------------
+    function renderDashboard() {
       const v = $("view");
       v.innerHTML = "";
 
-      const brand = el("div", "brand");
-      brand.innerHTML = '🧊 CubeFinance <small>· קיובפייננס</small>';
+      const brand = el("div", "brand brandrow");
+      brand.innerHTML = '<span>🧊 CubeFinance <small>· קיובפייננס</small></span>' +
+        '<button class="logout" id="logout">⎋ יציאה</button>';
       v.appendChild(brand);
+      brand.querySelector("#logout").onclick = logout;
 
       const hero = el("div", "hero");
       hero.innerHTML =
@@ -285,6 +478,7 @@
       state.cubes.forEach((c) => v.appendChild(cubeCard(c)));
 
       const sp = el("div"); sp.style.height = "90px"; v.appendChild(sp);
+      saveState(); // persist this account's pool + cube balances
     }
 
     function cubeCard(c) {
@@ -444,8 +638,7 @@
     $("fab").onclick = () => { chatOpen = true; renderChat(); };
 
     // ---- boot -------------------------------------------------------------
-    buildCubes();
-    render();
+    initAuth();
   </script>
 </body>
 </html>
