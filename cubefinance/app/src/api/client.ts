@@ -10,13 +10,16 @@ const BASE_URL =
   (typeof process !== 'undefined' && (process as any).env?.EXPO_PUBLIC_API_URL) ||
   'http://localhost:4000';
 
-const USER_ID = 'default';
+// Stable per-install id, set by the store after hydration so all API calls
+// (and cross-device state sync) are scoped to this user.
+let currentUserId = 'default';
+export const setUserId = (id: string) => { currentUserId = id || 'default'; };
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId: USER_ID, ...(body as object) }),
+    body: JSON.stringify({ userId: currentUserId, ...(body as object) }),
   });
   if (!res.ok) {
     const msg = await res.text().catch(() => res.statusText);
@@ -27,6 +30,21 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 export const api = {
   baseUrl: BASE_URL,
+
+  /** Worker 5: pull the full saved snapshot for this user (cross-device sync). */
+  async getState(): Promise<{ state: any | null; savedAt: number }> {
+    const res = await fetch(
+      `${BASE_URL}/api/state?userId=${encodeURIComponent(currentUserId)}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+    if (!res.ok) throw new Error('getState failed');
+    return res.json();
+  },
+
+  /** Worker 5: push the full snapshot to the backend. */
+  saveState(snapshot: unknown, savedAt: number) {
+    return post<{ ok: boolean; savedAt: number }>('/api/state', { state: snapshot, savedAt });
+  },
 
   /** Worker 3: turn the questionnaire into a budget. */
   calculateBudget(profile: Profile) {

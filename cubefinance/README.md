@@ -39,6 +39,7 @@ cubefinance/
 │  /api/budget/calculate   → budgetEngine (deterministic math)  │
 │  /api/budget/transfer    → transfer simulation                │
 │  /api/chat (SSE stream)  → AI buddy, context-aware            │
+│  /api/state (GET/PUT)    → full snapshot sync (cross-device)  │
 │                                                                │
 │  services/aiClient.js  → Anthropic SDK (claude-sonnet-5)      │
 │                          graceful offline/rule-based fallback  │
@@ -85,6 +86,26 @@ npx expo start
 
 If you run the backend on the same machine as the simulator, the default
 `http://localhost:4000` works out of the box.
+
+### Web preview + backend sync
+
+The single-file web preview (`web/index.html`) runs fully client-side by
+default (localStorage only). To connect it to the backend for cross-device
+persistence, open it with query params:
+
+```
+web/index.html?api=http://<backend-host>:4000&uid=<your-account-id>
+```
+
+- `api` — backend base URL (remembered in localStorage).
+- `uid` — a shared account id; open the page with the same `uid` on another
+  device/browser to load the same data.
+
+State is reconciled last-write-wins: on load it pulls the cloud snapshot and
+adopts it if newer, otherwise pushes the local one up. With no backend
+reachable it silently stays local — the status chip shows `☁️ מסונכרן` vs
+`📴 מקומי`. The React Native app syncs automatically via the same
+`/api/state` endpoint (a per-install `uid`, persisted with AsyncStorage).
 
 ---
 

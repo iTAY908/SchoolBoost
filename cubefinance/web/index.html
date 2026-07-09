@@ -96,6 +96,7 @@
   }
   .pitch .feat b { color: var(--text); }
   .pitch .feat span { color: var(--dim); }
+  .pitch code { background: #ffffff14; padding: 1px 5px; border-radius: 5px; font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; }
   .pitch .note {
     margin-top: 26px; font-size: 12.5px; color: var(--dim);
     border-left: 2px solid var(--primary-dim); padding-left: 12px; line-height: 1.5;
@@ -327,6 +328,15 @@
   }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
+  .sync {
+    position: absolute; top: 12px; left: 16px; z-index: 35;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: #ffffff10; unicode-bidi: plaintext;
+  }
+  .sync.ok { color: var(--success); border-color: #16513f; background: #0f2a22; }
+  .sync.busy { color: var(--warning); }
+  .sync.off { color: var(--dim); }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   }
@@ -350,7 +360,8 @@
     <p class="note">
       This is the real app's logic running entirely in your browser — the same
       budget engine and buddy from the codebase, ported client-side so nothing
-      needs installing. Try it on the right. →
+      needs installing. Your progress saves automatically; add
+      <code>?api=&lt;backend&gt;&amp;uid=&lt;id&gt;</code> to sync across devices. Try it on the right. →
     </p>
   </div>
 
@@ -358,6 +369,7 @@
     <div class="notch"></div>
     <div class="screen" id="screen">
       <button class="restart" id="restart" style="display:none">↺ Restart</button>
+      <div class="sync off" id="sync">📴 מקומי</div>
       <!-- app renders here -->
       <div class="coins" id="coins"></div>
     </div>
@@ -650,36 +662,142 @@ const state = {
 // ============================================================================
 const STORAGE_KEY = 'cubefinance:v1';
 let userId = null;
+let localSavedAt = 0;
+
+// --- Backend connection -----------------------------------------------------
+// Point the app at a backend with ?api=http://host:port (remembered), else the
+// default. On the hosted artifact the CSP blocks external calls, so sync simply
+// falls back to localStorage — the app keeps working, just device-local.
+const params = new URLSearchParams(location.search);
+const qApi = params.get('api');
+const qUid = params.get('uid'); // shared account id — open on another device with the same ?uid= to sync
+try { if (qApi) localStorage.setItem('cubefinance:api', qApi); } catch (_) {}
+// Cloud sync is opt-in: use a backend only when one is configured (?api= or a
+// stored value) or we're on a local dev origin. On the hosted artifact / file://
+// there's no backend to reach, so we stay cleanly local (no failed requests).
+let API_BASE = '';
+try {
+  const stored = qApi || localStorage.getItem('cubefinance:api');
+  if (stored) API_BASE = stored.replace(/\/$/, '');
+  else if (/^https?:\/\/(localhost|127\.|192\.168\.|10\.)/.test(location.origin)) API_BASE = 'http://localhost:4000';
+} catch (_) {}
+let cloudStatus = 'local'; // 'local' | 'syncing' | 'synced' | 'offline'
+let pushTimer = null;
+let booting = true; // suppress saves until the first cloud reconcile completes
+
+function buildSnapshot() {
+  return {
+    userId,
+    savedAt: Date.now(),
+    onboarded: state.onboarded,
+    profile: state.profile,
+    cubes: state.cubes,
+    mainAccount: state.mainAccount,
+    summary: state.summary,
+    alerts: state.alerts,
+    chat: state.chat,
+    pending: state.pending,
+    draft: state.draft,
+    stepIndex: state.stepIndex,
+  };
+}
 
 function persist() {
+  // While booting we render from restored/pulled state without re-stamping the
+  // timestamp — otherwise a fresh device would look "newer" than the cloud and
+  // overwrite real remote data before the first reconcile.
+  if (booting) return;
+  const snap = buildSnapshot();
+  localSavedAt = snap.savedAt;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snap)); } catch (_) {}
+  cloudPush(snap); // debounced; no-op if backend unreachable
+}
+
+// Push the snapshot to the backend (debounced). Silent fallback on failure.
+function cloudPush(snap) {
+  if (!API_BASE) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    setCloud('syncing');
+    try {
+      const r = await fetch(`${API_BASE}/api/state`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, state: snap, savedAt: snap.savedAt }),
+      });
+      if (!r.ok) throw new Error('bad status');
+      setCloud('synced');
+    } catch (_) {
+      setCloud(navigator.onLine === false ? 'offline' : 'local');
+    }
+  }, 600);
+}
+
+// Pull the snapshot from the backend and adopt it if it's newer than local.
+async function cloudPull() {
+  if (!API_BASE) return;
+  setCloud('syncing');
   try {
-    const snapshot = {
-      userId,
-      savedAt: Date.now(),
-      onboarded: state.onboarded,
-      profile: state.profile,
-      cubes: state.cubes,
-      mainAccount: state.mainAccount,
-      summary: state.summary,
-      alerts: state.alerts,
-      chat: state.chat,
-      pending: state.pending,
-      draft: state.draft,
-      stepIndex: state.stepIndex,
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
-  } catch (_) { /* private mode / storage disabled — run in-memory only */ }
+    const r = await fetch(`${API_BASE}/api/state?userId=${encodeURIComponent(userId)}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error('bad status');
+    const data = await r.json();
+    if (data && data.state && (data.savedAt || 0) > localSavedAt) {
+      adoptSnapshot(data.state);
+      localSavedAt = data.savedAt || Date.now();
+      pendingToast = '☁️ נטען מהענן';
+      render();
+    } else if (localSavedAt > (data.savedAt || 0)) {
+      cloudPush(buildSnapshot()); // local is newer — send it up
+    }
+    setCloud('synced');
+  } catch (_) {
+    setCloud(navigator.onLine === false ? 'offline' : 'local');
+  }
+}
+
+function adoptSnapshot(snap) {
+  state.onboarded = !!snap.onboarded;
+  state.profile = snap.profile || null;
+  state.cubes = Array.isArray(snap.cubes) ? snap.cubes : [];
+  state.mainAccount = snap.mainAccount || 0;
+  state.summary = snap.summary || null;
+  state.alerts = Array.isArray(snap.alerts) ? snap.alerts : [];
+  state.chat = Array.isArray(snap.chat) ? snap.chat : [];
+  state.pending = snap.pending || null;
+  state.draft = Object.assign({ age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' }, snap.draft || {});
+  state.stepIndex = snap.stepIndex || 0;
+  state.chatStreaming = false;
+  state.lastFunded = new Set();
+}
+
+function setCloud(s) { cloudStatus = s; updateSyncChip(); }
+function updateSyncChip() {
+  const chip = document.getElementById('sync');
+  if (!chip) return;
+  const map = {
+    synced: ['☁️ מסונכרן', 'ok'],
+    syncing: ['⏳ מסנכרן…', 'busy'],
+    offline: ['📴 לא מקוון', 'off'],
+    local: ['📴 מקומי', 'off'],
+  };
+  const [txt, cls] = map[cloudStatus] || map.local;
+  chip.textContent = txt;
+  chip.className = 'sync ' + cls;
 }
 
 function loadSaved() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
   if (!saved || !saved.userId) {
-    userId = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    persist();
+    userId = qUid || 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    // Fresh/empty local state — keep savedAt at 0 so a cloud snapshot always
+    // wins the first reconcile (never clobber real remote data with an empty one).
+    localSavedAt = 0;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ userId, savedAt: 0 })); } catch (_) {}
     return;
   }
-  userId = saved.userId;
+  userId = qUid || saved.userId; // ?uid= overrides for shared cross-device accounts
+  localSavedAt = qUid && qUid !== saved.userId ? 0 : (saved.savedAt || 0);
   state.onboarded = !!saved.onboarded;
   state.profile = saved.profile || null;
   state.cubes = Array.isArray(saved.cubes) ? saved.cubes : [];
@@ -737,7 +855,7 @@ function stepList() {
 function render() {
   restartBtn.style.display = state.onboarded ? 'block' : 'none';
   const kept = screen.querySelector('.coins');
-  screen.querySelectorAll(':scope > *:not(.coins):not(.restart)').forEach((n) => n.remove());
+  screen.querySelectorAll(':scope > *:not(.coins):not(.restart):not(.sync)').forEach((n) => n.remove());
   const root = state.onboarded ? renderDashboard() : renderOnboarding();
   screen.insertBefore(root, kept);
   persist();
@@ -1129,4 +1247,9 @@ restartBtn.onclick = () => {
 
 loadSaved();
 render();
+updateSyncChip();
+// Reconcile with the backend, then enable persistence and save the merged state.
+cloudPull().finally(() => { booting = false; persist(); });
+window.addEventListener('online', cloudPull);
+window.addEventListener('offline', () => setCloud('offline'));
 </script>

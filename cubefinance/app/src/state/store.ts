@@ -8,7 +8,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '../api/client';
+import { api, setUserId } from '../api/client';
 import { Cube, Profile, Alert, ChatMessage, OnboardingDraft, EMPTY_DRAFT } from './types';
 
 interface TransferEvent {
@@ -30,6 +30,10 @@ interface AppState {
   onboardingStep: number;
   lastSavedAt: number | null;
 
+  // --- identity + cross-device sync ---
+  userId: string | null;
+  cloud: 'local' | 'syncing' | 'synced' | 'offline';
+
   // --- status flags ---
   onboarded: boolean;
   hydrated: boolean; // true once persisted state has been read back from disk
@@ -44,6 +48,7 @@ interface AppState {
   // --- actions ---
   setDraft: (patch: Partial<OnboardingDraft>) => void;
   setStep: (n: number) => void;
+  syncFromCloud: () => Promise<void>;
   submitOnboarding: (profile: Profile) => Promise<void>;
   transfer: (amount: number) => Promise<void>;
   spend: (cubeKey: string, amount: number) => Promise<void>;
@@ -66,6 +71,9 @@ export const useStore = create<AppState>()(
   onboardingStep: 0,
   lastSavedAt: null,
 
+  userId: null,
+  cloud: 'local',
+
   onboarded: false,
   hydrated: false,
   calculating: false,
@@ -78,6 +86,35 @@ export const useStore = create<AppState>()(
   setDraft: (patch) =>
     set({ onboardingDraft: { ...get().onboardingDraft, ...patch }, lastSavedAt: Date.now() }),
   setStep: (n) => set({ onboardingStep: n, lastSavedAt: Date.now() }),
+
+  // --- Worker 5: reconcile local state with the backend (last write wins) --
+  syncFromCloud: async () => {
+    set({ cloud: 'syncing' });
+    try {
+      const { state: remote, savedAt } = await api.getState();
+      const localAt = get().lastSavedAt || 0;
+      if (remote && (savedAt || 0) > localAt) {
+        set({
+          profile: remote.profile ?? null,
+          cubes: remote.cubes ?? [],
+          mainAccount: remote.mainAccount ?? 0,
+          summary: remote.summary ?? null,
+          alerts: remote.alerts ?? [],
+          chat: remote.chat ?? [],
+          onboarded: !!remote.onboarded,
+          onboardingDraft: remote.onboardingDraft ?? EMPTY_DRAFT,
+          onboardingStep: remote.onboardingStep ?? 0,
+          lastSavedAt: savedAt,
+          cloud: 'synced',
+        });
+      } else {
+        set({ cloud: 'synced' });
+        if (localAt > (savedAt || 0)) schedulePush(); // local is newer — upload
+      }
+    } catch (_) {
+      set({ cloud: 'local' });
+    }
+  },
 
   // --- Worker 1 -> Worker 3: submit questionnaire, receive cubes ----------
   submitOnboarding: async (profile) => {
@@ -193,15 +230,67 @@ export const useStore = create<AppState>()(
         onboardingDraft: s.onboardingDraft,
         onboardingStep: s.onboardingStep,
         lastSavedAt: s.lastSavedAt,
+        userId: s.userId,
       }),
       // Fires after the persisted state is read back from AsyncStorage.
-      onRehydrateStorage: () => (restored, error) => {
+      onRehydrateStorage: () => (_restored, error) => {
         if (error) console.warn('[store] rehydrate failed', error);
-        useStore.setState({ hydrated: true, chatStreaming: false });
+        let uid = useStore.getState().userId;
+        if (!uid) uid = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        setUserId(uid);
+        useStore.setState({ hydrated: true, chatStreaming: false, userId: uid });
+        // Reconcile with the backend once local state is ready.
+        useStore.getState().syncFromCloud();
       },
     }
   )
 );
+
+// --- Cross-device push: debounced upload whenever durable data changes -------
+let pushTimer: ReturnType<typeof setTimeout> | null = null;
+function schedulePush() {
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    const s = useStore.getState();
+    if (!s.hydrated) return;
+    const at = Date.now();
+    useStore.setState({ lastSavedAt: at, cloud: 'syncing' });
+    const snap = {
+      profile: s.profile,
+      cubes: s.cubes,
+      mainAccount: s.mainAccount,
+      summary: s.summary,
+      alerts: s.alerts,
+      chat: s.chat,
+      onboarded: s.onboarded,
+      onboardingDraft: s.onboardingDraft,
+      onboardingStep: s.onboardingStep,
+    };
+    try {
+      await api.saveState(snap, at);
+      useStore.setState({ cloud: 'synced' });
+    } catch (_) {
+      useStore.setState({ cloud: 'local' });
+    }
+  }, 700);
+}
+
+// Watch only durable content refs (never the sync/status fields) to avoid loops.
+useStore.subscribe((s, prev) => {
+  if (!s.hydrated) return;
+  if (
+    s.cubes !== prev.cubes ||
+    s.chat !== prev.chat ||
+    s.onboarded !== prev.onboarded ||
+    s.mainAccount !== prev.mainAccount ||
+    s.profile !== prev.profile ||
+    s.summary !== prev.summary ||
+    s.onboardingStep !== prev.onboardingStep ||
+    s.onboardingDraft !== prev.onboardingDraft
+  ) {
+    schedulePush();
+  }
+});
 
 // --- Derived selectors (shared by dashboard, chatbot header, alerts) -------
 export const selectTotalBalance = (s: AppState) =>

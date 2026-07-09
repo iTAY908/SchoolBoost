@@ -10,6 +10,20 @@
 
 const sessions = new Map();
 
+// Full-state snapshots keyed by userId — this is what powers cross-device sync.
+// One blob per user (last-write-wins). Swap for Redis/Postgres in production.
+const states = new Map();
+
+function saveState(userId = 'default', snapshot, savedAt) {
+  const at = Number(savedAt) || Date.now();
+  states.set(userId, { state: snapshot, savedAt: at });
+  return { savedAt: at };
+}
+
+function getState(userId = 'default') {
+  return states.get(userId) || { state: null, savedAt: 0 };
+}
+
 function getSession(userId = 'default') {
   if (!sessions.has(userId)) {
     sessions.set(userId, { profile: null, budget: null, mainAccount: 0, chat: [] });
@@ -39,4 +53,4 @@ function appendChat(userId, message) {
   return s;
 }
 
-module.exports = { getSession, saveBudget, updateCubes, appendChat };
+module.exports = { getSession, saveBudget, updateCubes, appendChat, saveState, getState };

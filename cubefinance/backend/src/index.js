@@ -7,6 +7,7 @@ const cors = require('cors');
 const config = require('./config');
 const budgetRoutes = require('./routes/budget');
 const chatRoutes = require('./routes/chat');
+const stateRoutes = require('./routes/state');
 const { isLive } = require('./services/aiClient');
 
 const app = express();
@@ -19,6 +20,7 @@ app.get('/health', (_req, res) =>
 
 app.use('/api/budget', budgetRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/state', stateRoutes);
 
 app.use((err, _req, res, _next) => {
   console.error('[error]', err);
