@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CubeFinance — קיובפייננס</title>
+  <style>
+    /* ==================================================================
+       CubeFinance — self-contained web app (single file, UTF-8, RTL).
+       Open directly in any browser. No build step, no dependencies.
+       ================================================================== */
+    :root {
+      --bg: #0d0d14; --bg-deep: #08080d; --elevated: #16161f; --card: #1c1c28;
+      --card-2: #221f3a; --border: #2a2a3a; --text: #e7e7f2; --dim: #9a9ab0;
+      --primary: #6c5ce7; --primary-2: #8072ff; --primary-dim: #4b3fb8;
+      --danger: #d63031; --warning: #fdcb6e; --success: #00b894;
+      --c-essentials: #00b894; --c-savings: #0984e3; --c-investments: #e17055;
+      --c-emergency: #d63031; --c-lifestyle: #fdcb6e; --c-housing: #6c5ce7;
+      --radius: 16px; --radius-lg: 24px;
+      --font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, "Noto Sans Hebrew", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: var(--font); color: var(--text);
+      background:
+        radial-gradient(1000px 500px at 20% -10%, #1a1533 0%, transparent 55%),
+        radial-gradient(800px 460px at 110% 8%, #10233a 0%, transparent 50%),
+        var(--bg-deep);
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; min-height: 100dvh; padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .device {
+      width: 400px; max-width: 100%; height: 820px; max-height: 92vh;
+      background: var(--bg); border-radius: 42px; padding: 12px;
+      border: 1px solid #33334a;
+      box-shadow: 0 0 0 10px #101018, 0 40px 90px -30px #000, inset 0 0 0 1px #ffffff08;
+      position: relative;
+    }
+    .screen { position: relative; width: 100%; height: 100%; background: var(--bg);
+      border-radius: 32px; overflow: hidden; display: flex; flex-direction: column; }
+    .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 24px; background: #000; border-radius: 14px; z-index: 60; }
+    .view { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 44px 18px 24px; }
+    .view::-webkit-scrollbar { width: 0; }
+
+    .brand { font-size: 18px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 16px; }
+    .brand small { color: var(--dim); font-weight: 600; font-size: 12px; }
+
+    .hero { background: linear-gradient(160deg, #221c40, #14131d);
+      border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px;
+      box-shadow: 0 20px 50px -30px #000; }
+    .hero .hl { color: var(--dim); font-size: 13px; font-weight: 600; }
+    .hero .hv { font-size: 40px; font-weight: 900; letter-spacing: -1.5px; margin: 4px 0 0;
+      font-variant-numeric: tabular-nums; }
+    .hero .hv small { font-size: 20px; font-weight: 800; color: var(--dim); }
+
+    .poolbox { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+    .poolbox .field { flex: 1; background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); display: flex; align-items: center; padding: 0 12px; }
+    .poolbox .field span { color: var(--dim); font-weight: 700; font-size: 15px; }
+    .poolbox input { flex: 1; background: none; border: none; outline: none; color: var(--text);
+      font-size: 18px; font-weight: 800; padding: 12px 6px; font-family: var(--font);
+      font-variant-numeric: tabular-nums; text-align: right; width: 100%; }
+    .distbtn { border: none; cursor: pointer; font-family: var(--font); white-space: nowrap;
+      background: linear-gradient(135deg, var(--primary-2), var(--primary)); color: #fff;
+      font-size: 15px; font-weight: 800; padding: 13px 18px; border-radius: var(--radius);
+      box-shadow: 0 12px 26px -12px var(--primary); transition: transform .1s, opacity .15s; }
+    .distbtn:hover { filter: brightness(1.07); }
+    .distbtn:active { transform: scale(.97); }
+    .distbtn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .parents { margin-top: 16px; background: #1a2733; border: 1px solid #244; border-radius: var(--radius);
+      padding: 14px; display: flex; gap: 10px; align-items: flex-start; }
+    .parents .pi { font-size: 20px; }
+    .parents .pt { color: #bfe3d6; font-size: 13px; line-height: 1.5; }
+    .parents .pt b { color: #eafff7; }
+
+    .toggle { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 999px; padding: 4px; margin-top: 16px; }
+    .toggle button { flex: 1; border: none; background: none; color: var(--dim); cursor: pointer;
+      font-family: var(--font); font-weight: 700; font-size: 13px; padding: 9px; border-radius: 999px; }
+    .toggle button.on { background: var(--primary); color: #fff; }
+
+    .section-t { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800;
+      margin: 20px 2px 14px; }
+    .section-t::before { content: ""; width: 4px; height: 15px; border-radius: 2px;
+      background: linear-gradient(var(--primary), #46e0b4); }
+
+    .cube { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+      padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 14px -10px #000;
+      transition: transform .18s, box-shadow .2s; }
+    .cube.pop { animation: pop .5s ease; }
+    @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.035)} 100%{transform:scale(1)} }
+    .cube .top { display: flex; align-items: center; gap: 12px; }
+    .cube .chip { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center;
+      font-size: 21px; flex: none; box-shadow: inset 0 0 0 1px #ffffff12; }
+    .cube .nm { font-size: 16px; font-weight: 800; }
+    .cube .nt { font-size: 12px; color: var(--dim); margin-top: 1px; }
+    .cube .pct { margin-inline-start: auto; font-size: 13px; font-weight: 800;
+      padding: 4px 10px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+    .cube .brow { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; }
+    .cube .bal { font-size: 24px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .cube .bal small { font-size: 15px; font-weight: 800; color: var(--dim); }
+    .cube .tgt { font-size: 12.5px; color: var(--dim); font-weight: 600; }
+    .cube .track { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+    .cube .track > i { display: block; height: 100%; border-radius: 999px; width: 0;
+      transition: width .8s cubic-bezier(.2,.8,.2,1); }
+
+    /* coins */
+    .coins { position: absolute; inset: 0; z-index: 55; pointer-events: none; overflow: hidden; }
+    .coin { position: absolute; top: -40px; font-size: 28px; }
+
+    /* FAB + chat */
+    .fab { position: absolute; inset-inline-end: 18px; bottom: 22px; z-index: 30;
+      width: 62px; height: 62px; border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(140deg, var(--primary-2), var(--primary)); font-size: 28px;
+      display: grid; place-items: center; box-shadow: 0 12px 30px -6px var(--primary); }
+    .fab:hover { filter: brightness(1.08); }
+    .chatwrap { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column;
+      justify-content: flex-end; background: rgba(0,0,0,.45); }
+    .chatwrap.on { display: flex; }
+    .chat { height: 84%; background: var(--bg); border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg); display: flex; flex-direction: column;
+      overflow: hidden; animation: slideup .3s ease; }
+    @keyframes slideup { from { transform: translateY(100%); } to { transform: none; } }
+    .chat .ch { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
+    .chat .ch .t { font-size: 17px; font-weight: 800; }
+    .chat .ch .s { font-size: 12px; color: var(--dim); margin-top: 2px; }
+    .chat .ch .x { margin-inline-start: auto; background: none; border: none; color: var(--dim);
+      font-size: 20px; cursor: pointer; }
+    .msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .msgs::-webkit-scrollbar { width: 0; }
+    .intro { text-align: center; padding: 26px 20px; color: var(--dim); }
+    .intro .e { font-size: 40px; }
+    .intro p { font-size: 14px; line-height: 1.5; margin-top: 8px; }
+    .bubble { max-width: 84%; padding: 11px 14px; border-radius: 16px; font-size: 15px;
+      line-height: 1.45; white-space: pre-wrap; unicode-bidi: plaintext; }
+    .bubble.u { align-self: flex-start; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .bubble.b { align-self: flex-end; background: var(--card); border-bottom-left-radius: 4px; }
+    .sugg { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
+    .sugg button { background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+      padding: 9px 13px; color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: var(--font); }
+    .sugg button:hover { border-color: var(--primary); }
+    .inbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+    .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+      padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
+    .inbar input:focus { border-color: var(--primary); }
+    .inbar button { width: 46px; height: 46px; border-radius: 50%; border: none;
+      background: linear-gradient(140deg, var(--primary-2), var(--primary)); color: #fff;
+      font-size: 18px; cursor: pointer; flex: none; }
+    .inbar button:disabled { opacity: .4; }
+
+    .toast { position: absolute; top: 46px; left: 50%; transform: translate(-50%, -14px);
+      z-index: 70; background: #221f3a; border: 1px solid var(--primary-dim); color: var(--text);
+      font-size: 13px; font-weight: 700; padding: 10px 16px; border-radius: 999px;
+      box-shadow: 0 12px 30px -10px #000; opacity: 0; transition: opacity .35s, transform .35s;
+      pointer-events: none; white-space: nowrap; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 560px) {
+      body { padding: 0; }
+      .device { width: 100%; height: 100vh; height: 100dvh; max-height: none; border: 0;
+        border-radius: 0; padding: 0; box-shadow: none; }
+      .screen { border-radius: 0; }
+      .notch { display: none; }
+      .view { padding-top: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="view" id="view"></div>
+      <div class="coins" id="coins"></div>
+      <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
+      <div class="chatwrap" id="chatwrap"></div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    // ---- helpers ----------------------------------------------------------
+    const fmt = (n) => Math.round(n).toLocaleString("en-US"); // grouped digits
+    const $ = (id) => document.getElementById(id);
+    const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
+
+    // ---- cube model -------------------------------------------------------
+    // Living WITH parents (default): no rent, so the freed money is redirected
+    // into wealth-building cubes. Living independently adds a Housing cube.
+    const BASE = [
+      { key: "essentials",  name: "שוטף",            emoji: "🛒", color: "var(--c-essentials)",  w: 0.25, note: "אוכל, תחבורה, חשבונות יומיומיים" },
+      { key: "savings",     name: "חיסכון",          emoji: "💰", color: "var(--c-savings)",     w: 0.25, note: "כרית ביטחון ויעדים לטווח קצר" },
+      { key: "investments", name: "השקעות",          emoji: "📈", color: "var(--c-investments)", w: 0.22, note: "בניית הון לטווח ארוך" },
+      { key: "emergency",   name: "קרן חירום",       emoji: "🛡️", color: "var(--c-emergency)",   w: 0.13, note: "3–6 חודשי הוצאות" },
+      { key: "lifestyle",   name: "בילויים ופנאי",   emoji: "🎉", color: "var(--c-lifestyle)",   w: 0.15, note: "כיף, מסעדות, מנויים" },
+    ];
+
+    const state = {
+      pool: 10000,          // "Total across cubes" main pool, in ₪
+      withParents: true,
+      cubes: [],            // built from BASE with computed percentage + balance
+      justFunded: new Set(),
+    };
+
+    function buildCubes() {
+      const prev = Object.fromEntries(state.cubes.map((c) => [c.key, c.balance]));
+      let cubes;
+      if (state.withParents) {
+        cubes = BASE.map((b) => ({ ...b, pct: Math.round(b.w * 1000) / 10 }));
+      } else {
+        // Independent: a Housing cube takes ~35%, the rest keep their relative weights.
+        const housingPct = 35;
+        const rest = 100 - housingPct;
+        cubes = [{ key: "housing", name: "דיור", emoji: "🏠", color: "var(--c-housing)",
+                   pct: housingPct, note: "שכירות, ארנונה וחשבונות" }]
+          .concat(BASE.map((b) => ({ ...b, pct: Math.round(b.w * rest * 10) / 10 })));
+      }
+      // carry balances across a toggle
+      cubes.forEach((c) => { c.balance = prev[c.key] || 0; });
+      state.cubes = cubes;
+    }
+
+    const totalBalance = () => state.cubes.reduce((s, c) => s + c.balance, 0);
+
+    // ---- render -----------------------------------------------------------
+    function render() {
+      const v = $("view");
+      v.innerHTML = "";
+
+      const brand = el("div", "brand");
+      brand.innerHTML = '🧊 CubeFinance <small>· קיובפייננס</small>';
+      v.appendChild(brand);
+
+      const hero = el("div", "hero");
+      hero.innerHTML =
+        '<div class="hl">סה״כ בקוביות</div>' +
+        '<div class="hv">₪' + fmt(totalBalance()) + '</div>';
+      const pb = el("div", "poolbox");
+      pb.innerHTML =
+        '<div class="field"><span>₪</span>' +
+        '<input id="poolInput" inputmode="numeric" value="' + state.pool + '" aria-label="סכום לחלוקה"></div>';
+      const btn = el("button", "distbtn");
+      btn.textContent = "חלק לתקציב";
+      btn.disabled = state.pool <= 0;
+      btn.onclick = distribute;
+      pb.appendChild(btn);
+      hero.appendChild(pb);
+      v.appendChild(hero);
+
+      const pInput = hero.querySelector("#poolInput");
+      pInput.oninput = () => {
+        pInput.value = pInput.value.replace(/[^0-9]/g, "");
+        state.pool = Number(pInput.value) || 0;
+        btn.disabled = state.pool <= 0;
+        btn.textContent = state.pool > 0 ? "חלק ₪" + fmt(state.pool) : "חלק לתקציב";
+      };
+      btn.textContent = state.pool > 0 ? "חלק ₪" + fmt(state.pool) : "חלק לתקציב";
+
+      // living situation toggle
+      const tg = el("div", "toggle");
+      tg.innerHTML =
+        '<button class="' + (state.withParents ? "on" : "") + '" data-p="1">🏠 גר עם ההורים</button>' +
+        '<button class="' + (!state.withParents ? "on" : "") + '" data-p="0">🔑 עצמאי/ת</button>';
+      tg.querySelectorAll("button").forEach((b) => {
+        b.onclick = () => { state.withParents = b.dataset.p === "1"; buildCubes(); render(); };
+      });
+      v.appendChild(tg);
+
+      // living-with-parents notice
+      const note = el("div", "parents");
+      note.innerHTML = state.withParents
+        ? '<span class="pi">💡</span><span class="pt">מגורים עם ההורים <b>משחררים את כסף השכירות</b> — הפנינו אותו לקוביות בוני-העושר: <b>חיסכון, השקעות ובילויים</b> קיבלו נתח גדול יותר.</span>'
+        : '<span class="pi">🔑</span><span class="pt">כדייר/ת עצמאי/ת נוצרה קוביית <b>דיור</b> שמכסה שכירות וחשבונות, ושאר הקוביות מתכווצות בהתאם.</span>';
+      v.appendChild(note);
+
+      const st = el("div", "section-t"); st.textContent = "הקוביות שלך"; v.appendChild(st);
+      state.cubes.forEach((c) => v.appendChild(cubeCard(c)));
+
+      const sp = el("div"); sp.style.height = "90px"; v.appendChild(sp);
+    }
+
+    function cubeCard(c) {
+      const target = state.pool > 0 ? state.pool * (c.pct / 100) : (c.balance || 1);
+      const fill = Math.max(0, Math.min(1, target > 0 ? c.balance / target : 0)) * 100;
+      const card = el("div", "cube" + (state.justFunded.has(c.key) ? " pop" : ""));
+      card.innerHTML =
+        '<div class="top">' +
+          '<div class="chip" style="background:' + c.color + '22">' + c.emoji + '</div>' +
+          '<div><div class="nm">' + c.name + '</div><div class="nt">' + c.note + '</div></div>' +
+          '<div class="pct" style="color:' + c.color + ';background:' + c.color + '22">' + c.pct + '%</div>' +
+        '</div>' +
+        '<div class="brow"><span class="bal" data-to="' + c.balance + '">₪' + fmt(c.balance) + '</span>' +
+          '<span class="tgt">מתוך ₪' + fmt(target) + ' לחודש</span></div>' +
+        '<div class="track"><i style="background:' + c.color + '"></i></div>';
+      requestAnimationFrame(() => { const bar = card.querySelector(".track > i"); if (bar) bar.style.width = fill + "%"; });
+      return card;
+    }
+
+    // ---- distribute (animation + count-up) --------------------------------
+    function distribute() {
+      const pool = state.pool;
+      if (pool <= 0) return;
+      let dist = 0;
+      state.cubes.forEach((c, i) => {
+        const give = i === state.cubes.length - 1 ? pool - dist : Math.round(pool * (c.pct / 100));
+        dist += give;
+        c.balance += give;
+      });
+      state.pool = 0;
+      state.justFunded = new Set(state.cubes.map((c) => c.key));
+      burstCoins();
+      render();
+      animateCounts();
+      showToast("🪙 חולקו ₪" + fmt(pool) + " לקוביות");
+      setTimeout(() => { state.justFunded = new Set(); }, 800);
+    }
+
+    function animateCounts() {
+      document.querySelectorAll(".bal").forEach((node) => {
+        const to = Number(node.dataset.to), from = 0, start = performance.now(), dur = 650;
+        (function tick(t) {
+          const p = Math.min(1, (t - start) / dur), e = 1 - Math.pow(1 - p, 3);
+          node.textContent = "₪" + fmt(from + (to - from) * e);
+          if (p < 1) requestAnimationFrame(tick);
+        })(start);
+      });
+    }
+
+    function burstCoins() {
+      const box = $("coins");
+      for (let i = 0; i < 16; i++) {
+        const c = el("div", "coin"); c.textContent = "🪙";
+        c.style.left = (Math.random() * 320 + 24) + "px";
+        box.appendChild(c);
+        const dur = 800 + Math.random() * 500, delay = Math.random() * 250;
+        c.animate(
+          [{ transform: "translateY(-40px) rotate(0)", opacity: 1 },
+           { transform: "translateY(840px) rotate(" + (360 + Math.random() * 360) + "deg)", opacity: 0 }],
+          { duration: dur, delay: delay, easing: "cubic-bezier(.4,0,.7,1)", fill: "forwards" }
+        );
+        setTimeout(() => c.remove(), dur + delay + 50);
+      }
+    }
+
+    function showToast(msg) {
+      const t = el("div", "toast"); t.textContent = msg;
+      $("view").parentElement.appendChild(t); // .screen is the positioned container
+      requestAnimationFrame(() => t.classList.add("on"));
+      setTimeout(() => { t.classList.remove("on"); setTimeout(() => t.remove(), 400); }, 2800);
+    }
+
+    // ---- floating chatbot -------------------------------------------------
+    let chatOpen = false, streaming = false;
+    const chatLog = [];
+    const SUGG = ["אפשר להרשות 500 ₪?", "מה המצב שלי?", "בזבזתי 200 ₪"];
+
+    function reply(text) {
+      const q = text.toLowerCase();
+      const cubes = state.cubes;
+      const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
+      const total = totalBalance();
+      const num = (text.replace(/,/g, "").match(/(\d+)/) || [])[1];
+
+      if (/(afford|אפשר להרשות|יכול להרשות|אפשר לקנות)/.test(q) && num) {
+        const amount = Number(num);
+        const life = byKey.lifestyle;
+        if (!life) return 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב".';
+        if (amount <= life.balance)
+          return "כן! 🎉 הוצאה של " + fmt(amount) + " ₪ מקוביית \"בילויים ופנאי\" (יתרה " + fmt(life.balance) + " ₪) משאירה לך " + fmt(life.balance - amount) + " ₪ שם. אפשר בשקט.";
+        if (amount <= total)
+          return "קצת גבולי — בקוביית הבילויים יש רק " + fmt(life.balance) + " ₪. יש לך " + fmt(total) + " ₪ בסך הכל, אז אם ממש צריך קח את ההפרש מהחיסכון במודע.";
+        return "הייתי אומר לא כרגע. " + fmt(amount) + " ₪ זה יותר מכל היתרה שלך (" + fmt(total) + " ₪).";
+      }
+      if (/(בזבזתי|הוצאתי|קניתי|שילמתי|spent)/.test(q) && num) {
+        const life = byKey.lifestyle || cubes.find((c) => c.key !== "housing");
+        if (life) { life.balance = Math.max(0, life.balance - Number(num)); render(); }
+        return "רשמתי ✅ הורדתי " + fmt(Number(num)) + " ₪ מקוביית \"" + (life ? life.name : "") + "\". היתרה החדשה: " + fmt(life ? life.balance : 0) + " ₪.";
+      }
+      if (/(מצב|סטטוס|כמה יש|how|status|doing)/.test(q)) {
+        const low = [...cubes].sort((a, b) => a.balance - b.balance)[0];
+        return "סה״כ בקוביות: " + fmt(total) + " ₪." + (low ? " הקובייה הכי נמוכה כרגע: \"" + low.name + "\" עם " + fmt(low.balance) + " ₪." : "");
+      }
+      if (/^(היי|הי|שלום|מה קורה|hi|hey|hello)/.test(q))
+        return "היי! 👋 אני Cubey, החבר הפיננסי שלך. יש לך " + fmt(total) + " ₪ בקוביות. שאל אותי \"אפשר להרשות 300 ₪?\" או \"מה המצב שלי?\"";
+      return "אני Cubey 🧊 — רואה את הקוביות שלך (סה״כ " + fmt(total) + " ₪). נסה: \"אפשר להרשות 500 ₪?\", \"בזבזתי 200 ₪\", או \"מה המצב שלי?\"";
+    }
+
+    function renderChat() {
+      const w = $("chatwrap");
+      w.className = "chatwrap" + (chatOpen ? " on" : "");
+      if (!chatOpen) { w.innerHTML = ""; return; }
+      w.onclick = (e) => { if (e.target === w) { chatOpen = false; renderChat(); } };
+      const chat = el("div", "chat");
+      chat.innerHTML =
+        '<div class="ch"><div><div class="t">Cubey 🧊</div>' +
+        '<div class="s">' + (streaming ? "מקליד…" : "החבר הפיננסי שלך · מכיר את הקוביות") + '</div></div>' +
+        '<button class="x" aria-label="סגור">✕</button></div>' +
+        '<div class="msgs" id="msgs"></div>' +
+        (chatLog.length === 0 ? '<div class="sugg" id="sugg"></div>' : '') +
+        '<div class="inbar"><input id="cin" placeholder="כתוב ל-Cubey…" ' + (streaming ? "disabled" : "") + '>' +
+        '<button id="csend" ' + (streaming ? "disabled" : "") + '>➤</button></div>';
+      chat.querySelector(".x").onclick = () => { chatOpen = false; renderChat(); };
+      const msgs = chat.querySelector("#msgs");
+      if (chatLog.length === 0) {
+        msgs.innerHTML = '<div class="intro"><div class="e">👋</div><p>היי! אני Cubey. ספר לי על הוצאה, שאל אם אפשר להרשות משהו, או "מה המצב שלי?"</p></div>';
+        const sg = chat.querySelector("#sugg");
+        SUGG.forEach((s) => { const b = el("button"); b.textContent = s; b.onclick = () => send(s); sg.appendChild(b); });
+      } else {
+        chatLog.forEach((m) => { const b = el("div", "bubble " + (m.role === "u" ? "u" : "b")); b.textContent = m.text; msgs.appendChild(b); });
+      }
+      const input = chat.querySelector("#cin");
+      const go = () => { const v = (input.value || "").trim(); if (v) send(v); };
+      chat.querySelector("#csend").onclick = go;
+      input.onkeydown = (e) => { if (e.key === "Enter") go(); };
+      w.appendChild(chat);
+      setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; if (!streaming) input && input.focus(); }, 30);
+    }
+
+    function send(text) {
+      if (streaming) return;
+      chatLog.push({ role: "u", text });
+      const full = reply(text);
+      chatLog.push({ role: "b", text: "" });
+      streaming = true; renderChat();
+      let i = 0;
+      const iv = setInterval(() => {
+        i += 3;
+        chatLog[chatLog.length - 1].text = full.slice(0, i);
+        const msgs = $("msgs");
+        if (msgs) { const bs = msgs.querySelectorAll(".bubble.b"); const last = bs[bs.length - 1];
+          if (last) last.textContent = chatLog[chatLog.length - 1].text; msgs.scrollTop = msgs.scrollHeight; }
+        if (i >= full.length) { clearInterval(iv); chatLog[chatLog.length - 1].text = full; streaming = false; renderChat(); }
+      }, 18);
+    }
+
+    $("fab").onclick = () => { chatOpen = true; renderChat(); };
+
+    // ---- boot -------------------------------------------------------------
+    buildCubes();
+    render();
+  </script>
+</body>
+</html>
