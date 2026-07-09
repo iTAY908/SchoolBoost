@@ -14,6 +14,7 @@ const BASE_URL =
 // (and cross-device state sync) are scoped to this user.
 let currentUserId = 'default';
 export const setUserId = (id: string) => { currentUserId = id || 'default'; };
+export const getUserId = () => currentUserId;
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {

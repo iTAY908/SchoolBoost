@@ -17,6 +17,7 @@ const ICONS: Record<string, string> = {
   'trending-up': '📈',
   shield: '🛡️',
   sparkles: '✨',
+  target: '🎯',
 };
 
 export function CubeCard({ cube, highlight }: { cube: Cube; highlight?: boolean }) {

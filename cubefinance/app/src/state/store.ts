@@ -8,8 +8,35 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api, setUserId } from '../api/client';
+import { api, setUserId, getUserId } from '../api/client';
 import { Cube, Profile, Alert, ChatMessage, OnboardingDraft, EMPTY_DRAFT } from './types';
+import { buildCustomCube } from '../logic/customCube';
+import * as auth from '../services/authService';
+import { AuthUser } from '../services/authService';
+
+// Data fields wiped on logout / account switch (identity + flags preserved).
+const BLANK_DATA = {
+  profile: null,
+  cubes: [] as Cube[],
+  mainAccount: 0,
+  summary: null,
+  alerts: [] as Alert[],
+  chat: [] as ChatMessage[],
+  onboardingDraft: EMPTY_DRAFT,
+  onboardingStep: 0,
+  lastSavedAt: null as number | null,
+  onboarded: false,
+  error: null as string | null,
+  lastTransfer: null as any,
+};
+
+// Persisted state is namespaced per account: the storage key becomes
+// `cubefinance:v1:<userId>`, so multiple users on one device stay separate.
+const perUserStorage = {
+  getItem: (name: string) => AsyncStorage.getItem(`${name}:${getUserId()}`),
+  setItem: (name: string, value: string) => AsyncStorage.setItem(`${name}:${getUserId()}`, value),
+  removeItem: (name: string) => AsyncStorage.removeItem(`${name}:${getUserId()}`),
+};
 
 interface TransferEvent {
   allocations: { key: string; name: string; amount: number }[];
@@ -34,6 +61,10 @@ interface AppState {
   userId: string | null;
   cloud: 'local' | 'syncing' | 'synced' | 'offline';
 
+  // --- auth ---
+  authUser: AuthUser | null;
+  authChecked: boolean; // true once we've checked for an existing session
+
   // --- status flags ---
   onboarded: boolean;
   hydrated: boolean; // true once persisted state has been read back from disk
@@ -53,8 +84,23 @@ interface AppState {
   transfer: (amount: number) => Promise<void>;
   spend: (cubeKey: string, amount: number) => Promise<void>;
   sendChat: (text: string) => Promise<void>;
+  addCustomCube: (name: string, amount: number, meta?: { priority?: number; explanation?: string }) => void;
   clearTransferEvent: () => void;
+  // auth actions
+  checkSession: () => Promise<void>;
+  signUp: (email: string, password: string) => Promise<string | null>; // returns error msg or null
+  logIn: (email: string, password: string) => Promise<string | null>;
+  logout: () => Promise<void>;
   reset: () => void;
+}
+
+// Load a signed-in account's namespaced state and enter the app.
+async function enterAccount(user: AuthUser) {
+  setUserId(user.id);
+  useStore.setState({ ...BLANK_DATA });
+  await (useStore.persist as any).rehydrate(); // reload this account's saved state
+  useStore.setState({ authUser: user, authChecked: true });
+  useStore.getState().syncFromCloud();
 }
 
 export const useStore = create<AppState>()(
@@ -74,6 +120,9 @@ export const useStore = create<AppState>()(
   userId: null,
   cloud: 'local',
 
+  authUser: null,
+  authChecked: false,
+
   onboarded: false,
   hydrated: false,
   calculating: false,
@@ -86,6 +135,40 @@ export const useStore = create<AppState>()(
   setDraft: (patch) =>
     set({ onboardingDraft: { ...get().onboardingDraft, ...patch }, lastSavedAt: Date.now() }),
   setStep: (n) => set({ onboardingStep: n, lastSavedAt: Date.now() }),
+
+  // --- Auth ---------------------------------------------------------------
+  checkSession: async () => {
+    try {
+      const user = await auth.getSessionUser();
+      if (user) { await enterAccount(user); return; }
+    } catch (_) {}
+    set({ authChecked: true });
+  },
+  signUp: async (email, password) => {
+    const res = await auth.signUp(email, password);
+    if (res.error || !res.user) return res.error || 'שגיאה בהרשמה';
+    await enterAccount(res.user); // auto-login -> onboarding
+    return null;
+  },
+  logIn: async (email, password) => {
+    const res = await auth.logIn(email, password);
+    if (res.error || !res.user) return res.error || 'שגיאה בהתחברות';
+    await enterAccount(res.user); // -> dashboard if onboarded, else questionnaire
+    return null;
+  },
+  logout: async () => {
+    await auth.clearSession();
+    setUserId('anon');
+    set({ ...BLANK_DATA, authUser: null });
+  },
+
+  // --- Custom cube: add a persisted personal-goal cube --------------------
+  addCustomCube: (name, amount, meta = {}) => {
+    const { cubes, profile } = get();
+    const income = profile?.monthlyIncome || 0;
+    const { cubes: next } = buildCustomCube(name, amount, income, cubes, meta);
+    set({ cubes: next, lastSavedAt: Date.now() });
+  },
 
   // --- Worker 5: reconcile local state with the backend (last write wins) --
   syncFromCloud: async () => {
@@ -127,7 +210,11 @@ export const useStore = create<AppState>()(
         mainAccount,
         onboarded: true,
         calculating: false,
+        lastSavedAt: Date.now(),
       });
+      // Remember, per account, that onboarding is done (drives login routing).
+      const u = get().authUser;
+      if (u) auth.markOnboarded(u.email).catch(() => {});
     } catch (e: any) {
       set({ calculating: false, error: e?.message || 'Could not build your budget' });
     }
@@ -215,7 +302,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'cubefinance:v1',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => perUserStorage),
       version: 1,
       // Persist only durable data — never the transient flags, functions or
       // the one-shot transfer animation signal.
@@ -233,14 +320,11 @@ export const useStore = create<AppState>()(
         userId: s.userId,
       }),
       // Fires after the persisted state is read back from AsyncStorage.
+      // userId + backend sync are driven by the auth layer (enterAccount), so we
+      // only flip the hydration flag here.
       onRehydrateStorage: () => (_restored, error) => {
         if (error) console.warn('[store] rehydrate failed', error);
-        let uid = useStore.getState().userId;
-        if (!uid) uid = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-        setUserId(uid);
-        useStore.setState({ hydrated: true, chatStreaming: false, userId: uid });
-        // Reconcile with the backend once local state is ready.
-        useStore.getState().syncFromCloud();
+        useStore.setState({ hydrated: true, chatStreaming: false });
       },
     }
   )

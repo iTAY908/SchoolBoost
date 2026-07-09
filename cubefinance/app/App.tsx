@@ -1,34 +1,50 @@
 // ============================================================================
 // Worker 5 — Integration root.
-// Chooses the screen based on onboarding state and mounts the floating buddy
-// globally so it's available on every post-onboarding screen. All wiring flows
-// through the single Zustand store — no props passed between modules.
+// Auth gate first (Sign Up / Log In), then onboarding vs dashboard based on
+// whether the signed-in account already completed onboarding. The floating
+// buddy is mounted globally once inside the app.
 // ============================================================================
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, Text, ActivityIndicator } from 'react-native';
+import AuthScreen from './src/screens/auth/AuthScreen';
 import OnboardingFlow from './src/screens/onboarding/OnboardingFlow';
 import DashboardScreen from './src/screens/DashboardScreen';
 import { FloatingChatbot } from './src/components/chat/FloatingChatbot';
 import { useStore } from './src/state/store';
 import { colors } from './src/theme/theme';
 
-export default function App() {
-  const onboarded = useStore((s) => s.onboarded);
-  const hydrated = useStore((s) => s.hydrated);
+function Splash() {
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <StatusBar style="light" />
+      <Text style={{ fontSize: 40, marginBottom: 16 }}>🧊</Text>
+      <ActivityIndicator color={colors.primary} />
+    </View>
+  );
+}
 
-  // Wait for the persisted state to load from disk before deciding which screen
-  // to show — avoids a flash of onboarding for a returning, already-set-up user.
-  if (!hydrated) {
+export default function App() {
+  const authChecked = useStore((s) => s.authChecked);
+  const authUser = useStore((s) => s.authUser);
+  const hydrated = useStore((s) => s.hydrated);
+  const onboarded = useStore((s) => s.onboarded);
+  const checkSession = useStore((s) => s.checkSession);
+
+  // Restore an existing session on launch.
+  useEffect(() => { checkSession(); }, [checkSession]);
+
+  if (!authChecked) return <Splash />;
+  if (!authUser) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <StatusBar style="light" />
-        <Text style={{ fontSize: 40, marginBottom: 16 }}>🧊</Text>
-        <ActivityIndicator color={colors.primary} />
+        <AuthScreen />
       </View>
     );
   }
+  if (!hydrated) return <Splash />; // loading this account's saved state
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -36,7 +52,6 @@ export default function App() {
       {onboarded ? (
         <>
           <DashboardScreen />
-          {/* Worker 4 buddy — global FAB, mounted only after onboarding */}
           <FloatingChatbot />
         </>
       ) : (

@@ -210,4 +210,36 @@ function buildSummary(cubes, income, independent) {
   };
 }
 
-module.exports = { computeBudget, CUBE_META };
+/**
+ * AI budgeting helper for a user-created "custom cube".
+ * Allocates a monthly amount from the discretionary budget (income minus fixed
+ * housing) based on a 1–10 priority rating, and returns a Hebrew explanation.
+ *
+ * High priority (8–10): a larger slice of the free budget, scaling down
+ * lower-value cubes (Lifestyle). Low priority (1–7): a small symbolic amount
+ * so it doesn't hurt the main financial goals.
+ *
+ * @param {number} priority 1..10
+ * @param {Object} ctx { income, housingCost }
+ */
+function allocateCustomCube(priority, ctx = {}) {
+  const p = clamp(Math.round(Number(priority) || 1), 1, 10);
+  const income = Math.max(0, Number(ctx.income) || 0);
+  const housingCost = Math.max(0, Number(ctx.housingCost) || 0);
+  const discretionary = Math.max(0, income - housingCost);
+
+  let pct, tone;
+  if (p >= 8) { pct = 0.1 + (p - 8) * 0.05; tone = 'high'; } // 10% / 15% / 20%
+  else { pct = 0.01 + (p - 1) * 0.005; tone = 'low'; } // ~1%..4%
+
+  let amount = round(discretionary * pct);
+  if (income > 0 && amount < 50) amount = 50; // meaningful floor
+
+  const explanation = tone === 'high'
+    ? `דירגת את זה ${p}/10 — עדיפות גבוהה. הקצאתי ${amount.toLocaleString()} ₪ בחודש, נתח משמעותי מהתקציב הפנוי (${discretionary.toLocaleString()} ₪), על חשבון צמצום קל בקוביית ההנאות.`
+    : `דירגת את זה ${p}/10, אז זה לא דחוף. הקצאתי סכום קטן וסמלי של ${amount.toLocaleString()} ₪ בחודש כדי שתוכל להמשיך להתמקד ביעדי החיסכון העיקריים.`;
+
+  return { amount, priority: p, tone, discretionary, trimLifestyle: tone === 'high', explanation };
+}
+
+module.exports = { computeBudget, allocateCustomCube, CUBE_META };

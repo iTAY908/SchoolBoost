@@ -9,6 +9,7 @@ import { View, Text, StyleSheet, ScrollView, SafeAreaView, Pressable } from 'rea
 import { colors, radius, spacing, font } from '../theme/theme';
 import { CubeCard } from '../components/cubes/CubeCard';
 import { TransferSheet, TransferAnimation } from '../components/cubes/TransferSheet';
+import { CreateCubeForm } from '../components/cubes/CreateCubeForm';
 import { useStore, selectTotalBalance } from '../state/store';
 
 export default function DashboardScreen() {
@@ -17,8 +18,10 @@ export default function DashboardScreen() {
   const summary = useStore((s) => s.summary);
   const alerts = useStore((s) => s.alerts);
   const lastTransfer = useStore((s) => s.lastTransfer);
+  const logout = useStore((s) => s.logout);
   const total = useStore(selectTotalBalance);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [cubeFormOpen, setCubeFormOpen] = useState(false);
 
   // Keys that just received money — used to highlight/animate those cards.
   const justFunded = useMemo(
@@ -29,7 +32,12 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text style={styles.brand}>🧊 CubeFinance</Text>
+        <View style={styles.topRow}>
+          <Text style={styles.brand}>🧊 CubeFinance</Text>
+          <Pressable onPress={logout} hitSlop={8}>
+            <Text style={styles.logout}>⎋ יציאה</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.hero}>
           <Text style={styles.heroLabel}>Total across cubes</Text>
@@ -65,11 +73,17 @@ export default function DashboardScreen() {
           <Text style={styles.empty}>No cubes yet — complete onboarding to build them.</Text>
         ) : null}
 
+        <Pressable style={styles.addCube} onPress={() => setCubeFormOpen(true)}>
+          <Text style={styles.addIcon}>＋</Text>
+          <Text style={styles.addText}>צור קובייה אישית</Text>
+        </Pressable>
+
         <View style={{ height: spacing(12) }} />
       </ScrollView>
 
       <TransferAnimation />
       <TransferSheet visible={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <CreateCubeForm visible={cubeFormOpen} onClose={() => setCubeFormOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -77,7 +91,23 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   body: { padding: spacing(3), paddingBottom: spacing(6) },
-  brand: { color: colors.text, fontSize: 18, fontWeight: '800', marginBottom: spacing(2) },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing(2) },
+  brand: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  logout: { color: '#ff8f8f', fontSize: 13, fontWeight: '700' },
+  addCube: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing(1),
+    borderWidth: 1.5,
+    borderColor: colors.cardBorder,
+    borderStyle: 'dashed',
+    borderRadius: radius.lg,
+    paddingVertical: spacing(2),
+    marginTop: spacing(1),
+  },
+  addIcon: { color: colors.primary, fontSize: 20, fontWeight: '800' },
+  addText: { color: colors.textDim, fontSize: 15, fontWeight: '700' },
   hero: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,

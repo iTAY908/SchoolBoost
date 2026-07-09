@@ -351,6 +351,48 @@
   .fab { background: linear-gradient(140deg, #8072ff, #6c5ce7); }
   .fab:hover { background: linear-gradient(140deg, #8f82ff, #7669f0); }
 
+  /* ===== Custom cube ===== */
+  .addcube {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
+    padding: 16px; color: var(--dim); font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: var(--font); unicode-bidi: plaintext; transition: border-color .15s, color .15s, background .15s;
+  }
+  .addcube:hover { border-color: var(--primary); color: var(--text); background: #ffffff08; }
+  .addcube .addicon { font-size: 20px; color: var(--primary); font-weight: 800; }
+  .prio { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+  .prio input[type=range] { flex: 1; accent-color: var(--primary); height: 6px; }
+  .priov {
+    min-width: 40px; text-align: center; font-size: 20px; font-weight: 800; color: var(--primary);
+    background: #ffffff10; border-radius: 10px; padding: 4px 6px; font-variant-numeric: tabular-nums;
+  }
+  .airesult {
+    margin-top: 14px; background: linear-gradient(150deg, #201d38, #17161f);
+    border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 14px;
+  }
+  .aiamt { font-size: 26px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+  .aiamt span { font-size: 13px; font-weight: 600; color: var(--dim); }
+  .aiexp { color: var(--dim); font-size: 13.5px; line-height: 1.5; margin-top: 6px; unicode-bidi: plaintext; }
+
+  /* ===== Auth screen ===== */
+  #restart { top: 48px; }
+  .logout { color: #ff8f8f; }
+  .authwrap { height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .authcard {
+    width: 100%; max-width: 340px;
+    background: linear-gradient(165deg, #1b1830, #14131d);
+    border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+    padding: 28px 22px; box-shadow: 0 30px 70px -40px #000;
+  }
+  .authbrand { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: -.2px; }
+  .authtitle { font-size: 26px; font-weight: 800; letter-spacing: -.6px; margin: 12px 0 4px; }
+  .authsub { color: var(--dim); font-size: 14px; margin: 0 0 20px; line-height: 1.4; }
+  .authcard .input-wrap input { font-size: 16px; font-weight: 600; }
+  .autherr { color: var(--danger); font-size: 13.5px; font-weight: 700; min-height: 18px; margin: 2px 2px 10px; unicode-bidi: plaintext; }
+  .authswitch { text-align: center; color: var(--dim); font-size: 13.5px; margin-top: 14px; }
+  .authswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer; font-family: var(--font); font-size: 13.5px; padding: 4px; }
+  .authswitch button:hover { text-decoration: underline; }
+
   /* ===== Mobile: fill the screen with ONE natural scroll (no phone frame) =====
      The nested phone-in-phone frame created a second scroll region that fought
      touch scrolling. On narrow screens we drop the frame + pitch so the app is
@@ -402,6 +444,7 @@
     <div class="notch"></div>
     <div class="screen" id="screen">
       <button class="restart" id="restart" style="display:none">↺ Restart</button>
+      <button class="restart logout" id="logout" style="display:none">⎋ יציאה</button>
       <div class="sync off" id="sync">📴 מקומי</div>
       <!-- app renders here -->
       <div class="coins" id="coins"></div>
@@ -679,6 +722,7 @@ function respond(text) {
 const screen = document.getElementById('screen');
 const coinsEl = document.getElementById('coins');
 const restartBtn = document.getElementById('restart');
+const logoutBtn = document.getElementById('logout');
 
 const state = {
   onboarded: false,
@@ -686,16 +730,67 @@ const state = {
   chat: [], chatStreaming: false, lastFunded: new Set(), pending: null,
   draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
   stepIndex: 0,
+  // auth gate
+  screen: 'auth', // 'auth' | 'app'
+  authUser: null, // { id, email }
+  authMode: 'login', // 'login' | 'signup'
+  authError: '',
 };
+
+// ============================================================================
+// Mock Auth Service — a simulated secure local user store (no real backend DB).
+// Passwords are salted + hashed (mock hash; NOT cryptographically secure — a
+// real app must hash server-side with bcrypt/scrypt). Users live in localStorage.
+// ============================================================================
+const USERS_KEY = 'cubefinance:users';
+const SESSION_KEY = 'cubefinance:session';
+
+function loadUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch (_) { return {}; } }
+function saveUsers(u) { try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch (_) {} }
+function mockHash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  for (let r = 0; r < 800; r++) h = ((h * 33) ^ (h >>> 7)) >>> 0; // key-stretch (mock)
+  return h.toString(16);
+}
+const hashPw = (pw, salt) => mockHash(salt + '::' + pw);
+const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+function authSignUp(email, pw) {
+  email = (email || '').trim().toLowerCase();
+  if (!validEmail(email)) return { error: 'כתובת אימייל לא תקינה' };
+  if ((pw || '').length < 4) return { error: 'הסיסמה חייבת להכיל לפחות 4 תווים' };
+  const users = loadUsers();
+  if (users[email]) return { error: 'האימייל כבר רשום במערכת' }; // "Email already registered"
+  const salt = Math.random().toString(36).slice(2);
+  const id = 'acc_' + mockHash(email).slice(0, 8) + Date.now().toString(36);
+  users[email] = { id, email, salt, hash: hashPw(pw, salt), createdAt: Date.now() };
+  saveUsers(users);
+  return { user: { id, email } };
+}
+function authLogIn(email, pw) {
+  email = (email || '').trim().toLowerCase();
+  const users = loadUsers();
+  const u = users[email];
+  if (!u) return { error: 'לא נמצא משתמש עם אימייל זה' };
+  // Security: block access unless the exact password matches the stored hash.
+  if (u.hash !== hashPw(pw, u.salt)) return { error: 'שגיאה: סיסמה שגויה' };
+  return { user: { id: u.id, email: u.email } };
+}
+function setSession(email) { try { localStorage.setItem(SESSION_KEY, email); } catch (_) {} }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (_) {} }
+function getSession() { try { return localStorage.getItem(SESSION_KEY); } catch (_) { return null; } }
 
 // ============================================================================
 // Persistence — recognise the returning user and resume where they left off.
 // Everything lives in localStorage (no expiry), so leaving mid-onboarding for
 // hours and coming back continues from the exact same step with entered data.
 // ============================================================================
-const STORAGE_KEY = 'cubefinance:v1';
+const STORAGE_BASE = 'cubefinance:v1';
 let userId = null;
 let localSavedAt = 0;
+// App state is namespaced per account so multiple users on one device stay separate.
+const stateKey = () => STORAGE_BASE + ':' + (userId || 'anon');
 
 // --- Backend connection -----------------------------------------------------
 // Point the app at a backend with ?api=http://host:port (remembered), else the
@@ -736,13 +831,11 @@ function buildSnapshot() {
 }
 
 function persist() {
-  // While booting we render from restored/pulled state without re-stamping the
-  // timestamp — otherwise a fresh device would look "newer" than the cloud and
-  // overwrite real remote data before the first reconcile.
-  if (booting) return;
+  // Only persist while a user is signed in and the initial reconcile is done.
+  if (booting || state.screen !== 'app' || !userId) return;
   const snap = buildSnapshot();
   localSavedAt = snap.savedAt;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(snap)); } catch (_) {}
+  try { localStorage.setItem(stateKey(), JSON.stringify(snap)); } catch (_) {}
   cloudPush(snap); // debounced; no-op if backend unreachable
 }
 
@@ -818,19 +911,28 @@ function updateSyncChip() {
   chip.className = 'sync ' + cls;
 }
 
-function loadSaved() {
+// Wipe the in-memory app data (used on logout / account switch).
+function resetAppData() {
+  state.onboarded = false;
+  state.profile = null;
+  state.cubes = [];
+  state.mainAccount = 0;
+  state.summary = null;
+  state.alerts = [];
+  state.chat = [];
+  state.pending = null;
+  state.draft = { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' };
+  state.stepIndex = 0;
+  state.chatStreaming = false;
+  state.lastFunded = new Set();
+}
+
+// Load the signed-in user's saved snapshot from their namespaced key.
+function loadUserState() {
   let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
-  if (!saved || !saved.userId) {
-    userId = qUid || 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    // Fresh/empty local state — keep savedAt at 0 so a cloud snapshot always
-    // wins the first reconcile (never clobber real remote data with an empty one).
-    localSavedAt = 0;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ userId, savedAt: 0 })); } catch (_) {}
-    return;
-  }
-  userId = qUid || saved.userId; // ?uid= overrides for shared cross-device accounts
-  localSavedAt = qUid && qUid !== saved.userId ? 0 : (saved.savedAt || 0);
+  try { saved = JSON.parse(localStorage.getItem(stateKey()) || 'null'); } catch (_) {}
+  if (!saved) { localSavedAt = 0; return; }
+  localSavedAt = saved.savedAt || 0;
   state.onboarded = !!saved.onboarded;
   state.profile = saved.profile || null;
   state.cubes = Array.isArray(saved.cubes) ? saved.cubes : [];
@@ -841,13 +943,50 @@ function loadSaved() {
   state.pending = saved.pending || null;
   state.draft = Object.assign(state.draft, saved.draft || {});
   state.stepIndex = saved.stepIndex || 0;
-  // transient fields never restored:
-  state.chatStreaming = false;
-  state.lastFunded = new Set();
-
   const hadProgress = state.onboarded || state.stepIndex > 0 ||
     Object.values(saved.draft || {}).some((v) => v !== '' && v !== null);
   if (hadProgress) scheduleResumeToast(saved.savedAt);
+}
+
+// After a successful sign-up / log-in: load that account's data and enter the app.
+function enterApp(user) {
+  state.authUser = user;
+  state.screen = 'app';
+  state.authError = '';
+  setSession(user.email);
+  userId = user.id;
+  booting = true;
+  resetAppData();
+  loadUserState();
+  render();
+  cloudPull().finally(() => { booting = false; persist(); });
+}
+
+function logout() {
+  clearSession();
+  state.authUser = null;
+  state.screen = 'auth';
+  state.authError = '';
+  state.authMode = 'login';
+  resetAppData();
+  userId = null;
+  localSavedAt = 0;
+  booting = false;
+  render();
+}
+
+// Decide the entry screen at startup based on the saved session.
+function initAuth() {
+  const email = getSession();
+  const users = loadUsers();
+  if (email && users[email]) {
+    enterApp({ id: users[email].id, email: users[email].email });
+  } else {
+    state.screen = 'auth';
+    state.authMode = Object.keys(users).length ? 'login' : 'signup';
+    booting = false;
+    render();
+  }
 }
 
 function elapsedText(since) {
@@ -886,13 +1025,51 @@ function stepList() {
 }
 
 function render() {
-  restartBtn.style.display = state.onboarded ? 'block' : 'none';
+  const authed = state.screen === 'app';
+  restartBtn.style.display = authed && state.onboarded ? 'block' : 'none';
+  logoutBtn.style.display = authed ? 'block' : 'none';
+  document.getElementById('sync').style.display = authed ? 'block' : 'none';
   const kept = screen.querySelector('.coins');
-  screen.querySelectorAll(':scope > *:not(.coins):not(.restart):not(.sync)').forEach((n) => n.remove());
-  const root = state.onboarded ? renderDashboard() : renderOnboarding();
+  screen.querySelectorAll(':scope > *:not(.coins):not(.restart):not(.sync):not(.logout)').forEach((n) => n.remove());
+  const root = !authed ? renderAuth() : state.onboarded ? renderDashboard() : renderOnboarding();
   screen.insertBefore(root, kept);
   persist();
   if (pendingToast) { const m = pendingToast; pendingToast = null; setTimeout(() => showToast(m), 250); }
+}
+
+// ---------- Auth screen (Sign Up / Log In) ----------
+function renderAuth() {
+  const isSignup = state.authMode === 'signup';
+  const wrap = el('div', 'authwrap fade');
+  const card = el('div', 'authcard');
+  card.innerHTML = `
+    <div class="authbrand">🧊 CubeFinance</div>
+    <h2 class="authtitle">${isSignup ? 'יצירת חשבון' : 'התחברות'}</h2>
+    <p class="authsub">${isSignup ? 'הירשם כדי להתחיל לחלק את הכסף לקוביות.' : 'התחבר כדי להמשיך לקוביות שלך.'}</p>
+    <div class="field"><div class="label">אימייל</div>
+      <div class="input-wrap"><input id="authEmail" type="email" dir="ltr" placeholder="you@example.com" autocomplete="email"></div></div>
+    <div class="field"><div class="label">סיסמה</div>
+      <div class="input-wrap"><input id="authPass" type="password" dir="ltr" placeholder="••••••" autocomplete="${isSignup ? 'new-password' : 'current-password'}"></div></div>
+    <div class="autherr" id="authErr">${state.authError || ''}</div>
+    <button class="btn" id="authSubmit">${isSignup ? 'הרשמה' : 'התחברות'}</button>
+    <div class="authswitch">${isSignup ? 'כבר יש לך חשבון?' : 'עדיין אין לך חשבון?'}
+      <button id="authToggle">${isSignup ? 'התחבר' : 'הירשם'}</button></div>`;
+
+  const email = card.querySelector('#authEmail');
+  const pass = card.querySelector('#authPass');
+  const submit = () => {
+    const res = isSignup ? authSignUp(email.value, pass.value) : authLogIn(email.value, pass.value);
+    if (res.error) { state.authError = res.error; card.querySelector('#authErr').textContent = res.error; return; }
+    // Sign up -> auto login -> onboarding.  Log in -> dashboard or onboarding
+    // depending on whether this account finished onboarding before.
+    enterApp(res.user);
+  };
+  card.querySelector('#authSubmit').onclick = submit;
+  pass.onkeydown = (e) => { if (e.key === 'Enter') submit(); };
+  card.querySelector('#authToggle').onclick = () => { state.authMode = isSignup ? 'login' : 'signup'; state.authError = ''; render(); };
+
+  wrap.appendChild(card);
+  return wrap;
 }
 
 // ---------- Onboarding ----------
@@ -1054,13 +1231,79 @@ function renderDashboard() {
   const st = el('div', 'section-t'); st.textContent = 'Your Cubes'; pad.appendChild(st);
   state.cubes.forEach((c) => pad.appendChild(cubeCard(c)));
 
+  // Create Custom Cube entry point
+  const addCard = el('button', 'addcube');
+  addCard.innerHTML = `<span class="addicon">＋</span><span>צור קובייה אישית</span>`;
+  addCard.onclick = openCustomCube;
+  pad.appendChild(addCard);
+
   const spacer = el('div'); spacer.style.height = '90px'; pad.appendChild(spacer);
   view.appendChild(pad); wrap.appendChild(view);
 
   wrap.appendChild(buildSheet());
+  wrap.appendChild(buildCustomCubeSheet());
   wrap.appendChild(buildFab());
   wrap.appendChild(buildChat());
   return wrap;
+}
+
+// ============================================================================
+// Custom Cube — create a personal goal cube funded manually or by the AI's
+// 1–10 priority logic. Persisted with the rest of the cubes (per-account).
+// ============================================================================
+const CUSTOM_COLORS = ['#A29BFE', '#55EFC4', '#FD79A8', '#74B9FF', '#81ECEC', '#FAB1A0', '#B2BEC3'];
+
+// AI budgeting logic: allocate a monthly amount from the discretionary budget
+// (income minus fixed housing) based on a 1–10 priority rating.
+function allocateCustomCube(priority) {
+  const p = clamp(Math.round(priority), 1, 10);
+  const income = state.profile?.monthlyIncome || 0;
+  const housing = state.cubes.find((c) => c.key === 'housing');
+  const discretionary = Math.max(0, income - (housing ? housing.monthlyContribution : 0));
+  let pct, tone;
+  if (p >= 8) { pct = 0.10 + (p - 8) * 0.05; tone = 'high'; }   // 10% / 15% / 20%
+  else { pct = 0.01 + (p - 1) * 0.005; tone = 'low'; }          // ~1%..4% (symbolic)
+  let amount = round(discretionary * pct);
+  if (income > 0 && amount < 50) amount = 50; // small floor so it's meaningful
+  const explanation = tone === 'high'
+    ? `דירגת את זה ${p}/10 — עדיפות גבוהה. הקצאתי ${fmt(amount)} ₪ בחודש, נתח משמעותי מהתקציב הפנוי (${fmt(discretionary)} ₪), על חשבון צמצום קל בקוביית ההנאות (Lifestyle).`
+    : `דירגת את זה ${p}/10, אז זה לא דחוף. הקצאתי סכום קטן וסמלי של ${fmt(amount)} ₪ בחודש כדי שתוכל להמשיך להתמקד ביעדי החיסכון העיקריים שלך.`;
+  return { amount, priority: p, tone, discretionary, explanation };
+}
+
+function createCustomCube(name, amount, meta = {}) {
+  customOpen = false;
+  const income = state.profile?.monthlyIncome || 0;
+  amount = Math.max(0, round(amount));
+  const idx = state.cubes.filter((c) => c.custom).length;
+  const cube = {
+    key: 'custom_' + Date.now(),
+    name: name.trim() || 'קובייה אישית',
+    color: CUSTOM_COLORS[idx % CUSTOM_COLORS.length],
+    icon: '🎯',
+    percentage: income > 0 ? round((amount / income) * 100) : 0,
+    monthlyContribution: amount,
+    balance: 0,
+    custom: true,
+    priority: meta.priority || null,
+    note: meta.priority ? `יעד אישי · עדיפות ${meta.priority}/10` : 'יעד אישי',
+    aiExplanation: meta.explanation || null,
+  };
+  // High-priority AI cubes "make room" by trimming the Lifestyle target.
+  if (meta.priority && meta.priority >= 8) {
+    const life = state.cubes.find((c) => c.key === 'lifestyle');
+    if (life) {
+      const cut = Math.min(life.monthlyContribution, amount);
+      life.monthlyContribution = round(life.monthlyContribution - cut);
+      life.percentage = income > 0 ? round((life.monthlyContribution / income) * 100) : 0;
+    }
+  }
+  state.cubes.push(cube);
+  state.lastFunded = new Set([cube.key]);
+  persist();
+  render();
+  pendingToast = `🎯 נוצרה קובייה: ${cube.name}`;
+  const m = pendingToast; pendingToast = null; setTimeout(() => showToast(m), 150);
 }
 
 function cubeCard(c) {
@@ -1125,6 +1368,79 @@ function buildSheet() {
 }
 function openSheet() { sheetOpen = true; document.getElementById('ov')?.classList.add('on'); document.getElementById('sheet')?.classList.add('on'); }
 function closeSheet() { sheetOpen = false; document.getElementById('ov')?.classList.remove('on'); document.getElementById('sheet')?.classList.remove('on'); }
+
+// ---------- Custom Cube modal ----------
+let customOpen = false;
+let cc = { mode: null, name: '', amount: 0, priority: 5, computed: false, explanation: '' };
+function openCustomCube() { cc = { mode: null, name: '', amount: 0, priority: 5, computed: false, explanation: '' }; customOpen = true; render(); }
+function closeCustomCube() { customOpen = false; render(); }
+
+function ccOption(label, sub, on, cb) {
+  const b = el('button', 'option' + (on ? ' sel' : ''));
+  b.innerHTML = `<span class="radio"><i></i></span><span class="otext"><b>${label}</b><span>${sub}</span></span>`;
+  b.onclick = cb;
+  return b;
+}
+
+function buildCustomCubeSheet() {
+  const overlay = el('div', 'overlay'); overlay.id = 'ccov'; overlay.onclick = closeCustomCube;
+  const sheet = el('div', 'sheet'); sheet.id = 'ccsheet'; sheet.onclick = (e) => e.stopPropagation();
+  const body = el('div'); sheet.appendChild(body); renderCC(body);
+  overlay.appendChild(sheet);
+  if (customOpen) requestAnimationFrame(() => { overlay.classList.add('on'); sheet.classList.add('on'); });
+  return overlay;
+}
+
+function renderCC(body) {
+  body.innerHTML = `
+    <div class="handle"></div>
+    <h2 class="title" style="font-size:22px">צור קובייה אישית 🎯</h2>
+    <p class="sub">קובייה למטרה אישית — טיול, גאדג׳ט, כל יעד. הנתונים נשמרים לתמיד.</p>
+    <div class="field"><div class="label">שם הקובייה</div>
+      <div class="input-wrap"><input id="ccName" placeholder="טיול ליפן" value="${cc.name || ''}"></div></div>
+    <div class="label">איך לממן?</div>`;
+  const opts = el('div');
+  opts.append(
+    ccOption('סכום חודשי קבוע', 'אני קובע כמה להפריש', cc.mode === 'manual', () => { cc.mode = 'manual'; renderCC(body); }),
+    ccOption('תן ל-AI להחליט 🤖', 'לפי חשיבות הקובייה עבורך', cc.mode === 'ai', () => { cc.mode = 'ai'; renderCC(body); }),
+  );
+  body.appendChild(opts);
+
+  if (cc.mode === 'manual') {
+    const f = el('div', 'field'); f.style.marginTop = '12px';
+    f.innerHTML = `<div class="label">סכום חודשי</div><div class="input-wrap"><span class="cur">₪</span><input id="ccAmt" inputmode="numeric" value="${cc.amount || ''}" placeholder="500"></div>`;
+    body.appendChild(f);
+    f.querySelector('#ccAmt').oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9.]/g, ''); cc.amount = Number(e.target.value) || 0; sync(); };
+  } else if (cc.mode === 'ai') {
+    const box = el('div'); box.style.marginTop = '12px';
+    box.innerHTML = `
+      <div class="label">כמה חשובה לך הקובייה? (1 = נמוך, 10 = קריטי)</div>
+      <div class="prio"><input type="range" min="1" max="10" value="${cc.priority}" id="ccPrio"><span class="priov" id="ccPrioV">${cc.priority}</span></div>
+      <button class="btn" id="ccCalc" style="margin-top:10px">חשב עם AI 🤖</button>
+      <div class="airesult" id="ccResult" style="display:${cc.computed ? 'block' : 'none'}"></div>`;
+    body.appendChild(box);
+    const prio = box.querySelector('#ccPrio'), pv = box.querySelector('#ccPrioV'), rb = box.querySelector('#ccResult');
+    prio.oninput = () => { cc.priority = Number(prio.value); pv.textContent = cc.priority; cc.computed = false; rb.style.display = 'none'; sync(); };
+    box.querySelector('#ccCalc').onclick = () => {
+      const r = allocateCustomCube(cc.priority);
+      cc.amount = r.amount; cc.explanation = r.explanation; cc.computed = true;
+      rb.style.display = 'block';
+      rb.innerHTML = `<div class="aiamt">₪${fmt(r.amount)} <span>לחודש</span></div><div class="aiexp">${r.explanation}</div>`;
+      sync();
+    };
+    if (cc.computed) rb.innerHTML = `<div class="aiamt">₪${fmt(cc.amount)} <span>לחודש</span></div><div class="aiexp">${cc.explanation}</div>`;
+  }
+
+  body.querySelector('#ccName').oninput = (e) => { cc.name = e.target.value; sync(); };
+
+  const create = el('button', 'btn'); create.textContent = 'צור קובייה'; create.style.marginTop = '16px';
+  create.onclick = () => createCustomCube(cc.name, cc.amount, cc.mode === 'ai' ? { priority: cc.priority, explanation: cc.explanation } : {});
+  const cancel = el('button', 'ghost'); cancel.textContent = 'ביטול'; cancel.onclick = closeCustomCube;
+  body.append(create, cancel);
+
+  function sync() { create.disabled = !((cc.name || '').trim() && cc.amount > 0 && (cc.mode === 'manual' || (cc.mode === 'ai' && cc.computed))); }
+  sync();
+}
 
 function runTransfer(amount) {
   const res = simulateTransfer(state.cubes, amount);
@@ -1266,23 +1582,19 @@ function botSay(res) {
 function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
 
 restartBtn.onclick = () => {
-  if (!confirm('להתחיל מחדש? כל הנתונים השמורים יימחקו.')) return;
-  Object.assign(state, {
-    onboarded: false, profile: null, cubes: [], mainAccount: 0, summary: null,
-    alerts: [], chat: [], chatStreaming: false, lastFunded: new Set(), pending: null, stepIndex: 0,
-    draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
-  });
+  if (!confirm('להתחיל מחדש? הנתונים של החשבון הזה יימחקו (החשבון עצמו יישאר).')) return;
+  resetAppData();
   chatOpen = false; sheetOpen = false;
-  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
-  userId = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try { localStorage.removeItem(stateKey()); } catch (_) {}
+  localSavedAt = 0;
   render();
 };
 
-loadSaved();
-render();
+logoutBtn.onclick = () => { logout(); };
+
+// Boot: the auth gate decides whether to show login/signup or the app.
+initAuth();
 updateSyncChip();
-// Reconcile with the backend, then enable persistence and save the merged state.
-cloudPull().finally(() => { booting = false; persist(); });
-window.addEventListener('online', cloudPull);
+window.addEventListener('online', () => { if (state.screen === 'app') cloudPull(); });
 window.addEventListener('offline', () => setCloud('offline'));
 </script>

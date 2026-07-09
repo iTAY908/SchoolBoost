@@ -4,7 +4,7 @@
 // ============================================================================
 
 const express = require('express');
-const { computeBudget } = require('../logic/budgetEngine');
+const { computeBudget, allocateCustomCube } = require('../logic/budgetEngine');
 const { simulateTransfer, spendFromCube } = require('../logic/transfer');
 const { evaluateAlerts } = require('../logic/alerts');
 const { saveBudget, updateCubes, getSession } = require('../data/store');
@@ -77,6 +77,19 @@ router.post('/spend', (req, res) => {
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
+});
+
+/**
+ * POST /api/budget/custom-cube
+ * body: { priority, income, housingCost }
+ * -> AI-calculated monthly amount + Hebrew explanation for a custom goal cube.
+ */
+router.post('/custom-cube', (req, res) => {
+  const { priority, income, housingCost } = req.body || {};
+  if (!(Number(priority) >= 1)) {
+    return res.status(400).json({ error: 'priority (1-10) is required' });
+  }
+  res.json(allocateCustomCube(priority, { income, housingCost }));
 });
 
 /** GET /api/budget/alerts?userId= -> real-time monitoring snapshot */

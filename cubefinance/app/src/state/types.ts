@@ -26,6 +26,10 @@ export interface Cube {
   fixed?: boolean;
   note?: string;
   math?: string;
+  // custom (user-created) goal cubes
+  custom?: boolean;
+  priority?: number;
+  aiExplanation?: string;
 }
 
 export interface Alert {
