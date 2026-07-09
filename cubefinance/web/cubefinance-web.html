@@ -203,6 +203,28 @@
     .obback:hover { color: var(--text); }
     .obsum { color: var(--dim); font-size: 13.5px; margin-top: 8px; }
     .obsum b { color: var(--text); }
+    /* custom cube */
+    .addcube { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
+      padding: 16px; color: var(--dim); font-size: 15px; font-weight: 700; cursor: pointer;
+      font-family: var(--font); unicode-bidi: plaintext; margin-top: 4px; transition: border-color .15s, color .15s, background .15s; }
+    .addcube:hover { border-color: var(--primary); color: var(--text); background: #ffffff08; }
+    .addcube .addicon { font-size: 20px; color: var(--primary); font-weight: 800; }
+    .ccwrap { position: absolute; inset: 0; z-index: 46; display: none; flex-direction: column;
+      justify-content: flex-end; background: rgba(0,0,0,.5); }
+    .ccwrap.on { display: flex; }
+    .ccsheet { background: var(--elevated); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+      padding: 18px 20px 28px; max-height: 90%; overflow-y: auto; animation: slideup .3s ease; }
+    .handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+    .prio { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+    .prio input[type=range] { flex: 1; accent-color: var(--primary); height: 6px; }
+    .priov { min-width: 40px; text-align: center; font-size: 20px; font-weight: 800; color: var(--primary);
+      background: #ffffff10; border-radius: 10px; padding: 4px 6px; font-variant-numeric: tabular-nums; }
+    .aiRes { margin-top: 14px; background: linear-gradient(150deg, #201d38, #17161f);
+      border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 14px; }
+    .aiAmt { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .aiAmt span { font-size: 13px; font-weight: 600; color: var(--dim); }
+    .aiExp { color: var(--dim); font-size: 13.5px; line-height: 1.5; margin-top: 6px; unicode-bidi: plaintext; }
     .aswitch { text-align: center; color: var(--dim); font-size: 13.5px; margin-top: 14px; }
     .aswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer;
       font-family: var(--font); font-size: 13.5px; }
@@ -232,6 +254,7 @@
       <div class="coins" id="coins"></div>
       <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
       <div class="chatwrap" id="chatwrap"></div>
+      <div class="ccwrap" id="ccwrap"></div>
     </div>
   </div>
 
@@ -377,6 +400,54 @@
       const users = loadUsers();
       if (email && users[email]) { enterApp({ id: users[email].id, email: users[email].email }); }
       else { state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup"; render(); }
+    }
+
+    // ---- Custom cube: AI allocation by 1–10 priority ----------------------
+    const CUSTOM_COLORS = ["#A29BFE", "#55EFC4", "#FD79A8", "#74B9FF", "#81ECEC", "#FAB1A0", "#B2BEC3"];
+    function allocateCustomCube(priority) {
+      const p = Math.max(1, Math.min(10, Math.round(priority)));
+      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
+      const housing = state.cubes.find((c) => c.key === "housing");
+      const discretionary = Math.max(0, income - (housing ? (housing.amount || 0) : 0));
+      let pct, tone;
+      if (p >= 8) { pct = 0.10 + (p - 8) * 0.05; tone = "high"; } // 10% / 15% / 20%
+      else { pct = 0.01 + (p - 1) * 0.005; tone = "low"; }        // ~1%..4% (symbolic)
+      let amount = Math.round(discretionary * pct);
+      if (income > 0 && amount < 50) amount = 50;
+      const explanation = tone === "high"
+        ? "דירגת את זה " + p + "/10 — עדיפות גבוהה. הקצאתי ₪" + fmt(amount) + " בחודש, נתח משמעותי מהתקציב הפנוי (₪" + fmt(discretionary) + "), על חשבון צמצום קל בקוביית ההנאות."
+        : "דירגת את זה " + p + "/10, אז זה לא דחוף. הקצאתי סכום קטן וסמלי של ₪" + fmt(amount) + " בחודש כדי שתוכל להמשיך להתמקד ביעדי החיסכון העיקריים.";
+      return { amount: amount, priority: p, tone: tone, discretionary: discretionary, explanation: explanation };
+    }
+
+    function createCustomCube(name, amount, meta) {
+      meta = meta || {};
+      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
+      amount = Math.max(0, Math.round(amount));
+      const idx = state.cubes.filter((c) => c.custom).length;
+      const cube = {
+        key: "custom_" + Date.now(),
+        name: (name || "").trim() || "קובייה אישית",
+        emoji: "🎯", color: CUSTOM_COLORS[idx % CUSTOM_COLORS.length],
+        note: meta.priority ? "יעד אישי · עדיפות " + meta.priority + "/10" : "יעד אישי",
+        pct: income > 0 ? Math.round((amount / income) * 1000) / 10 : 0,
+        amount: amount, locked: false, balance: 0, custom: true, priority: meta.priority || null,
+      };
+      // High-priority cubes "make room" by trimming the Lifestyle target.
+      if (meta.priority && meta.priority >= 8) {
+        const life = state.cubes.find((c) => c.key === "lifestyle");
+        if (life) {
+          const cut = Math.min(life.amount || 0, amount);
+          life.amount = Math.round((life.amount || 0) - cut);
+          life.pct = income > 0 ? Math.round((life.amount / income) * 1000) / 10 : life.pct;
+        }
+      }
+      state.cubes.push(cube);
+      state.justFunded = new Set([cube.key]);
+      saveState();
+      render();
+      showToast("🎯 נוצרה קובייה: " + cube.name);
+      setTimeout(() => { state.justFunded = new Set(); }, 800);
     }
 
     // Onboarding wizard draft (module-scoped; reset when onboarding starts).
@@ -588,8 +659,73 @@
       const st = el("div", "section-t"); st.textContent = "הקוביות שלך"; v.appendChild(st);
       state.cubes.forEach((c) => v.appendChild(cubeCard(c)));
 
+      const add = el("button", "addcube");
+      add.innerHTML = '<span class="addicon">＋</span><span>צור קובייה אישית</span>';
+      add.onclick = openCustomCube;
+      v.appendChild(add);
+
       const sp = el("div"); sp.style.height = "90px"; v.appendChild(sp);
-      saveState(); // persist this account's pool + cube balances
+      saveState(); // persist this account's cubes (incl. custom) — no data loss
+    }
+
+    // ---- Custom cube modal ------------------------------------------------
+    let cc = null;
+    function openCustomCube() { cc = { mode: null, name: "", amount: "", priority: 5, computed: false, explanation: "" }; renderCustomCube(); }
+    function closeCustomCube() { cc = null; $("ccwrap").className = "ccwrap"; $("ccwrap").innerHTML = ""; }
+    function renderCustomCube() {
+      if (!cc) return;
+      const w = $("ccwrap"); w.className = "ccwrap on";
+      w.onclick = (e) => { if (e.target === w) closeCustomCube(); };
+      const canCreate = (cc.name || "").trim() && Number(cc.amount) > 0 && (cc.mode === "manual" || (cc.mode === "ai" && cc.computed));
+      let inner =
+        '<div class="handle"></div>' +
+        '<h2 class="authtitle" style="font-size:22px">צור קובייה אישית 🎯</h2>' +
+        '<p class="authsub">קובייה למטרה אישית — טיול, גאדג׳ט, כל יעד. נשמר לתמיד.</p>' +
+        '<label class="flbl">שם הקובייה</label>' +
+        '<div class="fld"><input id="ccName" placeholder="טיול ליפן" value="' + (cc.name || "") + '"></div>' +
+        '<label class="flbl">איך לממן?</label>' +
+        '<button class="ob-opt' + (cc.mode === "manual" ? " on" : "") + '" data-m="manual"><span class="obrad"><i></i></span><span class="obtxt"><b>סכום חודשי קבוע</b><span>אני קובע כמה להפריש</span></span></button>' +
+        '<button class="ob-opt' + (cc.mode === "ai" ? " on" : "") + '" data-m="ai"><span class="obrad"><i></i></span><span class="obtxt"><b>תן ל-AI להחליט 🤖</b><span>לפי חשיבות הקובייה עבורך</span></span></button>';
+
+      if (cc.mode === "manual") {
+        inner += '<label class="flbl">סכום חודשי</label><div class="fld"><span class="cur">₪</span><input id="ccAmt" inputmode="numeric" placeholder="500" value="' + (cc.amount || "") + '"></div>';
+      } else if (cc.mode === "ai") {
+        inner += '<label class="flbl">כמה חשובה לך הקובייה? (1 = נמוך, 10 = קריטי)</label>' +
+          '<div class="prio"><input type="range" min="1" max="10" value="' + cc.priority + '" id="ccPrio"><span class="priov" id="ccPrioV">' + cc.priority + '</span></div>' +
+          '<button class="distbtn wide" id="ccCalc" style="margin-top:10px">חשב עם AI 🤖</button>' +
+          '<div class="aiRes" id="ccRes" style="display:' + (cc.computed ? "block" : "none") + '">' +
+            (cc.computed ? '<div class="aiAmt">₪' + fmt(cc.amount) + ' <span>לחודש</span></div><div class="aiExp">' + cc.explanation + '</div>' : "") + '</div>';
+      }
+      inner += '<button class="distbtn wide" id="ccCreate" style="margin-top:16px"' + (canCreate ? "" : " disabled") + '>צור קובייה</button>' +
+        '<button class="obback" id="ccCancel">ביטול</button>';
+      w.innerHTML = '<div class="ccsheet">' + inner + '</div>';
+
+      const nameInp = w.querySelector("#ccName");
+      nameInp.oninput = () => { cc.name = nameInp.value; syncCC(); };
+      w.querySelectorAll(".ob-opt").forEach((b) => { b.onclick = () => { cc.mode = b.dataset.m; renderCustomCube(); }; });
+      const amt = w.querySelector("#ccAmt");
+      if (amt) amt.oninput = () => { amt.value = amt.value.replace(/[^0-9]/g, ""); cc.amount = amt.value; syncCC(); };
+      const prio = w.querySelector("#ccPrio");
+      if (prio) prio.oninput = () => { cc.priority = Number(prio.value); w.querySelector("#ccPrioV").textContent = cc.priority; cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC(); };
+      const calc = w.querySelector("#ccCalc");
+      if (calc) calc.onclick = () => {
+        const r = allocateCustomCube(cc.priority);
+        cc.amount = r.amount; cc.explanation = r.explanation; cc.computed = true;
+        const res = w.querySelector("#ccRes");
+        res.style.display = "block";
+        res.innerHTML = '<div class="aiAmt">₪' + fmt(r.amount) + ' <span>לחודש</span></div><div class="aiExp">' + r.explanation + '</div>';
+        syncCC();
+      };
+      w.querySelector("#ccCancel").onclick = closeCustomCube;
+      w.querySelector("#ccCreate").onclick = () => {
+        if (!((cc.name || "").trim() && Number(cc.amount) > 0 && (cc.mode === "manual" || (cc.mode === "ai" && cc.computed)))) return;
+        const meta = cc.mode === "ai" ? { priority: cc.priority, explanation: cc.explanation } : {};
+        const name = cc.name, amount = Number(cc.amount);
+        closeCustomCube();
+        createCustomCube(name, amount, meta);
+      };
+      function syncCC() { const b = w.querySelector("#ccCreate"); if (b) b.disabled = !((cc.name || "").trim() && Number(cc.amount) > 0 && (cc.mode === "manual" || (cc.mode === "ai" && cc.computed))); }
+      setTimeout(() => { const f = w.querySelector("#ccName"); if (f && !cc.name) f.focus(); }, 40);
     }
 
     function cubeCard(c) {
