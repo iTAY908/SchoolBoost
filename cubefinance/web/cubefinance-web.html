@@ -220,6 +220,84 @@
       border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 3px #0006; }
     .sw.on { background: var(--success); }
     .sw.on::after { transform: translateX(-21px); }
+    /* ===== engagement modules ===== */
+    .modnav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .modbtn { display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+      padding: 12px 6px; color: var(--text); font-weight: 800; font-size: 12.5px; cursor: pointer;
+      font-family: var(--font); transition: border-color .15s, transform .15s; }
+    .modbtn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .modbtn .mi { font-size: 22px; }
+    .ptsrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .ptsval { font-size: 28px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .chal { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+    .chal.done { border-color: #2e7d5b; }
+    .chtop { display: flex; align-items: center; gap: 12px; }
+    .chemoji { font-size: 24px; }
+    .chinfo { flex: 1; } .chinfo b { display: block; font-size: 15px; }
+    .chinfo span { color: var(--dim); font-size: 12.5px; }
+    .chstatus { font-weight: 900; font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+    .chal.done .chstatus { color: var(--success); }
+    .chtrack { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 12px; }
+    .chtrack.big { height: 10px; }
+    .chtrack i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), #46e0b4);
+      transition: width .8s cubic-bezier(.2,.8,.2,1); }
+    .claimbtn { width: 100%; margin-top: 12px; border: none; cursor: pointer; font-family: var(--font);
+      background: linear-gradient(135deg, #ffd166, #f4a261); color: #402b00; font-weight: 900; font-size: 14px;
+      padding: 12px; border-radius: var(--radius); animation: claimpulse 1.4s ease-in-out infinite; }
+    @keyframes claimpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.025); box-shadow: 0 0 22px -6px #ffd166; } }
+    .badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .badge { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+      padding: 14px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: transform .18s, border-color .18s, box-shadow .18s; }
+    .badge .bemoji { font-size: 26px; filter: grayscale(1) opacity(.45); transition: filter .2s; }
+    .badge b { font-size: 12px; } .badge .bdesc { color: var(--dim); font-size: 10.5px; line-height: 1.35; }
+    .badge .btrack { width: 100%; height: 5px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 5px; }
+    .badge .btrack i { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+    .badge.open { border-color: var(--primary); }
+    .badge.open .bemoji { filter: none; }
+    .badge.open:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 26px -14px var(--primary); }
+    .badge .bdone { color: var(--success); font-size: 11px; font-weight: 900; margin-top: 3px; }
+    .frow { display: flex; flex-wrap: wrap; gap: 8px; }
+    .fchip { background: var(--card); border: 1.5px solid var(--border); border-radius: 999px; color: var(--dim);
+      font-weight: 800; font-size: 13px; padding: 8px 14px; cursor: pointer; font-family: var(--font);
+      transition: border-color .15s, color .15s; }
+    .fchip.on { border-color: var(--fc, var(--primary)); color: var(--text); }
+    .fchip.wide { width: 100%; text-align: right; border-radius: var(--radius); }
+    .shtop { display: flex; align-items: center; justify-content: space-between; }
+    .shtop b { font-size: 16px; }
+    .shpct { color: var(--primary); font-weight: 900; font-variant-numeric: tabular-nums; }
+    .shdone { color: var(--success); font-weight: 900; }
+    .shsum { font-size: 24px; font-weight: 900; margin: 8px 0 10px; font-variant-numeric: tabular-nums; }
+    .shsum span { font-size: 13px; color: var(--dim); font-weight: 600; }
+    .shparts { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .shp { display: flex; align-items: center; gap: 10px; }
+    .shpname { width: 52px; font-size: 13px; color: var(--dim); flex: none; }
+    .shptrack { flex: 1; height: 7px; background: var(--bg); border-radius: 999px; overflow: hidden; }
+    .shptrack i { display: block; height: 100%; border-radius: 999px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+    .shpamt { width: 70px; text-align: left; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; flex: none; }
+    .shactions { display: flex; gap: 8px; margin-top: 14px; align-items: stretch; }
+    .fld.small { flex: 1; margin: 0; }
+    .shactions .distbtn { padding: 10px 14px; font-size: 13.5px; }
+    .wichips { display: flex; flex-direction: column; gap: 8px; }
+    .witable { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
+    .wirow { display: grid; grid-template-columns: 52px 1fr 1fr; gap: 10px; align-items: center; padding: 6px 0; }
+    .wirow.head span { color: var(--dim); font-size: 12px; font-weight: 800; }
+    .wirow > span:first-child { color: var(--dim); font-size: 12.5px; font-weight: 700; }
+    .wibar { position: relative; height: 22px; background: var(--bg); border-radius: 7px; overflow: hidden; }
+    .wibar i { position: absolute; inset-inline-start: 0; top: 0; bottom: 0; border-radius: 7px; }
+    .wibar i.cur { background: #3f3a6e; }
+    .wibar i.sim { background: var(--primary); }
+    .wibar i.neg { background: var(--danger); opacity: .55; }
+    .wibar em { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 8px;
+      font-style: normal; font-size: 11.5px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .wibar em.negt { color: #ff9c9c; }
+    .wiwarn { background: #2a1616; border: 1px solid #5c2626; color: #ffb3b3; border-radius: var(--radius);
+      padding: 14px; font-size: 13.5px; line-height: 1.7; }
+    .wiwarn b { color: #ff8f8f; }
+    .wisafe { background: #12291f; border: 1px solid #2e7d5b; color: #9fe3c3; border-radius: var(--radius);
+      padding: 14px; font-size: 13.5px; font-weight: 700; }
+
     /* incognito: blur sensitive amounts, reveal on hover/focus */
     .incognito .hv, .incognito .bal, .incognito .tgt { filter: blur(8px); transition: filter .25s; }
     .incognito .hv:hover, .incognito .bal:hover, .incognito .tgt:hover { filter: none; }
@@ -353,6 +431,13 @@
       .dangerbtn { background: #fdeaea; border-color: #f3bcbc; color: #c0392b; }
       .dangerbtn:hover { background: #fbdddd; }
       .setitem.danger { color: #c0392b; border-color: #f3bcbc; }
+      .chtrack, .badge .btrack, .shptrack, .wibar { background: #eceef6; }
+      .wibar i.cur { background: #b9b3e6; }
+      .wiwarn { background: #fdeaea; border-color: #f3bcbc; color: #8e2f24; }
+      .wiwarn b { color: #c0392b; }
+      .wisafe { background: #e9f7f0; border-color: #bfe3d2; color: #1e5c44; }
+      .wibar em.negt { color: #c0392b; }
+      .claimbtn { color: #402b00; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -402,6 +487,9 @@
       authError: "",
       onboarded: false,
       incognito: false, // privacy: blur sensitive figures on the dashboard
+      // engagement modules
+      game: { points: 0, claimed: {}, flags: {} }, // challenges + badges
+      shared: [],                                   // shared cubes with friends
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -554,7 +642,7 @@
       try {
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
-          incognito: !!state.incognito,
+          incognito: !!state.incognito, game: state.game, shared: state.shared,
         }));
       } catch (e) {}
     }
@@ -566,6 +654,9 @@
       state.pool = s && s.pool != null ? s.pool : 0;
       state.cubes = s && Array.isArray(s.cubes) ? s.cubes : [];
       state.incognito = !!(s && s.incognito);
+      const g = (s && s.game) || {};
+      state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
+      state.shared = s && Array.isArray(s.shared) ? s.shared : [];
     }
 
     function enterApp(user) {
@@ -579,6 +670,7 @@
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
+      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = [];
       render();
     }
     function initAuth() {
@@ -663,6 +755,9 @@
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
+      if (state.screen === "challenges") return renderChallengesPage();
+      if (state.screen === "shared") return renderSharedPage();
+      if (state.screen === "whatif") return renderWhatIfPage();
       renderDashboard();
     }
 
@@ -895,6 +990,16 @@
         : '<span class="pi">🔑</span><span class="pt">כדייר/ת עצמאי/ת נוצרה קוביית <b>דיור וחשבונות</b> נעולה על הסכום שהזנת, ושאר הקוביות חולקו מהתקציב שנשאר.</span>';
       v.appendChild(note);
 
+      // engagement modules nav
+      const nav = el("div", "modnav");
+      [["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"]].forEach((m) => {
+        const b = el("button", "modbtn");
+        b.innerHTML = '<span class="mi">' + m[0] + '</span><span>' + m[1] + '</span>';
+        b.onclick = () => { state.screen = m[2]; render(); };
+        nav.appendChild(b);
+      });
+      v.appendChild(nav);
+
       const st = el("div", "section-t"); st.textContent = "הקוביות שלך"; v.appendChild(st);
       state.cubes.forEach((c) => v.appendChild(cubeCard(c)));
 
@@ -989,6 +1094,7 @@
     function distribute() {
       const pool = state.pool;
       if (pool <= 0) return;
+      state.game.flags.dist = true; // badge: distributed a budget
       let dist = 0;
       state.cubes.forEach((c, i) => {
         const give = i === state.cubes.length - 1 ? pool - dist : Math.round(pool * (c.pct / 100));
@@ -1015,10 +1121,10 @@
       });
     }
 
-    function burstCoins() {
+    function burstCoins(emoji) {
       const box = $("coins");
       for (let i = 0; i < 16; i++) {
-        const c = el("div", "coin"); c.textContent = "🪙";
+        const c = el("div", "coin"); c.textContent = emoji || "🪙";
         c.style.left = (Math.random() * 320 + 24) + "px";
         box.appendChild(c);
         const dur = 800 + Math.random() * 500, delay = Math.random() * 250;
@@ -1320,6 +1426,7 @@
       target.balance += a.amount;
       const after = Math.round(totalBalance() + state.pool);
       if (before !== after) console.warn("[cubey] balance invariant drift:", before, "->", after);
+      state.game.flags.funded = true; // badge: rerouted money via chat
       syncAfterChange([target.key]);
       return { text: "בוצע ✅ לקחתי " + describeSources(a.sources) + " והעברתי ₪" + fmt(a.amount) + ' ל"' + target.name + '". היתרה שם עכשיו: ₪' + fmt(target.balance) + "." };
     }
@@ -1392,6 +1499,7 @@
     ];
     function renderTermsPage() {
       const body = pageShell("תקנון", () => { state.screen = "settings"; render(); });
+      if (state.game && !state.game.flags.terms) { state.game.flags.terms = true; saveState(); } // badge
       TERMS.forEach((t, i) => {
         const s = el("div", "termsec");
         s.innerHTML = '<h3><span class="tnum">' + (i + 1) + '</span>' + t[0] + '</h3><p>' + t[1] + '</p>';
@@ -1450,6 +1558,7 @@
       body.appendChild(inc);
       inc.querySelector("#swIncog").onclick = () => {
         state.incognito = !state.incognito;
+        if (state.incognito) state.game.flags.incog = true; // badge
         inc.querySelector("#swIncog").classList.toggle("on", state.incognito);
         secLog("INFO", "מצב סמוי " + (state.incognito ? "הופעל" : "כובה"));
         saveState();
@@ -1467,6 +1576,300 @@
       const box = el("div", "seclog");
       body.appendChild(box);
       renderSecLogInto(box);
+    }
+
+    // =====================================================================
+    // Worker 1 — Gamification: live challenges, badges grid, claim rewards.
+    // Challenge progress is DERIVED live from the real cube balances, so the
+    // tracker always reflects the current financial state.
+    // =====================================================================
+    function challengeDefs() {
+      const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
+      const life = by.lifestyle, sav = by.savings, inv = by.investments;
+      const lifeRatio = life && life.amount > 0 ? life.balance / life.amount : 0;
+      return [
+        { id: "secret", emoji: "🤫", title: "אתגר הקובייה הסודית", desc: "לשמור לפחות 60% מקוביית הבילויים השבוע", reward: 50,
+          progress: Math.min(1, lifeRatio / 0.6), done: lifeRatio >= 0.6 },
+        { id: "saver1k", emoji: "💰", title: "האלף הראשון", desc: "לצבור ₪1,000 בקוביית החיסכון", reward: 40,
+          progress: sav ? Math.min(1, sav.balance / 1000) : 0, done: !!sav && sav.balance >= 1000 },
+        { id: "goal", emoji: "🎯", title: "יעד אישי בתנועה", desc: "ליצור קובייה אישית ולהכניס אליה כסף", reward: 30,
+          progress: state.cubes.some((c) => c.custom && c.balance > 0) ? 1 : (state.cubes.some((c) => c.custom) ? 0.5 : 0),
+          done: state.cubes.some((c) => c.custom && c.balance > 0) },
+        { id: "invest", emoji: "📈", title: "משקיע מתחיל", desc: "לצבור ₪500 בקוביית ההשקעות", reward: 30,
+          progress: inv ? Math.min(1, inv.balance / 500) : 0, done: !!inv && inv.balance >= 500 },
+      ];
+    }
+    function badgeDefs() {
+      const g = state.game;
+      const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
+      const sav = by.savings;
+      return [
+        { emoji: "💎", name: "חוסך על", desc: "₪2,000 בחיסכון", progress: sav ? Math.min(1, sav.balance / 2000) : 0 },
+        { emoji: "🧭", name: "מחשב מסלול מחדש", desc: "העברת כסף בין קוביות בצ׳אט", progress: g.flags.funded ? 1 : 0 },
+        { emoji: "🧱", name: "בנאי קוביות", desc: "יצירת קובייה אישית", progress: state.cubes.some((c) => c.custom) ? 1 : 0 },
+        { emoji: "🕶️", name: "צל פיננסי", desc: "הפעלת מצב סמוי", progress: g.flags.incog ? 1 : 0 },
+        { emoji: "🪙", name: "מחלק אלוף", desc: "חלוקת תקציב לקוביות", progress: (g.flags.dist || totalBalance() > 0) ? 1 : 0 },
+        { emoji: "📜", name: "האותיות הקטנות", desc: "קריאת התקנון", progress: g.flags.terms ? 1 : 0 },
+      ];
+    }
+    function claimReward(ch) {
+      state.game.claimed[ch.id] = true;
+      state.game.points += ch.reward;
+      saveState();
+      burstCoins("⭐");
+      showToast("🎁 +" + ch.reward + " נק׳ — האתגר הושלם!");
+      render();
+    }
+    function renderChallengesPage() {
+      const body = pageShell("אתגרים 🏆", () => { state.screen = "app"; render(); });
+      const pts = el("div", "setcard ptsrow");
+      pts.innerHTML = '<div><div class="setlbl">הנקודות שלך</div><div class="ptsval">' + fmt(state.game.points) + ' ⭐</div></div>' +
+        '<div class="setlbl">השלם אתגרים כדי לצבור נקודות ומדליות</div>';
+      body.appendChild(pts);
+
+      const st1 = el("div", "section-t"); st1.textContent = "אתגרים פעילים"; body.appendChild(st1);
+      challengeDefs().forEach((ch) => {
+        const claimed = !!state.game.claimed[ch.id];
+        const card = el("div", "chal" + (ch.done ? " done" : ""));
+        card.innerHTML =
+          '<div class="chtop"><span class="chemoji">' + ch.emoji + '</span>' +
+          '<div class="chinfo"><b>' + ch.title + '</b><span>' + ch.desc + '</span></div>' +
+          '<span class="chstatus">' + (claimed ? "נאסף ✓" : ch.done ? "הושלם!" : Math.round(ch.progress * 100) + "%") + '</span></div>' +
+          '<div class="chtrack"><i style="width:0%"></i></div>';
+        const bar = card.querySelector(".chtrack i");
+        requestAnimationFrame(() => { bar.style.width = Math.round(ch.progress * 100) + "%"; });
+        if (ch.done && !claimed) {
+          const btn = el("button", "claimbtn"); btn.textContent = "🎁 קבל פרס (+" + ch.reward + " נק׳)";
+          btn.onclick = () => claimReward(ch);
+          card.appendChild(btn);
+        }
+        body.appendChild(card);
+      });
+
+      const st2 = el("div", "section-t"); st2.textContent = "מדליות והישגים"; body.appendChild(st2);
+      const grid = el("div", "badges");
+      badgeDefs().forEach((bd) => {
+        const unlocked = bd.progress >= 1;
+        const b = el("div", "badge" + (unlocked ? " open" : ""));
+        b.innerHTML = '<span class="bemoji">' + bd.emoji + '</span><b>' + bd.name + '</b><span class="bdesc">' + bd.desc + '</span>' +
+          (unlocked ? '<span class="bdone">הושג ✓</span>' : '<div class="btrack"><i style="width:' + Math.round(bd.progress * 100) + '%"></i></div>');
+        grid.appendChild(b);
+      });
+      body.appendChild(grid);
+    }
+
+    // =====================================================================
+    // Worker 2 — Shared Cubes: create with mock friends, per-participant
+    // progress, and instant updates. The user's own deposits are funded via
+    // the same money-sound plan used by the chat (never invented money).
+    // =====================================================================
+    const FRIENDS = [
+      { name: "יוסי", color: "#74B9FF" }, { name: "דנה", color: "#FD79A8" },
+      { name: "נועה", color: "#55EFC4" }, { name: "אבי", color: "#FAB1A0" },
+    ];
+    let shForm = null; // {open, name, target, picked:Set}
+    function renderSharedPage() {
+      const body = pageShell("קוביות משותפות 🤝", () => { shForm = null; state.screen = "app"; render(); });
+
+      const opener = el("button", "addcube");
+      opener.innerHTML = '<span class="addicon">＋</span><span>צור קובייה משותפת</span>';
+      opener.onclick = () => { shForm = { name: "", target: "", picked: new Set(["יוסי", "דנה"]) }; render(); };
+      if (!shForm) body.appendChild(opener);
+
+      if (shForm) {
+        const f = el("div", "setcard");
+        f.innerHTML = '<h3 style="margin:0 0 10px">קובייה משותפת חדשה</h3>' +
+          '<label class="flbl">שם הקובייה</label><div class="fld"><input id="shName" placeholder="טיול חברים לאילת 2026" value="' + shForm.name + '"></div>' +
+          '<label class="flbl">סכום יעד</label><div class="fld"><span class="cur">₪</span><input id="shTarget" inputmode="numeric" placeholder="5000" value="' + shForm.target + '"></div>' +
+          '<label class="flbl">הזמן חברים</label><div class="frow" id="shFriends"></div>' +
+          '<button class="distbtn wide" id="shCreate" style="margin-top:14px">צור ✨</button>' +
+          '<button class="obback" id="shCancel">ביטול</button>';
+        body.appendChild(f);
+        const fr = f.querySelector("#shFriends");
+        FRIENDS.forEach((p) => {
+          const c = el("button", "fchip" + (shForm.picked.has(p.name) ? " on" : ""));
+          c.textContent = p.name;
+          c.style.setProperty("--fc", p.color);
+          c.onclick = () => { shForm.picked.has(p.name) ? shForm.picked.delete(p.name) : shForm.picked.add(p.name); c.classList.toggle("on"); };
+          fr.appendChild(c);
+        });
+        f.querySelector("#shName").oninput = (e) => { shForm.name = e.target.value; };
+        f.querySelector("#shTarget").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); shForm.target = e.target.value; };
+        f.querySelector("#shCancel").onclick = () => { shForm = null; render(); };
+        f.querySelector("#shCreate").onclick = () => {
+          const name = (shForm.name || "").trim(), target = Number(shForm.target) || 0;
+          if (!name || target <= 0) { showToast("צריך שם וסכום יעד 🙂"); return; }
+          const parts = [{ name: "אתה", me: true, amount: 0, color: "#6c5ce7" }]
+            .concat(FRIENDS.filter((p) => shForm.picked.has(p.name)).map((p) => ({ name: p.name, me: false, amount: 0, color: p.color })));
+          state.shared.push({ id: "sh_" + Date.now(), name: name, target: target, participants: parts });
+          shForm = null;
+          saveState(); render();
+          showToast("🤝 נוצרה קובייה משותפת: " + name);
+        };
+      }
+
+      if (!state.shared.length && !shForm) {
+        const e0 = el("p", "termupd"); e0.textContent = "אין עדיין קוביות משותפות — צרו אחת והזמינו חברים!";
+        body.appendChild(e0);
+      }
+
+      state.shared.forEach((sc) => body.appendChild(sharedCard(sc)));
+    }
+    function sharedCard(sc) {
+      const total = sc.participants.reduce((s, p) => s + p.amount, 0);
+      const donePct = Math.min(100, Math.round((total / sc.target) * 100));
+      const card = el("div", "setcard shcard");
+      card.innerHTML =
+        '<div class="shtop"><b>🤝 ' + sc.name + '</b>' +
+          (total >= sc.target ? '<span class="shdone">הושלם! 🎉</span>' : '<span class="shpct">' + donePct + '%</span>') + '</div>' +
+        '<div class="shsum">₪' + fmt(total) + ' <span>מתוך ₪' + fmt(sc.target) + '</span></div>' +
+        '<div class="chtrack big"><i style="width:0%"></i></div>' +
+        '<div class="shparts"></div>' +
+        '<div class="shactions">' +
+          '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="200" class="shAmt"></div>' +
+          '<button class="distbtn shAdd">הפקדה שלי</button>' +
+          '<button class="fchip on shSim">⚡ חבר מפקיד</button>' +
+        '</div>';
+      requestAnimationFrame(() => { card.querySelector(".chtrack i").style.width = donePct + "%"; });
+      const parts = card.querySelector(".shparts");
+      sc.participants.forEach((p) => {
+        const pct = sc.target > 0 ? Math.min(100, Math.round((p.amount / sc.target) * 100)) : 0;
+        const row = el("div", "shp");
+        row.innerHTML = '<span class="shpname"' + (p.me ? ' style="color:var(--primary);font-weight:800"' : "") + '>' + p.name + '</span>' +
+          '<div class="shptrack"><i style="width:0%;background:' + p.color + '"></i></div>' +
+          '<span class="shpamt">₪' + fmt(p.amount) + '</span>';
+        parts.appendChild(row);
+        requestAnimationFrame(() => { row.querySelector("i").style.width = pct + "%"; });
+      });
+      const amtInp = card.querySelector(".shAmt");
+      amtInp.oninput = () => { amtInp.value = amtInp.value.replace(/[^0-9]/g, ""); };
+      card.querySelector(".shAdd").onclick = () => {
+        const amount = Number(amtInp.value) || 0;
+        if (amount <= 0) return;
+        const plan = buildFundingPlan(amount, null);
+        if (!plan) { showToast("אין מספיק כסף פנוי בקוביות 🙂"); return; }
+        plan.forEach((s) => {
+          if (s.key === "__pool") state.pool = Math.max(0, state.pool - s.amount);
+          else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance = Math.max(0, c.balance - s.amount); }
+        });
+        sc.participants.find((p) => p.me).amount += amount;
+        saveState(); render();
+        showToast("💸 הפקדת ₪" + fmt(amount) + " (נלקח: " + describeSources(plan) + ")");
+      };
+      card.querySelector(".shSim").onclick = () => {
+        const friends = sc.participants.filter((p) => !p.me);
+        if (!friends.length) { showToast("אין חברים בקובייה הזו 🙂"); return; }
+        const f = friends[Math.floor(Math.random() * friends.length)];
+        const add = (Math.floor(Math.random() * 9) + 2) * 50; // 100–500
+        f.amount += add;
+        saveState(); render();
+        showToast("🎉 " + f.name + " הפקיד/ה ₪" + fmt(add) + ' ל"' + sc.name + '"');
+      };
+      return card;
+    }
+
+    // =====================================================================
+    // Worker 3 — "What-If" simulator: preset scenarios projected 6 months
+    // ahead against the real cube data, with crisis detection + an actionable
+    // AI recommendation (cut Lifestyle 40%) the user can preview live.
+    // =====================================================================
+    let wiScenario = null, wiWithCut = false;
+    const WI_PRESETS = [
+      { id: "nowork", label: "🏖️ להפסיק לעבוד ל-3 חודשים", opts: { incomeOff: [1, 3] } },
+      { id: "car", label: "🚗 לקנות רכב ב-30,000 ₪", opts: { oneTime: 30000 } },
+      { id: "extra", label: "📈 הוצאה קבועה חדשה של 500 ₪ בחודש", opts: { extraMonthly: 500 } },
+    ];
+    function wiModel() {
+      const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
+      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
+      const housing = by.housing ? by.housing.amount : 0;
+      const ess = by.essentials ? by.essentials.amount : 0;
+      const life = by.lifestyle ? by.lifestyle.amount : 0;
+      return { income: income, spend: housing + ess + life, life: life, start: totalBalance() + state.pool };
+    }
+    function wiProject(opts, lifeCut) {
+      const m = wiModel();
+      const rows = [];
+      let cur = m.start;
+      let sim = m.start - (opts.oneTime || 0);
+      for (let month = 0; month <= 6; month++) {
+        rows.push({ month: month, cur: Math.round(cur), sim: Math.round(sim) });
+        cur += m.income - m.spend;
+        let inc = m.income;
+        if (opts.incomeOff && month + 1 >= opts.incomeOff[0] && month + 1 <= opts.incomeOff[1]) inc = 0;
+        const spend = m.spend + (opts.extraMonthly || 0) - (lifeCut ? m.life * lifeCut : 0);
+        sim += inc - spend;
+      }
+      return rows;
+    }
+    function renderWhatIfPage() {
+      const body = pageShell("סימולטור מה-אם? 🔮", () => { wiScenario = null; wiWithCut = false; state.screen = "app"; render(); });
+
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl">בחרו תרחיש — ה-AI יקרין את המצב הכספי שלכם 6 חודשים קדימה, מול המסלול הנוכחי.</div>';
+      body.appendChild(intro);
+
+      const chips = el("div", "wichips");
+      WI_PRESETS.forEach((p) => {
+        const c = el("button", "fchip wide" + (wiScenario && wiScenario.id === p.id ? " on" : ""));
+        c.textContent = p.label;
+        c.onclick = () => { wiScenario = p; wiWithCut = false; render(); };
+        chips.appendChild(c);
+      });
+      body.appendChild(chips);
+
+      // custom one-time expense
+      const cust = el("div", "shactions");
+      cust.innerHTML = '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="12000" id="wiAmt"></div>' +
+        '<button class="distbtn" id="wiRun">הוצאה חד-פעמית</button>';
+      body.appendChild(cust);
+      cust.querySelector("#wiAmt").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); };
+      cust.querySelector("#wiRun").onclick = () => {
+        const amt = Number(cust.querySelector("#wiAmt").value) || 0;
+        if (amt <= 0) return;
+        wiScenario = { id: "custom", label: "הוצאה חד-פעמית של ₪" + fmt(amt), opts: { oneTime: amt } };
+        wiWithCut = false; render();
+      };
+
+      if (!wiScenario) return;
+
+      const rows = wiProject(wiScenario.opts, wiWithCut ? 0.4 : 0);
+      const crisis = rows.find((r) => r.sim < 0);
+      const maxAbs = Math.max(1, ...rows.map((r) => Math.max(Math.abs(r.cur), Math.abs(r.sim))));
+      const m = wiModel();
+
+      const st = el("div", "section-t"); st.textContent = "תחזית: " + wiScenario.label + (wiWithCut ? " · עם ההמלצה ✨" : ""); body.appendChild(st);
+
+      const tbl = el("div", "witable");
+      tbl.innerHTML = '<div class="wirow head"><span>חודש</span><span>מסלול נוכחי</span><span>בתרחיש</span></div>';
+      rows.forEach((r) => {
+        const row = el("div", "wirow");
+        row.innerHTML = '<span>' + (r.month === 0 ? "עכשיו" : r.month) + '</span>' +
+          '<span class="wibar"><i class="cur" style="width:' + Math.round(Math.max(0, r.cur) / maxAbs * 100) + '%"></i><em>₪' + fmt(r.cur) + '</em></span>' +
+          '<span class="wibar"><i class="' + (r.sim < 0 ? "neg" : "sim") + '" style="width:' + Math.round(Math.abs(r.sim) / maxAbs * 100) + '%"></i><em' + (r.sim < 0 ? ' class="negt"' : "") + '>₪' + fmt(r.sim) + '</em></span>';
+        tbl.appendChild(row);
+      });
+      body.appendChild(tbl);
+
+      if (crisis) {
+        const w = el("div", "wiwarn");
+        const saveAmt = Math.round(m.life * 0.4);
+        w.innerHTML = '<b>⚠️ אזהרה:</b> היתרה שלך תתרוקן ' +
+          (crisis.month === 0 ? "מיד" : "תוך " + crisis.month + " חודשים") + " בתרחיש הזה. " +
+          'ה-AI ממליץ לצמצם את קוביית הבילויים ב-40% (חיסכון של ₪' + fmt(saveAmt) + ' בחודש) כדי לשמור על איזון.';
+        body.appendChild(w);
+        if (!wiWithCut && m.life > 0) {
+          const b = el("button", "distbtn wide"); b.textContent = "✨ הצג תחזית עם ההמלצה";
+          b.onclick = () => { wiWithCut = true; render(); };
+          body.appendChild(b);
+        }
+      } else {
+        const ok = el("div", "wisafe");
+        ok.textContent = wiWithCut
+          ? "✅ עם ההמלצה התרחיש מאוזן — היתרה נשארת חיובית לאורך כל התקופה."
+          : "✅ התרחיש בטוח — היתרה נשארת חיובית לאורך כל 6 החודשים.";
+        body.appendChild(ok);
+      }
     }
 
     // Worker 4 — hard wipe: per-account state + user record + session + chat.
