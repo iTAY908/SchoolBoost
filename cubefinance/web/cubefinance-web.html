@@ -160,6 +160,36 @@
     .dangerbtn { width: 100%; border: 1px solid #5c2626; background: #2a1616; color: #ff8f8f; font-weight: 800;
       font-size: 15px; padding: 14px; border-radius: var(--radius); cursor: pointer; font-family: var(--font); margin-top: 10px; }
     .dangerbtn:hover { background: #3a1c1c; }
+
+    /* full-screen pages: settings + terms */
+    .pagehead { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .pagetitle { font-size: 24px; font-weight: 900; letter-spacing: -.5px; margin: 0; flex: 1; text-align: center; }
+    .backbtn { background: var(--card); border: 1px solid var(--border); color: var(--dim); border-radius: 999px;
+      padding: 8px 14px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: var(--font);
+      transition: color .15s, border-color .15s; white-space: nowrap; }
+    .backbtn:hover { color: var(--text); border-color: var(--primary); }
+    .pgspacer { width: 76px; flex: none; } /* balances the back button so the title stays centered */
+    .pagebody { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+    .setcard { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+    .setcard.warn h3 { margin: 0 0 8px; font-size: 19px; }
+    .setcard.warn p { margin: 0; color: var(--dim); line-height: 1.6; font-size: 14px; }
+    .setlbl { color: var(--dim); font-size: 12.5px; font-weight: 700; }
+    .setmail { font-weight: 800; font-size: 15px; margin-top: 4px; unicode-bidi: plaintext; }
+    .setlist { display: flex; flex-direction: column; gap: 10px; }
+    .setitem { text-align: right; background: var(--card); border: 1.5px solid var(--border); color: var(--text);
+      border-radius: var(--radius); padding: 15px 16px; font-weight: 800; font-size: 15px; cursor: pointer;
+      font-family: var(--font); transition: border-color .15s; }
+    .setitem:hover { border-color: var(--primary); }
+    .setitem.danger { color: #ff8f8f; border-color: #5c2626; }
+    .termsec { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+    .termsec h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 16px; }
+    .tnum { width: 26px; height: 26px; border-radius: 8px; background: var(--card-2); color: var(--primary);
+      display: grid; place-items: center; font-size: 13px; font-weight: 900; flex: none; }
+    .termsec p { margin: 0; color: var(--dim); font-size: 14px; line-height: 1.7; }
+    .termsec .contact { margin-top: 8px; color: var(--text); font-weight: 700; }
+    .termsec a { color: var(--primary); font-weight: 800; text-decoration: none; }
+    .termsec a:hover { text-decoration: underline; }
+    .termupd { text-align: center; color: var(--dim); font-size: 12px; margin: 8px 0 0; }
     .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px;
       padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
     .inbar input:focus { border-color: var(--primary); }
@@ -255,6 +285,41 @@
       .notch { display: none; }
       .view { padding-top: 24px; }
     }
+    /* ===== light theme: token overrides + the few hard-coded dark surfaces ===== */
+    :root { color-scheme: dark; }
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: light;
+        --bg: #f5f6fb; --bg-deep: #e8eaf4; --elevated: #ffffff; --card: #ffffff;
+        --card-2: #edeafd; --border: #dcdeeb; --text: #1d1d2e; --dim: #666a85;
+        --primary: #6c5ce7; --primary-2: #7f70f5; --primary-dim: #b9b1f2;
+      }
+      body { background: radial-gradient(1000px 500px at 20% -10%, #e4defc 0%, transparent 55%),
+             radial-gradient(800px 460px at 110% 8%, #dcebfa 0%, transparent 50%), var(--bg-deep); }
+      .device { border-color: #cfd2e4; box-shadow: 0 0 0 10px #ffffff, 0 40px 90px -40px #8a8fb5; }
+      .notch { background: #10101a; }
+      .hero { background: linear-gradient(160deg, #efecff, #ffffff); box-shadow: 0 20px 50px -36px #8a8fb5; }
+      .authcard { background: linear-gradient(165deg, #f3f0ff, #ffffff); box-shadow: 0 30px 70px -50px #8a8fb5; }
+      .parents { background: #e9f7f0; border-color: #bfe3d2; }
+      .parents .pt { color: #1e5c44; }
+      .parents .pt b { color: #114231; }
+      .toast { background: #ffffff; border-color: var(--primary); box-shadow: 0 12px 30px -14px #8a8fb5; }
+      .sync { background: #00000008; }
+      .sync.ok { color: #0b8f66; border-color: #bfe3d2; background: #e9f7f0; }
+      .restart { background: #00000008; }
+      .aiRes { background: linear-gradient(150deg, #f1eeff, #ffffff); }
+      .priov { background: #6c5ce715; }
+      .addcube:hover { background: #00000005; }
+      .cube { box-shadow: 0 4px 14px -12px #8a8fb5; }
+      .cube .track, .ftrack { background: #eceef6; }
+      .chatwrap { background: rgba(30, 30, 60, .35); }
+      .ccwrap { background: rgba(30, 30, 60, .4); }
+      .qbtns .qd { background: #ffffff; }
+      .dangerbtn { background: #fdeaea; border-color: #f3bcbc; color: #c0392b; }
+      .dangerbtn:hover { background: #fbdddd; }
+      .setitem.danger { color: #c0392b; border-color: #f3bcbc; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
     }
@@ -269,7 +334,6 @@
       <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
       <div class="chatwrap" id="chatwrap"></div>
       <div class="ccwrap" id="ccwrap"></div>
-      <div class="ccwrap" id="settwrap"></div>
     </div>
   </div>
 
@@ -487,6 +551,8 @@
       $("fab").style.display = state.screen === "app" ? "grid" : "none";
       if (state.screen === "auth") return renderAuth();
       if (state.screen === "onboarding") return renderOnboarding();
+      if (state.screen === "settings") return renderSettingsPage();
+      if (state.screen === "terms") return renderTermsPage();
       renderDashboard();
     }
 
@@ -1101,40 +1167,84 @@
     }
 
     // =====================================================================
-    // Worker 3 — settings drawer: log out + delete account (double confirm).
+    // Worker 3 — settings & terms: FULL-SCREEN pages (not sheets), rendered
+    // through the main router so they inherit the app design + scrolling.
     // =====================================================================
     let settStep = 0;
-    function openSettings() { settStep = 0; renderSettings(); }
-    function closeSettings() { const w = $("settwrap"); w.classList.remove("on"); w.innerHTML = ""; }
-    function renderSettings() {
-      const w = $("settwrap"); w.className = "ccwrap on";
-      w.onclick = (e) => { if (e.target === w) closeSettings(); };
-      let inner = '<div class="handle"></div>';
+    function openSettings() { settStep = 0; closeChat(); state.screen = "settings"; render(); }
+
+    // Shared page chrome: back button + centered title, body scrolls in .view.
+    function pageShell(title, onBack) {
+      const v = $("view"); v.innerHTML = "";
+      const head = el("div", "pagehead");
+      head.innerHTML = '<button class="backbtn" id="pgback">→ חזרה</button>' +
+        '<h2 class="pagetitle">' + title + '</h2><span class="pgspacer"></span>';
+      head.querySelector("#pgback").onclick = onBack;
+      v.appendChild(head);
+      const body = el("div", "pagebody");
+      v.appendChild(body);
+      return body;
+    }
+
+    function renderSettingsPage() {
+      const body = pageShell("הגדרות ⚙️", () => {
+        if (settStep > 0) { settStep = 0; render(); } else { state.screen = "app"; render(); }
+      });
       if (settStep === 0) {
-        inner += '<h2 class="authtitle" style="font-size:22px">הגדרות ⚙️</h2>' +
-          '<p class="authsub">מחובר/ת כ־<b dir="ltr">' + (state.authUser ? state.authUser.email : "") + '</b></p>' +
-          '<button class="distbtn wide" id="sLogout">⎋ יציאה מהחשבון</button>' +
-          '<button class="dangerbtn" id="sDelete">🗑️ מחיקת חשבון לצמיתות</button>' +
-          '<button class="obback" id="sClose">סגור</button>';
+        const acc = el("div", "setcard");
+        acc.innerHTML = '<div class="setlbl">מחובר/ת כ־</div>' +
+          '<div class="setmail" dir="ltr">' + (state.authUser ? state.authUser.email : "") + '</div>';
+        body.appendChild(acc);
+        const list = el("div", "setlist");
+        const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
+        mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
+        mk("⎋ יציאה מהחשבון", "setitem", () => { resetChat(); logout(); });
+        mk("🗑️ מחיקת חשבון לצמיתות", "setitem danger", () => { settStep = 1; render(); });
+        body.appendChild(list);
       } else if (settStep === 1) {
-        inner += '<h2 class="authtitle" style="font-size:22px">למחוק את החשבון? ⚠️</h2>' +
-          '<p class="authsub">כל הנתונים שלך — הפרופיל, הקוביות, היתרות והצ׳אט — <b>יימחקו לצמיתות</b> ולא יהיה אפשר לשחזר אותם.</p>' +
-          '<button class="dangerbtn" id="sDel1">אני מבין/ה — המשך למחיקה</button>' +
-          '<button class="obback" id="sBack">חזרה</button>';
+        const w = el("div", "setcard warn");
+        w.innerHTML = '<h3>למחוק את החשבון? ⚠️</h3>' +
+          '<p>כל הנתונים שלך — הפרופיל, הקוביות, היתרות והצ׳אט — <b>יימחקו לצמיתות</b> ולא יהיה אפשר לשחזר אותם.</p>';
+        body.appendChild(w);
+        const d = el("button", "dangerbtn"); d.textContent = "אני מבין/ה — המשך למחיקה";
+        d.onclick = () => { settStep = 2; render(); }; body.appendChild(d);
+        const bk = el("button", "obback"); bk.textContent = "חזרה";
+        bk.onclick = () => { settStep = 0; render(); }; body.appendChild(bk);
       } else {
-        inner += '<h2 class="authtitle" style="font-size:22px">אישור אחרון 🛑</h2>' +
-          '<p class="authsub">זו הפעולה הסופית. אחרי הלחיצה החשבון נמחק מיד ותועבר/י למסך ההתחברות.</p>' +
-          '<button class="dangerbtn" id="sDel2">מחק/י את החשבון שלי לצמיתות</button>' +
-          '<button class="obback" id="sBack">התחרטתי — חזרה</button>';
+        const w = el("div", "setcard warn");
+        w.innerHTML = '<h3>אישור אחרון 🛑</h3>' +
+          '<p>זו הפעולה הסופית. אחרי הלחיצה החשבון נמחק מיד ותועבר/י למסך ההתחברות.</p>';
+        body.appendChild(w);
+        const d = el("button", "dangerbtn"); d.textContent = "מחק/י את החשבון שלי לצמיתות";
+        d.onclick = wipeAccount; body.appendChild(d);
+        const bk = el("button", "obback"); bk.textContent = "התחרטתי — חזרה";
+        bk.onclick = () => { settStep = 0; render(); }; body.appendChild(bk);
       }
-      w.innerHTML = '<div class="ccsheet">' + inner + '</div>';
-      const q = (sel) => w.querySelector(sel);
-      if (q("#sClose")) q("#sClose").onclick = closeSettings;
-      if (q("#sLogout")) q("#sLogout").onclick = () => { closeSettings(); resetChat(); logout(); };
-      if (q("#sDelete")) q("#sDelete").onclick = () => { settStep = 1; renderSettings(); };
-      if (q("#sBack")) q("#sBack").onclick = () => { settStep = 0; renderSettings(); };
-      if (q("#sDel1")) q("#sDel1").onclick = () => { settStep = 2; renderSettings(); };
-      if (q("#sDel2")) q("#sDel2").onclick = () => { closeSettings(); wipeAccount(); };
+    }
+
+    // Terms of use — full-screen, scrollable, back returns to settings.
+    const TERMS = [
+      ["זכויות יוצרים", "כל הזכויות על האפליקציה, העיצוב, הקוד והתוכן שמורות לאיתי לייס. אין להעתיק, להפיץ או להשתמש בתוכן ללא אישור."],
+      ["גיל מתאים", "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה."],
+      ["אחריות", "המידע באפליקציה נועד למטרות מידע בלבד ואינו מהווה ייעוץ רפואי, מקצועי או משפטי."],
+      ["פרטיות", "האפליקציה שומרת על פרטיות המשתמש בהתאם למדיניות הפרטיות שלה."],
+      ["שימוש הוגן", "אין להשתמש באפליקציה לרעה, לנסות לפרוץ אליה או לפגוע בשירות."],
+      ["שינויים", "הנהלת האפליקציה רשאית לעדכן את התקנון מעת לעת."],
+    ];
+    function renderTermsPage() {
+      const body = pageShell("תקנון", () => { state.screen = "settings"; render(); });
+      TERMS.forEach((t, i) => {
+        const s = el("div", "termsec");
+        s.innerHTML = '<h3><span class="tnum">' + (i + 1) + '</span>' + t[0] + '</h3><p>' + t[1] + '</p>';
+        body.appendChild(s);
+      });
+      const c = el("div", "termsec");
+      c.innerHTML = '<h3><span class="tnum">7</span>יצירת קשר</h3>' +
+        '<p>לכל שאלה או פנייה ניתן ליצור קשר עם:</p>' +
+        '<p class="contact">איתי לייס<br><a href="mailto:itayleiss2010@gmail.com" dir="ltr">itayleiss2010@gmail.com</a></p>';
+      body.appendChild(c);
+      const upd = el("p", "termupd"); upd.textContent = "עודכן לאחרונה: יולי 2026";
+      body.appendChild(upd);
     }
 
     // Worker 4 — hard wipe: per-account state + user record + session + chat.
@@ -1143,6 +1253,7 @@
       const email = state.authUser.email;
       try { localStorage.removeItem(stateKey()); } catch (e) {}
       const users = loadUsers(); delete users[email]; saveUsers(users);
+      settStep = 0;
       resetChat();
       logout(); // clears session + in-memory state, routes to the login screen
       showToast("🗑️ החשבון נמחק לצמיתות");
