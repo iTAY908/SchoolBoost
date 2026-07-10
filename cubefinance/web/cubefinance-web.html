@@ -145,7 +145,21 @@
       padding: 9px 13px; color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
       font-family: var(--font); }
     .sugg button:hover { border-color: var(--primary); }
-    .inbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+    .inbar { display: flex; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); flex: none; }
+    .sugg.hidden { display: none; }
+    .qbtns { display: flex; gap: 8px; flex-wrap: wrap; align-self: flex-end; margin: 2px 0 6px; }
+    .qbtns button { border: none; cursor: pointer; font-family: var(--font); font-weight: 800; font-size: 14px;
+      padding: 10px 18px; border-radius: 999px; transition: filter .15s; }
+    .qbtns .qp { background: linear-gradient(135deg, var(--primary-2), var(--primary)); color: #fff; }
+    .qbtns .qp:hover { filter: brightness(1.08); }
+    .qbtns .qd { background: var(--card); color: var(--dim); border: 1px solid var(--border); }
+    .qbtns .qd:hover { color: var(--text); }
+    .settbtn { background: none; border: 1px solid var(--border); border-radius: 999px; color: var(--dim);
+      font-weight: 700; font-size: 12.5px; padding: 7px 12px; cursor: pointer; font-family: var(--font); transition: color .15s, border-color .15s; }
+    .settbtn:hover { color: var(--text); border-color: #3c3c52; }
+    .dangerbtn { width: 100%; border: 1px solid #5c2626; background: #2a1616; color: #ff8f8f; font-weight: 800;
+      font-size: 15px; padding: 14px; border-radius: var(--radius); cursor: pointer; font-family: var(--font); margin-top: 10px; }
+    .dangerbtn:hover { background: #3a1c1c; }
     .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px;
       padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
     .inbar input:focus { border-color: var(--primary); }
@@ -255,6 +269,7 @@
       <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
       <div class="chatwrap" id="chatwrap"></div>
       <div class="ccwrap" id="ccwrap"></div>
+      <div class="ccwrap" id="settwrap"></div>
     </div>
   </div>
 
@@ -619,9 +634,9 @@
 
       const brand = el("div", "brand brandrow");
       brand.innerHTML = '<span>🧊 CubeFinance <small>· קיובפייננס</small></span>' +
-        '<button class="logout" id="logout">⎋ יציאה</button>';
+        '<button class="settbtn" id="settbtn">⚙️ הגדרות</button>';
       v.appendChild(brand);
-      brand.querySelector("#logout").onclick = logout;
+      brand.querySelector("#settbtn").onclick = openSettings;
 
       const hero = el("div", "hero");
       hero.innerHTML =
@@ -799,91 +814,341 @@
       setTimeout(() => { t.classList.remove("on"); setTimeout(() => t.remove(), 400); }, 2800);
     }
 
-    // ---- floating chatbot -------------------------------------------------
-    let chatOpen = false, streaming = false;
+    // =====================================================================
+    // Worker 1 — Cubey chat, persistent DOM.
+    // The shell (header/messages/suggestions/input) is built ONCE; messages
+    // are appended incrementally. No full re-render => no flicker/jumping,
+    // the open animation runs only on first open, and history survives
+    // close/reopen. scrollToBottom() fires on every append + stream tick.
+    // =====================================================================
+    let chatBuilt = false, chatOpen = false, streaming = false, pendingAction = null;
     const chatLog = [];
-    const SUGG = ["אפשר להרשות 500 ₪?", "מה המצב שלי?", "בזבזתי 200 ₪"];
+    const SUGG = ["מה המצב שלי?", "אפשר להרשות 500 ₪?", "תכניס 100 ₪ לחיסכון"];
 
-    function reply(text) {
+    function scrollToBottom() { const m = $("msgs"); if (m) m.scrollTop = m.scrollHeight; }
+
+    function buildChatShell() {
+      if (chatBuilt) return;
+      chatBuilt = true;
+      const w = $("chatwrap");
+      w.innerHTML =
+        '<div class="chat" id="chatbox">' +
+          '<div class="ch"><div><div class="t">Cubey 🧊</div><div class="s" id="chstate">החבר הפיננסי שלך · מכיר את הקוביות</div></div>' +
+          '<button class="x" id="chx" aria-label="סגור">✕</button></div>' +
+          '<div class="msgs" id="msgs"><div class="intro" id="chintro"><div class="e">👋</div><p>היי! אני Cubey. אפשר לשאול, לדווח על הוצאה — וגם לבקש פעולות, למשל: "תכניס 200 ₪ לקוביית טיול".</p></div></div>' +
+          '<div class="sugg" id="sugg"></div>' +
+          '<div class="inbar"><input id="cin" placeholder="כתוב ל-Cubey…"><button id="csend">➤</button></div>' +
+        '</div>';
+      w.onclick = (e) => { if (e.target === w) closeChat(); };
+      $("chx").onclick = closeChat;
+      const sg = $("sugg");
+      SUGG.forEach((s) => { const b = el("button"); b.textContent = s; b.onclick = () => send(s); sg.appendChild(b); });
+      const input = $("cin");
+      const go = () => { const val = (input.value || "").trim(); if (val && !streaming) { input.value = ""; send(val); } };
+      $("csend").onclick = go;
+      input.onkeydown = (e) => { if (e.key === "Enter") go(); };
+      // Keyboard-overlap guard: when the on-screen keyboard shrinks the visual
+      // viewport, pad the chat so the input stays visible, and re-anchor scroll.
+      input.onfocus = () => setTimeout(scrollToBottom, 250);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", () => {
+          if (!chatOpen) return;
+          const vv = window.visualViewport;
+          const overlap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+          const box = $("chatbox");
+          if (box) box.style.paddingBottom = overlap ? overlap + "px" : "";
+          scrollToBottom();
+        });
+      }
+    }
+
+    function openChat() {
+      buildChatShell();
+      chatOpen = true;
+      $("chatwrap").classList.add("on");
+      setTimeout(() => { scrollToBottom(); const i = $("cin"); if (i) i.focus(); }, 60);
+    }
+    function closeChat() { chatOpen = false; $("chatwrap").classList.remove("on"); }
+    function resetChat() {
+      chatLog.length = 0; pendingAction = null; streaming = false;
+      chatBuilt = false; chatOpen = false;
+      const w = $("chatwrap"); w.classList.remove("on"); w.innerHTML = "";
+    }
+
+    function setTyping(on) {
+      streaming = on;
+      const s = $("chstate"); if (s) s.textContent = on ? "מקליד…" : "החבר הפיננסי שלך · מכיר את הקוביות";
+      const i = $("cin"); if (i) i.disabled = on;
+      const b = $("csend"); if (b) b.disabled = on;
+    }
+
+    function appendBubble(role, text) {
+      const intro = $("chintro"); if (intro && role === "u") intro.remove();
+      if (role === "u") { const sg = $("sugg"); if (sg) sg.classList.add("hidden"); }
+      const b = el("div", "bubble " + (role === "u" ? "u" : "b"));
+      b.textContent = text;
+      $("msgs").appendChild(b);
+      scrollToBottom();
+      return b;
+    }
+
+    function showQuickButtons(buttons) {
+      const holder = el("div", "qbtns");
+      buttons.forEach((qb) => {
+        const b = el("button", qb.kind === "danger" ? "qd" : "qp");
+        b.textContent = qb.label;
+        b.onclick = () => { if (streaming) return; holder.remove(); appendBubble("u", qb.label); botSay(qb.run()); };
+        holder.appendChild(b);
+      });
+      $("msgs").appendChild(holder);
+      scrollToBottom();
+    }
+
+    function send(text) {
+      if (streaming) return;
+      chatLog.push({ role: "u", text });
+      appendBubble("u", text);
+      botSay(respond(text));
+    }
+
+    // Stream a bot reply into a single bubble, then reveal optional buttons.
+    function botSay(res) {
+      const full = res.text || "";
+      chatLog.push({ role: "b", text: full });
+      const bubble = appendBubble("b", "");
+      setTyping(true);
+      let i = 0;
+      const iv = setInterval(() => {
+        i += 3;
+        bubble.textContent = full.slice(0, i);
+        scrollToBottom();
+        if (i >= full.length) {
+          clearInterval(iv);
+          bubble.textContent = full;
+          setTyping(false);
+          if (res.quick && res.quick.length) showQuickButtons(res.quick);
+          const inp = $("cin"); if (inp && chatOpen) inp.focus();
+        }
+      }, 16);
+    }
+
+    // =====================================================================
+    // Worker 2 — conversational actions: "תכניס 200 ₪ לקוביית X".
+    // Parses intent + amount + target cube; builds a funding plan that never
+    // creates money out of nowhere (free pool first, then small proportional
+    // deductions from other cubes); asks for confirmation before executing.
+    // =====================================================================
+    const CHAT_SYNONYMS = {
+      lifestyle: ["בילויים", "פנאי", "בילוי", "כיף"],
+      essentials: ["שוטף", "אוכל", "מכולת"],
+      savings: ["חיסכון", "חסכון"],
+      investments: ["השקעות", "השקעה"],
+      housing: ["דיור", "שכירות"],
+    };
+    function findCubeByName(nameRaw) {
+      const n = (nameRaw || "").trim();
+      if (!n) return null;
+      for (const c of state.cubes) if (c.name === n || c.name.includes(n) || n.includes(c.name)) return c;
+      for (const key in CHAT_SYNONYMS)
+        if (CHAT_SYNONYMS[key].some((s) => n.includes(s))) { const c = state.cubes.find((x) => x.key === key); if (c) return c; }
+      return null;
+    }
+
+    // Free pool first, then spread the remainder across donor cubes
+    // proportionally to their balances (so no single cube takes the whole hit).
+    function buildFundingPlan(amount, excludeKey) {
+      const sources = [];
+      let remaining = amount;
+      if (state.pool > 0 && remaining > 0) {
+        const take = Math.min(state.pool, remaining);
+        sources.push({ key: "__pool", name: "היתרה הפנויה", amount: take });
+        remaining -= take;
+      }
+      if (remaining <= 0) return sources;
+      const order = ["lifestyle", "essentials", "savings", "investments"];
+      const ok = (c) => c && c.key !== excludeKey && !c.locked && c.balance > 0;
+      const baseDonors = order.map((k) => state.cubes.find((c) => c.key === k)).filter(ok);
+      // personal-goal cubes are only tapped if the base cubes can't cover it
+      let donors = baseDonors;
+      if (baseDonors.reduce((s, d) => s + d.balance, 0) < remaining) {
+        donors = baseDonors.concat(state.cubes.filter((c) => c.custom).filter(ok));
+      }
+      const totalAvail = donors.reduce((s, d) => s + d.balance, 0);
+      if (totalAvail < remaining) return null; // not enough money anywhere
+      const takes = donors.map((d) => Math.min(d.balance, Math.floor(remaining * d.balance / totalAvail)));
+      let leftover = remaining - takes.reduce((s, t) => s + t, 0);
+      for (let i = 0; i < donors.length && leftover > 0; i++) {
+        const room = donors[i].balance - takes[i];
+        const add = Math.min(room, leftover);
+        takes[i] += add; leftover -= add;
+      }
+      donors.forEach((d, i) => { if (takes[i] > 0) sources.push({ key: d.key, name: d.name, amount: takes[i] }); });
+      return sources;
+    }
+
+    function describeSources(sources) {
+      return sources.map((s) => "₪" + fmt(s.amount) + " מ" + (s.key === "__pool" ? "היתרה הפנויה" : '"' + s.name + '"')).join(" ו־");
+    }
+    function confirmButtons() {
+      return [
+        { label: "לאשר ✓", run: () => { const a = pendingAction; pendingAction = null; return a ? execFunding(a) : { text: "אין פעולה ממתינה 🙂" }; } },
+        { label: "ביטול", kind: "danger", run: () => { pendingAction = null; return { text: "בוטל 👍 לא שיניתי כלום." }; } },
+      ];
+    }
+
+    function respond(text) {
       const q = text.toLowerCase();
       const cubes = state.cubes;
       const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
       const total = totalBalance();
       const num = (text.replace(/,/g, "").match(/(\d+)/) || [])[1];
 
+      // 0. A funding action is waiting for confirmation.
+      if (pendingAction) {
+        if (/^(כן|לאשר|אשר|מאשר|בצע|אוקיי|יאללה|ok)/.test(q.trim())) {
+          const a = pendingAction; pendingAction = null; return execFunding(a);
+        }
+        if (/(לא|בטל|ביטול|עזוב)/.test(q)) { pendingAction = null; return { text: "בוטל 👍 לא שיניתי כלום." }; }
+        return { text: 'יש פעולה שממתינה לאישור — אפשר ללחוץ על הכפתור או לכתוב "לאשר" / "ביטול" 🙂', quick: confirmButtons() };
+      }
+
+      // 1. Funding command: "תכניס 200 שקל לקוביית שיעורי נהיגה"
+      const fund = text.match(/(?:תכניס|תעביר|הוסף|תוסיף|העבר|שים)\s+([\d,]+)\s*(?:שקלים|שקל|ש"ח|שח|₪)?\s+ל(.+)/);
+      if (fund) {
+        const amount = Number(fund[1].replace(/,/g, ""));
+        const name = fund[2].trim()
+          .replace(/^(קוביית|קובית|קובייה|קוביה)\s+/, "")
+          .replace(/["'.!?]+$/g, "");
+        if (!(amount > 0)) return { text: 'לא הבנתי את הסכום 🙂 נסה למשל: "תכניס 200 ₪ לחיסכון".' };
+        const target = findCubeByName(name);
+        if (target && target.locked) return { text: 'קוביית "' + target.name + '" נעולה על הוצאות הדיור הקבועות — אי אפשר להעביר אליה ידנית 🔒' };
+        const plan = buildFundingPlan(amount, target ? target.key : null);
+        if (!plan) return { text: "אין מספיק כסף פנוי — יש בסך הכל ₪" + fmt(total + state.pool) + " בקוביות וביתרה. אפשר קודם לחלק כסף לתקציב 🙂" };
+        pendingAction = { sources: plan, amount: amount, targetKey: target ? target.key : null, createName: target ? null : name };
+        const head = target ? "" : 'אין עדיין קובייה בשם "' + name + '", אז אצור אותה. ';
+        return {
+          text: head + "בטח! אקח " + describeSources(plan) + " ואעביר ₪" + fmt(amount) + ' ל"' + (target ? target.name : name) + '". לאשר?',
+          quick: confirmButtons(),
+        };
+      }
+
+      // 2. Affordability
       if (/(afford|אפשר להרשות|יכול להרשות|אפשר לקנות)/.test(q) && num) {
         const amount = Number(num);
         const life = byKey.lifestyle;
-        if (!life) return 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב".';
+        if (!life) return { text: 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב".' };
         if (amount <= life.balance)
-          return "כן! 🎉 הוצאה של " + fmt(amount) + " ₪ מקוביית \"בילויים ופנאי\" (יתרה " + fmt(life.balance) + " ₪) משאירה לך " + fmt(life.balance - amount) + " ₪ שם. אפשר בשקט.";
+          return { text: "כן! 🎉 הוצאה של ₪" + fmt(amount) + ' מקוביית "בילויים ופנאי" (יתרה ₪' + fmt(life.balance) + ") משאירה לך ₪" + fmt(life.balance - amount) + " שם. אפשר בשקט." };
         if (amount <= total)
-          return "קצת גבולי — בקוביית הבילויים יש רק " + fmt(life.balance) + " ₪. יש לך " + fmt(total) + " ₪ בסך הכל, אז אם ממש צריך קח את ההפרש מהחיסכון במודע.";
-        return "הייתי אומר לא כרגע. " + fmt(amount) + " ₪ זה יותר מכל היתרה שלך (" + fmt(total) + " ₪).";
+          return { text: "קצת גבולי — בקוביית הבילויים יש רק ₪" + fmt(life.balance) + ". יש לך ₪" + fmt(total) + " בסך הכל, אז אם ממש צריך קח את ההפרש מהחיסכון במודע." };
+        return { text: "הייתי אומר לא כרגע. ₪" + fmt(amount) + " זה יותר מכל היתרה שלך (₪" + fmt(total) + ")." };
       }
+
+      // 3. Expense report
       if (/(בזבזתי|הוצאתי|קניתי|שילמתי|spent)/.test(q) && num) {
         const life = byKey.lifestyle || cubes.find((c) => c.key !== "housing");
-        if (life) { life.balance = Math.max(0, life.balance - Number(num)); render(); }
-        return "רשמתי ✅ הורדתי " + fmt(Number(num)) + " ₪ מקוביית \"" + (life ? life.name : "") + "\". היתרה החדשה: " + fmt(life ? life.balance : 0) + " ₪.";
+        if (life) { life.balance = Math.max(0, life.balance - Number(num)); syncAfterChange([life.key]); }
+        return { text: "רשמתי ✅ הורדתי ₪" + fmt(Number(num)) + ' מקוביית "' + (life ? life.name : "") + '". היתרה החדשה: ₪' + fmt(life ? life.balance : 0) + "." };
       }
+
+      // 4. Status
       if (/(מצב|סטטוס|כמה יש|how|status|doing)/.test(q)) {
         const low = [...cubes].sort((a, b) => a.balance - b.balance)[0];
-        return "סה״כ בקוביות: " + fmt(total) + " ₪." + (low ? " הקובייה הכי נמוכה כרגע: \"" + low.name + "\" עם " + fmt(low.balance) + " ₪." : "");
+        return { text: "סה״כ בקוביות: ₪" + fmt(total) + "." + (low ? ' הקובייה הכי נמוכה כרגע: "' + low.name + '" עם ₪' + fmt(low.balance) + "." : "") };
       }
+
+      // 5. Greeting
       if (/^(היי|הי|שלום|מה קורה|hi|hey|hello)/.test(q))
-        return "היי! 👋 אני Cubey, החבר הפיננסי שלך. יש לך " + fmt(total) + " ₪ בקוביות. שאל אותי \"אפשר להרשות 300 ₪?\" או \"מה המצב שלי?\"";
-      return "אני Cubey 🧊 — רואה את הקוביות שלך (סה״כ " + fmt(total) + " ₪). נסה: \"אפשר להרשות 500 ₪?\", \"בזבזתי 200 ₪\", או \"מה המצב שלי?\"";
+        return { text: "היי! 👋 אני Cubey. יש לך ₪" + fmt(total) + ' בקוביות. אפשר לשאול "אפשר להרשות 300 ₪?", לדווח "בזבזתי 200 ₪", או לבקש "תכניס 100 ₪ לחיסכון".' };
+
+      // 6. Fallback
+      return { text: "אני Cubey 🧊 — רואה את הקוביות שלך (סה״כ ₪" + fmt(total) + '). נסה: "אפשר להרשות 500 ₪?", "בזבזתי 200 ₪", או "תכניס 100 ₪ לחיסכון".' };
     }
 
-    function renderChat() {
-      const w = $("chatwrap");
-      w.className = "chatwrap" + (chatOpen ? " on" : "");
-      if (!chatOpen) { w.innerHTML = ""; return; }
-      w.onclick = (e) => { if (e.target === w) { chatOpen = false; renderChat(); } };
-      const chat = el("div", "chat");
-      chat.innerHTML =
-        '<div class="ch"><div><div class="t">Cubey 🧊</div>' +
-        '<div class="s">' + (streaming ? "מקליד…" : "החבר הפיננסי שלך · מכיר את הקוביות") + '</div></div>' +
-        '<button class="x" aria-label="סגור">✕</button></div>' +
-        '<div class="msgs" id="msgs"></div>' +
-        (chatLog.length === 0 ? '<div class="sugg" id="sugg"></div>' : '') +
-        '<div class="inbar"><input id="cin" placeholder="כתוב ל-Cubey…" ' + (streaming ? "disabled" : "") + '>' +
-        '<button id="csend" ' + (streaming ? "disabled" : "") + '>➤</button></div>';
-      chat.querySelector(".x").onclick = () => { chatOpen = false; renderChat(); };
-      const msgs = chat.querySelector("#msgs");
-      if (chatLog.length === 0) {
-        msgs.innerHTML = '<div class="intro"><div class="e">👋</div><p>היי! אני Cubey. ספר לי על הוצאה, שאל אם אפשר להרשות משהו, או "מה המצב שלי?"</p></div>';
-        const sg = chat.querySelector("#sugg");
-        SUGG.forEach((s) => { const b = el("button"); b.textContent = s; b.onclick = () => send(s); sg.appendChild(b); });
-      } else {
-        chatLog.forEach((m) => { const b = el("div", "bubble " + (m.role === "u" ? "u" : "b")); b.textContent = m.text; msgs.appendChild(b); });
+    // =====================================================================
+    // Worker 4 — state & storage sync: every chat/settings mutation flows
+    // through these wrappers so the totals stay mathematically sound and
+    // localStorage is updated in the same tick as the UI.
+    // =====================================================================
+    function syncAfterChange(highlightKeys) {
+      state.justFunded = new Set(highlightKeys || []);
+      saveState();
+      render(); // dashboard behind the chat re-renders instantly
+      setTimeout(() => { state.justFunded = new Set(); }, 800);
+    }
+
+    function execFunding(a) {
+      // invariant: money is moved, never created — total (cubes + pool) is preserved
+      const before = Math.round(totalBalance() + state.pool);
+      a.sources.forEach((s) => {
+        if (s.key === "__pool") state.pool = Math.max(0, state.pool - s.amount);
+        else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance = Math.max(0, c.balance - s.amount); }
+      });
+      let target = a.targetKey ? state.cubes.find((c) => c.key === a.targetKey) : null;
+      if (!target && a.createName) {
+        const idx = state.cubes.filter((c) => c.custom).length;
+        target = { key: "custom_" + Date.now(), name: a.createName, emoji: "🎯",
+          color: CUSTOM_COLORS[idx % CUSTOM_COLORS.length], note: "יעד אישי", pct: 0,
+          amount: a.amount, locked: false, balance: 0, custom: true, priority: null };
+        state.cubes.push(target);
       }
-      const input = chat.querySelector("#cin");
-      const go = () => { const v = (input.value || "").trim(); if (v) send(v); };
-      chat.querySelector("#csend").onclick = go;
-      input.onkeydown = (e) => { if (e.key === "Enter") go(); };
-      w.appendChild(chat);
-      setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; if (!streaming) input && input.focus(); }, 30);
+      if (!target) return { text: "משהו השתבש — לא מצאתי את קוביית היעד 🤔" };
+      target.balance += a.amount;
+      const after = Math.round(totalBalance() + state.pool);
+      if (before !== after) console.warn("[cubey] balance invariant drift:", before, "->", after);
+      syncAfterChange([target.key]);
+      return { text: "בוצע ✅ לקחתי " + describeSources(a.sources) + " והעברתי ₪" + fmt(a.amount) + ' ל"' + target.name + '". היתרה שם עכשיו: ₪' + fmt(target.balance) + "." };
     }
 
-    function send(text) {
-      if (streaming) return;
-      chatLog.push({ role: "u", text });
-      const full = reply(text);
-      chatLog.push({ role: "b", text: "" });
-      streaming = true; renderChat();
-      let i = 0;
-      const iv = setInterval(() => {
-        i += 3;
-        chatLog[chatLog.length - 1].text = full.slice(0, i);
-        const msgs = $("msgs");
-        if (msgs) { const bs = msgs.querySelectorAll(".bubble.b"); const last = bs[bs.length - 1];
-          if (last) last.textContent = chatLog[chatLog.length - 1].text; msgs.scrollTop = msgs.scrollHeight; }
-        if (i >= full.length) { clearInterval(iv); chatLog[chatLog.length - 1].text = full; streaming = false; renderChat(); }
-      }, 18);
+    // =====================================================================
+    // Worker 3 — settings drawer: log out + delete account (double confirm).
+    // =====================================================================
+    let settStep = 0;
+    function openSettings() { settStep = 0; renderSettings(); }
+    function closeSettings() { const w = $("settwrap"); w.classList.remove("on"); w.innerHTML = ""; }
+    function renderSettings() {
+      const w = $("settwrap"); w.className = "ccwrap on";
+      w.onclick = (e) => { if (e.target === w) closeSettings(); };
+      let inner = '<div class="handle"></div>';
+      if (settStep === 0) {
+        inner += '<h2 class="authtitle" style="font-size:22px">הגדרות ⚙️</h2>' +
+          '<p class="authsub">מחובר/ת כ־<b dir="ltr">' + (state.authUser ? state.authUser.email : "") + '</b></p>' +
+          '<button class="distbtn wide" id="sLogout">⎋ יציאה מהחשבון</button>' +
+          '<button class="dangerbtn" id="sDelete">🗑️ מחיקת חשבון לצמיתות</button>' +
+          '<button class="obback" id="sClose">סגור</button>';
+      } else if (settStep === 1) {
+        inner += '<h2 class="authtitle" style="font-size:22px">למחוק את החשבון? ⚠️</h2>' +
+          '<p class="authsub">כל הנתונים שלך — הפרופיל, הקוביות, היתרות והצ׳אט — <b>יימחקו לצמיתות</b> ולא יהיה אפשר לשחזר אותם.</p>' +
+          '<button class="dangerbtn" id="sDel1">אני מבין/ה — המשך למחיקה</button>' +
+          '<button class="obback" id="sBack">חזרה</button>';
+      } else {
+        inner += '<h2 class="authtitle" style="font-size:22px">אישור אחרון 🛑</h2>' +
+          '<p class="authsub">זו הפעולה הסופית. אחרי הלחיצה החשבון נמחק מיד ותועבר/י למסך ההתחברות.</p>' +
+          '<button class="dangerbtn" id="sDel2">מחק/י את החשבון שלי לצמיתות</button>' +
+          '<button class="obback" id="sBack">התחרטתי — חזרה</button>';
+      }
+      w.innerHTML = '<div class="ccsheet">' + inner + '</div>';
+      const q = (sel) => w.querySelector(sel);
+      if (q("#sClose")) q("#sClose").onclick = closeSettings;
+      if (q("#sLogout")) q("#sLogout").onclick = () => { closeSettings(); resetChat(); logout(); };
+      if (q("#sDelete")) q("#sDelete").onclick = () => { settStep = 1; renderSettings(); };
+      if (q("#sBack")) q("#sBack").onclick = () => { settStep = 0; renderSettings(); };
+      if (q("#sDel1")) q("#sDel1").onclick = () => { settStep = 2; renderSettings(); };
+      if (q("#sDel2")) q("#sDel2").onclick = () => { closeSettings(); wipeAccount(); };
     }
 
-    $("fab").onclick = () => { chatOpen = true; renderChat(); };
+    // Worker 4 — hard wipe: per-account state + user record + session + chat.
+    function wipeAccount() {
+      if (!state.authUser) return;
+      const email = state.authUser.email;
+      try { localStorage.removeItem(stateKey()); } catch (e) {}
+      const users = loadUsers(); delete users[email]; saveUsers(users);
+      resetChat();
+      logout(); // clears session + in-memory state, routes to the login screen
+      showToast("🗑️ החשבון נמחק לצמיתות");
+    }
+
+    $("fab").onclick = openChat;
 
     // ---- boot -------------------------------------------------------------
     initAuth();
