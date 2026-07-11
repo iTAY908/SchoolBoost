@@ -221,8 +221,8 @@
     .sw.on { background: var(--success); }
     .sw.on::after { transform: translateX(-21px); }
     /* ===== engagement modules ===== */
-    .modnav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
-    .modbtn { display: flex; flex-direction: column; align-items: center; gap: 4px;
+    .modnav { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .modbtn { flex: 1 1 28%; min-width: 88px; display: flex; flex-direction: column; align-items: center; gap: 4px;
       background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
       padding: 12px 6px; color: var(--text); font-weight: 800; font-size: 12.5px; cursor: pointer;
       font-family: var(--font); transition: border-color .15s, transform .15s; }
@@ -297,6 +297,69 @@
     .wiwarn b { color: #ff8f8f; }
     .wisafe { background: #12291f; border: 1px solid #2e7d5b; color: #9fe3c3; border-radius: var(--radius);
       padding: 14px; font-size: 13.5px; font-weight: 700; }
+
+    /* ===== Module 1: debt optimizer ===== */
+    .drow { display: flex; gap: 10px; }
+    .debtrow { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+    .debtinfo b { display: block; font-size: 14.5px; } .debtinfo span { color: var(--dim); font-size: 12.5px; }
+    .debtdel { background: none; border: none; color: var(--dim); font-size: 16px; cursor: pointer; padding: 4px 8px; }
+    .debtdel:hover { color: var(--danger); }
+    .savebadge { background: linear-gradient(135deg, #00b894, #0a9d7f); color: #04231b; font-weight: 900;
+      font-size: 18px; text-align: center; padding: 14px; border-radius: var(--radius); box-shadow: 0 12px 30px -12px #00b894;
+      animation: claimpulse 1.6s ease-in-out infinite; }
+    .debtstats { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .dstat { display: flex; justify-content: space-between; align-items: center; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+    .dstat .dsl { color: var(--dim); font-size: 13px; } .dstat b { font-size: 15px; }
+    .sched { display: flex; flex-direction: column; gap: 8px; }
+    .schedstep { display: flex; align-items: center; gap: 12px; background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px; }
+    .schedstep .stepn { width: 26px; height: 26px; border-radius: 999px; background: var(--card-2); color: var(--primary);
+      display: grid; place-items: center; font-weight: 900; font-size: 13px; flex: none; }
+    .schedstep div { flex: 1; } .schedstep b { display: block; font-size: 14px; } .schedstep span { color: var(--dim); font-size: 12px; }
+    .schedstep .stepok { color: var(--success); font-weight: 900; }
+
+    /* ===== Module 2: receipt scanner ===== */
+    .rcpresets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .rcpreset { display: flex; flex-direction: column; align-items: center; gap: 3px; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 6px; cursor: pointer;
+      font-family: var(--font); color: var(--text); transition: border-color .15s, transform .15s; }
+    .rcpreset:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .rcpreset.on { border-color: var(--primary); background: var(--card-2); }
+    .rcpreset .rce { font-size: 24px; } .rcpreset b { font-size: 12.5px; text-align: center; }
+    .rcpreset .rcamt { color: var(--dim); font-size: 12px; font-weight: 800; }
+    .scanwrap { position: relative; display: flex; flex-direction: column; align-items: center; overflow: hidden;
+      border-radius: var(--radius-lg); padding: 6px; }
+    .receipt { width: 240px; max-width: 100%; background: #f4f1e8; color: #2a2a2a; border-radius: 8px; padding: 16px;
+      font-family: ui-monospace, Consolas, monospace; font-size: 12px; box-shadow: 0 14px 40px -18px #000; }
+    .receipt .rhead { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 8px; }
+    .receipt .rline { display: flex; justify-content: space-between; color: #777; font-size: 10.5px; }
+    .receipt .rdash { border-top: 1px dashed #bbb; margin: 8px 0; }
+    .receipt .ritem { display: flex; justify-content: space-between; padding: 2px 0; unicode-bidi: plaintext; }
+    .receipt .ritem.total { font-weight: 800; font-size: 13px; }
+    .receipt .rbar { height: 18px; margin-top: 10px; background: repeating-linear-gradient(90deg, #2a2a2a 0 2px, transparent 2px 5px); }
+    .laser { position: absolute; left: 6px; right: 6px; height: 3px; top: 0; opacity: 0;
+      background: linear-gradient(90deg, transparent, #46e0b4, #00ffa3, #46e0b4, transparent);
+      box-shadow: 0 0 16px 4px #00ffa3aa; }
+    .scanwrap.scanning .laser { animation: laserSweep 2s cubic-bezier(.6,0,.4,1) 1; }
+    .scanwrap.scanning .receipt { animation: scanTint 2s ease 1; }
+    @keyframes laserSweep { 0% { top: 4%; opacity: 1; } 92% { opacity: 1; } 100% { top: 96%; opacity: 0; } }
+    @keyframes scanTint { 0%,100% { filter: none; } 50% { filter: brightness(1.08) saturate(1.3); } }
+    .scanlbl { margin-top: 10px; color: var(--success); font-weight: 800; font-size: 13px; }
+    .jsoncard { background: #07070d; border: 1px solid #23233a; border-radius: var(--radius); overflow: hidden; }
+    .jhead { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
+      border-bottom: 1px solid #23233a; color: var(--ink); font-weight: 800; font-size: 13px; }
+    .jok { color: #46e0b4; font-size: 11px; font-weight: 700; }
+    .jsoncode { margin: 0; padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace;
+      font-size: 11.5px; line-height: 1.6; color: #cfd2e4; direction: ltr; text-align: left; }
+    .jsoncode .jk { color: #7fb0ff; } .jsoncode .js { color: #9fe3b4; } .jsoncode .jn { color: #ffcf8a; }
+    .splitflow { display: flex; flex-direction: column; gap: 8px; }
+    .splitrow { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px; }
+    .splitamt { font-weight: 900; font-variant-numeric: tabular-nums; min-width: 64px; }
+    .splitarrow { color: var(--primary); font-weight: 900; font-size: 18px; }
+    .splitcube { color: var(--dim); font-weight: 700; }
 
     /* incognito: blur sensitive amounts, reveal on hover/focus */
     .incognito .hv, .incognito .bal, .incognito .tgt { filter: blur(8px); transition: filter .25s; }
@@ -490,6 +553,7 @@
       // engagement modules
       game: { points: 0, claimed: {}, flags: {} }, // challenges + badges
       shared: [],                                   // shared cubes with friends
+      debts: [],                                    // debt optimizer entries
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -642,7 +706,7 @@
       try {
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
-          incognito: !!state.incognito, game: state.game, shared: state.shared,
+          incognito: !!state.incognito, game: state.game, shared: state.shared, debts: state.debts,
         }));
       } catch (e) {}
     }
@@ -657,6 +721,7 @@
       const g = (s && s.game) || {};
       state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
+      state.debts = s && Array.isArray(s.debts) ? s.debts : [];
     }
 
     function enterApp(user) {
@@ -670,7 +735,7 @@
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
-      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = [];
+      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = [];
       render();
     }
     function initAuth() {
@@ -758,6 +823,8 @@
       if (state.screen === "challenges") return renderChallengesPage();
       if (state.screen === "shared") return renderSharedPage();
       if (state.screen === "whatif") return renderWhatIfPage();
+      if (state.screen === "debt") return renderDebtPage();
+      if (state.screen === "scanner") return renderScannerPage();
       renderDashboard();
     }
 
@@ -992,7 +1059,8 @@
 
       // engagement modules nav
       const nav = el("div", "modnav");
-      [["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"]].forEach((m) => {
+      [["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"],
+       ["💳", "חובות", "debt"], ["🧾", "סורק קבלות", "scanner"]].forEach((m) => {
         const b = el("button", "modbtn");
         b.innerHTML = '<span class="mi">' + m[0] + '</span><span>' + m[1] + '</span>';
         b.onclick = () => { state.screen = m[2]; render(); };
@@ -1576,6 +1644,274 @@
       const box = el("div", "seclog");
       body.appendChild(box);
       renderSecLogInto(box);
+    }
+
+    // =====================================================================
+    // MODULE 1 — AI Debt & Savings Optimizer.
+    // A real month-by-month amortization simulation implementing the Debt
+    // Avalanche (highest APR first) and Snowball (lowest balance first) methods,
+    // compared against a naive even-split baseline to quantify interest saved.
+    // =====================================================================
+    // simulate paying a fixed monthly budget with a given priority order.
+    function simulateDebts(debts, budget, mode) {
+      const ds = debts.map((d) => ({ name: d.name, bal: +d.balance, rate: +d.rate }));
+      let order;
+      if (mode === "snowball") order = [...ds].sort((a, b) => a.bal - b.bal).map((d) => d.name);
+      else if (mode === "avalanche") order = [...ds].sort((a, b) => b.rate - a.rate).map((d) => d.name);
+      else order = null; // even-split baseline
+      let months = 0, interest = 0;
+      const payoff = [];
+      const CAP = 1200;
+      while (ds.some((d) => d.bal > 0.01) && months < CAP) {
+        months++;
+        // accrue one month of interest on every outstanding balance
+        ds.forEach((d) => { if (d.bal > 0) { const i = d.bal * (d.rate / 100 / 12); d.bal += i; interest += i; } });
+        let avail = budget;
+        if (order) {
+          for (const name of order) {
+            const d = ds.find((x) => x.name === name);
+            if (!d || d.bal <= 0) continue;
+            const pay = Math.min(d.bal, avail);
+            d.bal -= pay; avail -= pay;
+            if (d.bal <= 0.01 && !payoff.find((p) => p.name === name)) payoff.push({ name: name, month: months });
+            if (avail <= 0) break;
+          }
+        } else {
+          const active = ds.filter((d) => d.bal > 0);
+          const share = budget / active.length;
+          active.forEach((d) => { d.bal -= Math.min(d.bal, share); });
+        }
+      }
+      const payable = ds.every((d) => d.bal <= 0.02);
+      return { months: payable ? months : Infinity, interest: Math.round(interest), payoff: payoff, payable: payable, order: order };
+    }
+    function runOptimizer(debts, budget, mode) {
+      const opt = simulateDebts(debts, budget, mode);
+      const base = simulateDebts(debts, budget, null); // naive even split
+      return {
+        opt: opt, base: base,
+        monthsSaved: (base.payable && opt.payable) ? base.months - opt.months : null,
+        interestSaved: (base.payable && opt.payable) ? Math.max(0, base.interest - opt.interest) : null,
+        firstTarget: opt.order ? opt.order[0] : null,
+      };
+    }
+
+    let debtDraft = { name: "", balance: "", rate: "" };
+    let debtBudget = "";
+    let debtMode = "avalanche";
+    let debtResult = null;
+    function renderDebtPage() {
+      const body = pageShell("אופטימיזציית חובות 💳", () => { debtResult = null; state.screen = "app"; render(); });
+      const totalDebt = state.debts.reduce((s, d) => s + (+d.balance || 0), 0);
+
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl">הזינו את החובות שלכם והסכום החודשי הפנוי — ה-AI יחשב את סדר ההחזר האופטימלי (שיטת מפולת/כדור שלג) וכמה ריבית תחסכו.</div>';
+      body.appendChild(intro);
+
+      // debts list
+      state.debts.forEach((d, idx) => {
+        const row = el("div", "debtrow");
+        row.innerHTML = '<div class="debtinfo"><b>' + d.name + '</b><span>יתרה ₪' + fmt(+d.balance) + ' · ריבית ' + (+d.rate) + '%</span></div>' +
+          '<button class="debtdel" aria-label="מחק">✕</button>';
+        row.querySelector(".debtdel").onclick = () => { state.debts.splice(idx, 1); debtResult = null; saveState(); render(); };
+        body.appendChild(row);
+      });
+
+      // add-debt form
+      const form = el("div", "setcard");
+      form.innerHTML = '<h3 style="margin:0 0 10px">➕ הוספת חוב</h3>' +
+        '<label class="flbl">שם החוב</label><div class="fld"><input id="dName" placeholder="הלוואת רכב" value="' + debtDraft.name + '"></div>' +
+        '<div class="drow"><div style="flex:1"><label class="flbl">יתרה</label><div class="fld"><span class="cur">₪</span><input id="dBal" inputmode="numeric" placeholder="20000" value="' + debtDraft.balance + '"></div></div>' +
+        '<div style="flex:1"><label class="flbl">ריבית שנתית</label><div class="fld"><input id="dRate" inputmode="decimal" placeholder="12" value="' + debtDraft.rate + '"><span class="cur">%</span></div></div></div>' +
+        '<button class="fchip wide on" id="dAdd" style="margin-top:12px">הוסף חוב לרשימה</button>';
+      body.appendChild(form);
+      form.querySelector("#dName").oninput = (e) => { debtDraft.name = e.target.value; };
+      form.querySelector("#dBal").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); debtDraft.balance = e.target.value; };
+      form.querySelector("#dRate").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9.]/g, ""); debtDraft.rate = e.target.value; };
+      form.querySelector("#dAdd").onclick = () => {
+        if (!debtDraft.name.trim() || !(+debtDraft.balance > 0) || !(+debtDraft.rate >= 0)) { showToast("צריך שם, יתרה וריבית 🙂"); return; }
+        state.debts.push({ name: debtDraft.name.trim(), balance: +debtDraft.balance, rate: +debtDraft.rate });
+        debtDraft = { name: "", balance: "", rate: "" }; debtResult = null; saveState(); render();
+      };
+
+      // budget + strategy + run
+      const ctrl = el("div", "setcard");
+      ctrl.innerHTML = '<label class="flbl">סכום חודשי פנוי להחזרים</label><div class="fld"><span class="cur">₪</span><input id="dBudget" inputmode="numeric" placeholder="2000" value="' + (debtBudget || "") + '"></div>' +
+        '<label class="flbl" style="margin-top:12px">שיטה</label>' +
+        '<div class="toggle" id="dMode"><button class="' + (debtMode === "avalanche" ? "on" : "") + '" data-m="avalanche">🏔️ מפולת (ריבית גבוהה)</button>' +
+        '<button class="' + (debtMode === "snowball" ? "on" : "") + '" data-m="snowball">⛄ כדור שלג (יתרה נמוכה)</button></div>' +
+        '<button class="distbtn wide" id="dRun" style="margin-top:14px">🤖 הפעל את מייעל ה-AI</button>';
+      body.appendChild(ctrl);
+      ctrl.querySelector("#dBudget").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); debtBudget = e.target.value; };
+      ctrl.querySelectorAll("#dMode button").forEach((b) => { b.onclick = () => { debtMode = b.dataset.m; render(); }; });
+      ctrl.querySelector("#dRun").onclick = () => {
+        if (state.debts.length === 0) { showToast("הוסיפו לפחות חוב אחד 🙂"); return; }
+        if (!(+debtBudget > 0)) { showToast("הזינו סכום חודשי פנוי 🙂"); return; }
+        debtResult = runOptimizer(state.debts, +debtBudget, debtMode);
+        state.game.flags.debt = true; saveState(); render();
+      };
+
+      // results
+      if (debtResult) {
+        const r = debtResult;
+        const res = el("div", "debtres");
+        if (!r.opt.payable) {
+          res.innerHTML = '<div class="wiwarn"><b>⚠️ התקציב נמוך מדי:</b> ₪' + fmt(+debtBudget) + ' בחודש לא מכסים אפילו את הריבית המצטברת. נסו להגדיל את הסכום החודשי.</div>';
+          body.appendChild(res); return;
+        }
+        const y = Math.floor(r.opt.months / 12), mo = r.opt.months % 12;
+        res.innerHTML =
+          (r.interestSaved != null ? '<div class="savebadge">💰 חסכת ₪' + fmt(r.interestSaved) + ' בריביות!</div>' : "") +
+          '<div class="debtstats">' +
+            '<div class="dstat"><span class="dsl">להתחיל מ־</span><b>' + r.firstTarget + '</b></div>' +
+            '<div class="dstat"><span class="dsl">חופש מחובות תוך</span><b>' + r.opt.months + ' חודשים' + (y ? ' (' + y + 'ש׳ ' + mo + 'ח׳)' : "") + '</b></div>' +
+            (r.monthsSaved != null && r.monthsSaved > 0 ? '<div class="dstat"><span class="dsl">מהיר יותר ב־</span><b>' + r.monthsSaved + ' חודשים</b></div>' : "") +
+          '</div>' +
+          '<div class="section-t" style="margin:16px 2px 10px">לוח סילוקין (סדר החזר)</div>';
+        const sched = el("div", "sched");
+        r.opt.payoff.forEach((p, i) => {
+          const step = el("div", "schedstep");
+          step.innerHTML = '<span class="stepn">' + (i + 1) + '</span><div><b>' + p.name + '</b><span>יסולק בחודש ה-' + p.month + '</span></div><span class="stepok">✓</span>';
+          sched.appendChild(step);
+        });
+        res.appendChild(sched);
+        const apply = el("button", "distbtn wide"); apply.textContent = "📥 עדכן את קוביות החוב והחיסכון"; apply.style.marginTop = "14px";
+        apply.onclick = () => applyDebtPlan(r);
+        res.appendChild(apply);
+        body.appendChild(res);
+      }
+    }
+    function applyDebtPlan(r) {
+      const income = state.profile && state.profile.works ? (+state.profile.income || 0) : 0;
+      const totalDebt = state.debts.reduce((s, d) => s + (+d.balance || 0), 0);
+      // Debt Cube: monthly repayment plan
+      let debtCube = state.cubes.find((c) => c.key === "debt_plan");
+      if (!debtCube) {
+        debtCube = { key: "debt_plan", name: "החזר חובות", emoji: "💳", color: "#e17055",
+          note: "תוכנית " + (debtMode === "avalanche" ? "מפולת" : "כדור שלג"), pct: income > 0 ? Math.round((+debtBudget / income) * 1000) / 10 : 0,
+          amount: +debtBudget, locked: false, balance: 0, custom: true };
+        state.cubes.push(debtCube);
+      } else { debtCube.amount = +debtBudget; }
+      debtCube.note = "₪" + fmt(totalDebt) + " · " + (debtMode === "avalanche" ? "מפולת" : "כדור שלג");
+      // Savings Cube: reflect the projected monthly interest saved
+      const sav = state.cubes.find((c) => c.key === "savings");
+      if (sav && r.interestSaved != null && r.opt.months > 0) {
+        sav.projectedMonthlySave = Math.round(r.interestSaved / r.opt.months);
+        sav.note = "כולל ₪" + fmt(sav.projectedMonthlySave) + " שנחסכים מריבית";
+      }
+      state.game.flags.debtApplied = true;
+      saveState(); render();
+      showToast("✅ קוביית החוב עודכנה · חיסכון צפוי ₪" + fmt(r.interestSaved || 0));
+    }
+
+    // =====================================================================
+    // MODULE 2 — AI Receipt Scanner (mock OCR + vision → structured JSON).
+    // Simulates a GPT-4o/Claude vision pipeline: laser-scan animation, then a
+    // parsed JSON card + automatic split of line-items into the right cubes.
+    // =====================================================================
+    const RECEIPTS = {
+      shufersal: { store: "שופרסל", emoji: "🛒", total: 320, date: "2026-07-11", method: "כרטיס אשראי",
+        items: [ { name: "מוצרי מזון בסיסיים", price: 290, cube: "essentials" }, { name: "שוקולד וחטיפים", price: 30, cube: "lifestyle" } ] },
+      cafe: { store: "בית קפה ארומה", emoji: "☕", total: 45, date: "2026-07-11", method: "מזומן",
+        items: [ { name: "קפה הפוך", price: 16, cube: "lifestyle" }, { name: "מאפה חמאה", price: 29, cube: "lifestyle" } ] },
+      electric: { store: "חברת החשמל", emoji: "⚡", total: 450, date: "2026-07-01", method: "הוראת קבע",
+        items: [ { name: "צריכת חשמל דו-חודשית", price: 450, cube: "housing" } ] },
+    };
+    const CUBE_LABEL = { essentials: "שוטף 🛒", lifestyle: "בילויים ופנאי 🎉", housing: "דיור וחשבונות 🏠", savings: "חיסכון 💰" };
+    let scanSel = null, scanPhase = "idle"; // idle | scanning | done
+    function receiptJSON(r) {
+      const VAT = 0.17;
+      return {
+        store: r.store, date: r.date, currency: "ILS", payment_method: r.method,
+        line_items: r.items.map((it) => ({ description: it.name, amount: it.price, category_cube: it.cube })),
+        vat_included: Math.round((r.total - r.total / (1 + VAT)) * 100) / 100,
+        total: r.total,
+        _meta: { engine: "cubey-vision-v1", confidence: 0.97 },
+      };
+    }
+    function renderScannerPage() {
+      const body = pageShell("סורק קבלות חכם 🧾", () => { scanSel = null; scanPhase = "idle"; state.screen = "app"; render(); });
+
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl">בחרו קבלה לדוגמה — מנוע ה-Vision (סימולציית GPT-4o / Claude) יסרוק אותה, יחלץ את הפריטים ל-JSON מובנה, ויחלק אוטומטית לקוביות המתאימות.</div>';
+      body.appendChild(intro);
+
+      // preset cards
+      const presets = el("div", "rcpresets");
+      Object.keys(RECEIPTS).forEach((id) => {
+        const r = RECEIPTS[id];
+        const c = el("button", "rcpreset" + (scanSel === id ? " on" : ""));
+        c.innerHTML = '<span class="rce">' + r.emoji + '</span><b>' + r.store + '</b><span class="rcamt">₪' + fmt(r.total) + '</span>';
+        c.onclick = () => {
+          if (scanPhase === "scanning") return;
+          scanSel = id; scanPhase = "scanning"; render();
+          setTimeout(() => { scanPhase = "done"; state.game.flags.scan = true; saveState(); render(); }, 2000);
+        };
+        presets.appendChild(c);
+      });
+      body.appendChild(presets);
+
+      if (!scanSel) return;
+      const r = RECEIPTS[scanSel];
+
+      // the "receipt" visual with a scanning laser
+      const scanWrap = el("div", "scanwrap" + (scanPhase === "scanning" ? " scanning" : ""));
+      scanWrap.innerHTML =
+        '<div class="receipt">' +
+          '<div class="rhead">' + r.emoji + " " + r.store + '</div>' +
+          '<div class="rline"><span>' + r.date + '</span><span>' + r.method + '</span></div>' +
+          '<div class="rdash"></div>' +
+          r.items.map((it) => '<div class="ritem"><span>' + it.name + '</span><span>₪' + fmt(it.price) + '</span></div>').join("") +
+          '<div class="rdash"></div>' +
+          '<div class="ritem total"><span>סה״כ</span><span>₪' + fmt(r.total) + '</span></div>' +
+          '<div class="rbar"></div>' +
+        '</div>' +
+        '<div class="laser"></div>' +
+        (scanPhase === "scanning" ? '<div class="scanlbl">מנתח קבלה… 🔍</div>' : "");
+      body.appendChild(scanWrap);
+
+      if (scanPhase !== "done") return;
+
+      // parsed JSON card
+      const jc = el("div", "jsoncard");
+      jc.innerHTML = '<div class="jhead">📦 JSON מפוענח <span class="jok">confidence 97%</span></div><pre class="jsoncode">' +
+        syntaxJSON(receiptJSON(r)) + '</pre>';
+      body.appendChild(jc);
+
+      // cube split flow
+      const splitMap = {};
+      r.items.forEach((it) => { splitMap[it.cube] = (splitMap[it.cube] || 0) + it.price; });
+      const st = el("div", "section-t"); st.textContent = "חלוקה אוטומטית לקוביות"; body.appendChild(st);
+      const flow = el("div", "splitflow");
+      Object.keys(splitMap).forEach((cube) => {
+        const exists = state.cubes.find((c) => c.key === cube);
+        const row = el("div", "splitrow");
+        row.innerHTML = '<span class="splitamt">₪' + fmt(splitMap[cube]) + '</span><span class="splitarrow">←</span>' +
+          '<span class="splitcube">' + (CUBE_LABEL[cube] || cube) + (exists ? "" : " (לא פעילה)") + '</span>';
+        flow.appendChild(row);
+      });
+      body.appendChild(flow);
+
+      const apply = el("button", "distbtn wide"); apply.textContent = "📥 רשום את ההוצאה בקוביות"; apply.style.marginTop = "14px";
+      apply.onclick = () => {
+        const touched = [];
+        Object.keys(splitMap).forEach((cube) => {
+          const c = state.cubes.find((x) => x.key === cube) || state.cubes.find((x) => x.key === "essentials");
+          if (c) { c.balance = Math.max(0, c.balance - splitMap[cube]); touched.push(c.key); }
+        });
+        syncAfterChange(touched);
+        showToast("🧾 נרשמה הוצאה של ₪" + fmt(r.total) + " מ" + r.store);
+        scanSel = null; scanPhase = "idle"; render();
+      };
+      body.appendChild(apply);
+    }
+    // tiny JSON syntax highlighter for the code block
+    function syntaxJSON(obj) {
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return esc(JSON.stringify(obj, null, 2))
+        .replace(/&quot;([^&]+?)&quot;(\s*:)/g, '<span class="jk">"$1"</span>$2')
+        .replace(/:\s&quot;([^&]*?)&quot;/g, ': <span class="js">"$1"</span>')
+        .replace(/:\s(-?\d+\.?\d*)/g, ': <span class="jn">$1</span>');
     }
 
     // =====================================================================
