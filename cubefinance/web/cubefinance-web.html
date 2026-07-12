@@ -320,47 +320,6 @@
     .schedstep div { flex: 1; } .schedstep b { display: block; font-size: 14px; } .schedstep span { color: var(--dim); font-size: 12px; }
     .schedstep .stepok { color: var(--success); font-weight: 900; }
 
-    /* ===== Module 2: receipt scanner ===== */
-    .rcpresets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .rcpreset { display: flex; flex-direction: column; align-items: center; gap: 3px; background: var(--card);
-      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 6px; cursor: pointer;
-      font-family: var(--font); color: var(--text); transition: border-color .15s, transform .15s; }
-    .rcpreset:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .rcpreset.on { border-color: var(--primary); background: var(--card-2); }
-    .rcpreset .rce { font-size: 24px; } .rcpreset b { font-size: 12.5px; text-align: center; }
-    .rcpreset .rcamt { color: var(--dim); font-size: 12px; font-weight: 800; }
-    .scanwrap { position: relative; display: flex; flex-direction: column; align-items: center; overflow: hidden;
-      border-radius: var(--radius-lg); padding: 6px; }
-    .receipt { width: 240px; max-width: 100%; background: #f4f1e8; color: #2a2a2a; border-radius: 8px; padding: 16px;
-      font-family: ui-monospace, Consolas, monospace; font-size: 12px; box-shadow: 0 14px 40px -18px #000; }
-    .receipt .rhead { text-align: center; font-weight: 800; font-size: 14px; margin-bottom: 8px; }
-    .receipt .rline { display: flex; justify-content: space-between; color: #777; font-size: 10.5px; }
-    .receipt .rdash { border-top: 1px dashed #bbb; margin: 8px 0; }
-    .receipt .ritem { display: flex; justify-content: space-between; padding: 2px 0; unicode-bidi: plaintext; }
-    .receipt .ritem.total { font-weight: 800; font-size: 13px; }
-    .receipt .rbar { height: 18px; margin-top: 10px; background: repeating-linear-gradient(90deg, #2a2a2a 0 2px, transparent 2px 5px); }
-    .laser { position: absolute; left: 6px; right: 6px; height: 3px; top: 0; opacity: 0;
-      background: linear-gradient(90deg, transparent, #46e0b4, #00ffa3, #46e0b4, transparent);
-      box-shadow: 0 0 16px 4px #00ffa3aa; }
-    .scanwrap.scanning .laser { animation: laserSweep 2s cubic-bezier(.6,0,.4,1) 1; }
-    .scanwrap.scanning .receipt { animation: scanTint 2s ease 1; }
-    @keyframes laserSweep { 0% { top: 4%; opacity: 1; } 92% { opacity: 1; } 100% { top: 96%; opacity: 0; } }
-    @keyframes scanTint { 0%,100% { filter: none; } 50% { filter: brightness(1.08) saturate(1.3); } }
-    .scanlbl { margin-top: 10px; color: var(--success); font-weight: 800; font-size: 13px; }
-    .jsoncard { background: #07070d; border: 1px solid #23233a; border-radius: var(--radius); overflow: hidden; }
-    .jhead { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
-      border-bottom: 1px solid #23233a; color: var(--ink); font-weight: 800; font-size: 13px; }
-    .jok { color: #46e0b4; font-size: 11px; font-weight: 700; }
-    .jsoncode { margin: 0; padding: 12px 14px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace;
-      font-size: 11.5px; line-height: 1.6; color: #cfd2e4; direction: ltr; text-align: left; }
-    .jsoncode .jk { color: #7fb0ff; } .jsoncode .js { color: #9fe3b4; } .jsoncode .jn { color: #ffcf8a; }
-    .splitflow { display: flex; flex-direction: column; gap: 8px; }
-    .splitrow { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1.5px solid var(--border);
-      border-radius: var(--radius); padding: 12px 14px; }
-    .splitamt { font-weight: 900; font-variant-numeric: tabular-nums; min-width: 64px; }
-    .splitarrow { color: var(--primary); font-weight: 900; font-size: 18px; }
-    .splitcube { color: var(--dim); font-weight: 700; }
-
     /* ===== smart onboarding: skip-estimates + build animation ===== */
     .exprow { display: flex; gap: 8px; align-items: stretch; }
     .skipbtn { flex: none; background: var(--card-2); border: 1px solid var(--primary-dim); color: var(--primary-2);
@@ -431,6 +390,40 @@
     .insight.info { background: #14212a; border: 1px solid #26465c; color: #9fd0f0; }
     .moveline { padding: 6px 0; color: var(--dim); font-size: 13.5px; }
     .moveline b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+    /* ===== premium: paywall, lock overlay, Google Play sheet ===== */
+    .lockblur { filter: blur(7px) saturate(.8); pointer-events: none; user-select: none; }
+    .lockoverlay { position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; pointer-events: none;
+      justify-content: center; padding: 24px; background: radial-gradient(420px 320px at 50% 40%, #0d0d1488, transparent); }
+    .lockbox { pointer-events: auto; background: var(--elevated); border: 1.5px solid #d4a72c66; border-radius: var(--radius-lg);
+      padding: 26px 22px; text-align: center; display: flex; flex-direction: column; gap: 8px; max-width: 300px;
+      box-shadow: 0 30px 70px -30px #000, 0 0 40px -18px #ffd166; }
+    .goldlock { font-size: 44px; filter: drop-shadow(0 6px 14px #ffd16688); }
+    .lockbox b { font-size: 18px; }
+    .lockbox > span { color: var(--dim); font-size: 13.5px; }
+    .lockbox .lockman { font-size: 12px; margin-top: 2px; }
+    .lockb { font-size: 11px; margin-inline-start: 2px; vertical-align: top; filter: drop-shadow(0 0 4px #ffd166); }
+    .setitem.gold { border-color: #d4a72c88; color: #ffd166; }
+    .payhero { background: linear-gradient(165deg, #2b2410, #14131d 60%); border: 1.5px solid #d4a72c66;
+      border-radius: var(--radius-lg); padding: 22px; text-align: center; }
+    .paycrown { font-size: 44px; filter: drop-shadow(0 8px 18px #ffd16688); }
+    .payhero h3 { margin: 6px 0 2px; font-size: 22px; }
+    .payprice { font-size: 30px; font-weight: 900; color: #ffd166; font-variant-numeric: tabular-nums; }
+    .payprice span { display: block; font-size: 12.5px; color: var(--dim); font-weight: 600; margin-top: 2px; }
+    .payfeat { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 8px;
+      text-align: right; color: var(--dim); font-size: 13.5px; line-height: 1.5; }
+    .gpaybtn { width: 100%; border: none; cursor: pointer; font-family: var(--font); margin-top: 4px;
+      background: #fff; color: #1a1a2e; font-size: 15.5px; font-weight: 800; padding: 14px; border-radius: 999px;
+      box-shadow: 0 12px 28px -12px #fff8; transition: transform .12s; }
+    .gpaybtn:active { transform: scale(.98); }
+    .gpsheet .gphead { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .gplogo { color: #34a853; font-size: 18px; }
+    .gpitem { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; }
+    .gpitem b { display: block; font-size: 15px; } .gpitem span { color: var(--dim); font-size: 12.5px; }
+    .gpprice { font-size: 18px; font-variant-numeric: tabular-nums; }
+    .gpmethod { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 12px 14px; color: var(--dim); font-size: 13px; margin-bottom: 14px; unicode-bidi: plaintext; }
 
     /* incognito: blur sensitive amounts, reveal on hover/focus */
     .incognito .hv, .incognito .bal, .incognito .tgt { filter: blur(8px); transition: filter .25s; }
@@ -573,6 +566,11 @@
       .wibar em.negt { color: #c0392b; }
       .claimbtn { color: #402b00; }
       .insight.warn { background: #fdf3e2; border-color: #ecd9ae; color: #7a5a12; }
+      .lockoverlay { background: radial-gradient(420px 320px at 50% 40%, #ffffffaa, transparent); }
+      .payhero { background: linear-gradient(165deg, #fdf6e0, #ffffff 60%); }
+      .payprice { color: #b8860b; }
+      .setitem.gold { color: #b8860b; }
+      .gpaybtn { background: #1a1a2e; color: #fff; }
       .insight.info { background: #e8f2fb; border-color: #c3ddf1; color: #23557e; }
       .s3 .negv { color: #c0392b; }
       .procbar, .cattrack { background: #eceef6; }
@@ -596,6 +594,7 @@
       <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
       <div class="chatwrap" id="chatwrap"></div>
       <div class="ccwrap" id="ccwrap"></div>
+      <div class="ccwrap" id="paywrap"></div>
     </div>
   </div>
 
@@ -631,6 +630,7 @@
       authError: "",
       onboarded: false,
       incognito: false, // privacy: blur sensitive figures on the dashboard
+      premium: false,   // isPremiumUser — set ONLY by verifyGooglePlayPurchase
       // engagement modules
       game: { points: 0, claimed: {}, flags: {} }, // challenges + badges
       shared: [],                                   // shared cubes with friends
@@ -675,7 +675,7 @@
         cubes.push(mk(k, pctOf(W[k] * disc), W[k] * disc)));
       return cubes;
     }
-    // Resolve a category to an existing cube (bank/scanner use 'housing' as the
+    // Resolve a category to an existing cube (the bank manager uses "housing" as the
     // generic fixed-costs category; new profiles have bills/landlord instead).
     function cubeFor(key) {
       if (state.cubes.find((c) => c.key === key)) return key;
@@ -805,7 +805,7 @@
       try {
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
-          incognito: !!state.incognito, game: state.game, shared: state.shared, debts: state.debts,
+          incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
         }));
       } catch (e) {}
     }
@@ -817,6 +817,7 @@
       state.pool = s && s.pool != null ? s.pool : 0;
       state.cubes = s && Array.isArray(s.cubes) ? s.cubes : [];
       state.incognito = !!(s && s.incognito);
+      state.premium = !!(s && s.premium);
       const g = (s && s.game) || {};
       state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
@@ -834,7 +835,7 @@
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
-      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = [];
+      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
       render();
     }
     function initAuth() {
@@ -933,11 +934,11 @@
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
+      if (state.screen === "upgrade") return renderUpgradePage();
       if (state.screen === "challenges") return renderChallengesPage();
       if (state.screen === "shared") return renderSharedPage();
       if (state.screen === "whatif") return renderWhatIfPage();
       if (state.screen === "debt") return renderDebtPage();
-      if (state.screen === "scanner") return renderScannerPage();
       if (state.screen === "bank") return renderBankPage();
       renderDashboard();
     }
@@ -1228,9 +1229,10 @@
       // engagement modules nav
       const nav = el("div", "modnav");
       [["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"],
-       ["💳", "חובות", "debt"], ["🧾", "סורק קבלות", "scanner"], ["🏦", "עו״ש בנק", "bank"]].forEach((m) => {
+       ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]].forEach((m) => {
         const b = el("button", "modbtn");
-        b.innerHTML = '<span class="mi">' + m[0] + '</span><span>' + m[1] + '</span>';
+        const isPrem = (m[2] === "debt" || m[2] === "bank") && !state.premium;
+        b.innerHTML = '<span class="mi">' + m[0] + (isPrem ? '<span class="lockb">🔒</span>' : "") + '</span><span>' + m[1] + '</span>';
         b.onclick = () => { state.screen = m[2]; render(); };
         nav.appendChild(b);
       });
@@ -1269,6 +1271,9 @@
 
       if (cc.mode === "manual") {
         inner += '<label class="flbl">סכום חודשי</label><div class="fld"><span class="cur">₪</span><input id="ccAmt" inputmode="numeric" placeholder="500" value="' + (cc.amount || "") + '"></div>';
+      } else if (cc.mode === "ai" && !state.premium) {
+        inner += '<div class="unknote" style="margin-top:12px">🔒 <b>הקצאת AI היא פיצ\'ר Premium.</b> בגרסה החינמית ההזנה ידנית בלבד — או ששודרגים ופותחים הכול.</div>' +
+          '<button class="fchip wide on" id="ccUpg" style="margin-top:10px">👑 שדרוג ל-AI Premium</button>';
       } else if (cc.mode === "ai") {
         inner += '<label class="flbl">כמה חשובה לך הקובייה? (1 = נמוך, 10 = קריטי)</label>' +
           '<div class="prio"><input type="range" min="1" max="10" value="' + cc.priority + '" id="ccPrio"><span class="priov" id="ccPrioV">' + cc.priority + '</span></div>' +
@@ -1287,6 +1292,8 @@
       if (amt) amt.oninput = () => { amt.value = amt.value.replace(/[^0-9]/g, ""); cc.amount = amt.value; syncCC(); };
       const prio = w.querySelector("#ccPrio");
       if (prio) prio.oninput = () => { cc.priority = Number(prio.value); w.querySelector("#ccPrioV").textContent = cc.priority; cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC(); };
+      const upg = w.querySelector("#ccUpg");
+      if (upg) upg.onclick = () => { closeCustomCube(); state.screen = "upgrade"; render(); };
       const calc = w.querySelector("#ccCalc");
       if (calc) calc.onclick = () => {
         const r = allocateCustomCube(cc.priority);
@@ -1698,6 +1705,7 @@
         body.appendChild(acc);
         const list = el("div", "setlist");
         const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
+        mk(state.premium ? "👑 AI Premium פעיל" : "👑 שדרוג ל-AI Premium (110 ₪)", "setitem" + (state.premium ? "" : " gold"), () => { state.screen = "upgrade"; render(); });
         mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
         mk("🔒 פרטיות ונתונים", "setitem", () => { state.screen = "privacy"; render(); });
         mk("⎋ יציאה מהחשבון", "setitem", () => { resetChat(); logout(); });
@@ -1878,6 +1886,7 @@
     let debtResult = null;
     function renderDebtPage() {
       const body = pageShell("אופטימיזציית חובות 💳", () => { debtResult = null; state.screen = "app"; render(); });
+      const locked = applyPremiumLock(body); // strict lock when isPremiumUser === false
       const totalDebt = state.debts.reduce((s, d) => s + (+d.balance || 0), 0);
 
       const intro = el("div", "setcard");
@@ -1887,7 +1896,7 @@
       // debts list
       state.debts.forEach((d, idx) => {
         const row = el("div", "debtrow");
-        row.innerHTML = '<div class="debtinfo"><b>' + d.name + '</b><span>יתרה ₪' + fmt(+d.balance) + ' · ריבית ' + (+d.rate) + '%' + (d.estimated ? ' <i class="est">(הערכת AI 🤖)</i>' : "") + '</span></div>' +
+        row.innerHTML = '<div class="debtinfo"><b>' + d.name + '</b><span>יתרה ₪' + fmt(+d.balance) + ' · ריבית ' + (+d.rate) + '%' + (d.estimated ? ' <i class="est" title="ריבית משוערת לפי ממוצעי שוק לסוג החוב — ניתן לעדכן בכל רגע">(הערכת AI 🤖)</i>' : "") + '</span></div>' +
           '<button class="debtdel" aria-label="מחק">✕</button>';
         row.querySelector(".debtdel").onclick = () => { state.debts.splice(idx, 1); debtResult = null; saveState(); render(); };
         body.appendChild(row);
@@ -1995,115 +2004,132 @@
       showToast("✅ קוביית החוב עודכנה · חיסכון צפוי ₪" + fmt(r.interestSaved || 0));
     }
 
+
     // =====================================================================
-    // MODULE 2 — AI Receipt Scanner (mock OCR + vision → structured JSON).
-    // Simulates a GPT-4o/Claude vision pipeline: laser-scan animation, then a
-    // parsed JSON card + automatic split of line-items into the right cubes.
+    // AGENT 1 — Gatekeeper: paywall, Google Play billing simulation, and
+    // server-side purchase verification. isPremiumUser (state.premium) is set
+    // ONLY inside verifyGooglePlayPurchase after the token handshake passes —
+    // no UI path flips it directly, so a client "bypass" has nothing to click.
     // =====================================================================
-    const RECEIPTS = {
-      shufersal: { store: "שופרסל", emoji: "🛒", total: 320, date: "2026-07-11", method: "כרטיס אשראי",
-        items: [ { name: "מוצרי מזון בסיסיים", price: 290, cube: "essentials" }, { name: "שוקולד וחטיפים", price: 30, cube: "lifestyle" } ] },
-      cafe: { store: "בית קפה ארומה", emoji: "☕", total: 45, date: "2026-07-11", method: "מזומן",
-        items: [ { name: "קפה הפוך", price: 16, cube: "lifestyle" }, { name: "מאפה חמאה", price: 29, cube: "lifestyle" } ] },
-      electric: { store: "חברת החשמל", emoji: "⚡", total: 450, date: "2026-07-01", method: "הוראת קבע",
-        items: [ { name: "צריכת חשמל דו-חודשית", price: 450, cube: "housing" } ] },
-    };
-    const CUBE_LABEL = { essentials: "שוטף 🛒", lifestyle: "בילויים ופנאי 🎉", housing: "דיור וחשבונות 🏠",
-      bills: "חשבונות הבית ⚡", landlord: "בעל הדירה (שכירות) 🔑", savings: "חיסכון 💰" };
-    let scanSel = null, scanPhase = "idle"; // idle | scanning | done
-    function receiptJSON(r) {
-      const VAT = 0.17;
-      return {
-        store: r.store, date: r.date, currency: "ILS", payment_method: r.method,
-        line_items: r.items.map((it) => ({ description: it.name, amount: it.price, category_cube: it.cube })),
-        vat_included: Math.round((r.total - r.total / (1 + VAT)) * 100) / 100,
-        total: r.total,
-        _meta: { engine: "cubey-vision-v1", confidence: 0.97 },
+    const PREMIUM_PRICE = 110; // ₪, one-time
+    // mock Google Play Developer API: a private signing secret that only the
+    // "server side" knows. Tokens are signed on issue and cross-checked here.
+    const PLAY_API_SECRET = "cubey-play-dev-api-7f3a91";
+    const usedPurchaseTokens = {}; // replay protection (one-time tokens)
+
+    // "Google Play" issues a signed purchase token at checkout time.
+    function issuePlayPurchaseToken(userId) {
+      const nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      const payload = userId + "." + nonce;
+      const signature = mockHash(PLAY_API_SECRET + "::" + payload); // server-side signature
+      return payload + "." + signature;
+    }
+
+    // Strict validation — simulates the cryptographic handshake against the
+    // Google Play Developer API. Returns {ok, reason}. Sets premium ONLY here.
+    function verifyGooglePlayPurchase(purchaseToken, userId) {
+      secLog("INFO", "התקבלה בקשת אימות רכישה — פונה ל-Google Play Developer API (מדומה)");
+      const parts = String(purchaseToken || "").split(".");
+      if (parts.length !== 3) {
+        secLog("ERROR", "אסימון רכישה פגום נדחה (מבנה לא תקין)");
+        return { ok: false, reason: "מבנה אסימון לא תקין" };
+      }
+      const payload = parts[0] + "." + parts[1];
+      const expected = mockHash(PLAY_API_SECRET + "::" + payload);
+      if (parts[2] !== expected) {
+        secLog("ERROR", "חתימה קריפטוגרפית לא תואמת — ניסיון רכישה מזויף נחסם");
+        return { ok: false, reason: "חתימה לא תקפה" };
+      }
+      if (parts[0] !== userId) {
+        secLog("ERROR", "האסימון שייך למשתמש אחר — נחסם");
+        return { ok: false, reason: "אסימון לא שייך למשתמש" };
+      }
+      if (usedPurchaseTokens[purchaseToken]) {
+        secLog("ERROR", "שימוש חוזר באסימון רכישה נחסם (הגנת Replay)");
+        return { ok: false, reason: "אסימון כבר נוצל" };
+      }
+      usedPurchaseTokens[purchaseToken] = true;
+      state.premium = true; // the ONLY place premium is granted
+      saveState();
+      secLog("INFO", "האימות הצליח מול Google Play — נפתחה גישת AI Premium למשתמש " + userId);
+      return { ok: true };
+    }
+
+    function renderUpgradePage() {
+      const body = pageShell("שדרוג ל-AI Premium 👑", () => { state.screen = "app"; render(); });
+      if (state.premium) {
+        const okc = el("div", "wisafe");
+        okc.textContent = "✅ AI Premium פעיל בחשבון שלך — כל הפיצ'רים פתוחים.";
+        body.appendChild(okc);
+        return;
+      }
+      const hero = el("div", "payhero");
+      hero.innerHTML = '<div class="paycrown">👑</div><h3>Cubey AI Premium</h3>' +
+        '<div class="payprice">110 ₪ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
+        '<ul class="payfeat">' +
+          '<li>🏦 ניהול עו״ש אוטומטי — העלאת קובץ CSV אמיתי, סיווג ותובנות AI</li>' +
+          '<li>💳 אופטימיזציית חובות — מפולת/כדור שלג עם חיסכון ריבית מחושב</li>' +
+          '<li>🎯 הקצאת AI לקוביות אישיות לפי עדיפות</li>' +
+        '</ul>';
+      body.appendChild(hero);
+      const pay = el("button", "gpaybtn");
+      pay.innerHTML = '▷ שלם באמצעות Google Play';
+      pay.onclick = openBillingSheet;
+      body.appendChild(pay);
+      const note = el("p", "termupd");
+      note.textContent = "סימולציית חיוב — האימות מתבצע מול שרת (מדומה) למניעת רכישות מזויפות.";
+      body.appendChild(note);
+    }
+
+    // native-style Google Play billing bottom sheet (simulation)
+    function openBillingSheet() {
+      const w = $("paywrap"); w.className = "ccwrap on";
+      w.onclick = (e) => { if (e.target === w) closeBillingSheet(); };
+      w.innerHTML = '<div class="ccsheet gpsheet">' +
+        '<div class="handle"></div>' +
+        '<div class="gphead"><span class="gplogo">▷</span> Google Play</div>' +
+        '<div class="gpitem"><div><b>Cubey — AI Premium</b><span>תשלום חד-פעמי</span></div><b class="gpprice">₪110.00</b></div>' +
+        '<div class="gpmethod">💳 ויזה •••• 4281 · itayleiss2010@gmail.com</div>' +
+        '<button class="distbtn wide" id="gpBuy">אישור רכישה</button>' +
+        '<button class="obback" id="gpCancel">ביטול</button></div>';
+      w.querySelector("#gpCancel").onclick = closeBillingSheet;
+      w.querySelector("#gpBuy").onclick = () => {
+        const btn = w.querySelector("#gpBuy");
+        btn.disabled = true; btn.textContent = "מאמת רכישה מול Google Play…";
+        const userId = state.authUser ? state.authUser.id : "anon";
+        const token = issuePlayPurchaseToken(userId); // issued by "Google Play"
+        setTimeout(() => { // simulated server round-trip
+          const res = verifyGooglePlayPurchase(token, userId);
+          closeBillingSheet();
+          if (res.ok) {
+            burstCoins("👑");
+            showToast("👑 ברוך הבא ל-AI Premium!");
+            render();
+          } else {
+            showToast("❌ האימות נכשל: " + res.reason);
+          }
+        }, 1400);
       };
     }
-    function renderScannerPage() {
-      const body = pageShell("סורק קבלות חכם 🧾", () => { scanSel = null; scanPhase = "idle"; state.screen = "app"; render(); });
+    function closeBillingSheet() { const w = $("paywrap"); w.classList.remove("on"); w.innerHTML = ""; }
 
-      const intro = el("div", "setcard");
-      intro.innerHTML = '<div class="setlbl">בחרו קבלה לדוגמה — מנוע ה-Vision (סימולציית GPT-4o / Claude) יסרוק אותה, יחלץ את הפריטים ל-JSON מובנה, ויחלק אוטומטית לקוביות המתאימות.</div>';
-      body.appendChild(intro);
-
-      // preset cards
-      const presets = el("div", "rcpresets");
-      Object.keys(RECEIPTS).forEach((id) => {
-        const r = RECEIPTS[id];
-        const c = el("button", "rcpreset" + (scanSel === id ? " on" : ""));
-        c.innerHTML = '<span class="rce">' + r.emoji + '</span><b>' + r.store + '</b><span class="rcamt">₪' + fmt(r.total) + '</span>';
-        c.onclick = () => {
-          if (scanPhase === "scanning") return;
-          scanSel = id; scanPhase = "scanning"; render();
-          setTimeout(() => { scanPhase = "done"; state.game.flags.scan = true; saveState(); render(); }, 2000);
-        };
-        presets.appendChild(c);
-      });
-      body.appendChild(presets);
-
-      if (!scanSel) return;
-      const r = RECEIPTS[scanSel];
-
-      // the "receipt" visual with a scanning laser
-      const scanWrap = el("div", "scanwrap" + (scanPhase === "scanning" ? " scanning" : ""));
-      scanWrap.innerHTML =
-        '<div class="receipt">' +
-          '<div class="rhead">' + r.emoji + " " + r.store + '</div>' +
-          '<div class="rline"><span>' + r.date + '</span><span>' + r.method + '</span></div>' +
-          '<div class="rdash"></div>' +
-          r.items.map((it) => '<div class="ritem"><span>' + it.name + '</span><span>₪' + fmt(it.price) + '</span></div>').join("") +
-          '<div class="rdash"></div>' +
-          '<div class="ritem total"><span>סה״כ</span><span>₪' + fmt(r.total) + '</span></div>' +
-          '<div class="rbar"></div>' +
-        '</div>' +
-        '<div class="laser"></div>' +
-        (scanPhase === "scanning" ? '<div class="scanlbl">מנתח קבלה… 🔍</div>' : "");
-      body.appendChild(scanWrap);
-
-      if (scanPhase !== "done") return;
-
-      // parsed JSON card
-      const jc = el("div", "jsoncard");
-      jc.innerHTML = '<div class="jhead">📦 JSON מפוענח <span class="jok">confidence 97%</span></div><pre class="jsoncode">' +
-        syntaxJSON(receiptJSON(r)) + '</pre>';
-      body.appendChild(jc);
-
-      // cube split flow (resolve categories to this user's actual cubes)
-      const splitMap = {};
-      r.items.forEach((it) => { const k = cubeFor(it.cube); splitMap[k] = (splitMap[k] || 0) + it.price; });
-      const st = el("div", "section-t"); st.textContent = "חלוקה אוטומטית לקוביות"; body.appendChild(st);
-      const flow = el("div", "splitflow");
-      Object.keys(splitMap).forEach((cube) => {
-        const exists = state.cubes.find((c) => c.key === cube);
-        const row = el("div", "splitrow");
-        row.innerHTML = '<span class="splitamt">₪' + fmt(splitMap[cube]) + '</span><span class="splitarrow">←</span>' +
-          '<span class="splitcube">' + (CUBE_LABEL[cube] || cube) + (exists ? "" : " (לא פעילה)") + '</span>';
-        flow.appendChild(row);
-      });
-      body.appendChild(flow);
-
-      const apply = el("button", "distbtn wide"); apply.textContent = "📥 רשום את ההוצאה בקוביות"; apply.style.marginTop = "14px";
-      apply.onclick = () => {
-        const touched = [];
-        Object.keys(splitMap).forEach((cube) => {
-          const c = state.cubes.find((x) => x.key === cube) || state.cubes.find((x) => x.key === "essentials");
-          if (c) { c.balance = Math.max(0, c.balance - splitMap[cube]); touched.push(c.key); }
-        });
-        syncAfterChange(touched);
-        showToast("🧾 נרשמה הוצאה של ₪" + fmt(r.total) + " מ" + r.store);
-        scanSel = null; scanPhase = "idle"; render();
-      };
-      body.appendChild(apply);
-    }
-    // tiny JSON syntax highlighter for the code block
-    function syntaxJSON(obj) {
-      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      return esc(JSON.stringify(obj, null, 2))
-        .replace(/&quot;([^&]+?)&quot;(\s*:)/g, '<span class="jk">"$1"</span>$2')
-        .replace(/:\s&quot;([^&]*?)&quot;/g, ': <span class="js">"$1"</span>')
-        .replace(/:\s(-?\d+\.?\d*)/g, ': <span class="jn">$1</span>');
+    // =====================================================================
+    // AGENT 2 — UI/UX Guardian: blur-lock overlay for premium modules.
+    // The real page renders underneath, blurred and inert; the overlay carries
+    // the gold padlock + upgrade CTA. Free users keep MANUAL input everywhere.
+    // =====================================================================
+    function applyPremiumLock(body) {
+      if (state.premium) return false;
+      body.classList.add("lockblur");
+      body.setAttribute("inert", "");
+      const ov = el("div", "lockoverlay");
+      ov.innerHTML = '<div class="lockbox"><div class="goldlock">🔒</div>' +
+        '<b>פיצ\'ר Premium נעול</b><span>שדרג לגרסת ה-AI כדי לפתוח</span>' +
+        '<button class="distbtn wide" id="lockUp">👑 שדרוג ל-AI Premium · 110 ₪</button>' +
+        '<span class="lockman">בינתיים אפשר להמשיך לנהל הכול ידנית 🙂</span></div>';
+      $("view").appendChild(ov);
+      ov.querySelector("#lockUp").onclick = () => { state.screen = "upgrade"; render(); };
+      return true;
     }
 
     // =====================================================================
@@ -2151,11 +2177,15 @@
       { re: /(שופרסל|רמי לוי|ויקטורי|יינות ביתן|סופר|פארם|מכולת)/, cube: "essentials" },
       { re: /(קפה|מסעד|וולט|בר |סינמה|זארה|ביגוד|אופנה)/, cube: "lifestyle" },
     ];
+    // AGENT 3 — robust parser for real-world CSV exports: tolerates BOM,
+    // CRLF endings, quoted cells, currency symbols and thousands separators.
     function parseBankCSV(csv) {
-      return csv.split("\n").slice(1).map((line) => {
-        const parts = line.split(",");
-        return { date: parts[0], desc: parts[1], amount: Number(parts[2]) };
-      }).filter((t) => t.desc && !isNaN(t.amount));
+      return String(csv).replace(/^\uFEFF/, "").split(/\r?\n/).slice(1).map((line) => {
+        const parts = line.split(",").map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
+        if (parts.length < 3) return null;
+        const amount = Number(parts[2].replace(/[^0-9.\-]/g, ""));
+        return { date: parts[0], desc: parts[1], amount: amount };
+      }).filter((t) => t && t.desc && !isNaN(t.amount) && t.amount !== 0);
     }
     function analyzeStatement(csv) {
       const txns = parseBankCSV(csv);
@@ -2221,32 +2251,49 @@
       return moves;
     }
 
-    let bankSel = null, bankPhase = "idle", bankReport = null, bankMoves = null;
-    function startBankProcess(id) {
+    let bankData = null, bankPhase = "idle", bankReport = null, bankMoves = null;
+    function startBankCSV(label, csv) {
       if (bankPhase === "proc") return;
-      bankSel = id; bankPhase = "proc"; bankReport = null; bankMoves = null;
+      if (parseBankCSV(csv).length === 0) { showToast("לא זוהו תנועות בקובץ — ודאו פורמט: תאריך,תיאור,סכום"); return; }
+      bankData = { label: label, csv: csv }; bankPhase = "proc"; bankReport = null; bankMoves = null;
       render();
       setTimeout(() => {
-        bankReport = analyzeStatement(BANK_FILES[id].csv);
+        bankReport = analyzeStatement(bankData.csv);
         bankPhase = "done";
         state.game.flags.bank = true; saveState();
         render();
       }, 2000);
     }
+    function startBankProcess(id) { startBankCSV(BANK_FILES[id].label, BANK_FILES[id].csv); }
     function renderBankPage() {
-      const body = pageShell("ניהול עו״ש אוטומטי 🏦", () => { bankSel = null; bankPhase = "idle"; bankReport = null; bankMoves = null; state.screen = "app"; render(); });
+      const body = pageShell("ניהול עו״ש אוטומטי 🏦", () => { bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null; state.screen = "app"; render(); });
+      const locked = applyPremiumLock(body); // strict lock when isPremiumUser === false
 
-      // drag & drop zone
+      // AGENT 3 — real upload zone: native FileReader, drag&drop + click-to-pick
       const dz = el("div", "dropzone" + (bankPhase === "proc" ? " busy" : ""));
-      dz.innerHTML = '<span class="dzi">📄</span><b>העלאת קובץ תנועות עו״ש (Excel / CSV)</b><span class="dzs">גררו קובץ לכאן, או בחרו דוגמה למטה</span>';
+      dz.innerHTML = '<span class="dzi">📄</span><b>העלאת קובץ תנועות עו״ש (Excel / CSV)</b>' +
+        '<span class="dzs">גררו לכאן קובץ CSV אמיתי או לחצו לבחירה · פורמט: תאריך,תיאור,סכום</span>' +
+        '<input type="file" id="bankFileIn" accept=".csv,text/csv" hidden>';
+      const fin = dz.querySelector("#bankFileIn");
+      const readRealFile = (file) => {
+        if (!file) return;
+        if (!state.premium) { showToast("🔒 העלאת קובץ אמיתי היא פיצ\'ר Premium"); return; }
+        if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") { showToast("קובץ CSV בלבד 🙂"); return; }
+        const reader = new FileReader();
+        reader.onload = () => { secLog("INFO", 'נקרא קובץ מקומי "' + file.name + '" (' + file.size + ' בתים) דרך FileReader'); startBankCSV(file.name, String(reader.result)); };
+        reader.onerror = () => showToast("קריאת הקובץ נכשלה");
+        reader.readAsText(file, "utf-8");
+      };
+      dz.onclick = (e) => { if (e.target !== fin) fin.click(); };
+      fin.onchange = () => { readRealFile(fin.files[0]); fin.value = ""; };
       dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); };
       dz.ondragleave = () => dz.classList.remove("over");
-      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); startBankProcess("june"); };
+      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); readRealFile(e.dataTransfer.files && e.dataTransfer.files[0]); };
       body.appendChild(dz);
 
       const files = el("div", "bankfiles");
       Object.keys(BANK_FILES).forEach((id) => {
-        const f = el("button", "bankfile" + (bankSel === id ? " on" : ""));
+        const f = el("button", "bankfile" + (bankData && bankData.label === BANK_FILES[id].label ? " on" : ""));
         f.innerHTML = '<span>📑</span><b>' + BANK_FILES[id].label + '</b>';
         f.onclick = () => startBankProcess(id);
         files.appendChild(f);
@@ -2255,7 +2302,7 @@
 
       if (bankPhase === "proc") {
         const pr = el("div", "setcard procbox");
-        pr.innerHTML = '<div class="procbar"><i></i></div><div class="proclbl">🤖 סוכן ה-AI קורא את הקובץ, מזהה תבניות ומסווג ' + parseBankCSV(BANK_FILES[bankSel].csv).length + ' תנועות…</div>';
+        pr.innerHTML = '<div class="procbar"><i></i></div><div class="proclbl">🤖 סוכן ה-AI קורא את הקובץ, מזהה תבניות ומסווג ' + parseBankCSV(bankData.csv).length + ' תנועות…</div>';
         body.appendChild(pr);
         return;
       }
@@ -2263,7 +2310,7 @@
       const r = bankReport;
 
       // summary
-      const st0 = el("div", "section-t"); st0.textContent = "סיכום " + BANK_FILES[bankSel].label.replace(".csv", ""); body.appendChild(st0);
+      const st0 = el("div", "section-t"); st0.textContent = "סיכום " + bankData.label.replace(/\.csv$/i, ""); body.appendChild(st0);
       const sum = el("div", "stat3");
       sum.innerHTML =
         '<div class="s3"><span>הכנסות</span><b class="pos">₪' + fmt(r.income) + '</b></div>' +
