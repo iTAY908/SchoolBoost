@@ -370,6 +370,75 @@
       background: linear-gradient(90deg, var(--primary), #46e0b4); animation: procslide 1.1s ease-in-out infinite alternate; }
     @keyframes procslide { from { margin-inline-start: 0; } to { margin-inline-start: 60%; } }
     .proclbl { color: var(--dim); font-size: 13.5px; font-weight: 700; }
+    .bankbig { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .bankmetric { border-radius: var(--radius); padding: 16px 14px; border: 1.5px solid var(--border); }
+    .bankmetric span { display: block; color: var(--dim); font-size: 13px; font-weight: 800; margin-bottom: 6px; }
+    .bankmetric b { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+    .bankmetric.inc { background: rgba(46,204,113,.10); border-color: rgba(46,204,113,.35); }
+    .bankmetric.inc b { color: var(--success); }
+    .bankmetric.exp { background: rgba(255,143,143,.10); border-color: rgba(255,143,143,.35); }
+    .bankmetric.exp b { color: #ff8f8f; }
+    /* ---- מדריך דור העתיד (youth guide hub) ---- */
+    .guidehub { display: flex; flex-direction: column; gap: 10px; }
+    .gcardw { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .gcardw.open { border-color: var(--primary); }
+    .gcardhead { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; background: none;
+      border: none; cursor: pointer; text-align: right; font-family: inherit; color: var(--text); }
+    .gemoji { font-size: 24px; width: 40px; height: 40px; display: grid; place-items: center; flex: none;
+      background: rgba(108,99,255,.12); border-radius: 12px; }
+    .gtxt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .gtxt b { font-size: 15px; font-weight: 800; }
+    .gtxt i { font-size: 12.5px; color: var(--dim); font-style: normal; }
+    .gchev { color: var(--dim); font-size: 12px; flex: none; }
+    .gcardbody { padding: 4px 14px 16px; border-top: 1px solid var(--border); }
+    .gtip { font-size: 13.5px; line-height: 1.6; color: var(--dim); margin: 12px 0; }
+    .gtip b { color: var(--text); }
+    .gfield { display: block; margin-bottom: 10px; }
+    .gfield > span { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--dim); }
+    .ginput { display: flex; align-items: center; background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .ginput i { padding: 0 12px; color: var(--dim); font-style: normal; font-weight: 800; }
+    .ginput input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 16px; padding: 12px 12px 12px 0; font-family: inherit; }
+    .gout { margin-top: 12px; }
+    .gres { background: rgba(108,99,255,.10); border: 1.5px solid rgba(108,99,255,.3); border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 10px; }
+    .gres span { display: block; font-size: 12.5px; color: var(--dim); font-weight: 700; margin-bottom: 4px; }
+    .gres b { font-size: 24px; font-weight: 900; color: var(--primary); }
+    .gres.bad { background: rgba(255,143,143,.10); border-color: rgba(255,143,143,.35); }
+    .gres.bad b { color: #ff8f8f; }
+    .grow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .gcard2 { background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; }
+    .gcard2.hl { border-color: var(--success); background: rgba(46,204,113,.08); }
+    .gcard2 span { display: block; font-size: 12px; font-weight: 800; color: var(--dim); margin-bottom: 4px; }
+    .gcard2 b { display: block; font-size: 17px; font-weight: 900; }
+    .gcard2 i { display: block; font-size: 11.5px; color: var(--dim); font-style: normal; margin-top: 4px; line-height: 1.4; }
+    .gnote { font-size: 12.5px; line-height: 1.6; color: var(--dim); margin-top: 8px; }
+    .gnote b { color: var(--text); }
+    .gwarn { color: #ff8f8f; font-size: 13px; font-weight: 700; padding: 8px 0; }
+    .gcheck { list-style: none; padding: 0; margin: 4px 0; display: flex; flex-direction: column; gap: 8px; }
+    .gcheck li { font-size: 13.5px; line-height: 1.5; }
+    .gcheck b { color: var(--primary); }
+    .gbills { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .gbill { display: flex; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+    .gbill .ge { font-size: 20px; }
+    .gbmid { flex: 1; }
+    .gbmid b { display: block; font-size: 14px; font-weight: 700; }
+    .gbmid i { font-size: 11.5px; color: var(--dim); font-style: normal; }
+    .gbamt { font-weight: 800; font-size: 13.5px; color: var(--primary); }
+    .glease { margin: 4px 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .glease li b { display: block; font-size: 14px; margin-bottom: 2px; }
+    .glease li span { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+    .gcubes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .gc { text-align: center; padding: 12px 4px; border-radius: 12px; background: color-mix(in srgb, var(--gc) 12%, transparent); border: 1.5px solid color-mix(in srgb, var(--gc) 35%, transparent); }
+    .gc span { font-size: 22px; }
+    .gc b { display: block; font-size: 12.5px; font-weight: 800; margin-top: 4px; }
+    .gc i { display: block; font-size: 10px; color: var(--dim); font-style: normal; margin-top: 2px; }
+    .gsteps { margin: 8px 0; padding-inline-start: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .gsteps li { font-size: 13.5px; line-height: 1.5; }
+    .gsteps b { color: var(--text); }
+    .segtoggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .segtoggle button { padding: 12px; border-radius: var(--radius); border: 1.5px solid var(--border);
+      background: var(--card); color: var(--dim); font-weight: 800; font-size: 14px; cursor: pointer;
+      font-family: inherit; transition: .15s; }
+    .segtoggle button.on { border-color: var(--primary); background: rgba(108,99,255,.14); color: var(--text); }
     .stat3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .s3 { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
       padding: 12px 8px; text-align: center; }
@@ -935,6 +1004,7 @@
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
       if (state.screen === "upgrade") return renderUpgradePage();
+      if (state.screen === "guide") return renderGuidePage();
       if (state.screen === "challenges") return renderChallengesPage();
       if (state.screen === "shared") return renderSharedPage();
       if (state.screen === "whatif") return renderWhatIfPage();
@@ -1228,7 +1298,7 @@
 
       // engagement modules nav
       const nav = el("div", "modnav");
-      [["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"],
+      [["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"],
        ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]].forEach((m) => {
         const b = el("button", "modbtn");
         const isPrem = (m[2] === "debt" || m[2] === "bank") && !state.premium;
@@ -2012,6 +2082,15 @@
     // no UI path flips it directly, so a client "bypass" has nothing to click.
     // =====================================================================
     const PREMIUM_PRICE = 110; // ₪, one-time
+    // ───────────────────────────────────────────────────────────────────────
+    //  IS_MOCK_ENV — master switch between the local billing SIMULATION and a
+    //  real Google Play Billing integration in production.
+    //    true  → run the secure local verification simulation (this web demo)
+    //    false → hand off to the real Google Play Billing API (see runRealPurchase)
+    // ───────────────────────────────────────────────────────────────────────
+    const IS_MOCK_ENV = true;
+    // PLACE YOUR PRODUCT ID HERE:
+    const PREMIUM_PRODUCT_ID = "premium_upgrade_110";
     // mock Google Play Developer API: a private signing secret that only the
     // "server side" knows. Tokens are signed on issue and cross-checked here.
     const PLAY_API_SECRET = "cubey-play-dev-api-7f3a91";
@@ -2097,19 +2176,64 @@
         const btn = w.querySelector("#gpBuy");
         btn.disabled = true; btn.textContent = "מאמת רכישה מול Google Play…";
         const userId = state.authUser ? state.authUser.id : "anon";
-        const token = issuePlayPurchaseToken(userId); // issued by "Google Play"
-        setTimeout(() => { // simulated server round-trip
-          const res = verifyGooglePlayPurchase(token, userId);
+
+        // ═══════════════════════════════════════════════════════════════════
+        //  💳  GOOGLE PLAY BILLING — PURCHASE HANDLER
+        //  IS_MOCK_ENV switches between the local demo simulation and the real
+        //  Google Play Billing call you wire up for the production Android app.
+        // ═══════════════════════════════════════════════════════════════════
+        if (IS_MOCK_ENV) {
+          // ── LOCAL SIMULATION ──────────────────────────────────────────────
+          // Secure mock: issue a signed token, then verify it "server-side"
+          // (signature + user-binding + one-time replay protection).
+          const token = issuePlayPurchaseToken(userId); // issued by "Google Play"
+          setTimeout(() => { // simulated server round-trip
+            const res = verifyGooglePlayPurchase(token, userId);
+            finishPurchase(res);
+          }, 1400);
+        } else {
+          // ── PRODUCTION ────────────────────────────────────────────────────
+          // TO CONNECT TO GOOGLE PLAY STORE IN PRODUCTION:
+          // Replace this block with your react-native-iap (or Google Play
+          // Billing) API call, then verify the returned purchase token on YOUR
+          // OWN SERVER against the Google Play Developer API before granting
+          // access. Never trust the client to flip premium on its own.
+          runRealPurchase(userId).then(finishPurchase);
+        }
+
+        function finishPurchase(res) {
           closeBillingSheet();
-          if (res.ok) {
+          if (res && res.ok) {
             burstCoins("👑");
             showToast("👑 ברוך הבא ל-AI Premium!");
             render();
           } else {
-            showToast("❌ האימות נכשל: " + res.reason);
+            showToast("❌ האימות נכשל: " + ((res && res.reason) || "שגיאה"));
           }
-        }, 1400);
+        }
       };
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    //  PRODUCTION GOOGLE PLAY PURCHASE (runs only when IS_MOCK_ENV === false)
+    //  This is the clean integration point for the real Android build.
+    // ═════════════════════════════════════════════════════════════════════
+    async function runRealPurchase(userId) {
+      // TO CONNECT TO GOOGLE PLAY STORE IN PRODUCTION:
+      // 1. Trigger the native Google Play purchase flow with react-native-iap:
+      //
+      //    // PLACE YOUR PRODUCT ID HERE: 'premium_upgrade_110'
+      //    const purchase = await requestPurchase({ skus: [PREMIUM_PRODUCT_ID] });
+      //
+      // 2. Send purchase.purchaseToken to YOUR backend.
+      // 3. Backend verifies it with the Google Play Developer API
+      //    (purchases.products.get) using your service-account credentials.
+      // 4. Backend returns {ok:true} and records the entitlement; the client
+      //    then unlocks premium. Do the verification server-side ONLY.
+      //
+      // Intentionally left as an empty, structured async stub — wire the
+      // real SDK + server call in here for the production release.
+      return { ok: false, reason: "Google Play Billing not wired up (production build)" };
     }
     function closeBillingSheet() { const w = $("paywrap"); w.classList.remove("on"); w.innerHTML = ""; }
 
@@ -2170,21 +2294,80 @@
 "24/07/2026,ספוטיפיי,-20\n" +
 "27/07/2026,מסעדה איטלקית,-310" },
     };
-    // keyword → cube categorization rules ("the AI classifier")
+    // keyword → cube categorization rules ("the AI classifier").
+    // The classifier reads each transaction description with .includes()-style
+    // matching and maps it to the right cube:
+    //   שופרסל / יוחננוף / רמי לוי  → קוביית אוכל (essentials)
+    //   עירייה / ארנונה / חברת החשמל → חשבונות קבועים (housing/bills)
+    //   משכורת / העברה נכנסת        → הכנסה (income)
+    const INCOME_RE = /(משכורת|שכר עבודה|העברה נכנסת|זיכוי|החזר מס|מענק|קצבה|מלגה)/;
     const BANK_RULES = [
-      { re: /(שכר דירה|ארנונה|חשמל|בזק|הוט|פרטנר|סלקום|ועד בית|מים)/, cube: "housing" },
-      { re: /(נטפליקס|ספוטיפיי|דיסני|yes)/, cube: "lifestyle", sub: true },
-      { re: /(שופרסל|רמי לוי|ויקטורי|יינות ביתן|סופר|פארם|מכולת)/, cube: "essentials" },
-      { re: /(קפה|מסעד|וולט|בר |סינמה|זארה|ביגוד|אופנה)/, cube: "lifestyle" },
+      { re: /(שכר דירה|ארנונה|עירייה|חברת החשמל|חשמל|בזק|הוט|פרטנר|סלקום|גולן|ועד בית|מים|תאגיד מים|גז)/, cube: "housing" },
+      { re: /(נטפליקס|ספוטיפיי|ספוטיפי|דיסני|yes|youtube premium|מנוי)/i, cube: "lifestyle", sub: true },
+      { re: /(שופרסל|יוחננוף|רמי לוי|ויקטורי|יינות ביתן|טיב טעם|אושר עד|סופר|פארם|מכולת|יינות)/, cube: "essentials" },
+      { re: /(קפה|מסעד|וולט|wolt|בר |פאב|סינמה|זארה|castro|ביגוד|אופנה|בגדים|קניון|נעל)/i, cube: "lifestyle" },
     ];
-    // AGENT 3 — robust parser for real-world CSV exports: tolerates BOM,
-    // CRLF endings, quoted cells, currency symbols and thousands separators.
+    // AGENT 3 — robust, HEADER-AWARE parser for real-world CSV exports.
+    // Tolerates BOM, CRLF endings, quoted cells, currency symbols and
+    // thousands separators. Detects the common Israeli-bank column layouts:
+    //   • single signed "סכום" column (positive = credit, negative = debit)
+    //   • split "חובה"/"זכות" (debit / credit) columns
+    // It locates the "תיאור" (description) column by header name, and falls
+    // back to positional order (date,desc,amount) when there is no header row.
+    function splitCSVLine(line) {
+      // minimal quoted-CSV splitter so commas inside "..." don't break cells
+      const out = []; let cur = "", q = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+        else if (ch === "," && !q) { out.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      out.push(cur);
+      return out.map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
+    }
+    function toNum(s) { return Number(String(s == null ? "" : s).replace(/[^0-9.\-]/g, "")); }
     function parseBankCSV(csv) {
-      return String(csv).replace(/^\uFEFF/, "").split(/\r?\n/).slice(1).map((line) => {
-        const parts = line.split(",").map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
-        if (parts.length < 3) return null;
-        const amount = Number(parts[2].replace(/[^0-9.\-]/g, ""));
-        return { date: parts[0], desc: parts[1], amount: amount };
+      const lines = String(csv).replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
+      if (!lines.length) return [];
+      const first = splitCSVLine(lines[0]);
+      // A header row has recognizable Hebrew column titles and no real amount.
+      const headerish = first.some((c) => /(תיאור|פרטים|שם בית העסק)/.test(c)) &&
+        first.some((c) => /(סכום|חובה|זכות|תנועה|יתרה)/.test(c));
+      let idx = { date: 0, desc: 1, amount: 2, debit: -1, credit: -1 };
+      let start = 0;
+      if (headerish) {
+        start = 1;
+        const find = (re) => first.findIndex((c) => re.test(c));
+        const dateI = find(/(תאריך|יום)/);
+        const descI = find(/(תיאור|פרטים|שם בית העסק|בית עסק)/);
+        const amtI = find(/(^סכום|סכום התנועה|סכום חיוב)/);
+        const debI = find(/(^חובה|בחובה)/);
+        const creI = find(/(^זכות|בזכות)/);
+        idx = {
+          date: dateI >= 0 ? dateI : 0,
+          desc: descI >= 0 ? descI : 1,
+          amount: amtI >= 0 ? amtI : ((debI < 0 && creI < 0) ? 2 : -1),
+          debit: debI, credit: creI,
+        };
+      }
+      return lines.slice(start).map((line) => {
+        const parts = splitCSVLine(line);
+        if (parts.length < 2) return null;
+        const desc = parts[idx.desc] != null ? parts[idx.desc] : parts[1];
+        let amount = 0;
+        if (idx.debit >= 0 || idx.credit >= 0) {
+          // split debit/credit layout: זכות (credit) = income (+), חובה (debit) = spend (−)
+          const debit = idx.debit >= 0 ? Math.abs(toNum(parts[idx.debit])) : 0;
+          const credit = idx.credit >= 0 ? Math.abs(toNum(parts[idx.credit])) : 0;
+          amount = credit - debit;
+        } else if (idx.amount >= 0 && parts[idx.amount] != null) {
+          amount = toNum(parts[idx.amount]);
+        }
+        // If the description clearly reads as income but the export left the
+        // amount unsigned, treat it as a credit.
+        if (amount !== 0 && INCOME_RE.test(desc)) amount = Math.abs(amount);
+        return { date: parts[idx.date] != null ? parts[idx.date] : parts[0], desc: desc, amount: amount };
       }).filter((t) => t && t.desc && !isNaN(t.amount) && t.amount !== 0);
     }
     function analyzeStatement(csv) {
@@ -2309,8 +2492,13 @@
       if (bankPhase !== "done" || !bankReport) return;
       const r = bankReport;
 
-      // summary
+      // summary — big live metrics computed straight from the CSV math
       const st0 = el("div", "section-t"); st0.textContent = "סיכום " + bankData.label.replace(/\.csv$/i, ""); body.appendChild(st0);
+      const bigm = el("div", "bankbig");
+      bigm.innerHTML =
+        '<div class="bankmetric inc"><span>סך הכנסות</span><b>' + fmt(r.income) + ' ₪</b></div>' +
+        '<div class="bankmetric exp"><span>סך הוצאות</span><b>' + fmt(r.totalOut) + ' ₪</b></div>';
+      body.appendChild(bigm);
       const sum = el("div", "stat3");
       sum.innerHTML =
         '<div class="s3"><span>הכנסות</span><b class="pos">₪' + fmt(r.income) + '</b></div>' +
@@ -2560,7 +2748,202 @@
     // ahead against the real cube data, with crisis detection + an actionable
     // AI recommendation (cut Lifestyle 40%) the user can preview live.
     // =====================================================================
-    let wiScenario = null, wiWithCut = false;
+    // =====================================================================
+    // AGENT 1 — "מדריך דור העתיד: מאיפה מתחילים?"
+    // An interactive hub for young adults (18+) with exactly 7 micro-features.
+    // Everything here is FREE (no premium lock) — it's the empowerment layer
+    // that teaches the money basics before the AI tools take over.
+    // =====================================================================
+    let guideFeat = null; // which feature card is expanded
+
+    // helper: small labeled numeric input row inside a guide card
+    function gNum(id, label, placeholder) {
+      return '<label class="gfield"><span>' + label + '</span>' +
+        '<span class="ginput"><i>₪</i><input inputmode="numeric" id="' + id + '" placeholder="' + placeholder + '"></span></label>';
+    }
+    function gVal(card, id) { const e = card.querySelector("#" + id); return Number((e && e.value || "").replace(/[^0-9.]/g, "")) || 0; }
+
+    // The 7 micro-features. Each builder receives its card body element and
+    // wires up its own inputs + live result (no full re-render needed).
+    const GUIDE_FEATURES = [
+      {
+        id: "rent", emoji: "🏠", title: "כמה שכר דירה אני יכול להרשות?",
+        sub: "לפי המשכורת — שותפים מול דירה פרטית",
+        build(box) {
+          box.innerHTML =
+            '<p class="gtip">כלל אצבע: שכר דירה לא אמור לעבור <b>30%</b> מהנטו החודשי שלך. מעבר לזה — כל שאר הקוביות נחנקות.</p>' +
+            gNum("rSal", "המשכורת החודשית שלי (נטו)", "8000") +
+            '<button class="distbtn wide" id="rCalc">חשב תקציב שכירות</button><div class="gout" id="rOut"></div>';
+          box.querySelector("#rCalc").onclick = () => {
+            const sal = gVal(box, "rSal"); const out = box.querySelector("#rOut");
+            if (sal <= 0) { out.innerHTML = '<div class="gwarn">הזינו משכורת 🙂</div>'; return; }
+            const budget = Math.round(sal * 0.30);
+            const priv = budget;              // whole budget on your own place
+            const shared = Math.round(budget * 1.7); // shared → you pay ~your half of a bigger flat
+            out.innerHTML =
+              '<div class="gres"><span>תקציב שכירות מומלץ</span><b>₪' + fmt(budget) + ' / חודש</b></div>' +
+              '<div class="grow2"><div class="gcard2"><span>🚪 דירה פרטית</span><b>עד ₪' + fmt(priv) + '</b><i>הכול עליך — פחות מקום, יותר פרטיות</i></div>' +
+              '<div class="gcard2 hl"><span>👥 עם שותפים</span><b>דירה של עד ₪' + fmt(shared) + '</b><i>חלקך ₪' + fmt(budget) + ' — דירה גדולה בהרבה באותו כסף</i></div></div>' +
+              '<div class="gnote">' + (budget < 2500 ? "בשכר הזה שותפים כמעט תמיד הבחירה החכמה — כך נשאר לך לחיסכון ולחיים." : "יש לך גמישות — אבל גם בדירה פרטית שמור על קוביית חירום.") + '</div>';
+          };
+        },
+      },
+      {
+        id: "job", emoji: "💼", title: "העבודה הראשונה: מה חובה לבדוק",
+        sub: "קורות חיים + ההבדל בין ברוטו לנטו",
+        build(box) {
+          const items = ["קורות חיים במקום אחד, עד עמוד — שם, טלפון, ניסיון וכישורים",
+            "לשאול על השכר ב<b>ברוטו</b> — זה לפני ניכוי מס, ביטוח לאומי וקרן פנסיה",
+            "לוודא שמפרישים לך <b>פנסיה</b> (חובה מהחודש הראשון אם עבדת בעבר)",
+            "לבקש תלוש שכר כל חודש — ולשמור אותו",
+            "לבדוק שעות, הפסקות ותנאי נסיעות לפני שחותמים"];
+          box.innerHTML =
+            '<ul class="gcheck">' + items.map((t) => '<li>✅ ' + t + '</li>').join("") + '</ul>' +
+            '<p class="gtip">💡 <b>ברוטו ≠ נטו.</b> על שכר נמוך לוקחים פחות מס, אז הפער קטן. ככל שהשכר עולה — הפער גדל. בדקו כמה באמת ייכנס לחשבון:</p>' +
+            gNum("jGross", "שכר ברוטו חודשי", "9000") +
+            '<button class="distbtn wide" id="jCalc">הערכת נטו</button><div class="gout" id="jOut"></div>';
+          box.querySelector("#jCalc").onclick = () => {
+            const g = gVal(box, "jGross"); const out = box.querySelector("#jOut");
+            if (g <= 0) { out.innerHTML = '<div class="gwarn">הזינו שכר ברוטו 🙂</div>'; return; }
+            // rough Israeli take-home estimate for a young single employee
+            let rate; if (g <= 6500) rate = 0.93; else if (g <= 9000) rate = 0.87; else if (g <= 14000) rate = 0.80; else rate = 0.72;
+            const net = Math.round(g * rate); const diff = g - net;
+            out.innerHTML =
+              '<div class="gres"><span>נטו משוער לחשבון</span><b>₪' + fmt(net) + '</b></div>' +
+              '<div class="gnote">מהברוטו יורדים בערך ₪' + fmt(diff) + ' (מס הכנסה, ביטוח לאומי, בריאות ופנסיה). זו הערכה — התלוש הרשמי קובע.</div>';
+          };
+        },
+      },
+      {
+        id: "bills", emoji: "🧾", title: "מפת החשבונות הנסתרים",
+        sub: "חשמל · מים · ארנונה · ועד בית — כמה זה באמת",
+        build(box) {
+          const rows = [["⚡", "חשמל", "₪180–350", "כל חודשיים · תלוי במזגן"],
+            ["💧", "מים", "₪80–160", "כל חודשיים · לפי צריכה"],
+            ["🏛️", "ארנונה", "₪150–400", "חודשי · לפי גודל ואזור"],
+            ["🏢", "ועד בית", "₪80–250", "חודשי · לפי הבניין ומעלית"],
+            ["🌐", "אינטרנט + סלולר", "₪100–200", "חודשי · אפשר להוזיל בהשוואה"],
+            ["🔥", "גז", "₪40–90", "חודשי · תלוי בשימוש"]];
+          const total = "₪700–1,300";
+          box.innerHTML =
+            '<p class="gtip">מעבר לשכר הדירה — אלה החשבונות ש"נעלמים" מהמשכורת. תכננו אותם מראש בקובייה אחת:</p>' +
+            '<div class="gbills">' + rows.map((r) =>
+              '<div class="gbill"><span class="ge">' + r[0] + '</span><div class="gbmid"><b>' + r[1] + '</b><i>' + r[3] + '</i></div><span class="gbamt">' + r[2] + '</span></div>').join("") +
+            '</div>' +
+            '<div class="gres"><span>סה״כ חשבונות בית טיפוסי</span><b>' + total + ' / חודש</b></div>' +
+            '<div class="gnote">💡 חשמל ומים מגיעים כל חודשיים — חלקו את הסכום ל-2 ושמרו בצד כל חודש, כדי שהחיוב הכפול לא יפתיע.</div>';
+        },
+      },
+      {
+        id: "interest", emoji: "🪤", title: "מלכודות הריבית",
+        sub: "איך הלוואות ומינוס אוכלים את החיסכון",
+        build(box) {
+          box.innerHTML =
+            '<p class="gtip">ריבית עובדת נגדך כשאתה חייב. מינוס בבנק (עד ~11%) והלוואות מוחקים חיסכון בשקט. בדקו כמה זה עולה בשנה:</p>' +
+            gNum("iAmt", "סכום ההלוואה / המינוס", "10000") +
+            gNum("iRate", "ריבית שנתית (%)", "11") +
+            '<button class="distbtn wide" id="iCalc">כמה זה עולה לי</button><div class="gout" id="iOut"></div>';
+          box.querySelector("#iCalc").onclick = () => {
+            const amt = gVal(box, "iAmt"), rate = gVal(box, "iRate"); const out = box.querySelector("#iOut");
+            if (amt <= 0 || rate <= 0) { out.innerHTML = '<div class="gwarn">הזינו סכום וריבית 🙂</div>'; return; }
+            const yr = Math.round(amt * rate / 100), mo = Math.round(yr / 12);
+            out.innerHTML =
+              '<div class="gres bad"><span>ריבית בשנה — כסף שנעלם</span><b>₪' + fmt(yr) + '</b></div>' +
+              '<div class="gnote">זה ₪' + fmt(mo) + ' בחודש שהולכים לבנק במקום לקוביית החיסכון שלך. אותו סכום מושקע לאורך שנים היה <b>מכפיל</b> את עצמו לטובתך — במקום נגדך.</div>' +
+              '<div class="gnote">💡 סדר עדיפויות: קודם לסגור מינוס והלוואות יקרות, רק אחר כך לחסוך.</div>';
+          };
+        },
+      },
+      {
+        id: "lease", emoji: "📜", title: "5 דברים לבדוק לפני שחותמים על חוזה",
+        sub: "צ'קליסט חוזה שכירות",
+        build(box) {
+          const pts = [
+            ["מי משלם מה", "ודאו בכתב מי אחראי לארנונה, ועד בית, תיקונים ובלאי. \"בעל הבית ידאג\" בעל־פה = כלום."],
+            ["הבטחונות", "ערבות/שיק ביטחון סבירים. אל תיתנו שיקים פתוחים ללא סכום וללא תנאי מימוש ברור."],
+            ["יציאה מוקדמת", "בדקו סעיף שובר/יורש — מה קורה אם חייבים לעזוב לפני הזמן, ומי מוצא שוכר חלופי."],
+            ["מצב הדירה", "צלמו הכול ביום הכניסה וצרפו פרוטוקול ליקויים לחוזה — כדי שלא יגלגלו עליכם נזק קיים."],
+            ["העלאת שכר", "ודאו שכתוב במפורש כמה השכר יכול לעלות בחידוש, ושאי אפשר להעלות באמצע התקופה."]];
+          box.innerHTML =
+            '<p class="gtip">חוזה שכירות הוא מסמך משפטי. חמש הנקודות שהכי מפילות שוכרים צעירים:</p>' +
+            '<ol class="glease">' + pts.map((p) => '<li><b>' + p[0] + '</b><span>' + p[1] + '</span></li>').join("") + '</ol>' +
+            '<div class="gnote">📸 טיפ זהב: וידאו קצר של כל חדר ביום הכניסה שווה זהב ביום היציאה.</div>';
+        },
+      },
+      {
+        id: "emergency", emoji: "🛟", title: "כמה זמן ייקח לבנות קופת חירום",
+        sub: "מחשבון חודשים ליעד",
+        build(box) {
+          box.innerHTML =
+            '<p class="gtip">קופת חירום = 3–6 חודשי הוצאות בצד, לרגע שהכול משתבש. נחשב כמה זמן ייקח לך:</p>' +
+            gNum("eExp", "ההוצאות החודשיות שלי", "5000") +
+            gNum("eSave", "כמה אני מפריש לחיסכון בחודש", "800") +
+            '<button class="distbtn wide" id="eCalc">חשב יעד</button><div class="gout" id="eOut"></div>';
+          box.querySelector("#eCalc").onclick = () => {
+            const exp = gVal(box, "eExp"), save = gVal(box, "eSave"); const out = box.querySelector("#eOut");
+            if (exp <= 0 || save <= 0) { out.innerHTML = '<div class="gwarn">הזינו הוצאות וחיסכון 🙂</div>'; return; }
+            const target3 = exp * 3, target6 = exp * 6;
+            const m3 = Math.ceil(target3 / save), m6 = Math.ceil(target6 / save);
+            out.innerHTML =
+              '<div class="grow2"><div class="gcard2"><span>יעד מינימום · 3 חודשים</span><b>₪' + fmt(target3) + '</b><i>' + m3 + ' חודשי חיסכון</i></div>' +
+              '<div class="gcard2 hl"><span>יעד בטוח · 6 חודשים</span><b>₪' + fmt(target6) + '</b><i>' + m6 + ' חודשי חיסכון</i></div></div>' +
+              '<div class="gnote">התחילו מהיעד הראשון — גם ₪' + fmt(target3) + ' בצד משנים לגמרי את השקט הנפשי. קוביית "חירום" באפליקציה תשמור עליו בשבילכם.</div>';
+          };
+        },
+      },
+      {
+        id: "cube", emoji: "🧊", title: "שיטת הקוביות — ההסבר ב-30 שניות",
+        sub: "למה זה עובד איפה שתקציב רגיל נכשל",
+        build(box) {
+          box.innerHTML =
+            '<p class="gtip">במקום חשבון בנק אחד גדול ומבלבל — הכסף מתפצל ל<b>קוביות</b> נפרדות, כל אחת עם תפקיד:</p>' +
+            '<div class="gcubes">' +
+              '<div class="gc" style="--gc:#6c63ff"><span>🏠</span><b>דיור</b><i>שכירות + חשבונות</i></div>' +
+              '<div class="gc" style="--gc:#2ecc71"><span>🛒</span><b>אוכל</b><i>סופר ובסיס</i></div>' +
+              '<div class="gc" style="--gc:#f39c12"><span>✨</span><b>בילויים</b><i>מה שנשאר לכיף</i></div>' +
+              '<div class="gc" style="--gc:#3498db"><span>🐷</span><b>חיסכון</b><i>העתיד שלך</i></div>' +
+            '</div>' +
+            '<ol class="gsteps">' +
+              '<li>המשכורת נכנסת ל<b>יתרה הפנויה</b>.</li>' +
+              '<li>מחלקים אותה לקוביות לפי אחוזים קבועים.</li>' +
+              '<li>כל קובייה יודעת בדיוק כמה יש בה — אי אפשר "בטעות" לבזבז את שכר הדירה.</li>' +
+              '<li>מה שנשאר בבילויים בסוף החודש — זה באמת שלך לכיף, בלי אשמה.</li>' +
+            '</ol>' +
+            '<button class="distbtn wide" id="cGo">בוא נבנה את הקוביות שלי →</button>';
+          box.querySelector("#cGo").onclick = () => { state.screen = "app"; render(); };
+        },
+      },
+    ];
+
+    function renderGuidePage() {
+      const body = pageShell("מדריך דור העתיד 🧭", () => { guideFeat = null; state.screen = "app"; render(); });
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl" style="font-size:15px">מאיפה מתחילים? 7 כלים קצרים שכל צעיר צריך לפני הדירה, העבודה והחשבונות הראשונים. בחרו נושא 👇</div>';
+      body.appendChild(intro);
+
+      const hub = el("div", "guidehub");
+      GUIDE_FEATURES.forEach((f, i) => {
+        const open = guideFeat === f.id;
+        const card = el("div", "gcardw" + (open ? " open" : ""));
+        const head = el("button", "gcardhead");
+        head.innerHTML = '<span class="gemoji">' + f.emoji + '</span>' +
+          '<span class="gtxt"><b>' + f.title + '</b><i>' + f.sub + '</i></span>' +
+          '<span class="gchev">' + (open ? "▲" : "▼") + '</span>';
+        head.onclick = () => { guideFeat = open ? null : f.id; render(); };
+        card.appendChild(head);
+        if (open) {
+          const bd = el("div", "gcardbody");
+          f.build(bd);
+          bd.querySelectorAll("input").forEach((inp) => { inp.oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9.]/g, ""); }; });
+          card.appendChild(bd);
+        }
+        hub.appendChild(card);
+      });
+      body.appendChild(hub);
+      const sp = el("div"); sp.style.height = "60px"; body.appendChild(sp);
+    }
+
+    let wiScenario = null, wiWithCut = false, wiCustomType = "once";
     const WI_PRESETS = [
       { id: "nowork", label: "🏖️ להפסיק לעבוד ל-3 חודשים", opts: { incomeOff: [1, 3] } },
       { id: "car", label: "🚗 לקנות רכב ב-30,000 ₪", opts: { oneTime: 30000 } },
@@ -2605,16 +2988,33 @@
       });
       body.appendChild(chips);
 
-      // custom one-time expense
+      // custom expense — with a "סוג ההוצאה" (one-time / monthly recurring) toggle
+      const typeWrap = el("div", "setcard");
+      typeWrap.innerHTML =
+        '<div class="setlbl">סוג ההוצאה</div>' +
+        '<div class="segtoggle" id="wiType">' +
+          '<button data-t="once" class="' + (wiCustomType === "once" ? "on" : "") + '">💥 חד-פעמי</button>' +
+          '<button data-t="monthly" class="' + (wiCustomType === "monthly" ? "on" : "") + '">🔁 חודשי קבוע</button>' +
+        '</div>';
+      body.appendChild(typeWrap);
+      typeWrap.querySelectorAll("#wiType button").forEach((btn) => {
+        btn.onclick = () => { wiCustomType = btn.getAttribute("data-t"); render(); };
+      });
+
       const cust = el("div", "shactions");
-      cust.innerHTML = '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="12000" id="wiAmt"></div>' +
-        '<button class="distbtn" id="wiRun">הוצאה חד-פעמית</button>';
+      cust.innerHTML = '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="' + (wiCustomType === "monthly" ? "500" : "12000") + '" id="wiAmt"></div>' +
+        '<button class="distbtn" id="wiRun">' + (wiCustomType === "monthly" ? "הוצאה חודשית קבועה" : "הוצאה חד-פעמית") + '</button>';
       body.appendChild(cust);
       cust.querySelector("#wiAmt").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); };
       cust.querySelector("#wiRun").onclick = () => {
         const amt = Number(cust.querySelector("#wiAmt").value) || 0;
         if (amt <= 0) return;
-        wiScenario = { id: "custom", label: "הוצאה חד-פעמית של ₪" + fmt(amt), opts: { oneTime: amt } };
+        if (wiCustomType === "monthly") {
+          // recurring expense — drains the cube every single month in the projection
+          wiScenario = { id: "custom", label: "הוצאה חודשית קבועה של ₪" + fmt(amt), opts: { extraMonthly: amt } };
+        } else {
+          wiScenario = { id: "custom", label: "הוצאה חד-פעמית של ₪" + fmt(amt), opts: { oneTime: amt } };
+        }
         wiWithCut = false; render();
       };
 
