@@ -361,6 +361,18 @@
     .splitarrow { color: var(--primary); font-weight: 900; font-size: 18px; }
     .splitcube { color: var(--dim); font-weight: 700; }
 
+    /* ===== smart onboarding: skip-estimates + build animation ===== */
+    .exprow { display: flex; gap: 8px; align-items: stretch; }
+    .skipbtn { flex: none; background: var(--card-2); border: 1px solid var(--primary-dim); color: var(--primary-2);
+      border-radius: var(--radius); padding: 0 12px; font-family: var(--font); font-size: 12px; font-weight: 800;
+      cursor: pointer; white-space: nowrap; transition: filter .15s; }
+    .skipbtn:hover { filter: brightness(1.15); }
+    .buildcard { text-align: center; }
+    .buildcube { font-size: 52px; animation: buildspin 1.2s ease-in-out infinite; }
+    @keyframes buildspin { 0%,100% { transform: rotate(-8deg) scale(1); } 50% { transform: rotate(8deg) scale(1.15); } }
+    .cube.landlordc { border-color: var(--primary); background: linear-gradient(160deg, #241f45, var(--card));
+      box-shadow: 0 14px 34px -16px var(--primary); }
+
     /* ===== flexible rate input (debt module) ===== */
     .fld.off { opacity: .45; }
     .est { color: var(--primary-2); font-style: normal; font-weight: 700; }
@@ -564,6 +576,8 @@
       .insight.info { background: #e8f2fb; border-color: #c3ddf1; color: #23557e; }
       .s3 .negv { color: #c0392b; }
       .procbar, .cattrack { background: #eceef6; }
+      .cube.landlordc { background: linear-gradient(160deg, #efecff, #ffffff); }
+      .skipbtn { color: var(--primary); }
       .dropzone.over { background: #6c5ce715; }
       .unknote { color: #4a4468; }
     }
@@ -597,6 +611,8 @@
     // into wealth-building cubes. Living independently adds a Housing cube.
     const META = {
       housing:     { name: "דיור וחשבונות", emoji: "🏠", color: "var(--c-housing)",     note: "הוצאה חודשית קבועה" },
+      landlord:    { name: "בעל הדירה (שכירות)", emoji: "🔑", color: "#6C5CE7",          note: "שכר דירה חודשי (נעול)" },
+      bills:       { name: "חשבונות הבית", emoji: "⚡", color: "#00CEC9",               note: "ארנונה, ועד, חשמל ומים" },
       essentials:  { name: "שוטף",           emoji: "🛒", color: "var(--c-essentials)",  note: "אוכל, תחבורה, חשבונות" },
       savings:     { name: "חיסכון",         emoji: "💰", color: "var(--c-savings)",     note: "כרית ביטחון ויעדים" },
       investments: { name: "השקעות",         emoji: "📈", color: "var(--c-investments)", note: "בניית הון לטווח ארוך" },
@@ -626,30 +642,48 @@
     // freed rent share boosts Savings/Investments/Lifestyle.
     function generateCubes(p) {
       const income = p.works ? (Number(p.income) || 0) : 0;
-      const independent = !p.withParents;
-      const housingCost = independent
-        ? (Number(p.rent)||0) + (Number(p.arnona)||0) + (Number(p.utilities)||0) + (Number(p.committee)||0) : 0;
       const rnd = (n) => Math.round(n * 10) / 10;
-      const mk = (key, pct, amount, locked) => ({
+      const mk = (key, pct, amount, locked, noteOverride) => ({
         key, name: META[key].name, emoji: META[key].emoji, color: META[key].color,
-        note: key === "housing" ? "הוצאה חודשית קבועה (נעול)" : META[key].note,
+        note: noteOverride || META[key].note,
         pct, amount: Math.round(amount), locked: !!locked, balance: 0,
       });
       const cubes = [];
-      if (independent) {
-        const base = income > 0 ? income : ((Number(p.balance) || 0) || 1);
-        const hs = Math.max(0, Math.min(0.85, housingCost / base));
-        const disc = 1 - hs;
-        const W = { essentials: 0.35, savings: 0.27, investments: 0.20, lifestyle: 0.18 };
-        cubes.push(mk("housing", rnd(hs * 100), housingCost, true));
-        ["essentials","savings","investments","lifestyle"].forEach((k) =>
-          cubes.push(mk(k, rnd(W[k] * disc * 100), W[k] * disc * income)));
-      } else {
+      if (p.withParents) {
+        // parents: no housing cubes at all — wealth cubes get the boost
         const W = { essentials: 0.25, savings: 0.30, investments: 0.27, lifestyle: 0.18 };
-        ["essentials","savings","investments","lifestyle"].forEach((k) =>
+        ["essentials", "savings", "investments", "lifestyle"].forEach((k) =>
           cubes.push(mk(k, rnd(W[k] * 100), W[k] * income)));
+        return cubes;
       }
+      // lives alone / with roommates
+      const e = p.exp || {};
+      const rent = p.ownership === "rent" ? (Number(e.rent) || 0) : 0; // owned => NO rent cube
+      const bills = (Number(e.arnona) || 0) + (Number(e.committee) || 0) + (Number(e.electricity) || 0) + (Number(e.water) || 0);
+      const food = Number(e.food) || 0;
+      const base = income > 0 ? income : ((Number(p.balance) || 0) || 1);
+      const pctOf = (amt) => rnd(Math.min(100, (amt / base) * 100));
+      if (rent > 0) cubes.push(mk("landlord", pctOf(rent), rent, true));
+      if (bills > 0) cubes.push(mk("bills", pctOf(bills), bills, true,
+        "ארנונה " + fmt(Number(e.arnona) || 0) + " · ועד " + fmt(Number(e.committee) || 0) +
+        " · חשמל " + fmt(Number(e.electricity) || 0) + " · מים " + fmt(Number(e.water) || 0)));
+      if (food > 0) cubes.push(mk("essentials", pctOf(food), food, false, "אוכל וסופר"));
+      // whatever's left after fixed expenses flows to wealth-building cubes
+      const disc = Math.max(0, income - rent - bills - food);
+      const W = { savings: 0.40, investments: 0.32, lifestyle: 0.28 };
+      ["savings", "investments", "lifestyle"].forEach((k) =>
+        cubes.push(mk(k, pctOf(W[k] * disc), W[k] * disc)));
       return cubes;
+    }
+    // Resolve a category to an existing cube (bank/scanner use 'housing' as the
+    // generic fixed-costs category; new profiles have bills/landlord instead).
+    function cubeFor(key) {
+      if (state.cubes.find((c) => c.key === key)) return key;
+      if (key === "housing") {
+        if (state.cubes.find((c) => c.key === "bills")) return "bills";
+        if (state.cubes.find((c) => c.key === "landlord")) return "landlord";
+      }
+      return "essentials";
     }
 
     // ====================================================================
@@ -861,16 +895,30 @@
     // Onboarding wizard draft (module-scoped; reset when onboarding starts).
     let ob = null;
     function startOnboarding() {
-      ob = { i: 0, d: { age: "", hasBank: null, balance: "", works: null, income: "",
-                        withParents: null, rent: "", arnona: "", utilities: "", committee: "" } };
+      ob = { i: 0, building: false, d: { age: "", hasBank: null, balance: "", works: null, income: "",
+                        living: null, ownership: null, exp: {}, expEst: {} } };
     }
+    // Conditional step machine:
+    // parents  -> straight to the income questions (no property/expenses)
+    // alone    -> property status -> dynamic expense fields (per status)
     function obSteps() {
       const d = ob.d, age = Number(d.age);
       const s = ["age"];
       if (age >= 16) { s.push("bank"); if (d.hasBank) s.push("balance"); }
+      s.push("living");
+      if (d.living === "alone") { s.push("property", "expenses"); }
       s.push("work"); if (d.works) s.push("income");
-      s.push("housing"); if (d.withParents === false) s.push("costs");
       return s;
+    }
+    // Expense fields per property status + realistic defaults for an 18-year-old
+    // (used by the per-field "לא יודע / דלג" buttons).
+    const EXP_DEFAULTS = { rent: 2200, arnona: 180, committee: 80, electricity: 250, water: 60, food: 1000 };
+    const EXP_LABELS = { rent: "שכר דירה חודשי", arnona: "ארנונה", committee: "ועד בית",
+                         electricity: "חשמל", water: "מים", food: "אוכל וסופר" };
+    function expFields() {
+      return ob.d.ownership === "rent"
+        ? ["rent", "arnona", "committee", "electricity", "water", "food"]
+        : ["electricity", "water", "arnona", "committee", "food"]; // owned: NO rent field
     }
 
     const totalBalance = () => state.cubes.reduce((s, c) => s + c.balance, 0);
@@ -973,9 +1021,23 @@
       v.querySelector("#slToggle").onclick = () => { slBox.classList.toggle("hidden"); renderSecLogInto(slBox); };
     }
 
-    // ---- Onboarding (multi-step, conditional) -----------------------------
+    // ---- Onboarding (multi-step, conditional, with skip-estimates) --------
     function renderOnboarding() {
       if (!ob) startOnboarding();
+      const v = $("view");
+
+      // AI-processing animation before the dashboard appears
+      if (ob.building) {
+        v.innerHTML = "";
+        const wrap = el("div", "authwrap");
+        wrap.innerHTML = '<div class="authcard buildcard">' +
+          '<div class="buildcube">🧊</div>' +
+          '<h2 class="authtitle" style="text-align:center">ה-AI מעבד את הנתונים<br>ומקים את הקוביות שלך…</h2>' +
+          '<div class="procbar" style="margin-top:16px"><i></i></div></div>';
+        v.appendChild(wrap);
+        return;
+      }
+
       const steps = obSteps();
       const idx = Math.min(ob.i, steps.length - 1);
       const step = steps[idx];
@@ -988,15 +1050,16 @@
           case "age": { const a = Number(d.age); return a >= 5 && a <= 120; }
           case "bank": return d.hasBank !== null;
           case "balance": return d.balance !== "" && Number(d.balance) >= 0;
+          case "living": return d.living !== null;
+          case "property": return d.ownership !== null;
+          case "expenses": return expFields().every((k) => d.exp[k] !== undefined && d.exp[k] !== "");
           case "work": return d.works !== null;
           case "income": return Number(d.income) > 0;
-          case "housing": return d.withParents !== null;
-          case "costs": return Number(d.rent) > 0;
           default: return false;
         }
       };
 
-      const v = $("view"); v.innerHTML = "";
+      v.innerHTML = "";
       const wrap = el("div", "authwrap");
       const money = (id, lbl, ph, val) =>
         '<label class="flbl">' + lbl + '</label><div class="fld"><span class="cur">₪</span>' +
@@ -1013,50 +1076,80 @@
       else if (step === "bank") inner += '<h2 class="authtitle">יש לך חשבון בנק?</h2><p class="authsub">מגיל 16 אפשר לנהל יתרה עצמאית.</p>' +
         choice("1", "כן, יש לי חשבון", "", d.hasBank === true) + choice("0", "לא, אין לי עדיין", "נדלג על שאלת היתרה", d.hasBank === false);
       else if (step === "balance") inner += '<h2 class="authtitle">מה היתרה לניהול?</h2><p class="authsub">הסכום שתרצה לעקוב אחריו ולחלק (מדומה — ללא חיבור לבנק).</p>' + money("f", "יתרה נוכחית משוערת", "3000", d.balance);
+      else if (step === "living") inner += '<h2 class="authtitle">איפה אתה גר כרגע?</h2><p class="authsub">זה קובע אילו קוביות הוצאה ניצור לך.</p>' +
+        choice("alone", "גר לבד / עם שותפים", "נשאל על סטטוס הדירה וההוצאות", d.living === "alone") +
+        choice("parents", "גר עם ההורים", "בלי הוצאות דיור — נדלג ישר לשאלות ההכנסה", d.living === "parents");
+      else if (step === "property") inner += '<h2 class="authtitle">מה סטטוס המגורים שלך?</h2><p class="authsub">שכירות תקבל קוביית "בעל הדירה" ייעודית.</p>' +
+        choice("rent", "בשכירות (בית שכור)", "ניצור קוביית שכירות בולטת", d.ownership === "rent") +
+        choice("owned", "דירה קנויה / בבעלות", "בלי שכר דירה — רק חשבונות שוטפים", d.ownership === "owned");
+      else if (step === "expenses") {
+        inner += '<h2 class="authtitle">הערכת הוצאות חודשיות</h2><p class="authsub">לא בטוחים? לחצו "לא יודע / דלג" — ה-AI ישבץ הערכה סטנדרטית.</p>';
+        expFields().forEach((k) => {
+          const est = d.expEst[k];
+          inner += '<label class="flbl">' + EXP_LABELS[k] + (est ? ' <i class="est">(הערכת AI ✨)</i>' : "") + '</label>' +
+            '<div class="exprow"><div class="fld" style="flex:1"><span class="cur">₪</span>' +
+            '<input data-exp="' + k + '" inputmode="numeric" placeholder="' + EXP_DEFAULTS[k] + '" value="' + (d.exp[k] !== undefined ? d.exp[k] : "") + '"></div>' +
+            '<button class="skipbtn" data-skip="' + k + '">לא יודע / דלג</button></div>';
+        });
+        const tot = expFields().reduce((s, k) => s + (Number(d.exp[k]) || 0), 0);
+        inner += '<div class="obsum">סה״כ הוצאות משוערות: <b>₪' + fmt(tot) + '</b></div>';
+      }
       else if (step === "work") inner += '<h2 class="authtitle">האם את/ה עובד/ת?</h2><p class="authsub">נבנה את התקציב סביב ההכנסה.</p>' +
         choice("1", "כן, אני עובד/ת", "", d.works === true) + choice("0", "לא כרגע", "נדלג על שאלת ההכנסה", d.works === false);
       else if (step === "income") inner += '<h2 class="authtitle">מהי ההכנסה החודשית המשוערת?</h2><p class="authsub">ההכנסה החודשית נטו שלך.</p>' + money("f", "הכנסה חודשית", "10000", d.income);
-      else if (step === "housing") inner += '<h2 class="authtitle">את/ה גר/ה עם ההורים?</h2><p class="authsub">זה קובע אם ניצור קוביית דיור.</p>' +
-        choice("1", "כן, גר/ה עם ההורים", "בלי שכירות — הכסף מופנה לחיסכון והשקעות", d.withParents === true) +
-        choice("0", "לא, גר/ה עצמאי/ת", "ניצור קוביית דיור נעולה", d.withParents === false);
-      else if (step === "costs") {
-        const tot = (Number(d.rent)||0)+(Number(d.arnona)||0)+(Number(d.utilities)||0)+(Number(d.committee)||0);
-        inner += '<h2 class="authtitle">הוצאות הדיור החודשיות</h2><p class="authsub">נסכם אותן לקוביית דיור נעולה.</p>' +
-          money("cRent", "שכר דירה / משכנתא", "3500", d.rent) + money("cArn", "ארנונה", "300", d.arnona) +
-          money("cUtil", "חשמל ומים", "400", d.utilities) + money("cComm", "ועד בית", "100", d.committee) +
-          '<div class="obsum">סה״כ דיור קבוע: <b>₪' + fmt(tot) + '</b></div>';
-      }
 
-      inner += '<button class="distbtn wide" id="obNext" style="margin-top:18px">' + (isLast ? "בנה את הקוביות 🧊" : "המשך") + '</button>';
+      inner += '<button class="distbtn wide" id="obNext" style="margin-top:18px">' + (isLast ? "סיום השאלון 🧊" : "המשך") + '</button>';
       if (idx > 0) inner += '<button class="obback" id="obBack">חזרה</button>';
       wrap.innerHTML = '<div class="authcard">' + inner + '</div>';
       v.appendChild(wrap);
 
-      const bindNum = (id, key) => { const inp = v.querySelector("#" + id); if (inp) inp.oninput = () => { inp.value = digits(inp.value); d[key] = inp.value; syncNext(); if (step === "costs") updateSum(); }; };
+      const bindNum = (id, key) => { const inp = v.querySelector("#" + id); if (inp) inp.oninput = () => { inp.value = digits(inp.value); d[key] = inp.value; syncNext(); }; };
       if (step === "age") bindNum("f", "age");
       else if (step === "balance") bindNum("f", "balance");
       else if (step === "income") bindNum("f", "income");
-      else if (step === "costs") { bindNum("cRent", "rent"); bindNum("cArn", "arnona"); bindNum("cUtil", "utilities"); bindNum("cComm", "committee"); }
-      const autof = v.querySelector(".authcard input"); if (autof) setTimeout(() => autof.focus(), 40);
+      else if (step === "expenses") {
+        v.querySelectorAll("input[data-exp]").forEach((inp) => {
+          inp.oninput = () => {
+            inp.value = digits(inp.value);
+            d.exp[inp.dataset.exp] = inp.value;
+            d.expEst[inp.dataset.exp] = false; // manual edit overrides the estimate
+            syncNext(); updateSum();
+          };
+        });
+        // "לא יודע / דלג" -> assign the industry-standard default for an 18yo
+        v.querySelectorAll(".skipbtn").forEach((b) => {
+          b.onclick = () => {
+            const k = b.dataset.skip;
+            d.exp[k] = String(EXP_DEFAULTS[k]);
+            d.expEst[k] = true;
+            renderOnboarding();
+          };
+        });
+      }
+      const autof = v.querySelector(".authcard input"); if (autof && step !== "expenses") setTimeout(() => autof.focus(), 40);
 
       v.querySelectorAll(".ob-opt").forEach((b) => {
         b.onclick = () => {
-          const val = b.dataset.v === "1";
-          if (step === "bank") { d.hasBank = val; if (!val) d.balance = ""; }
-          else if (step === "work") { d.works = val; if (!val) d.income = ""; }
-          else if (step === "housing") d.withParents = val;
+          const raw = b.dataset.v;
+          if (step === "bank") { d.hasBank = raw === "1"; if (raw !== "1") d.balance = ""; }
+          else if (step === "work") { d.works = raw === "1"; if (raw !== "1") d.income = ""; }
+          else if (step === "living") { d.living = raw; if (raw === "parents") { d.ownership = null; d.exp = {}; d.expEst = {}; } }
+          else if (step === "property") { if (d.ownership !== raw) { d.exp = {}; d.expEst = {}; } d.ownership = raw; }
           renderOnboarding();
         };
       });
 
       function syncNext() { const nb = v.querySelector("#obNext"); if (nb) nb.disabled = !canNext(); }
-      function updateSum() { const b2 = v.querySelector(".obsum b"); if (b2) b2.textContent = "₪" + fmt((Number(d.rent)||0)+(Number(d.arnona)||0)+(Number(d.utilities)||0)+(Number(d.committee)||0)); }
+      function updateSum() { const b2 = v.querySelector(".obsum b"); if (b2) b2.textContent = "₪" + fmt(expFields().reduce((s, k) => s + (Number(d.exp[k]) || 0), 0)); }
       syncNext();
 
       v.querySelector("#obNext").onclick = () => {
         if (!canNext()) return;
-        if (isLast) finishOnboarding();
-        else { ob.i = idx + 1; renderOnboarding(); }
+        if (isLast) {
+          ob.building = true;
+          renderOnboarding();
+          setTimeout(finishOnboarding, 1500); // the 1.5s AI build moment
+        } else { ob.i = idx + 1; renderOnboarding(); }
       };
       const back = v.querySelector("#obBack");
       if (back) back.onclick = () => { ob.i = Math.max(0, idx - 1); renderOnboarding(); };
@@ -1064,11 +1157,17 @@
 
     function finishOnboarding() {
       const d = ob.d;
+      const num = (x) => Number(x) || 0;
       const profile = {
-        age: Number(d.age), hasBank: !!d.hasBank, balance: Number(d.balance) || 0,
-        works: !!d.works, income: Number(d.income) || 0, withParents: !!d.withParents,
-        rent: Number(d.rent) || 0, arnona: Number(d.arnona) || 0,
-        utilities: Number(d.utilities) || 0, committee: Number(d.committee) || 0,
+        age: num(d.age), hasBank: !!d.hasBank, balance: num(d.balance),
+        works: !!d.works, income: num(d.income),
+        withParents: d.living === "parents",
+        ownership: d.living === "alone" ? d.ownership : null,
+        exp: {
+          rent: num(d.exp.rent), arnona: num(d.exp.arnona), committee: num(d.exp.committee),
+          electricity: num(d.exp.electricity), water: num(d.exp.water), food: num(d.exp.food),
+        },
+        expEstimated: Object.keys(d.expEst).filter((k) => d.expEst[k]),
       };
       state.profile = profile;
       state.cubes = generateCubes(profile);
@@ -1077,6 +1176,7 @@
       state.screen = "app";
       render();
       saveState();
+      showToast("🧊 הקוביות שלך מוכנות!");
     }
 
     // ---- Dashboard --------------------------------------------------------
@@ -1115,12 +1215,14 @@
       };
       btn.textContent = state.pool > 0 ? "חלק ₪" + fmt(state.pool) : "חלק לתקציב";
 
-      // living-with-parents notice (based on the answered profile)
-      const withParents = state.profile ? state.profile.withParents : true;
+      // living-situation notice (based on the answered profile)
+      const prof = state.profile || {};
       const note = el("div", "parents");
-      note.innerHTML = withParents
+      note.innerHTML = prof.withParents !== false
         ? '<span class="pi">💡</span><span class="pt">מגורים עם ההורים <b>משחררים את כסף השכירות</b> — הפנינו אותו לקוביות בוני-העושר: <b>חיסכון, השקעות ובילויים</b> קיבלו נתח גדול יותר.</span>'
-        : '<span class="pi">🔑</span><span class="pt">כדייר/ת עצמאי/ת נוצרה קוביית <b>דיור וחשבונות</b> נעולה על הסכום שהזנת, ושאר הקוביות חולקו מהתקציב שנשאר.</span>';
+        : (prof.ownership === "rent"
+          ? '<span class="pi">🔑</span><span class="pt">נוצרה קוביית <b>בעל הדירה (שכירות)</b> נעולה על שכר הדירה שלך, לצד קוביית <b>חשבונות הבית</b> — כדי ששכירות לעולם לא תתפספס.</span>'
+          : '<span class="pi">🏠</span><span class="pt">דירה בבעלות — <b>אין קוביית שכירות</b>. נוצרו רק קוביות <b>חשבונות הבית ואוכל</b>, והיתר הופנה לחיסכון ולהשקעות.</span>');
       v.appendChild(note);
 
       // engagement modules nav
@@ -1210,7 +1312,7 @@
       const monthly = c.locked ? (c.amount || 0) : (state.pool > 0 ? state.pool * (c.pct / 100) : (c.amount || c.balance || 1));
       const target = monthly || 1;
       const fill = Math.max(0, Math.min(1, target > 0 ? c.balance / target : 0)) * 100;
-      const card = el("div", "cube" + (state.justFunded.has(c.key) ? " pop" : ""));
+      const card = el("div", "cube" + (state.justFunded.has(c.key) ? " pop" : "") + (c.key === "landlord" ? " landlordc" : ""));
       card.innerHTML =
         '<div class="top">' +
           '<div class="chip" style="background:' + c.color + '22">' + c.emoji + '</div>' +
@@ -1906,7 +2008,8 @@
       electric: { store: "חברת החשמל", emoji: "⚡", total: 450, date: "2026-07-01", method: "הוראת קבע",
         items: [ { name: "צריכת חשמל דו-חודשית", price: 450, cube: "housing" } ] },
     };
-    const CUBE_LABEL = { essentials: "שוטף 🛒", lifestyle: "בילויים ופנאי 🎉", housing: "דיור וחשבונות 🏠", savings: "חיסכון 💰" };
+    const CUBE_LABEL = { essentials: "שוטף 🛒", lifestyle: "בילויים ופנאי 🎉", housing: "דיור וחשבונות 🏠",
+      bills: "חשבונות הבית ⚡", landlord: "בעל הדירה (שכירות) 🔑", savings: "חיסכון 💰" };
     let scanSel = null, scanPhase = "idle"; // idle | scanning | done
     function receiptJSON(r) {
       const VAT = 0.17;
@@ -1967,9 +2070,9 @@
         syntaxJSON(receiptJSON(r)) + '</pre>';
       body.appendChild(jc);
 
-      // cube split flow
+      // cube split flow (resolve categories to this user's actual cubes)
       const splitMap = {};
-      r.items.forEach((it) => { splitMap[it.cube] = (splitMap[it.cube] || 0) + it.price; });
+      r.items.forEach((it) => { const k = cubeFor(it.cube); splitMap[k] = (splitMap[k] || 0) + it.price; });
       const st = el("div", "section-t"); st.textContent = "חלוקה אוטומטית לקוביות"; body.appendChild(st);
       const flow = el("div", "splitflow");
       Object.keys(splitMap).forEach((cube) => {
@@ -2064,8 +2167,7 @@
       const byCube = {}, subs = [];
       expenses.forEach((t) => {
         const rule = BANK_RULES.find((r) => r.re.test(t.desc));
-        let cube = rule ? rule.cube : "essentials";
-        if (!state.cubes.find((c) => c.key === cube)) cube = "essentials"; // e.g. no housing cube
+        const cube = cubeFor(rule ? rule.cube : "essentials"); // housing -> bills/landlord fallback
         (byCube[cube] = byCube[cube] || { total: 0, count: 0, txns: [] });
         byCube[cube].total += -t.amount; byCube[cube].count++; byCube[cube].txns.push(t);
         if (rule && rule.sub) subs.push(t);
@@ -2420,7 +2522,7 @@
     function wiModel() {
       const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
       const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
-      const housing = by.housing ? by.housing.amount : 0;
+      const housing = (by.housing ? by.housing.amount : 0) + (by.landlord ? by.landlord.amount : 0) + (by.bills ? by.bills.amount : 0);
       const ess = by.essentials ? by.essentials.amount : 0;
       const life = by.lifestyle ? by.lifestyle.amount : 0;
       return { income: income, spend: housing + ess + life, life: life, start: totalBalance() + state.pool };
