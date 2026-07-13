@@ -710,6 +710,7 @@
     const fmt = (n) => Math.round(n).toLocaleString("en-US"); // grouped digits
     const $ = (id) => document.getElementById(id);
     const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
+    const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
 
     // ---- cube model -------------------------------------------------------
     // Living WITH parents (default): no rent, so the freed money is redirected
@@ -2376,19 +2377,55 @@
     //   • split "חובה"/"זכות" (debit / credit) columns
     // It locates the "תיאור" (description) column by header name, and falls
     // back to positional order (date,desc,amount) when there is no header row.
-    function splitCSVLine(line) {
-      // minimal quoted-CSV splitter so commas inside "..." don't break cells
+    function splitCSVLine(line, delim) {
+      // quoted-CSV splitter so the delimiter inside "..." doesn't break cells.
+      // delim is auto-detected per file (real Israeli exports often use ";" or TAB).
+      delim = delim || ",";
       const out = []; let cur = "", q = false;
       for (let i = 0; i < line.length; i++) {
         const ch = line[i];
         if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
-        else if (ch === "," && !q) { out.push(cur); cur = ""; }
+        else if (ch === delim && !q) { out.push(cur); cur = ""; }
         else cur += ch;
       }
       out.push(cur);
       return out.map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
     }
-    function toNum(s) { return Number(String(s == null ? "" : s).replace(/[^0-9.\-]/g, "")); }
+    // Pick the delimiter that most consistently splits the data lines. Excel in
+    // a Hebrew locale saves CSV with ";", and some banks export TAB-separated.
+    function detectDelimiter(lines) {
+      const cands = [";", "\t", ",", "|"];
+      let best = ",", bestScore = -1;
+      cands.forEach((d) => {
+        const counts = lines.map((l) => l.split(d).length - 1).filter((c) => c > 0);
+        if (counts.length < Math.max(1, lines.length * 0.4)) return;
+        counts.sort((a, b) => a - b);
+        const med = counts[Math.floor(counts.length / 2)];
+        const score = med * counts.length;
+        if (score > bestScore) { bestScore = score; best = d; }
+      });
+      return best;
+    }
+    // Robust number parser: handles ₪/spaces, US "1,234.56" and European
+    // "1.234,56" thousands/decimal conventions, and parentheses-for-negative.
+    function toNum(s) {
+      s = String(s == null ? "" : s).trim();
+      if (!s) return 0;
+      const neg = /^\(.*\)$/.test(s) || /-/.test(s);
+      s = s.replace(/[^\d.,]/g, "");
+      if (!s) return 0;
+      if (s.indexOf(",") > -1 && s.indexOf(".") > -1) {
+        if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
+        else s = s.replace(/,/g, "");
+      } else if (s.indexOf(",") > -1) {
+        const parts = s.split(",");
+        if (parts.length === 2 && parts[1].length <= 2) s = parts[0] + "." + parts[1]; // decimal comma
+        else s = s.replace(/,/g, ""); // thousands
+      }
+      let n = Number(s);
+      if (isNaN(n)) n = 0;
+      return neg ? -Math.abs(n) : n;
+    }
     function isNumericCell(s) {
       s = String(s == null ? "" : s).trim();
       if (!s) return false;
@@ -2473,9 +2510,18 @@
       return layout;
     }
     function parseBankCSV(csv) {
-      const lines = String(csv).replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
+      let lines = String(csv).replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
       if (!lines.length) return [];
-      const rows = lines.map(splitCSVLine);
+      const delim = detectDelimiter(lines);
+      let rows = lines.map((l) => splitCSVLine(l, delim));
+      // Trim preamble/footer junk (bank name, account no, blank separators):
+      // keep only the rows whose column count matches the table's dominant width.
+      const widths = {};
+      rows.forEach((r) => { widths[r.length] = (widths[r.length] || 0) + 1; });
+      let tableW = 2, wBest = 0;
+      Object.keys(widths).forEach((w) => { if (+w >= 2 && widths[w] > wBest) { wBest = widths[w]; tableW = +w; } });
+      if (tableW >= 2) rows = rows.filter((r) => r.length >= tableW - 1 && r.length <= tableW + 1);
+      if (!rows.length) return [];
       const first = rows[0];
       const headerish = first.some((c) => H_DESC.test(c)) &&
         first.some((c) => H_AMOUNT.test(c) || H_DEBIT.test(c) || H_CREDIT.test(c) || H_BALANCE.test(c)) &&
@@ -2487,7 +2533,7 @@
       // if every value is positive we sign each row by its description keywords.
       let anyNegative = layout.signedCol;
       if (layout.mode === "signed" && layout.amount >= 0 && !headerish) {
-        anyNegative = dataRows.some((r) => /-/.test((r[layout.amount] || "")));
+        anyNegative = dataRows.some((r) => toNum(r[layout.amount]) < 0);
       }
       return dataRows.map((parts) => {
         if (parts.length < 2) return null;
@@ -2578,7 +2624,7 @@
     let bankData = null, bankPhase = "idle", bankReport = null, bankMoves = null;
     function startBankCSV(label, csv) {
       if (bankPhase === "proc") return;
-      if (parseBankCSV(csv).length === 0) { showToast("לא זוהו תנועות בקובץ — ודאו פורמט: תאריך,תיאור,סכום"); return; }
+      if (parseBankCSV(csv).length === 0) { showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 ודאו שיש עמודות של תאריך, תיאור וסכום (או חובה/זכות). מפריד פסיק, נקודה-פסיק או טאב — הכול נתמך."); return; }
       bankData = { label: label, csv: csv }; bankPhase = "proc"; bankReport = null; bankMoves = null;
       render();
       setTimeout(() => {
@@ -2595,18 +2641,30 @@
 
       // AGENT 3 — real upload zone: native FileReader, drag&drop + click-to-pick
       const dz = el("div", "dropzone" + (bankPhase === "proc" ? " busy" : ""));
-      dz.innerHTML = '<span class="dzi">📄</span><b>העלאת קובץ תנועות עו״ש (Excel / CSV)</b>' +
-        '<span class="dzs">גררו לכאן קובץ CSV אמיתי או לחצו לבחירה · פורמט: תאריך,תיאור,סכום</span>' +
+      dz.innerHTML = '<span class="dzi">📄</span><b>העלאת קובץ תנועות עו״ש (CSV)</b>' +
+        '<span class="dzs">גררו לכאן קובץ CSV מהבנק או לחצו לבחירה · תומך בכל בנק ישראלי (פסיק / נקודה-פסיק / טאב, כולל עמודות חובה/זכות)</span>' +
         '<input type="file" id="bankFileIn" accept=".csv,text/csv" hidden>';
       const fin = dz.querySelector("#bankFileIn");
       const readRealFile = (file) => {
         if (!file) return;
         if (!state.premium) { showToast("🔒 העלאת קובץ אמיתי היא פיצ\'ר Premium"); return; }
-        if (!/\.csv$/i.test(file.name) && file.type !== "text/csv") { showToast("קובץ CSV בלבד 🙂"); return; }
+        if (/\.xlsx?$/i.test(file.name)) { showToast("קובץ Excel — נא לשמור בבנק כ-CSV ולהעלות 🙂"); return; }
         const reader = new FileReader();
-        reader.onload = () => { secLog("INFO", 'נקרא קובץ מקומי "' + file.name + '" (' + file.size + ' בתים) דרך FileReader'); startBankCSV(file.name, String(reader.result)); };
+        reader.onload = () => {
+          // Decode robustly: try UTF-8, and if it produced replacement characters
+          // fall back to Windows-1255 (the legacy Hebrew encoding some banks use),
+          // so descriptions aren't gibberish.
+          let text;
+          try {
+            const buf = new Uint8Array(reader.result);
+            text = new TextDecoder("utf-8").decode(buf);
+            if (/�/.test(text)) { try { text = new TextDecoder("windows-1255").decode(buf); } catch (e) {} }
+          } catch (e) { text = String(reader.result); }
+          secLog("INFO", 'נקרא קובץ מקומי "' + file.name + '" (' + file.size + ' בתים) דרך FileReader');
+          startBankCSV(file.name, text);
+        };
         reader.onerror = () => showToast("קריאת הקובץ נכשלה");
-        reader.readAsText(file, "utf-8");
+        reader.readAsArrayBuffer(file);
       };
       dz.onclick = (e) => { if (e.target !== fin) fin.click(); };
       fin.onchange = () => { readRealFile(fin.files[0]); fin.value = ""; };
@@ -2651,8 +2709,8 @@
       const led = el("div", "ledger");
       r.txns.forEach((t) => {
         const row = el("div", "ledrow");
-        row.innerHTML = '<span class="leddate">' + (t.date || "") + '</span>' +
-          '<span class="leddesc">' + t.desc + '</span>' +
+        row.innerHTML = '<span class="leddate">' + esc(t.date || "") + '</span>' +
+          '<span class="leddesc">' + esc(t.desc) + '</span>' +
           '<span class="ledamt ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "−") + '₪' + fmt(Math.abs(t.amount)) + '</span>';
         led.appendChild(row);
       });
