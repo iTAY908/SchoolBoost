@@ -10,13 +10,15 @@
        Open directly in any browser. No build step, no dependencies.
        ================================================================== */
     :root {
-      --bg: #0d0d14; --bg-deep: #08080d; --elevated: #16161f; --card: #1c1c28;
-      --card-2: #221f3a; --border: #2a2a3a; --text: #e7e7f2; --dim: #9a9ab0;
-      --primary: #6c5ce7; --primary-2: #8072ff; --primary-dim: #4b3fb8;
-      --danger: #d63031; --warning: #fdcb6e; --success: #00b894;
-      --c-essentials: #00b894; --c-savings: #0984e3; --c-investments: #e17055;
-      --c-emergency: #d63031; --c-lifestyle: #fdcb6e; --c-housing: #6c5ce7;
-      --radius: 16px; --radius-lg: 24px;
+      --bg: #0b0e18; --bg-deep: #070a12; --elevated: #141a28; --card: #151b29;
+      --card-2: #1a2136; --border: #273049; --text: #eceff8; --dim: #949cb6;
+      --primary: #6472ff; --primary-2: #8f9aff; --primary-dim: #3b44a8;
+      --danger: #f0555a; --warning: #f5b544; --success: #10c088;
+      --gold: #f2b134; --gold-2: #ffd873;
+      --c-essentials: #10c088; --c-savings: #3b82f6; --c-investments: #e8845e;
+      --c-emergency: #f0555a; --c-lifestyle: #f5b544; --c-housing: #6472ff;
+      --radius: 16px; --radius-lg: 22px;
+      --shadow-card: 0 18px 40px -28px rgba(0,0,0,.9);
       --font: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, "Noto Sans Hebrew", sans-serif;
     }
     * { box-sizing: border-box; }
@@ -25,8 +27,8 @@
       direction: rtl; /* robust RTL even if a host strips the html dir attribute */
       font-family: var(--font); color: var(--text);
       background:
-        radial-gradient(1000px 500px at 20% -10%, #1a1533 0%, transparent 55%),
-        radial-gradient(800px 460px at 110% 8%, #10233a 0%, transparent 50%),
+        radial-gradient(1000px 520px at 18% -12%, #182247 0%, transparent 56%),
+        radial-gradient(820px 480px at 112% 6%, #0d2540 0%, transparent 52%),
         var(--bg-deep);
       display: flex; justify-content: center; align-items: center;
       min-height: 100vh; min-height: 100dvh; padding: 24px;
@@ -49,10 +51,14 @@
     .brand { font-size: 18px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 16px; }
     .brand small { color: var(--dim); font-weight: 600; font-size: 12px; }
 
-    .hero { background: linear-gradient(160deg, #221c40, #14131d);
-      border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px;
-      box-shadow: 0 20px 50px -30px #000; }
-    .hero .hl { color: var(--dim); font-size: 13px; font-weight: 600; }
+    .hero { position: relative; background:
+        linear-gradient(158deg, #1e274a 0%, #131a2c 62%, #101524 100%);
+      border: 1.5px solid #2f3a5c; border-radius: var(--radius-lg); padding: 22px;
+      box-shadow: 0 26px 60px -34px #000, inset 0 1px 0 #ffffff14; overflow: hidden; }
+    .hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(320px 180px at 85% -20%, #6472ff33, transparent 70%); }
+    .hero > * { position: relative; }
+    .hero .hl { color: var(--dim); font-size: 13px; font-weight: 700; letter-spacing: .2px; }
     .hero .hv { font-size: 40px; font-weight: 900; letter-spacing: -1.5px; margin: 4px 0 0;
       font-variant-numeric: tabular-nums; }
     .hero .hv small { font-size: 20px; font-weight: 800; color: var(--dim); }
@@ -66,9 +72,10 @@
       font-variant-numeric: tabular-nums; text-align: right; width: 100%; }
     .distbtn { border: none; cursor: pointer; font-family: var(--font); white-space: nowrap;
       background: linear-gradient(135deg, var(--primary-2), var(--primary)); color: #fff;
-      font-size: 15px; font-weight: 800; padding: 13px 18px; border-radius: var(--radius);
-      box-shadow: 0 12px 26px -12px var(--primary); transition: transform .1s, opacity .15s; }
-    .distbtn:hover { filter: brightness(1.07); }
+      font-size: 15px; font-weight: 800; padding: 14px 18px; border-radius: 14px;
+      letter-spacing: .2px; box-shadow: 0 14px 28px -14px var(--primary), inset 0 1px 0 #ffffff2e;
+      transition: transform .1s, filter .15s, box-shadow .15s; }
+    .distbtn:hover { filter: brightness(1.07); box-shadow: 0 18px 34px -14px var(--primary), inset 0 1px 0 #ffffff33; }
     .distbtn:active { transform: scale(.97); }
     .distbtn:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -89,9 +96,10 @@
     .section-t::before { content: ""; width: 4px; height: 15px; border-radius: 2px;
       background: linear-gradient(var(--primary), #46e0b4); }
 
-    .cube { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
-      padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 14px -10px #000;
-      transition: transform .18s, box-shadow .2s; }
+    .cube { background: linear-gradient(168deg, var(--card-2), var(--card) 55%); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+      padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-card);
+      transition: transform .18s, box-shadow .2s, border-color .2s; }
+    .cube:hover { border-color: #33406099; }
     .cube.pop { animation: pop .5s ease; }
     @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.035)} 100%{transform:scale(1)} }
     .cube .top { display: flex; align-items: center; gap: 12px; }
@@ -119,6 +127,18 @@
       background: linear-gradient(140deg, var(--primary-2), var(--primary)); font-size: 28px;
       display: grid; place-items: center; box-shadow: 0 12px 30px -6px var(--primary); }
     .fab:hover { filter: brightness(1.08); }
+    .fab { position: absolute; }
+    .fablock { position: absolute; top: -2px; inset-inline-start: -2px; width: 24px; height: 24px;
+      border-radius: 50%; background: linear-gradient(140deg,#ffd86b,#f0a500); color: #3a2a00;
+      font-size: 12px; display: grid; place-items: center; box-shadow: 0 3px 8px -2px #000a;
+      border: 2px solid var(--bg); }
+    .chatlocked .chlockbody { flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 28px 26px; gap: 6px; }
+    .chatlocked .goldlock { font-size: 46px; filter: drop-shadow(0 6px 14px #f0a50055); margin-bottom: 6px; }
+    .chatlocked h3 { margin: 4px 0; font-size: 19px; font-weight: 900; }
+    .chatlocked p { color: var(--dim); font-size: 13.5px; line-height: 1.65; margin: 0 0 14px; }
+    .chatlocked .distbtn { max-width: 320px; }
+    .chlockman { color: var(--dim); font-size: 12px; margin-top: 10px; }
     .chatwrap { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column;
       justify-content: flex-end; background: rgba(0,0,0,.45); }
     .chatwrap.on { display: flex; }
@@ -378,6 +398,19 @@
     .bankmetric.inc b { color: var(--success); }
     .bankmetric.exp { background: rgba(255,143,143,.10); border-color: rgba(255,143,143,.35); }
     .bankmetric.exp b { color: #ff8f8f; }
+    .banknet { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+      border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 4px; }
+    .banknet span { color: var(--dim); font-size: 12.5px; font-weight: 700; }
+    .banknet b { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .banknet.pos { background: rgba(46,204,113,.07); } .banknet.pos b { color: var(--success); }
+    .banknet.neg { background: rgba(255,143,143,.07); } .banknet.neg b { color: #ff8f8f; }
+    .ledger { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--card); }
+    .ledrow { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-top: 1px solid var(--border); font-size: 13.5px; }
+    .ledrow:first-child { border-top: none; }
+    .leddate { color: var(--dim); font-size: 11.5px; font-variant-numeric: tabular-nums; min-width: 44px; }
+    .leddesc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ledamt { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .ledamt.pos { color: var(--success); } .ledamt.neg { color: #ff8f8f; }
     /* ---- מדריך דור העתיד (youth guide hub) ---- */
     .guidehub { display: flex; flex-direction: column; gap: 10px; }
     .gcardw { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
@@ -599,15 +632,19 @@
     @media (prefers-color-scheme: light) {
       :root {
         color-scheme: light;
-        --bg: #f5f6fb; --bg-deep: #e8eaf4; --elevated: #ffffff; --card: #ffffff;
-        --card-2: #edeafd; --border: #dcdeeb; --text: #1d1d2e; --dim: #666a85;
-        --primary: #6c5ce7; --primary-2: #7f70f5; --primary-dim: #b9b1f2;
+        --bg: #f4f6fc; --bg-deep: #e7ebf6; --elevated: #ffffff; --card: #ffffff;
+        --card-2: #eef1fe; --border: #d9deec; --text: #171a2b; --dim: #5c6280;
+        --primary: #4f5dff; --primary-2: #6b78ff; --primary-dim: #b4baf5;
+        --shadow-card: 0 14px 34px -26px rgba(60,70,120,.6);
       }
-      body { background: radial-gradient(1000px 500px at 20% -10%, #e4defc 0%, transparent 55%),
-             radial-gradient(800px 460px at 110% 8%, #dcebfa 0%, transparent 50%), var(--bg-deep); }
+      body { background: radial-gradient(1000px 500px at 20% -10%, #dfe4fc 0%, transparent 55%),
+             radial-gradient(800px 460px at 110% 8%, #dbeafb 0%, transparent 50%), var(--bg-deep); }
+      .hero { background: linear-gradient(158deg, #eef1ff, #ffffff 65%); border-color: #dbe0f2; box-shadow: 0 24px 54px -38px #7a82b5; }
+      .hero::before { background: radial-gradient(320px 180px at 85% -20%, #4f5dff22, transparent 70%); }
+      .cube { background: linear-gradient(168deg, #f7f8ff, #ffffff 60%); }
+      .cube:hover { border-color: #c3c9e6; }
       .device { border-color: #cfd2e4; box-shadow: 0 0 0 10px #ffffff, 0 40px 90px -40px #8a8fb5; }
       .notch { background: #10101a; }
-      .hero { background: linear-gradient(160deg, #efecff, #ffffff); box-shadow: 0 20px 50px -36px #8a8fb5; }
       .authcard { background: linear-gradient(165deg, #f3f0ff, #ffffff); box-shadow: 0 30px 70px -50px #8a8fb5; }
       .parents { background: #e9f7f0; border-color: #bfe3d2; }
       .parents .pt { color: #1e5c44; }
@@ -660,7 +697,7 @@
     <div class="screen">
       <div class="view" id="view"></div>
       <div class="coins" id="coins"></div>
-      <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊</button>
+      <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊<span class="fablock" id="fablock">🔒</span></button>
       <div class="chatwrap" id="chatwrap"></div>
       <div class="ccwrap" id="ccwrap"></div>
       <div class="ccwrap" id="paywrap"></div>
@@ -996,6 +1033,7 @@
     // ---- render dispatcher ------------------------------------------------
     function render() {
       $("fab").style.display = state.screen === "app" ? "grid" : "none";
+      { const fl = $("fablock"); if (fl) fl.style.display = state.premium ? "none" : "grid"; }
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
       if (state.screen === "auth") return renderAuth();
@@ -1506,10 +1544,33 @@
     }
 
     function openChat() {
+      // The AI buddy (Cubey chat) is part of the one-time Premium purchase.
+      if (!state.premium) { openChatLocked(); return; }
       buildChatShell();
       chatOpen = true;
       $("chatwrap").classList.add("on");
       setTimeout(() => { scrollToBottom(); const i = $("cin"); if (i) i.focus(); }, 60);
+    }
+    // Premium gate for the chat: shows the AI buddy behind a gold lock with an
+    // upgrade CTA, so free users see the value but the chat itself stays paid.
+    function openChatLocked() {
+      const w = $("chatwrap");
+      w.innerHTML =
+        '<div class="chat chatlocked" id="chatbox">' +
+          '<div class="ch"><div><div class="t">Cubey 🧊</div><div class="s">היועץ הפיננסי החכם שלך</div></div>' +
+          '<button class="x" id="chx" aria-label="סגור">✕</button></div>' +
+          '<div class="chlockbody"><div class="goldlock">🔒</div>' +
+            '<h3>הצ׳אט עם Cubey הוא פיצ׳ר Premium</h3>' +
+            '<p>שאל כל שאלה כספית, דווח על הוצאות בשפה חופשית ובקש פעולות אמיתיות — "תעביר 200 ₪ לקוביית טיול". Cubey מכיר את הקוביות שלך ועונה לפי המצב האמיתי.</p>' +
+            '<button class="distbtn wide" id="chUp">👑 שדרוג ל-AI Premium · 110 ₪</button>' +
+            '<span class="chlockman">אפשר להמשיך לנהל הכול ידנית גם בלי שדרוג 🙂</span>' +
+          '</div>' +
+        '</div>';
+      w.classList.add("on");
+      w.onclick = (e) => { if (e.target === w) closeChat(); };
+      $("chx").onclick = closeChat;
+      $("chUp").onclick = () => { closeChat(); state.screen = "upgrade"; render(); };
+      chatOpen = true; chatBuilt = false;
     }
     function closeChat() { chatOpen = false; $("chatwrap").classList.remove("on"); }
     function resetChat() {
@@ -2146,6 +2207,7 @@
       hero.innerHTML = '<div class="paycrown">👑</div><h3>Cubey AI Premium</h3>' +
         '<div class="payprice">110 ₪ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
         '<ul class="payfeat">' +
+          '<li>💬 צ׳אט עם Cubey — היועץ הפיננסי החכם שמכיר את הקוביות שלך</li>' +
           '<li>🏦 ניהול עו״ש אוטומטי — העלאת קובץ CSV אמיתי, סיווג ותובנות AI</li>' +
           '<li>💳 אופטימיזציית חובות — מפולת/כדור שלג עם חיסכון ריבית מחושב</li>' +
           '<li>🎯 הקצאת AI לקוביות אישיות לפי עדיפות</li>' +
@@ -2327,47 +2389,126 @@
       return out.map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
     }
     function toNum(s) { return Number(String(s == null ? "" : s).replace(/[^0-9.\-]/g, "")); }
-    function parseBankCSV(csv) {
-      const lines = String(csv).replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
-      if (!lines.length) return [];
-      const first = splitCSVLine(lines[0]);
-      // A header row has recognizable Hebrew column titles and no real amount.
-      const headerish = first.some((c) => /(תיאור|פרטים|שם בית העסק)/.test(c)) &&
-        first.some((c) => /(סכום|חובה|זכות|תנועה|יתרה)/.test(c));
-      let idx = { date: 0, desc: 1, amount: 2, debit: -1, credit: -1 };
-      let start = 0;
-      if (headerish) {
-        start = 1;
-        const find = (re) => first.findIndex((c) => re.test(c));
-        const dateI = find(/(תאריך|יום)/);
-        const descI = find(/(תיאור|פרטים|שם בית העסק|בית עסק)/);
-        const amtI = find(/(^סכום|סכום התנועה|סכום חיוב)/);
-        const debI = find(/(^חובה|בחובה)/);
-        const creI = find(/(^זכות|בזכות)/);
-        idx = {
-          date: dateI >= 0 ? dateI : 0,
-          desc: descI >= 0 ? descI : 1,
-          amount: amtI >= 0 ? amtI : ((debI < 0 && creI < 0) ? 2 : -1),
-          debit: debI, credit: creI,
-        };
+    function isNumericCell(s) {
+      s = String(s == null ? "" : s).trim();
+      if (!s) return false;
+      if (/^\d{1,2}[\/.\-]\d{1,2}([\/.\-]\d{2,4})?$/.test(s)) return false; // a date, not a number
+      const n = s.replace(/[^0-9.\-]/g, "");
+      return n !== "" && /\d/.test(s) && !isNaN(Number(n));
+    }
+    function isDateCell(s) { return /^\d{1,2}[\/.\-]\d{1,2}([\/.\-]\d{2,4})?$/.test(String(s || "").trim()); }
+    function hasLetter(s) { return /[A-Za-z֐-׿]/.test(String(s || "")); }
+
+    // Header synonyms across the common Israeli banks (Leumi / Hapoalim / Discount / Mizrahi …)
+    const H_DESC = /(תיאור|תאור|פירוט|פרטים|שם בית העסק|בית עסק|תנועה|פעולה|הפעולה|העסקה)/;
+    const H_DATE = /(תאריך|ת\.? ?ערך|יום)/;
+    const H_AMOUNT = /(^\s*סכום|סכום התנועה|סכום העסקה|סכום בש|סכום חיוב|סכום זיכוי)/;
+    const H_DEBIT = /(חובה|בחובה|^\s*חיוב\s*$|משיכה|יצא)/;
+    const H_CREDIT = /(זכות|בזכות|^\s*זיכוי\s*$|הפקדה|נכנס)/;
+    const H_BALANCE = /(יתרה)/;
+
+    // AGENT 3 — robust, DATA-AWARE parser for real-world CSV exports.
+    // 1. Splits quoted CSV (commas inside "..." are safe), strips BOM/CRLF/₪/thousands.
+    // 2. If a header row exists, maps columns BY NAME (description, date, signed
+    //    amount, or split חובה/זכות) and never mistakes a יתרה (balance) column
+    //    for the amount.
+    // 3. If there is NO header, it INFERS the columns from the data itself —
+    //    the text column is the description, date-shaped column is the date,
+    //    a cumulative always-filled numeric column is the balance (ignored),
+    //    and the remaining numeric column(s) are the amount / debit+credit.
+    //    This is what stops a plain "date,desc,debit,credit,balance" export from
+    //    being misread as pure income.
+    function inferLayout(rows) {
+      const cols = Math.max.apply(null, rows.map((r) => r.length));
+      const stat = [];
+      for (let c = 0; c < cols; c++) {
+        let numeric = 0, letters = 0, dates = 0, filled = 0, signed = 0, sumAbs = 0;
+        rows.forEach((r) => {
+          const cell = (r[c] == null ? "" : r[c]).trim();
+          if (cell) filled++;
+          if (isDateCell(cell)) dates++;
+          else if (isNumericCell(cell)) { numeric++; const v = toNum(cell); sumAbs += Math.abs(v); if (v < 0 || /-/.test(cell)) signed++; }
+          else if (cell && hasLetter(cell)) letters++;
+        });
+        stat.push({ c: c, numeric: numeric, letters: letters, dates: dates, filled: filled, signed: signed, avgAbs: numeric ? sumAbs / numeric : 0 });
       }
-      return lines.slice(start).map((line) => {
-        const parts = splitCSVLine(line);
+      const n = rows.length;
+      const dateI = (stat.filter((s) => s.dates >= n * 0.6).sort((a, b) => b.dates - a.dates)[0] || {}).c;
+      const descI = (stat.filter((s) => s.c !== dateI && s.letters >= s.numeric).sort((a, b) => b.letters - a.letters)[0] || {}).c;
+      // A "number column" contains numbers and no free text — even a sparse
+      // credit column that only holds the monthly salary counts.
+      let numCols = stat.filter((s) => s.c !== dateI && s.c !== descI && s.numeric >= 1 && s.letters === 0 && s.numeric >= s.filled * 0.8);
+      // a balance column is filled on (almost) every row and carries the largest values
+      let balanceI = -1;
+      if (numCols.length > 1) {
+        const cand = numCols.slice().sort((a, b) => (b.filled - a.filled) || (b.avgAbs - a.avgAbs))[0];
+        if (cand && cand.filled >= n * 0.9 && cand.avgAbs >= Math.max.apply(null, numCols.map((x) => x.avgAbs)) * 0.9)
+          balanceI = cand.c;
+      }
+      numCols = numCols.filter((s) => s.c !== balanceI);
+      const layout = { date: dateI == null ? 0 : dateI, desc: descI == null ? 1 : descI, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: false };
+      if (numCols.length >= 2) {
+        // two amount columns with mostly-exclusive fills → debit then credit (Israeli order)
+        numCols.sort((a, b) => a.c - b.c);
+        layout.mode = "split"; layout.debit = numCols[0].c; layout.credit = numCols[1].c;
+      } else if (numCols.length === 1) {
+        layout.mode = "signed"; layout.amount = numCols[0].c; layout.signedCol = numCols[0].signed > 0;
+      } else {
+        layout.mode = "signed"; layout.amount = 2; layout.signedCol = false;
+      }
+      return layout;
+    }
+    function mapHeader(first) {
+      const find = (re) => first.findIndex((c) => re.test(c));
+      const dateI = find(H_DATE), descI = find(H_DESC);
+      const amtI = first.findIndex((c) => H_AMOUNT.test(c) && !H_BALANCE.test(c));
+      const debI = first.findIndex((c) => H_DEBIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
+      const creI = first.findIndex((c) => H_CREDIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
+      const layout = { date: dateI >= 0 ? dateI : 0, desc: descI >= 0 ? descI : 1, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: true };
+      if (debI >= 0 && creI >= 0) { layout.mode = "split"; layout.debit = debI; layout.credit = creI; }
+      else if (amtI >= 0) { layout.mode = "signed"; layout.amount = amtI; }
+      else if (debI >= 0) { layout.mode = "debitOnly"; layout.debit = debI; }
+      else if (creI >= 0) { layout.mode = "creditOnly"; layout.credit = creI; }
+      else { layout.mode = "signed"; layout.amount = 2; }
+      return layout;
+    }
+    function parseBankCSV(csv) {
+      const lines = String(csv).replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim() !== "");
+      if (!lines.length) return [];
+      const rows = lines.map(splitCSVLine);
+      const first = rows[0];
+      const headerish = first.some((c) => H_DESC.test(c)) &&
+        first.some((c) => H_AMOUNT.test(c) || H_DEBIT.test(c) || H_CREDIT.test(c) || H_BALANCE.test(c)) &&
+        !first.some((c) => isNumericCell(c));
+      let layout, dataRows;
+      if (headerish) { layout = mapHeader(first); dataRows = rows.slice(1); }
+      else { layout = inferLayout(rows); dataRows = rows; }
+      // Detect whether a single signed-amount column actually carries any signs;
+      // if every value is positive we sign each row by its description keywords.
+      let anyNegative = layout.signedCol;
+      if (layout.mode === "signed" && layout.amount >= 0 && !headerish) {
+        anyNegative = dataRows.some((r) => /-/.test((r[layout.amount] || "")));
+      }
+      return dataRows.map((parts) => {
         if (parts.length < 2) return null;
-        const desc = parts[idx.desc] != null ? parts[idx.desc] : parts[1];
+        const desc = parts[layout.desc] != null ? parts[layout.desc] : "";
+        if (!desc || (!hasLetter(desc) && layout.desc !== 1)) return null;
         let amount = 0;
-        if (idx.debit >= 0 || idx.credit >= 0) {
-          // split debit/credit layout: זכות (credit) = income (+), חובה (debit) = spend (−)
-          const debit = idx.debit >= 0 ? Math.abs(toNum(parts[idx.debit])) : 0;
-          const credit = idx.credit >= 0 ? Math.abs(toNum(parts[idx.credit])) : 0;
-          amount = credit - debit;
-        } else if (idx.amount >= 0 && parts[idx.amount] != null) {
-          amount = toNum(parts[idx.amount]);
+        if (layout.mode === "split") {
+          const debit = layout.debit >= 0 ? Math.abs(toNum(parts[layout.debit])) : 0;
+          const credit = layout.credit >= 0 ? Math.abs(toNum(parts[layout.credit])) : 0;
+          amount = credit - debit; // זכות (credit)=income(+), חובה (debit)=spend(−)
+        } else if (layout.mode === "debitOnly") {
+          amount = -Math.abs(toNum(parts[layout.debit]));
+        } else if (layout.mode === "creditOnly") {
+          amount = Math.abs(toNum(parts[layout.credit]));
+        } else if (layout.amount >= 0) {
+          amount = toNum(parts[layout.amount]);
+          // unsigned single-column export → sign by keyword (income keywords = +, else −)
+          if (amount > 0 && !anyNegative) amount = INCOME_RE.test(desc) ? amount : -amount;
         }
-        // If the description clearly reads as income but the export left the
-        // amount unsigned, treat it as a credit.
-        if (amount !== 0 && INCOME_RE.test(desc)) amount = Math.abs(amount);
-        return { date: parts[idx.date] != null ? parts[idx.date] : parts[0], desc: desc, amount: amount };
+        if (amount !== 0 && INCOME_RE.test(desc)) amount = Math.abs(amount); // salary/refund is always income
+        return { date: parts[layout.date] != null ? parts[layout.date] : "", desc: desc, amount: amount };
       }).filter((t) => t && t.desc && !isNaN(t.amount) && t.amount !== 0);
     }
     function analyzeStatement(csv) {
@@ -2499,12 +2640,23 @@
         '<div class="bankmetric inc"><span>סך הכנסות</span><b>' + fmt(r.income) + ' ₪</b></div>' +
         '<div class="bankmetric exp"><span>סך הוצאות</span><b>' + fmt(r.totalOut) + ' ₪</b></div>';
       body.appendChild(bigm);
-      const sum = el("div", "stat3");
-      sum.innerHTML =
-        '<div class="s3"><span>הכנסות</span><b class="pos">₪' + fmt(r.income) + '</b></div>' +
-        '<div class="s3"><span>הוצאות</span><b class="negv">₪' + fmt(r.totalOut) + '</b></div>' +
-        '<div class="s3"><span>נטו</span><b class="' + (r.net >= 0 ? "pos" : "negv") + '">₪' + fmt(r.net) + '</b></div>';
-      body.appendChild(sum);
+      const netc = el("div", "banknet " + (r.net >= 0 ? "pos" : "neg"));
+      netc.innerHTML = '<span>נטו החודש (' + r.txns.length + ' תנועות נקראו מהקובץ)</span>' +
+        '<b>' + (r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net)) + ' ₪</b>';
+      body.appendChild(netc);
+
+      // transparent transaction ledger — every row parsed from the CSV, so the
+      // numbers are verifiable and clearly NOT made up.
+      const stT = el("div", "section-t"); stT.textContent = "התנועות שנקראו מהקובץ 🧾"; body.appendChild(stT);
+      const led = el("div", "ledger");
+      r.txns.forEach((t) => {
+        const row = el("div", "ledrow");
+        row.innerHTML = '<span class="leddate">' + (t.date || "") + '</span>' +
+          '<span class="leddesc">' + t.desc + '</span>' +
+          '<span class="ledamt ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "−") + '₪' + fmt(Math.abs(t.amount)) + '</span>';
+        led.appendChild(row);
+      });
+      body.appendChild(led);
 
       // auto-categorization
       const st1 = el("div", "section-t"); st1.textContent = "סיווג אוטומטי לקוביות"; body.appendChild(st1);
