@@ -2554,7 +2554,8 @@
       const amtI = first.findIndex((c) => H_AMOUNT.test(c) && !H_BALANCE.test(c));
       const debI = first.findIndex((c) => H_DEBIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
       const creI = first.findIndex((c) => H_CREDIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
-      const layout = { date: dateI >= 0 ? dateI : 0, desc: descI >= 0 ? descI : 1, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: true };
+      // date defaults to -1 (no date) rather than colliding with column 0 / the desc
+      const layout = { date: dateI >= 0 ? dateI : -1, desc: descI >= 0 ? descI : 1, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: true };
       if (debI >= 0 && creI >= 0) { layout.mode = "split"; layout.debit = debI; layout.credit = creI; }
       else if (amtI >= 0) { layout.mode = "signed"; layout.amount = amtI; }
       else if (debI >= 0) { layout.mode = "debitOnly"; layout.debit = debI; }
