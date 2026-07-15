@@ -1485,12 +1485,17 @@
       const pool = state.pool;
       if (pool <= 0) return;
       state.game.flags.dist = true; // badge: distributed a budget
-      // Give each cube its own percentage share, clamped so it never exceeds
-      // what's left — a cube can never go negative, and any rounding remainder
-      // (or an over-100% allocation) stays as available balance in the pool.
+      // Give each cube its percentage share. If the cubes are over-allocated
+      // (e.g. a personal cube was added on top of a full 100% base) scale every
+      // share down proportionally so ALL cubes — including the newest one — get
+      // their fair slice instead of the last one being starved. Shares are
+      // clamped to what's left so a cube can never go negative; any rounding
+      // remainder (or an under-allocated pool) stays as available balance.
+      const totalPct = state.cubes.reduce((s, c) => s + (c.pct || 0), 0);
+      const scale = totalPct > 100 ? 100 / totalPct : 1;
       let remaining = pool, distributed = 0;
       state.cubes.forEach((c) => {
-        let give = Math.max(0, Math.round(pool * ((c.pct || 0) / 100)));
+        let give = Math.max(0, Math.round(pool * ((c.pct || 0) / 100) * scale));
         if (give > remaining) give = remaining;
         c.balance += give; remaining -= give; distributed += give;
       });
