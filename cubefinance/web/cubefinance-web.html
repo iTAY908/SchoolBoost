@@ -677,6 +677,7 @@
       .wiwarn b { color: #c0392b; }
       .wisafe { background: #e9f7f0; border-color: #bfe3d2; color: #1e5c44; }
       .wibar em.negt { color: #c0392b; }
+      .obexit:hover { color: #c0392b; }
       .ledamt.neg, .logout, .bankmetric.exp b { color: #c0392b; }
       .ledamt.pos, .banknet.pos b, .bankmetric.inc b { color: #0b8f66; }
       .banknet.neg b { color: #c0392b; }
@@ -2383,7 +2384,7 @@
     // duplicates / subscriptions / anomalies — nothing is hardcoded output.
     // =====================================================================
     const BANK_FILES = {
-      june: { label: 'דוגמה · עו״ש יוני 2026.csv', csv:
+      june: { label: 'דוגמה · עו״ש יוני 2026', csv:
 "תאריך,תיאור,סכום\n" +
 "01/06/2026,משכורת - אלביט מערכות,10000\n" +
 "02/06/2026,שכר דירה - העברה,-3500\n" +
@@ -2398,7 +2399,7 @@
 "22/06/2026,וולט,-96\n" +
 "25/06/2026,ספוטיפיי,-20\n" +
 "28/06/2026,מסעדת האחים,-240" },
-      july: { label: 'דוגמה · עו״ש יולי 2026.csv', csv:
+      july: { label: 'דוגמה · עו״ש יולי 2026', csv:
 "תאריך,תיאור,סכום\n" +
 "01/07/2026,משכורת - אלביט מערכות,10000\n" +
 "02/07/2026,שכר דירה - העברה,-3500\n" +
