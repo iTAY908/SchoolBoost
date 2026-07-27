@@ -221,7 +221,10 @@ body{
     var(--bg-deep);
   display:grid; place-items:center; padding:26px;
 }
-.app.on{opacity:1; transition:opacity .5s ease}
+/* BUGFIX: the overlay starts with pointer-events:none so it never blocks the
+   scene while hidden — it must become interactive once revealed, otherwise the
+   "בוא נתחיל" button cannot be clicked at all. */
+.app.on{opacity:1; pointer-events:auto; transition:opacity .5s ease}
 .appinner{text-align:center; width:100%; transform:translateY(14px); opacity:0}
 .app.on .appinner{animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s forwards}
 @keyframes riseIn{to{transform:translateY(0); opacity:1}}
@@ -326,7 +329,7 @@ body{
           <div class="qcube" style="--cd:.50s"><span class="ce">🐷</span><span class="cn">חיסכון</span><span class="cv">₪2,400</span></div>
           <div class="qcube" style="--cd:.58s"><span class="ce">🎉</span><span class="cn">בילויים</span><span class="cv">₪900</span></div>
         </div>
-        <button class="cta">בוא נתחיל 🧊</button>
+        <button class="cta" id="cta">בוא נתחיל 🧊</button>
       </div>
     </div>
 
@@ -584,6 +587,31 @@ body{
     $("soundcta").classList.add("hide");
     if (ok) { SFX.setMuted(false); $("mute").textContent = "🔊"; }
     play(true);
+  };
+  // "בוא נתחיל" → open the app itself, which starts on the sign-up / log-in
+  // screen. Works when the intro sits next to cubefinance-web.html; if the app
+  // file isn't there we say so instead of failing silently.
+  $("cta").onclick = function(){
+    var btn = $("cta");
+    btn.textContent = "פותח את האפליקציה…";
+    try {
+      if (window.parent && window.parent !== window && window.parent.cubeIntroDone) {
+        window.parent.cubeIntroDone(); return;      // embedded inside the app
+      }
+    } catch (e) {}
+    var target = "cubefinance-web.html";
+    // verify the app file is actually reachable before navigating
+    fetch(target, { method: "GET" }).then(function(r){
+      if (r.ok) window.location.href = target; else throw new Error("missing");
+    }).catch(function(){
+      // file:// often blocks fetch — try navigating anyway, then explain
+      var t = setTimeout(function(){
+        btn.textContent = "פתח את cubefinance-web.html 📂";
+        alert("כדי להמשיך להרשמה, שמרו את קובץ האפליקציה (cubefinance-web.html) באותה תיקייה שבה נמצא הסרטון — ואז לחצו שוב.\n\nאפשר גם פשוט לפתוח את cubefinance-web.html ישירות: הסרטון מוטמע בתוכו ומוביל להרשמה.");
+      }, 900);
+      window.addEventListener("beforeunload", function(){ clearTimeout(t); });
+      window.location.href = target;
+    });
   };
   $("replay").onclick = function(){ play(SFX.ready()); };
   $("mute").onclick = function(){
