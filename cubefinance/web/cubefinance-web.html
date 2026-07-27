@@ -859,9 +859,15 @@
     .iv-skip { cursor: pointer; background: #ffffff14; border: 1px solid #ffffff2e; color: #dfe3f5;
       font-family: var(--font); font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; }
     .iv-skip:hover { background: #ffffff26; }
-    /* the sound button pulses when the user already opted into audio before */
-    .iv-skip.pulse { animation: ivPulse 1.8s ease-in-out infinite; }
-    @keyframes ivPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+    /* Shown ONLY if the browser blocked autoplay audio — the first tap anywhere
+       unlocks the soundtrack. Not a mute control: sound is always on. */
+    .iv-sndhint { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 6;
+      display: none; align-items: center; gap: 7px; white-space: nowrap; pointer-events: none;
+      background: #ffffff16; border: 1px solid #ffffff33; color: #eef1ff; backdrop-filter: blur(6px);
+      font-family: var(--font); font-size: 13px; font-weight: 700; padding: 10px 18px; border-radius: 999px;
+      animation: ivPulse 1.8s ease-in-out infinite; }
+    .iv-sndhint.on { display: flex; }
+    @keyframes ivPulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
@@ -1184,7 +1190,6 @@
     // a single self-contained page). Browsers block autoplay audio, so the
     // intro starts silent and the 🔊 button joins the score MID-FLIGHT: only
     // the cues that haven't happened yet are scheduled, still perfectly in sync.
-    const INTRO_SOUND_KEY = "cubefinance_web:introSound";
     let ivAudio = null, introStartedAt = 0;
     function ivAudioInit() {
       if (ivAudio) return ivAudio;
@@ -1194,7 +1199,7 @@
         const ctx = new C();
         const comp = ctx.createDynamicsCompressor();
         comp.threshold.value = -14; comp.ratio.value = 9; comp.attack.value = .003; comp.release.value = .22;
-        const master = ctx.createGain(); master.gain.value = .8;
+        const master = ctx.createGain(); master.gain.value = 1; // always full volume
         master.connect(comp); comp.connect(ctx.destination);
         const len = Math.floor(ctx.sampleRate * 2);
         const noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
@@ -1204,13 +1209,14 @@
       } catch (e) { return null; }
       return ivAudio;
     }
-    // Silence anything still scheduled (used when the intro is skipped/finished)
-    function ivStopAudio() {
+    // Let the soundtrack ring out gracefully when the intro closes (a short
+    // fade, not an abrupt cut) so the final chord doesn't get chopped off.
+    function ivStopAudio(fadeSec) {
       if (!ivAudio || !ivAudio.bus) return;
       try {
         const g = ivAudio.bus.gain, t = ivAudio.ctx.currentTime;
         g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
-        g.linearRampToValueAtTime(0, t + .12);
+        g.linearRampToValueAtTime(0, t + (fadeSec == null ? .45 : fadeSec));
       } catch (e) {}
       ivAudio.bus = null;
     }
@@ -1342,38 +1348,38 @@
           '</div>' +
           '<button class="iv-cta" id="ivCta">בוא נתחיל 🧊</button>' +
         '</div></div>' +
-        '<div class="iv-top">' +
-          '<button class="iv-skip" id="ivSnd" title="הפעלת סאונד">🔊</button>' +
-          '<button class="iv-skip" id="ivSkip">דלג ←</button>' +
-        '</div>';
+        '<div class="iv-top"><button class="iv-skip" id="ivSkip">דלג ←</button></div>' +
+        '<div class="iv-sndhint" id="ivSndHint"><span>🔊</span><span>הקש להפעלת הסאונד</span></div>';
       w.classList.add("on");
       introStartedAt = Date.now();
       $("ivSkip").onclick = endIntro;
       $("ivCta").onclick = endIntro; // → reveals the sign-up / log-in screen
 
-      // Sound: off until the user asks for it (browsers block autoplay audio).
-      // Turning it on joins the soundtrack at the current point in the timeline.
-      let sndOn = false;
-      const sndBtn = $("ivSnd");
-      let wantsSound = false;
-      try { wantsSound = localStorage.getItem(INTRO_SOUND_KEY) === "1"; } catch (e) {}
-      if (wantsSound) sndBtn.classList.add("pulse"); // invite a tap — they liked sound last time
-      sndBtn.onclick = () => {
-        sndBtn.classList.remove("pulse");
-        if (sndOn) { // turn it back off
-          sndOn = false; ivStopAudio(); sndBtn.textContent = "🔊";
-          try { localStorage.setItem(INTRO_SOUND_KEY, "0"); } catch (e) {}
-          return;
-        }
-        const elapsed = (Date.now() - introStartedAt) / 1000;
-        // if we're barely in, restart the whole thing so nothing is missed
-        if (elapsed > 1.2) {
-          if (ivPlayScore(elapsed)) { sndOn = true; sndBtn.textContent = "🔇"; }
-        } else {
-          if (ivPlayScore(0)) { sndOn = true; sndBtn.textContent = "🔇"; }
-        }
-        try { localStorage.setItem(INTRO_SOUND_KEY, "1"); } catch (e) {}
-      };
+      // ---- Sound is ALWAYS on, at full volume. No mute, no toggle. --------
+      // Browsers refuse to start audio before the user has interacted with the
+      // page, so we try immediately and — only if the browser blocked us — arm
+      // the very first tap/key anywhere to unlock it. When it unlocks mid-way
+      // the score joins at the current point, staying in sync with the visuals.
+      ivPlayScore(0);
+      const A = ivAudio;
+      if (!A || A.ctx.state !== "running") {
+        const hint = $("ivSndHint");
+        if (hint) hint.classList.add("on");
+        const unlock = () => {
+          document.removeEventListener("pointerdown", unlock, true);
+          document.removeEventListener("keydown", unlock, true);
+          if (hint) hint.classList.remove("on");
+          const elapsed = (Date.now() - introStartedAt) / 1000;
+          ivPlayScore(elapsed > 1.2 ? elapsed : 0);
+        };
+        document.addEventListener("pointerdown", unlock, true);
+        document.addEventListener("keydown", unlock, true);
+        introTimers.push(setTimeout(() => {   // hide the hint once it's moot
+          if (hint) hint.classList.remove("on");
+          document.removeEventListener("pointerdown", unlock, true);
+          document.removeEventListener("keydown", unlock, true);
+        }, 6200));
+      }
 
       const at = (ms, fn) => introTimers.push(setTimeout(fn, ms));
       at(120,  () => $("ivJar").classList.add("sh"));
