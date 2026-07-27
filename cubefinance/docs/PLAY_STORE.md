@@ -129,12 +129,12 @@ Play rejects an upload that reuses a `versionCode`.
 
 These are real blockers/risks, not nitpicks:
 
-1. **The billing is still a simulation.** `verifyGooglePlayPurchase()` in the web
-   app is a mock — it does not charge anyone. Shipping it as-is means the
-   "110 ₪ Premium" button grants premium for free and takes no money. Before
-   monetising, implement Google Play Billing natively and verify the purchase
-   token **server-side**. Until then, either remove the paywall or label it
-   clearly as a demo.
+1. **Server-side receipt verification is not wired up.** Real Play Billing is
+   implemented (`BillingManager.java`) and Google takes the payment, but the
+   entitlement is granted from the client. That is how most small apps ship and
+   it is fine to launch with, though a rooted device could spoof it. To harden,
+   send `purchaseToken` to your backend and check it against the Play Developer
+   API (`purchases.products.get`) before unlocking.
 2. **A 6-minute forced interstitial can trigger policy action.** Google wants
    interstitials at natural transition points, not interrupting content on a
    timer. The wrapper already blocks ads during sheets and enforces a 60-second
@@ -170,3 +170,49 @@ cubefinance/android/
         │   └── CubeApp.java
         └── res/                                     ← icon, splash, themes, backup
 ```
+
+---
+
+## In-app purchase — ₪10 Premium (real Google Play Billing)
+
+The paywall is no longer a simulation inside the Android app: Google's own
+purchase sheet takes the payment.
+
+### Create the product (required — nothing works until you do)
+
+Play Console → your app → **Monetise with Play → In-app products → Create**:
+
+| Field | Value |
+|---|---|
+| Product ID | `premium_upgrade_10` *(must match exactly — it can never be changed)* |
+| Name | AI Premium |
+| Price | **₪10** |
+| Status | **Active** |
+
+The price lives in Play Console, not in the code. The app asks Google for the
+price and displays whatever it returns, so you can change it later without
+shipping a new build.
+
+### How it behaves
+
+| | |
+|---|---|
+| Buy | `CubeyNative.buyPremium()` → Google's sheet → payment |
+| Unlock | Only after Google confirms `PURCHASED` — the client never self-grants |
+| Acknowledge | Automatic. **Purchases must be acknowledged within 3 days or Google auto-refunds them** — `BillingManager` does this immediately |
+| Restore | Ownership is re-queried on every launch and resume, so reinstalls and new devices keep Premium. Settings also has a manual **🔄 שחזור רכישה** |
+| Pending payments | Handled (e.g. cash payments) — access opens when the payment completes |
+| Already owned | Detected and restored instead of erroring |
+| Ads | Owning Premium disables AdMob immediately |
+| In a browser | No bridge exists, so the app falls back to the clearly-labelled local simulation |
+
+### Testing purchases without spending money
+
+1. Upload a build to **Internal testing** (billing does not work in a debug build
+   installed over USB — the app must come from Play).
+2. Play Console → **Setup → License testing** → add your Gmail address.
+3. Install from the internal-testing link. Purchases show as *test* and cost
+   nothing; you can refund and re-buy freely.
+
+> A non-consumable can only be bought once per account. To test again, refund the
+> order in Play Console, or use another test account.

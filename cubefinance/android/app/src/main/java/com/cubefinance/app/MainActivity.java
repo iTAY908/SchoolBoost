@@ -23,10 +23,11 @@ import android.content.Intent;
  * This activity hosts it in a WebView and adds the two things a web page
  * cannot do on its own: AdMob interstitials and true audio autoplay.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BillingManager.Listener {
 
     private WebView webView;
     private AdController ads;
+    private BillingManager billing;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -92,6 +93,10 @@ public class MainActivity extends AppCompatActivity {
         ads = new AdController(this);
         ads.start();
 
+        // Real Google Play Billing for the one-time Premium unlock.
+        billing = new BillingManager(this, this);
+        billing.start();
+
         // Android back button → in-app back, then leave.
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -114,11 +119,61 @@ public class MainActivity extends AppCompatActivity {
         if (ads != null) runOnUiThread(() -> ads.setBlocked(blocked));
     }
 
+    // ---- billing, called from the JS bridge --------------------------------
+
+    /** Start Google's purchase sheet for the Premium product. */
+    void startPurchase() {
+        if (billing != null) runOnUiThread(() -> billing.launchPurchase());
+    }
+
+    /** Formatted price straight from Play (e.g. "₪10.00"), or null if not loaded. */
+    String premiumPrice() {
+        return billing == null ? null : billing.getFormattedPrice();
+    }
+
+    boolean ownsPremium() {
+        return billing != null && billing.isPremium();
+    }
+
+    /** Re-check what the account owns (restore purchases). */
+    void restorePurchases() {
+        if (billing != null) runOnUiThread(() -> billing.restorePurchases());
+    }
+
+    /** Push a value into the page without disturbing anything else. */
+    private void callJs(String script) {
+        runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(script, null); });
+    }
+
+    private static String jsString(String v) {
+        if (v == null) return "null";
+        return "\"" + v.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", " ") + "\"";
+    }
+
+    // ---- BillingManager.Listener ------------------------------------------
+
+    @Override
+    public void onPremiumChanged(boolean premium) {
+        if (ads != null) ads.setEnabled(!premium);   // owning Premium removes ads
+        callJs("window.CubeyBilling && CubeyBilling.onPremiumChanged(" + premium + ");");
+    }
+
+    @Override
+    public void onPurchaseResult(boolean ok, String reason) {
+        callJs("window.CubeyBilling && CubeyBilling.onPurchaseResult(" + ok + "," + jsString(reason) + ");");
+    }
+
+    @Override
+    public void onPriceReady(String formattedPrice) {
+        callJs("window.CubeyBilling && CubeyBilling.onPriceReady(" + jsString(formattedPrice) + ");");
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         webView.onResume();
         if (ads != null) ads.onForeground();
+        if (billing != null) billing.restorePurchases();
     }
 
     @Override
@@ -130,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if (billing != null) billing.destroy();
         if (ads != null) ads.destroy();
         if (webView != null) {
             webView.loadUrl("about:blank");

@@ -35,4 +35,30 @@ public final class NativeBridge {
     public String platform() {
         return "android";
     }
+
+    // ---- Google Play Billing ------------------------------------------------
+
+    /** Open Google's purchase sheet for the one-time Premium product. */
+    @JavascriptInterface
+    public void buyPremium() {
+        activity.startPurchase();
+    }
+
+    /** The real localized price from Play, e.g. "₪10.00" (null until loaded). */
+    @JavascriptInterface
+    public String getPremiumPrice() {
+        return activity.premiumPrice();
+    }
+
+    /** True when this Google account owns the Premium product. */
+    @JavascriptInterface
+    public boolean isPremiumOwned() {
+        return activity.ownsPremium();
+    }
+
+    /** Re-check ownership with Play ("restore purchases"). */
+    @JavascriptInterface
+    public void restorePurchases() {
+        activity.restorePurchases();
+    }
 }

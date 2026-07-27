@@ -2199,7 +2199,7 @@
           '<div class="chlockbody"><div class="goldlock">🔒</div>' +
             '<h3>הצ׳אט עם Cubey הוא פיצ׳ר Premium</h3>' +
             '<p>שאל כל שאלה כספית, דווח על הוצאות בשפה חופשית ובקש פעולות אמיתיות — "תעביר 200 ₪ לקוביית טיול". Cubey מכיר את הקוביות שלך ועונה לפי המצב האמיתי.</p>' +
-            '<button class="distbtn wide" id="chUp">👑 שדרוג ל-\u2066AI Premium · ₪110\u2069</button>' +
+            '<button class="distbtn wide" id="chUp">👑 שדרוג ל-\u2066AI Premium · ' + priceLabel() + '\u2069</button>' +
             '<span class="chlockman">אפשר להמשיך לנהל הכול ידנית גם בלי שדרוג 🙂</span>' +
           '</div>' +
         '</div>';
@@ -2474,7 +2474,10 @@
         body.appendChild(acc);
         const list = el("div", "setlist");
         const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
-        mk(state.premium ? "👑 \u2066AI Premium\u2069 פעיל" : "👑 שדרוג ל-\u2066AI Premium (₪110)\u2069", "setitem" + (state.premium ? "" : " gold"), () => { state.screen = "upgrade"; render(); });
+        mk(state.premium ? "👑 \u2066AI Premium\u2069 פעיל" : "👑 שדרוג ל-\u2066AI Premium (" + priceLabel() + ")\u2069", "setitem" + (state.premium ? "" : " gold"), () => { state.screen = "upgrade"; render(); });
+        // Google Play keeps the entitlement, so a reinstall can restore it.
+        if (nativeBilling.available() && !state.premium)
+          mk("🔄 שחזור רכישה", "setitem", () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); });
         mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
         mk("🔒 פרטיות ונתונים", "setitem", () => { state.screen = "privacy"; render(); });
         mk("⎋ יציאה מהחשבון", "setitem", () => { resetChat(); logout(); });
@@ -2783,7 +2786,60 @@
     // rehydrated from localStorage on load; in a real build the entitlement
     // would be verified server-side rather than trusted from the client.)
     // =====================================================================
-    const PREMIUM_PRICE = 110; // ₪, one-time
+    // ─────────────────────────────────────────────────────────────────────
+    //  Real Google Play Billing (Android wrapper only).
+    //  The native side owns the purchase, acknowledges it with Google and
+    //  reports ownership back here. In a plain browser none of this exists and
+    //  the app falls back to the clearly-labelled local simulation.
+    // ─────────────────────────────────────────────────────────────────────
+    let nativePrice = null;
+    const nativeBilling = {
+      available() { return !!(nativeApp && nativeApp.buyPremium); },
+      buy() {
+        try {
+          showToast("פותח את החנות של Google Play…");
+          nativeApp.buyPremium();
+        } catch (e) { showToast("לא הצלחתי לפתוח את החנות"); }
+      },
+      restore() { try { if (nativeApp && nativeApp.restorePurchases) nativeApp.restorePurchases(); } catch (e) {} },
+    };
+    // Callbacks invoked from Java (see MainActivity#callJs).
+    window.CubeyBilling = {
+      // Google confirmed what this account owns — the only thing that unlocks
+      // Premium in the Android build.
+      onPremiumChanged(owned) {
+        if (!!state.premium === !!owned) return;
+        state.premium = !!owned;
+        saveState();
+        if (owned) { burstCoins("👑"); showToast("👑 ברוך הבא ל-AI Premium!"); }
+        render();
+      },
+      onPurchaseResult(ok, reason) {
+        closeBillingSheet();
+        if (ok) return;                    // onPremiumChanged does the unlocking
+        if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
+        else showToast("הרכישה בוטלה");
+      },
+      onPriceReady(p) {
+        nativePrice = p || null;
+        if (state.screen === "upgrade") render();
+      },
+    };
+
+    const PREMIUM_PRICE = 10; // ₪, one-time (the authoritative price lives in Play Console)
+    // Inside the Android app we show the REAL localized price Google reports for
+    // the product, so changing it in Play Console changes it everywhere without
+    // shipping a new build. In a browser we fall back to the default label.
+    function priceLabel() {
+      if (nativePrice) return nativePrice;
+      try {
+        if (nativeApp && nativeApp.getPremiumPrice) {
+          const p = nativeApp.getPremiumPrice();
+          if (p) { nativePrice = p; return p; }
+        }
+      } catch (e) {}
+      return "₪" + PREMIUM_PRICE;
+    }
     // ───────────────────────────────────────────────────────────────────────
     //  IS_MOCK_ENV — master switch between the local billing SIMULATION and a
     //  real Google Play Billing integration in production.
@@ -2792,7 +2848,7 @@
     // ───────────────────────────────────────────────────────────────────────
     const IS_MOCK_ENV = true;
     // PLACE YOUR PRODUCT ID HERE:
-    const PREMIUM_PRODUCT_ID = "premium_upgrade_110";
+    const PREMIUM_PRODUCT_ID = "premium_upgrade_10";
     // mock Google Play Developer API: a private signing secret that only the
     // "server side" knows. Tokens are signed on issue and cross-checked here.
     const PLAY_API_SECRET = "cubey-play-dev-api-7f3a91";
@@ -2847,7 +2903,7 @@
       }
       const hero = el("div", "payhero");
       hero.innerHTML = '<div class="paycrown">👑</div><h3>Cubey AI Premium</h3>' +
-        '<div class="payprice">⁦₪110⁩ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
+        '<div class="payprice">⁦' + priceLabel() + '⁩ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
         '<ul class="payfeat">' +
           '<li>💬 צ׳אט עם Cubey — היועץ הפיננסי החכם שמכיר את הקוביות שלך</li>' +
           '<li>🏦 ניהול עו״ש אוטומטי — העלאת קובץ CSV אמיתי, סיווג ותובנות AI</li>' +
@@ -2869,11 +2925,15 @@
       clearToasts(); notifyNativeBusy(true);
       const w = $("paywrap"); w.className = "ccwrap on";
       w.onclick = (e) => { if (e.target === w) closeBillingSheet(); };
+      // Inside the Android app the REAL Google Play purchase sheet is used —
+      // no mock sheet, no simulated token. Google itself takes the payment.
+      if (nativeBilling.available()) { nativeBilling.buy(); return; }
+
       const acctEmail = (state.authUser && state.authUser.email) || "you@example.com";
       w.innerHTML = '<div class="ccsheet gpsheet">' +
         '<div class="handle"></div>' +
         '<div class="gphead"><span class="gplogo">▷</span> Google Play</div>' +
-        '<div class="gpitem"><div><b>Cubey — ⁦AI Premium⁩</b><span>תשלום חד-פעמי</span></div><b class="gpprice">₪110.00</b></div>' +
+        '<div class="gpitem"><div><b>Cubey — ⁦AI Premium⁩</b><span>תשלום חד-פעמי</span></div><b class="gpprice">' + priceLabel() + '</b></div>' +
         '<div class="gpmethod">💳 ויזה •••• 4281 · <span dir="ltr">' + esc(acctEmail) + '</span></div>' +
         '<div class="gpsim">🧪 סימולציה להדגמה — לא מתבצע חיוב אמיתי ולא נשמרים פרטי תשלום.</div>' +
         '<button class="distbtn wide" id="gpBuy">אישור רכישה</button>' +
@@ -2929,7 +2989,7 @@
       // TO CONNECT TO GOOGLE PLAY STORE IN PRODUCTION:
       // 1. Trigger the native Google Play purchase flow with react-native-iap:
       //
-      //    // PLACE YOUR PRODUCT ID HERE: 'premium_upgrade_110'
+      //    // PLACE YOUR PRODUCT ID HERE: 'premium_upgrade_10'
       //    const purchase = await requestPurchase({ skus: [PREMIUM_PRODUCT_ID] });
       //
       // 2. Send purchase.purchaseToken to YOUR backend.
@@ -2956,7 +3016,7 @@
       const ov = el("div", "lockoverlay");
       ov.innerHTML = '<div class="lockbox"><div class="goldlock">🔒</div>' +
         '<b>פיצ׳ר Premium נעול</b><span>שדרג לגרסת ה-AI כדי לפתוח</span>' +
-        '<button class="distbtn wide" id="lockUp">👑 שדרוג ל-\u2066AI Premium · ₪110\u2069</button>' +
+        '<button class="distbtn wide" id="lockUp">👑 שדרוג ל-\u2066AI Premium · ' + priceLabel() + '\u2069</button>' +
         '<span class="lockman">בינתיים אפשר להמשיך לנהל הכול ידנית 🙂</span></div>';
       $("view").appendChild(ov);
       ov.querySelector("#lockUp").onclick = () => { state.screen = "upgrade"; render(); };

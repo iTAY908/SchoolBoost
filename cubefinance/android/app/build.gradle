@@ -66,4 +66,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-process:2.8.4'
     // Google Mobile Ads (interstitial every 6 minutes)
     implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    // Google Play Billing — the one-time Premium unlock
+    implementation 'com.android.billingclient:billing:7.1.1'
 }
