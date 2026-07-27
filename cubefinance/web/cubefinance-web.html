@@ -855,10 +855,13 @@
       background: linear-gradient(135deg, var(--primary-2), var(--primary));
       box-shadow: 0 16px 34px -14px var(--primary), inset 0 1px 0 #ffffff33; }
     .iv-brandscr.on .iv-cta { animation: ivRise .55s cubic-bezier(.2,.7,.3,1) .62s forwards; }
-    .iv-skip { position: absolute; inset-inline-end: 14px; top: 14px; z-index: 5; cursor: pointer;
-      background: #ffffff14; border: 1px solid #ffffff2e; color: #dfe3f5; font-family: var(--font);
-      font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; }
+    .iv-top { position: absolute; inset-inline-end: 14px; top: 14px; z-index: 6; display: flex; gap: 8px; }
+    .iv-skip { cursor: pointer; background: #ffffff14; border: 1px solid #ffffff2e; color: #dfe3f5;
+      font-family: var(--font); font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; }
     .iv-skip:hover { background: #ffffff26; }
+    /* the sound button pulses when the user already opted into audio before */
+    .iv-skip.pulse { animation: ivPulse 1.8s ease-in-out infinite; }
+    @keyframes ivPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.09); } }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
@@ -1176,9 +1179,103 @@
     // reveals the brand screen, and "בוא נתחיל" dissolves it onto the
     // sign-up / log-in screen that is already rendered underneath.
     // =====================================================================
+    // ---- intro soundtrack -------------------------------------------------
+    // Synthesized live with the Web Audio API (no audio files, so the app stays
+    // a single self-contained page). Browsers block autoplay audio, so the
+    // intro starts silent and the 🔊 button joins the score MID-FLIGHT: only
+    // the cues that haven't happened yet are scheduled, still perfectly in sync.
+    const INTRO_SOUND_KEY = "cubefinance_web:introSound";
+    let ivAudio = null, introStartedAt = 0;
+    function ivAudioInit() {
+      if (ivAudio) return ivAudio;
+      const C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      try {
+        const ctx = new C();
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -14; comp.ratio.value = 9; comp.attack.value = .003; comp.release.value = .22;
+        const master = ctx.createGain(); master.gain.value = .8;
+        master.connect(comp); comp.connect(ctx.destination);
+        const len = Math.floor(ctx.sampleRate * 2);
+        const noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const d = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+        ivAudio = { ctx: ctx, master: master, noiseBuf: noiseBuf, bus: null };
+      } catch (e) { return null; }
+      return ivAudio;
+    }
+    // Silence anything still scheduled (used when the intro is skipped/finished)
+    function ivStopAudio() {
+      if (!ivAudio || !ivAudio.bus) return;
+      try {
+        const g = ivAudio.bus.gain, t = ivAudio.ctx.currentTime;
+        g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(0, t + .12);
+      } catch (e) {}
+      ivAudio.bus = null;
+    }
+    function ivPlayScore(fromSec) {
+      const A = ivAudioInit(); if (!A) return false;
+      if (A.ctx.state === "suspended") { try { A.ctx.resume(); } catch (e) {} }
+      ivStopAudio();
+      const bus = A.ctx.createGain(); bus.gain.value = 1; bus.connect(A.master);
+      A.bus = bus;
+      const ctx = A.ctx, now = ctx.currentTime, t0 = now + .03 - fromSec;
+      const R = (a, b) => a + Math.random() * (b - a);
+      // filtered noise burst — rattles, whooshes, spraying glass
+      const noise = (rel, dur, type, freq, q, vol, sweepTo) => {
+        const at = t0 + rel; if (at < now) return;
+        const src = ctx.createBufferSource(); src.buffer = A.noiseBuf; src.loop = true;
+        const f = ctx.createBiquadFilter(); f.type = type;
+        f.frequency.setValueAtTime(Math.max(40, freq), at);
+        if (sweepTo) f.frequency.exponentialRampToValueAtTime(Math.max(40, sweepTo), at + dur);
+        if (q) f.Q.value = q;
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(.0001, at);
+        g.gain.exponentialRampToValueAtTime(Math.max(.0002, vol), at + Math.min(.03, dur * .25));
+        g.gain.exponentialRampToValueAtTime(.0001, at + dur);
+        src.connect(f); f.connect(g); g.connect(bus);
+        src.start(at); src.stop(at + dur + .05);
+      };
+      // pitched tone — thuds, glass tinkles, chimes
+      const tone = (rel, freq, dur, type, vol, freqEnd) => {
+        const at = t0 + rel; if (at < now) return;
+        const o = ctx.createOscillator(); o.type = type || "sine";
+        o.frequency.setValueAtTime(freq, at);
+        if (freqEnd) o.frequency.exponentialRampToValueAtTime(Math.max(20, freqEnd), at + dur);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(.0001, at);
+        g.gain.exponentialRampToValueAtTime(Math.max(.0002, vol), at + .014);
+        g.gain.exponentialRampToValueAtTime(.0001, at + dur);
+        o.connect(g); g.connect(bus);
+        o.start(at); o.stop(at + dur + .05);
+      };
+      // ---- the score, locked to the visual timeline (seconds) ----
+      for (let i = 0; i < 10; i++) noise(.12 + i * .115, .075, "bandpass", R(1600, 3600), 1.4, R(.05, .09)); // jar rattle
+      tone(.15, 430, .5, "sine", .025);
+      for (let j = 0; j < 16; j++) noise(1.1 + j * .045, .05, "bandpass", R(2000, 5200), 2, R(.08, .13));    // shaking harder
+      tone(1.1, 620, .55, "sine", .04);
+      noise(1.82, .85, "lowpass", 320, 1, .10, 1500);                                                        // camera pan
+      noise(2.9, .5, "bandpass", 900, 1.2, .11, 240); tone(2.92, 300, .45, "sine", .06, 110);                 // the fall
+      tone(3.4, 115, .5, "sine", .34, 40);                                                                   // impact thud
+      noise(3.4, .16, "highpass", 2400, .7, .30);                                                            // the crack
+      noise(3.43, .75, "highpass", 3600, .7, .18);                                                           // spraying glass
+      for (let k = 0; k < 18; k++) tone(3.45 + Math.random() * .6, R(2200, 6200), R(.10, .26), "triangle", R(.04, .085));
+      noise(3.9, .55, "lowpass", 300, 1, .20, 2800);                                                         // the poof
+      const sparkle = [784, 988, 1175, 1568, 1976];
+      for (let m = 0; m < sparkle.length; m++) tone(3.95 + m * .055, sparkle[m], .45, "sine", .085);
+      const chord = [523.25, 659.25, 783.99, 1046.50];                                                       // brand reveal
+      for (let n = 0; n < chord.length; n++) tone(4.5 + n * .07, chord[n], 1.5, "sine", .095);
+      tone(4.5, 130.81, 1.7, "triangle", .07);
+      noise(4.52, 1.1, "highpass", 6000, .7, .045);
+      tone(5.15, 1568, .8, "sine", .05);
+      return true;
+    }
+
     let introTimers = [];
     function endIntro() {
       introTimers.forEach(clearTimeout); introTimers = [];
+      ivStopAudio();
       const w = $("introwrap");
       w.classList.add("bye");
       setTimeout(() => { w.className = "introwrap"; w.innerHTML = ""; }, 560);
@@ -1245,10 +1342,39 @@
           '</div>' +
           '<button class="iv-cta" id="ivCta">בוא נתחיל 🧊</button>' +
         '</div></div>' +
-        '<button class="iv-skip" id="ivSkip">דלג ←</button>';
+        '<div class="iv-top">' +
+          '<button class="iv-skip" id="ivSnd" title="הפעלת סאונד">🔊</button>' +
+          '<button class="iv-skip" id="ivSkip">דלג ←</button>' +
+        '</div>';
       w.classList.add("on");
+      introStartedAt = Date.now();
       $("ivSkip").onclick = endIntro;
       $("ivCta").onclick = endIntro; // → reveals the sign-up / log-in screen
+
+      // Sound: off until the user asks for it (browsers block autoplay audio).
+      // Turning it on joins the soundtrack at the current point in the timeline.
+      let sndOn = false;
+      const sndBtn = $("ivSnd");
+      let wantsSound = false;
+      try { wantsSound = localStorage.getItem(INTRO_SOUND_KEY) === "1"; } catch (e) {}
+      if (wantsSound) sndBtn.classList.add("pulse"); // invite a tap — they liked sound last time
+      sndBtn.onclick = () => {
+        sndBtn.classList.remove("pulse");
+        if (sndOn) { // turn it back off
+          sndOn = false; ivStopAudio(); sndBtn.textContent = "🔊";
+          try { localStorage.setItem(INTRO_SOUND_KEY, "0"); } catch (e) {}
+          return;
+        }
+        const elapsed = (Date.now() - introStartedAt) / 1000;
+        // if we're barely in, restart the whole thing so nothing is missed
+        if (elapsed > 1.2) {
+          if (ivPlayScore(elapsed)) { sndOn = true; sndBtn.textContent = "🔇"; }
+        } else {
+          if (ivPlayScore(0)) { sndOn = true; sndBtn.textContent = "🔇"; }
+        }
+        try { localStorage.setItem(INTRO_SOUND_KEY, "1"); } catch (e) {}
+      };
+
       const at = (ms, fn) => introTimers.push(setTimeout(fn, ms));
       at(120,  () => $("ivJar").classList.add("sh"));
       at(1100, () => { $("ivJar").classList.remove("sh"); $("ivJar").classList.add("shh"); $("ivBills").classList.add("wild"); });
