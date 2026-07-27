@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CubeFinance — אנימציית פתיחה</title>
+<style>
+/* ==========================================================================
+   CubeFinance — 3D intro animation (single file, no dependencies).
+   Sequence: glass money jar shakes → camera pans to its base → the jar falls
+   and shatters → magic "poof" → the app's opening screen.
+   Built with CSS 3D transforms + keyframes, orchestrated by a small JS timeline.
+   ========================================================================== */
+:root{
+  --ink:#eceff8; --dim:#949cb6;
+  --primary:#6472ff; --primary-2:#8f9aff;
+  --gold:#f2b134; --money:#4caf76; --money-2:#2f8f57;
+  --bg-deep:#070a12;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:#05070d; color:var(--ink);
+  font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,"Noto Sans Hebrew",Arial,sans-serif;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+}
+
+/* ---- 16:9 stage, scales to fit any screen (good for screen-recording) ---- */
+.frame{
+  position:relative; width:min(96vw,960px); aspect-ratio:16/9;
+  border-radius:18px; overflow:hidden; background:var(--bg-deep);
+  box-shadow:0 40px 100px -40px #000, 0 0 0 1px #ffffff12;
+}
+.stage{position:absolute; inset:0; perspective:1200px; perspective-origin:50% 46%; overflow:hidden}
+
+/* ambient studio background for the jar act */
+.studio{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(60% 45% at 50% 26%, #1d2748 0%, transparent 70%),
+    radial-gradient(75% 60% at 50% 105%, #101a33 0%, transparent 70%),
+    linear-gradient(180deg,#0a0e1b 0%, #070a12 100%);
+  transition:opacity .5s ease;
+}
+/* the surface the jar sits on */
+.floor{
+  position:absolute; left:50%; top:70%; width:150%; height:60%;
+  transform:translateX(-50%) rotateX(74deg); transform-origin:50% 0;
+  background:
+    radial-gradient(closest-side, #2a3663 0%, #131a2e 45%, transparent 78%);
+  opacity:.9;
+}
+
+/* ---- camera rig: the whole act moves as if a camera is filming it ------- */
+.camera{position:absolute; inset:0; transform-style:preserve-3d; transition:transform 1.1s cubic-bezier(.45,.05,.25,1)}
+.camera.pan{transform:translateY(11%) translateZ(120px) rotateX(-9deg)}
+
+/* ---- the jar ------------------------------------------------------------ */
+.jarwrap{
+  position:absolute; left:50%; top:50%; width:210px; height:280px;
+  margin:-150px 0 0 -105px; transform-style:preserve-3d;
+}
+.jar{position:absolute; inset:0; transform-origin:50% 100%; transform-style:preserve-3d}
+.shake{animation:shake .34s linear infinite}
+.shake-hard{animation:shakeHard .16s linear infinite}
+@keyframes shake{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  25%{transform:translate(-2px,1px) rotate(-.7deg)}
+  50%{transform:translate(2px,-1px) rotate(.6deg)}
+  75%{transform:translate(-1px,-1px) rotate(-.3deg)}
+}
+@keyframes shakeHard{
+  0%,100%{transform:translate(0,0) rotate(0)}
+  20%{transform:translate(-5px,2px) rotate(-2deg)}
+  40%{transform:translate(5px,-2px) rotate(1.8deg)}
+  60%{transform:translate(-4px,-2px) rotate(-1.4deg)}
+  80%{transform:translate(4px,2px) rotate(1.2deg)}
+}
+/* the jar tipping over and falling */
+.jar.fall{animation:fall .5s cubic-bezier(.55,.06,.9,.6) forwards}
+@keyframes fall{
+  0%{transform:rotate(0) translateY(0)}
+  45%{transform:rotate(-26deg) translateY(6px)}
+  100%{transform:rotate(-74deg) translateY(66px)}
+}
+.jar.gone{opacity:0}
+
+/* glass body — layered gradients fake a cylinder in 3D */
+.glass{
+  position:absolute; left:14px; right:14px; top:34px; bottom:16px;
+  border-radius:14px 14px 26px 26px;
+  background:
+    linear-gradient(90deg,
+      rgba(255,255,255,.30) 0%, rgba(255,255,255,.05) 16%,
+      rgba(255,255,255,.02) 44%, rgba(255,255,255,.09) 70%,
+      rgba(255,255,255,.36) 100%),
+    linear-gradient(180deg, rgba(190,225,255,.10), rgba(120,170,220,.05));
+  border:1px solid rgba(255,255,255,.30);
+  border-top:none;
+  box-shadow:
+    inset 0 -22px 34px -20px rgba(120,190,255,.45),
+    inset 0 10px 22px -12px rgba(255,255,255,.35),
+    0 24px 50px -26px rgba(90,150,255,.55);
+  backdrop-filter:blur(1px);
+  overflow:hidden;
+}
+/* vertical specular highlight */
+.glass::after{
+  content:""; position:absolute; left:12%; top:4%; width:11%; height:88%;
+  border-radius:999px; background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.06));
+  filter:blur(1.5px);
+}
+/* jar rim + neck */
+.rim{
+  position:absolute; left:6px; right:6px; top:16px; height:34px; border-radius:50%;
+  background:linear-gradient(180deg,rgba(225,240,255,.55),rgba(150,190,230,.18));
+  border:1px solid rgba(255,255,255,.45);
+  box-shadow:0 6px 16px -6px rgba(120,190,255,.6), inset 0 -4px 10px -4px rgba(255,255,255,.6);
+}
+.neck{
+  position:absolute; left:14px; right:14px; top:30px; height:20px;
+  background:linear-gradient(90deg,rgba(255,255,255,.26),rgba(255,255,255,.04) 40%,rgba(255,255,255,.28));
+  border-left:1px solid rgba(255,255,255,.28); border-right:1px solid rgba(255,255,255,.28);
+}
+/* base ellipse */
+.base{
+  position:absolute; left:18px; right:18px; bottom:6px; height:26px; border-radius:50%;
+  background:linear-gradient(180deg,rgba(150,195,240,.30),rgba(90,140,200,.15));
+  border:1px solid rgba(255,255,255,.22);
+}
+/* contact shadow on the floor */
+.jarshadow{
+  position:absolute; left:50%; top:calc(50% + 128px); width:230px; height:34px; margin-left:-115px;
+  border-radius:50%; background:radial-gradient(closest-side,#000a 0%,transparent 75%);
+  filter:blur(3px); transition:opacity .35s, transform .35s;
+}
+
+/* ---- money inside the jar ---------------------------------------------- */
+.bills{position:absolute; inset:0}
+.bill{
+  position:absolute; width:52px; height:26px; border-radius:3px;
+  background:
+    linear-gradient(180deg,var(--money) 0%, var(--money-2) 100%);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.13), 0 2px 5px -2px #000a;
+  display:grid; place-items:center;
+  font-size:12px; font-weight:900; color:rgba(255,255,255,.85);
+  text-shadow:0 1px 1px #0006;
+  animation:jiggle var(--dur,1.1s) ease-in-out infinite alternate;
+  animation-delay:var(--dl,0s);
+}
+.bill::before{content:"$"}
+@keyframes jiggle{
+  from{transform:translate(0,0) rotate(var(--rot,0deg))}
+  to{transform:translate(var(--jx,3px),var(--jy,-4px)) rotate(calc(var(--rot,0deg) + var(--jr,6deg)))}
+}
+.bills.wild .bill{animation-duration:.22s}
+
+/* ---- shatter: glass shards + scattering money -------------------------- */
+.debris{position:absolute; inset:0; pointer-events:none}
+.shard{
+  position:absolute; left:50%; top:52%; width:var(--w,26px); height:var(--h,30px);
+  background:linear-gradient(140deg, rgba(226,242,255,.95), rgba(140,190,240,.45) 55%, rgba(255,255,255,.2));
+  border:1px solid rgba(255,255,255,.6);
+  clip-path:polygon(var(--p, 50% 0%, 100% 62%, 62% 100%, 0% 74%, 12% 22%));
+  opacity:0; transform:translate(-50%,-50%);
+  filter:drop-shadow(0 4px 10px rgba(120,190,255,.35));
+}
+.fly .shard{animation:shardFly var(--d,1s) cubic-bezier(.15,.6,.35,1) forwards; animation-delay:var(--sd,0s)}
+@keyframes shardFly{
+  0%{opacity:0; transform:translate(-50%,-50%) rotate(0) scale(.4)}
+  8%{opacity:1}
+  100%{opacity:0;
+    transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty)))
+      rotate(var(--rot)) scale(var(--sc,1));}
+}
+.flybill{
+  position:absolute; left:50%; top:52%; opacity:0;
+  transform:translate(-50%,-50%);
+}
+.fly .flybill{animation:billFly 1.15s cubic-bezier(.2,.65,.3,1) forwards; animation-delay:var(--sd,0s)}
+@keyframes billFly{
+  0%{opacity:0; transform:translate(-50%,-50%) rotate(0)}
+  10%{opacity:1}
+  100%{opacity:0; transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) rotate(var(--rot))}
+}
+
+/* impact flash + shockwave ring */
+.flash{
+  position:absolute; inset:0; background:radial-gradient(26% 26% at 50% 56%, #fff 0%, #cfe4ff44 40%, transparent 72%);
+  opacity:0; pointer-events:none; mix-blend-mode:screen;
+}
+/* kept deliberately brief and semi-transparent so the shards stay the hero */
+.flash.on{animation:flashPop .30s ease-out forwards}
+@keyframes flashPop{0%{opacity:0}10%{opacity:.6}100%{opacity:0}}
+.ring{
+  position:absolute; left:50%; top:56%; width:60px; height:20px; margin:-10px 0 0 -30px;
+  border:2px solid rgba(200,230,255,.85); border-radius:50%; opacity:0; pointer-events:none;
+}
+.ring.on{animation:ringOut .7s cubic-bezier(.1,.7,.3,1) forwards}
+@keyframes ringOut{
+  0%{opacity:.95; transform:scale(.3)}
+  100%{opacity:0; transform:scale(11)}
+}
+
+/* ---- the magic "poof" --------------------------------------------------- */
+.poof{position:absolute; inset:0; pointer-events:none; opacity:0}
+.poof.on{opacity:1}
+.puff{
+  position:absolute; left:50%; top:54%; width:var(--s,180px); height:var(--s,180px);
+  margin-left:calc(var(--s,180px) / -2); margin-top:calc(var(--s,180px) / -2);
+  border-radius:50%; opacity:0;
+  background:radial-gradient(closest-side, #ffffff 0%, #dfe4ff 42%, rgba(140,150,255,.55) 68%, transparent 78%);
+  filter:blur(6px);
+}
+.poof.on .puff{animation:puffOut var(--pd,.9s) cubic-bezier(.16,.72,.28,1) forwards; animation-delay:var(--pdl,0s)}
+@keyframes puffOut{
+  0%{opacity:0; transform:translate(var(--px,0),var(--py,0)) scale(.2)}
+  18%{opacity:.95}
+  100%{opacity:0; transform:translate(var(--px,0),var(--py,0)) scale(var(--pscale,3.2))}
+}
+.spark{
+  position:absolute; left:50%; top:54%; width:7px; height:7px; margin:-3.5px 0 0 -3.5px;
+  border-radius:50%; background:var(--sc,#fff); opacity:0;
+  box-shadow:0 0 12px 2px currentColor; color:var(--sc,#fff);
+}
+.poof.on .spark{animation:sparkOut .95s cubic-bezier(.1,.7,.3,1) forwards; animation-delay:var(--sdl,0s)}
+@keyframes sparkOut{
+  0%{opacity:0; transform:translate(0,0) scale(.4)}
+  15%{opacity:1}
+  100%{opacity:0; transform:translate(var(--tx),var(--ty)) scale(.2)}
+}
+/* white wipe that hands over to the app */
+.wipe{position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none}
+.wipe.on{animation:wipeOver .85s ease-in-out forwards}
+@keyframes wipeOver{0%{opacity:0}30%{opacity:.92}100%{opacity:0}}
+
+/* ---- ACT 2: the app's opening screen ----------------------------------- */
+.app{
+  position:absolute; inset:0; opacity:0; pointer-events:none;
+  background:
+    radial-gradient(70% 50% at 18% -10%, #182247 0%, transparent 58%),
+    radial-gradient(60% 46% at 108% 6%, #0d2540 0%, transparent 54%),
+    var(--bg-deep);
+  display:grid; place-items:center;
+}
+.app.on{opacity:1; transition:opacity .5s ease}
+.appinner{text-align:center; transform:translateY(14px); opacity:0}
+.app.on .appinner{animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s forwards}
+@keyframes riseIn{to{transform:translateY(0); opacity:1}}
+
+.logo{
+  width:104px; height:104px; margin:0 auto 18px; border-radius:26px;
+  display:grid; place-items:center; font-size:52px;
+  background:linear-gradient(150deg,var(--primary-2),var(--primary));
+  box-shadow:0 26px 60px -22px var(--primary), inset 0 2px 0 #ffffff40;
+  transform:scale(.5) rotate(-14deg); opacity:0;
+}
+.app.on .logo{animation:logoPop .75s cubic-bezier(.22,1.3,.36,1) .05s forwards}
+@keyframes logoPop{to{transform:scale(1) rotate(0); opacity:1}}
+
+.brand{font-size:38px; font-weight:900; letter-spacing:-1px; margin:0}
+.brand small{display:block; font-size:15px; font-weight:700; color:var(--dim); letter-spacing:.4px; margin-top:6px}
+.tag{color:var(--dim); font-size:15.5px; margin:14px 0 22px; line-height:1.6}
+.tag b{color:var(--ink)}
+
+/* the four cubes flying in */
+.cubes{display:flex; gap:12px; justify-content:center; margin-bottom:26px}
+.qcube{
+  width:82px; padding:14px 8px; border-radius:16px; text-align:center;
+  background:linear-gradient(168deg,#1a2136,#151b29 60%);
+  border:1.5px solid #273049; box-shadow:0 18px 40px -28px #000;
+  opacity:0; transform:translateY(22px) scale(.9);
+}
+.app.on .qcube{animation:cubeIn .55s cubic-bezier(.2,1.15,.35,1) forwards; animation-delay:var(--cd,.3s)}
+@keyframes cubeIn{to{opacity:1; transform:translateY(0) scale(1)}}
+.qcube .ce{font-size:22px}
+.qcube .cn{display:block; font-size:11.5px; font-weight:800; margin-top:6px}
+.qcube .cv{display:block; font-size:12.5px; font-weight:900; margin-top:3px; color:var(--primary-2); font-variant-numeric:tabular-nums}
+
+.cta{
+  border:none; cursor:pointer; font-family:inherit; font-size:16px; font-weight:800;
+  color:#fff; padding:15px 42px; border-radius:15px;
+  background:linear-gradient(135deg,var(--primary-2),var(--primary));
+  box-shadow:0 16px 34px -14px var(--primary), inset 0 1px 0 #ffffff33;
+  opacity:0; transform:translateY(12px);
+}
+.app.on .cta{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) .62s forwards}
+
+/* ---- replay control ----------------------------------------------------- */
+.replay{
+  position:absolute; inset-inline-end:14px; bottom:14px; z-index:20;
+  background:#ffffff14; border:1px solid #ffffff2e; color:#dfe3f5;
+  font-family:inherit; font-size:13px; font-weight:700; padding:9px 16px;
+  border-radius:999px; cursor:pointer; backdrop-filter:blur(6px);
+  opacity:0; transition:opacity .4s, background .2s;
+}
+.replay.show{opacity:1}
+.replay:hover{background:#ffffff26}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="stage" id="stage">
+
+    <!-- ACT 1 — the money jar -->
+    <div class="studio" id="studio">
+      <div class="floor"></div>
+    </div>
+    <div class="camera" id="camera">
+      <div class="jarshadow" id="jarshadow"></div>
+      <div class="jarwrap">
+        <div class="jar" id="jar">
+          <div class="glass"><div class="bills" id="bills"></div></div>
+          <div class="neck"></div>
+          <div class="rim"></div>
+          <div class="base"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- impact + debris -->
+    <div class="debris" id="debris"></div>
+    <div class="flash" id="flash"></div>
+    <div class="ring" id="ring"></div>
+
+    <!-- the magic poof -->
+    <div class="poof" id="poof"></div>
+    <div class="wipe" id="wipe"></div>
+
+    <!-- ACT 2 — the app opening screen -->
+    <div class="app" id="app">
+      <div class="appinner">
+        <div class="logo">🧊</div>
+        <h1 class="brand">CubeFinance<small>קיובפייננס · הכסף שלך, מסודר בקוביות</small></h1>
+        <p class="tag">שוברים את הקופה — ובונים <b>סדר</b>.<br>כל שקל יודע לאן הוא הולך.</p>
+        <div class="cubes">
+          <div class="qcube" style="--cd:.34s"><span class="ce">🏠</span><span class="cn">דיור</span><span class="cv">₪3,500</span></div>
+          <div class="qcube" style="--cd:.42s"><span class="ce">🛒</span><span class="cn">שוטף</span><span class="cv">₪1,200</span></div>
+          <div class="qcube" style="--cd:.50s"><span class="ce">🐷</span><span class="cn">חיסכון</span><span class="cv">₪2,400</span></div>
+          <div class="qcube" style="--cd:.58s"><span class="ce">🎉</span><span class="cn">בילויים</span><span class="cv">₪900</span></div>
+        </div>
+        <button class="cta">בוא נתחיל 🧊</button>
+      </div>
+    </div>
+
+    <button class="replay" id="replay">↻ נגן שוב</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var rand = function(a,b){ return a + Math.random()*(b-a); };
+
+  /* ---------- build the money inside the jar ---------- */
+  var BILLS = 22;
+  function buildBills(){
+    var box = $("bills"); box.innerHTML = "";
+    for (var i=0;i<BILLS;i++){
+      var b = document.createElement("div");
+      b.className = "bill";
+      // Stack from the bottom up, 4 per row, so the jar reads as genuinely FULL
+      // (denser and heavier toward the base, thinning out near the rim).
+      var row = Math.floor(i/4);
+      b.style.left = rand(2, 72) + "%";
+      b.style.bottom = (3 + row*13 + rand(-3,3)) + "%";
+      b.style.setProperty("--rot", rand(-28,28).toFixed(1) + "deg");
+      b.style.setProperty("--jx", rand(-4,4).toFixed(1) + "px");
+      b.style.setProperty("--jy", rand(-6,-1).toFixed(1) + "px");
+      b.style.setProperty("--jr", rand(-9,9).toFixed(1) + "deg");
+      b.style.setProperty("--dur", rand(.7,1.4).toFixed(2) + "s");
+      b.style.setProperty("--dl", rand(0,.6).toFixed(2) + "s");
+      b.style.transform = "rotate(" + b.style.getPropertyValue("--rot") + ")";
+      box.appendChild(b);
+    }
+  }
+
+  /* ---------- build glass shards + flying money for the shatter ---------- */
+  var SHAPES = [
+    "50% 0%, 100% 62%, 62% 100%, 0% 74%, 12% 22%",
+    "0% 0%, 100% 28%, 74% 100%, 18% 82%",
+    "22% 0%, 100% 46%, 54% 100%, 0% 58%",
+    "0% 18%, 82% 0%, 100% 78%, 30% 100%"
+  ];
+  function buildDebris(){
+    var d = $("debris"); d.innerHTML = "";
+    // glass shards
+    for (var i=0;i<20;i++){
+      var s = document.createElement("div");
+      s.className = "shard";
+      var ang = rand(0, Math.PI*2), dist = rand(120, 430);
+      s.style.setProperty("--p", SHAPES[i % SHAPES.length]);
+      s.style.setProperty("--w", rand(20,46).toFixed(0) + "px");
+      s.style.setProperty("--h", rand(22,50).toFixed(0) + "px");
+      s.style.setProperty("--tx", (Math.cos(ang)*dist).toFixed(0) + "px");
+      s.style.setProperty("--ty", (Math.sin(ang)*dist*.62 - rand(20,120)).toFixed(0) + "px");
+      s.style.setProperty("--rot", rand(-540,540).toFixed(0) + "deg");
+      s.style.setProperty("--sc", rand(.5,1.15).toFixed(2));
+      s.style.setProperty("--d", rand(.85,1.25).toFixed(2) + "s");
+      s.style.setProperty("--sd", rand(0,.09).toFixed(2) + "s");
+      d.appendChild(s);
+    }
+    // money bursting out with the glass
+    for (var j=0;j<10;j++){
+      var w = document.createElement("div");
+      w.className = "flybill";
+      var a2 = rand(-Math.PI, 0), r2 = rand(140, 380);
+      w.style.setProperty("--tx", (Math.cos(a2)*r2).toFixed(0) + "px");
+      w.style.setProperty("--ty", (Math.sin(a2)*r2*.8).toFixed(0) + "px");
+      w.style.setProperty("--rot", rand(-420,420).toFixed(0) + "deg");
+      w.style.setProperty("--sd", rand(0,.12).toFixed(2) + "s");
+      var inner = document.createElement("div");
+      inner.className = "bill";
+      inner.style.position = "static";
+      inner.style.animation = "none";
+      w.appendChild(inner);
+      d.appendChild(w);
+    }
+  }
+
+  /* ---------- build the poof cloud ---------- */
+  function buildPoof(){
+    var p = $("poof"); p.innerHTML = "";
+    for (var i=0;i<9;i++){
+      var puff = document.createElement("div");
+      puff.className = "puff";
+      puff.style.setProperty("--s", rand(120,240).toFixed(0) + "px");
+      puff.style.setProperty("--px", rand(-150,150).toFixed(0) + "px");
+      puff.style.setProperty("--py", rand(-110,70).toFixed(0) + "px");
+      puff.style.setProperty("--pscale", rand(2.4,4.4).toFixed(2));
+      puff.style.setProperty("--pd", rand(.75,1.05).toFixed(2) + "s");
+      puff.style.setProperty("--pdl", rand(0,.22).toFixed(2) + "s");
+      p.appendChild(puff);
+    }
+    var colors = ["#ffffff","#cdd4ff","#f2b134","#8f9aff","#a8f0d0"];
+    for (var k=0;k<28;k++){
+      var sp = document.createElement("div");
+      sp.className = "spark";
+      var a = rand(0,Math.PI*2), r = rand(120,340);
+      sp.style.setProperty("--tx", (Math.cos(a)*r).toFixed(0) + "px");
+      sp.style.setProperty("--ty", (Math.sin(a)*r*.75).toFixed(0) + "px");
+      sp.style.setProperty("--sc", colors[k % colors.length]);
+      sp.style.setProperty("--sdl", rand(0,.28).toFixed(2) + "s");
+      p.appendChild(sp);
+    }
+  }
+
+  /* ---------- the timeline ---------- */
+  var timers = [];
+  function at(ms, fn){ timers.push(setTimeout(fn, ms)); }
+
+  function reset(){
+    timers.forEach(clearTimeout); timers = [];
+    buildBills(); buildDebris(); buildPoof();
+    $("jar").className = "jar";
+    $("bills").className = "bills";
+    $("camera").className = "camera";
+    $("debris").className = "debris";
+    $("flash").className = "flash";
+    $("ring").className = "ring";
+    $("poof").className = "poof";
+    $("wipe").className = "wipe";
+    $("app").className = "app";
+    $("studio").style.opacity = "1";
+    $("jarshadow").style.opacity = "1";
+    $("jarshadow").style.transform = "";
+    $("replay").classList.remove("show");
+  }
+
+  function play(){
+    reset();
+    // 0.0s — the jar starts shaking, money rattles inside
+    at(120,  function(){ $("jar").classList.add("shake"); });
+    // 1.1s — it shakes harder, the money goes wild
+    at(1100, function(){
+      $("jar").classList.remove("shake");
+      $("jar").classList.add("shake-hard");
+      $("bills").classList.add("wild");
+    });
+    // 1.8s — camera pans down toward the base of the jar
+    at(1800, function(){ $("camera").classList.add("pan"); });
+    // 2.9s — the jar tips over and falls
+    at(2900, function(){
+      $("jar").classList.remove("shake-hard");
+      $("jar").classList.add("fall");
+      $("jarshadow").style.opacity = ".35";
+      $("jarshadow").style.transform = "scale(1.15)";
+    });
+    // 3.4s — IMPACT: it shatters, glass and money fly out
+    at(3400, function(){
+      $("jar").classList.add("gone");
+      $("debris").classList.add("fly");
+      $("flash").classList.add("on");
+      $("ring").classList.add("on");
+    });
+    // 3.9s — the magic poof swallows the scene
+    at(3900, function(){
+      $("poof").classList.add("on");
+      $("studio").style.opacity = "0";
+      $("jarshadow").style.opacity = "0";
+    });
+    // 4.25s — white wipe hands over to the app
+    at(4250, function(){ $("wipe").classList.add("on"); });
+    // 4.5s — the app's opening screen is revealed
+    at(4500, function(){ $("app").classList.add("on"); });
+    // 6.6s — offer a replay
+    at(6600, function(){ $("replay").classList.add("show"); });
+  }
+
+  $("replay").onclick = play;
+  play();
+})();
+</script>
+</body>
+</html>
