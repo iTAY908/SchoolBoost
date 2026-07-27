@@ -1,0 +1,172 @@
+# CubeFinance → Google Play
+
+The app you liked (`cubefinance/web/cubefinance-web.html`) is packaged here as a
+real Android app: `cubefinance/android/`.
+
+It is **not** a shortcut to a website. The entire app is bundled inside the APK
+as an asset and runs offline — the WebView is just the canvas.
+
+---
+
+## What the native wrapper adds
+
+| | |
+|---|---|
+| 🔊 **Sound plays by itself** | The wrapper sets `setMediaPlaybackRequiresUserGesture(false)`, which lifts the browser's autoplay block. The intro soundtrack starts on its own — no "tap for sound" hint, exactly what you wanted. |
+| 💾 **Data survives** | DOM storage is on and included in Android backup, so accounts, cubes and balances persist across launches and device restores. |
+| 📺 **AdMob interstitials** | One every 6 minutes of foreground time, preloaded so it shows instantly. |
+| 👑 **Premium removes ads** | The web app calls `CubeyNative.setPremium(true)` the moment a purchase verifies; the native side then shuts the ad engine down. |
+| ⬅️ **Back button** | Goes back inside the app, then exits. |
+| 🎨 **No white flash** | Dark splash theme + dark WebView background. |
+
+---
+
+## Build it
+
+### Option A — GitHub Actions (no installs)
+
+1. Create the upload key **once** (see below) and add these repository secrets
+   (*Settings → Secrets and variables → Actions*):
+   `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
+2. Go to the **Actions** tab → *Build Android App Bundle* → **Run workflow**.
+3. Download the `cubefinance-aab` artifact. That file goes to Play.
+
+### Option B — Android Studio
+
+1. Install [Android Studio](https://developer.android.com/studio).
+2. **Open** → select `cubefinance/android`. Let it sync (first sync downloads
+   the Android Gradle Plugin and SDK — a few minutes).
+3. *Build → Generate Signed App Bundle / APK → Android App Bundle*, create or
+   pick your key, choose **release**.
+4. The bundle lands in `app/build/outputs/bundle/release/app-release.aab`.
+
+### Option C — command line
+
+```bash
+cd cubefinance/android
+export CUBEY_KEYSTORE_PATH=$HOME/keys/upload-keystore.jks
+export CUBEY_KEYSTORE_PASSWORD=...
+export CUBEY_KEY_ALIAS=upload
+export CUBEY_KEY_PASSWORD=...
+./gradlew bundleRelease
+```
+
+---
+
+## Create your upload key (once — never lose it)
+
+```bash
+keytool -genkeypair -v \
+  -keystore upload-keystore.jks \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -alias upload
+```
+
+> **Back this file up.** With Play App Signing you *can* ask Google to reset a
+> lost upload key, but it is a slow support process — keep the `.jks` and its
+> passwords somewhere safe.
+
+For the CI secret:
+
+```bash
+base64 -w0 upload-keystore.jks > keystore.b64   # paste into KEYSTORE_BASE64
+```
+
+---
+
+## Updating the app later
+
+The web app is the source of truth. After editing
+`cubefinance/web/cubefinance-web.html`:
+
+```bash
+cp cubefinance/web/cubefinance-web.html \
+   cubefinance/android/app/src/main/assets/index.html
+```
+
+(The GitHub Actions workflow does this automatically on every run.)
+
+Then bump **both** values in `cubefinance/android/app/build.gradle`:
+
+```gradle
+versionCode 2          // must increase by at least 1 for EVERY Play upload
+versionName "1.0.1"    // what users see
+```
+
+Play rejects an upload that reuses a `versionCode`.
+
+---
+
+## Play Console checklist
+
+1. **Create the app** — Play Console → *Create app*. Package name
+   `com.cubefinance.app` (must match `build.gradle`; it can never be changed
+   after the first upload).
+2. **Upload** the `.aab` to *Testing → Internal testing* first. Install it on
+   your own device from the tester link before going to production.
+3. **Store listing** — you'll need:
+   - App icon **512×512 PNG** (the in-app icon is a vector; Play needs a PNG)
+   - Feature graphic **1024×500 PNG**
+   - At least **2 phone screenshots** (grab them from the running app)
+   - Short description (≤80 chars) and full description
+4. **Content rating** questionnaire.
+5. **Data safety** — declare honestly:
+   - The app stores financial info **on the device only**; no server, no account
+     upload.
+   - **AdMob collects an advertising ID and device data** — you must declare
+     this. Google's own guidance: <https://support.google.com/googleplay/android-developer/answer/10787469>
+6. **Ads** — tick *"This app contains ads"*. Not doing so is a policy violation.
+7. **Privacy policy URL** — mandatory for any app that shows ads. Host a page
+   (GitHub Pages is fine) covering local storage + AdMob.
+8. **Target audience** — the app has a kids mode; if you declare a child
+   audience you enter the **Families policy** programme, which imposes extra ad
+   restrictions. If the app is meant for 13+/adults, say so and keep the kids
+   mode framed as parent-supervised (the in-app terms already say this).
+
+---
+
+## Things to fix before you publish
+
+These are real blockers/risks, not nitpicks:
+
+1. **The billing is still a simulation.** `verifyGooglePlayPurchase()` in the web
+   app is a mock — it does not charge anyone. Shipping it as-is means the
+   "110 ₪ Premium" button grants premium for free and takes no money. Before
+   monetising, implement Google Play Billing natively and verify the purchase
+   token **server-side**. Until then, either remove the paywall or label it
+   clearly as a demo.
+2. **A 6-minute forced interstitial can trigger policy action.** Google wants
+   interstitials at natural transition points, not interrupting content on a
+   timer. The wrapper already blocks ads during sheets and enforces a 60-second
+   minimum gap, but if you get "limited ad serving" warnings, raise
+   `INTERVAL_MS` in `AdController.java` or tie ads to screen changes instead.
+3. **Consent for EEA/UK/Switzerland users.** You need a Google UMP consent flow
+   before serving personalised ads there. Add the
+   `com.google.android.ump:user-messaging-platform` dependency and gate
+   `MobileAds.initialize()` behind consent.
+4. **Debug builds use Google's test ad unit** (`AdController.UNIT_TEST`).
+   That's deliberate — requesting your live unit from a dev device is invalid
+   traffic and gets AdMob accounts suspended. Never flip that to the real ID for
+   testing; register a test device in the AdMob console instead.
+
+---
+
+## Project layout
+
+```
+cubefinance/android/
+├── settings.gradle · build.gradle · gradle.properties
+├── gradlew · gradlew.bat · gradle/wrapper/          ← no local Gradle needed
+└── app/
+    ├── build.gradle                                 ← IDs, versionCode, signing
+    ├── proguard-rules.pro
+    └── src/main/
+        ├── AndroidManifest.xml                      ← AdMob App ID, permissions
+        ├── assets/index.html                        ← the whole app
+        ├── java/com/cubefinance/app/
+        │   ├── MainActivity.java                    ← WebView host
+        │   ├── AdController.java                    ← 6-minute interstitial engine
+        │   ├── NativeBridge.java                    ← JS ⇄ native
+        │   └── CubeApp.java
+        └── res/                                     ← icon, splash, themes, backup
+```

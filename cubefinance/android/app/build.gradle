@@ -1,0 +1,69 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.cubefinance.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.cubefinance.app"
+        minSdk 24                 // Android 7.0 — covers ~98% of active devices
+        targetSdk 34              // required level for new Play submissions
+        versionCode 1             // bump by 1 for EVERY upload to Play
+        versionName "1.0.0"       // the version users see
+        resValue "string", "admob_app_id", "ca-app-pub-8901066122989701~1639827795"
+    }
+
+    signingConfigs {
+        release {
+            // Supplied by CI (env vars) or by ~/.gradle/gradle.properties locally.
+            // Falls back to unsigned so a debug checkout still builds.
+            def storePath = System.getenv("CUBEY_KEYSTORE_PATH") ?: project.findProperty("CUBEY_KEYSTORE_PATH")
+            if (storePath) {
+                storeFile file(storePath)
+                storePassword System.getenv("CUBEY_KEYSTORE_PASSWORD") ?: project.findProperty("CUBEY_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("CUBEY_KEY_ALIAS") ?: project.findProperty("CUBEY_KEY_ALIAS")
+                keyPassword System.getenv("CUBEY_KEY_PASSWORD") ?: project.findProperty("CUBEY_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def storePath = System.getenv("CUBEY_KEYSTORE_PATH") ?: project.findProperty("CUBEY_KEYSTORE_PATH")
+            if (storePath) signingConfig signingConfigs.release
+        }
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+    }
+
+    // AGP 8 does not generate BuildConfig unless asked — AdController and
+    // CubeApp read BuildConfig.DEBUG to pick test ads / enable web inspection.
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The whole UI is one bundled HTML file — no resource bloat.
+    packagingOptions {
+        resources { excludes += ['META-INF/*.kotlin_module'] }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.4'
+    // Google Mobile Ads (interstitial every 6 minutes)
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+}

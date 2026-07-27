@@ -1,0 +1,92 @@
+name: Build Android App Bundle
+
+# Builds the Google Play upload artifact (.aab) in the cloud, so you don't need
+# Android Studio or the SDK on your own machine.
+#
+#   • Push to the branch, or hit "Run workflow" in the Actions tab.
+#   • The signed .aab is attached to the run as a downloadable artifact.
+#
+# Signing: add these four repository secrets (Settings → Secrets → Actions).
+# Without them the job still builds, but produces an UNSIGNED bundle that Play
+# will reject — see cubefinance/docs/PLAY_STORE.md for how to create the key.
+#
+#   KEYSTORE_BASE64      base64 of your upload-keystore.jks
+#   KEYSTORE_PASSWORD    the keystore password
+#   KEY_ALIAS            the key alias (e.g. upload)
+#   KEY_PASSWORD         the key password
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'cubefinance/android/**'
+      - 'cubefinance/web/cubefinance-web.html'
+      - '.github/workflows/android-release.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Sync the latest web app into the Android assets
+        run: |
+          cp cubefinance/web/cubefinance-web.html \
+             cubefinance/android/app/src/main/assets/index.html
+          echo "bundled $(wc -c < cubefinance/android/app/src/main/assets/index.html) bytes"
+
+      - name: Decode the upload keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > "${RUNNER_TEMP}/upload-keystore.jks"
+          echo "CUBEY_KEYSTORE_PATH=${RUNNER_TEMP}/upload-keystore.jks" >> "$GITHUB_ENV"
+
+      - name: Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('cubefinance/android/**/*.gradle', 'cubefinance/android/gradle/wrapper/gradle-wrapper.properties') }}
+
+      - name: Build release bundle (.aab)
+        working-directory: cubefinance/android
+        env:
+          CUBEY_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CUBEY_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CUBEY_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Also build a release APK (handy for sideloading / testing)
+        working-directory: cubefinance/android
+        env:
+          CUBEY_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CUBEY_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CUBEY_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload the Play bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: cubefinance-aab
+          path: cubefinance/android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Upload the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: cubefinance-apk
+          path: cubefinance/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
