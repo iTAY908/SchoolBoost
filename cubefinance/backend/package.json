@@ -6,12 +6,15 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node test/budget.test.js"
+    "test": "node test/budget.test.js",
+    "test:auth": "node test/auth.test.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@composio/core": "^0.14.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "nodemailer": "^9.0.3"
   }
 }

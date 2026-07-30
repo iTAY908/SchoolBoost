@@ -59,52 +59,51 @@ async function sendViaConsole(to, code) {
 }
 
 /**
- * Composio — brokers your connected Gmail (or Loops) account.
- * Requires COMPOSIO_API_KEY and a connected account for the toolkit.
- * Docs: https://docs.composio.dev
+ * Composio — sends through YOUR connected Gmail account (or Loops).
+ * Requires COMPOSIO_API_KEY plus a connected account for the toolkit.
+ * Uses the official SDK rather than hand-rolled REST so the call shape stays
+ * correct across API versions. Docs: https://docs.composio.dev
  */
+let composioClient = null;
 async function sendViaComposio(to, code) {
   const apiKey = process.env.COMPOSIO_API_KEY;
   if (!apiKey) throw new Error('COMPOSIO_API_KEY is not set');
 
-  const { subject, html } = buildMessage(code);
+  let Composio;
+  try {
+    ({ Composio } = require('@composio/core'));
+  } catch {
+    throw new Error('MAIL_TRANSPORT=composio requires the SDK — run: npm i @composio/core');
+  }
+  if (!composioClient) composioClient = new Composio({ apiKey });
+
+  const { subject, html, text } = buildMessage(code);
   const toolkit = (process.env.COMPOSIO_MAIL_TOOL || 'gmail').toLowerCase();
+  const userId = process.env.COMPOSIO_USER_ID || 'default';
 
-  // Gmail: one call sends the message directly from the connected mailbox.
-  // Loops: fires an event that triggers a published transactional template,
-  //        with the code passed through as an event property.
-  const body = toolkit === 'loops'
-    ? {
-        tool_slug: 'LOOPS_SO_SEND_EVENT',
-        arguments: {
-          email: to,
-          eventName: process.env.LOOPS_EVENT_NAME || 'verification_code',
-          eventProperties: { code },
-          idempotencyKey: `verify-${to}-${code}-${Math.floor(Date.now() / 60000)}`,
-        },
-      }
-    : {
-        tool_slug: 'GMAIL_SEND_EMAIL',
-        arguments: {
-          recipient_email: to,
-          subject,
-          body: html,
-          is_html: true,
-        },
-      };
-
-  const res = await fetch('https://backend.composio.dev/api/v3/tools/execute', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
-    body: JSON.stringify({
-      ...body,
-      user_id: process.env.COMPOSIO_USER_ID || 'default',
-    }),
-  });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => '');
-    throw new Error(`composio send failed (${res.status}): ${detail.slice(0, 200)}`);
+  if (toolkit === 'loops') {
+    // Fires an event that triggers a published transactional template; the code
+    // is passed through as an event property the template renders.
+    await composioClient.tools.execute('LOOPS_SO_SEND_EVENT', {
+      userId,
+      arguments: {
+        email: to,
+        eventName: process.env.LOOPS_EVENT_NAME || 'verification_code',
+        eventProperties: { code },
+        idempotencyKey: `verify-${to}-${code}-${Math.floor(Date.now() / 60000)}`,
+      },
+    });
+  } else {
+    // Sends straight from the connected Gmail mailbox.
+    await composioClient.tools.execute('GMAIL_SEND_EMAIL', {
+      userId,
+      arguments: {
+        recipient_email: to,
+        subject,
+        body: html || text,
+        is_html: true,
+      },
+    });
   }
   return { ok: true, transport: `composio:${toolkit}` };
 }
@@ -118,12 +117,18 @@ async function sendViaSmtp(to, code) {
     throw new Error("MAIL_TRANSPORT=smtp requires nodemailer — run: npm i nodemailer");
   }
   const { subject, text, html } = buildMessage(code);
-  const transporter = nodemailer.createTransport({
+  const opts = {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),
     secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  });
+  };
+  // Only send credentials when they exist. Passing an auth block with undefined
+  // values makes nodemailer attempt PLAIN auth and fail against relays that
+  // don't require login (local MTAs, internal smarthosts).
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    opts.auth = { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
+  }
+  const transporter = nodemailer.createTransport(opts);
   await transporter.sendMail({ from: FROM, to, subject, text, html });
   return { ok: true, transport: 'smtp' };
 }
