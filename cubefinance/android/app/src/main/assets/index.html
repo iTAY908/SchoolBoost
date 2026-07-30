@@ -424,6 +424,29 @@
     .leddesc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ledamt { font-weight: 800; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
     .ledamt.pos { color: var(--success); } .ledamt.neg { color: #ff8f8f; }
+    /* ---- email verification (4-digit code) ---- */
+    .otpwrap { display: flex; gap: 12px; justify-content: center; direction: ltr; margin: 22px 0 8px; }
+    .otpbox { width: 60px; height: 72px; text-align: center; font-size: 30px; font-weight: 900;
+      border-radius: 16px; border: 2px solid var(--border); background: var(--bg); color: var(--text);
+      font-family: var(--font); font-variant-numeric: tabular-nums; outline: none; transition: .15s; }
+    .otpbox:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(100,114,255,.16); }
+    .otpbox.filled { border-color: var(--primary-dim); background: var(--card); }
+    .otpwrap.bad .otpbox { border-color: #ff8f8f; animation: otpShake .4s; }
+    @keyframes otpShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)}
+      40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .otpmail { color: var(--dim); font-size: 14px; line-height: 1.7; text-align: center; }
+    .otpmail b { color: var(--text); unicode-bidi: plaintext; }
+    .otperr { color: #ff8f8f; font-size: 13.5px; font-weight: 700; text-align: center; min-height: 20px;
+      margin-top: 6px; line-height: 1.5; }
+    .otpmeta { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
+    .otptimer { color: var(--dim); font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .otpresend { background: none; border: none; color: var(--primary-2); font-weight: 800; font-size: 13.5px;
+      cursor: pointer; font-family: var(--font); padding: 6px; }
+    .otpresend:disabled { color: var(--dim); cursor: default; }
+    .otpresend:not(:disabled):hover { text-decoration: underline; }
+    .devcode { margin-top: 14px; background: rgba(245,181,68,.10); border: 1px solid rgba(245,181,68,.4);
+      border-radius: 12px; padding: 11px 13px; font-size: 12.5px; line-height: 1.6; color: var(--warning); }
+    .devcode b { font-size: 17px; letter-spacing: 4px; unicode-bidi: plaintext; }
     /* ==================================================================
        "רגע של רוגע" — a short CBT-style grounding flow for stress, anger,
        or feeling lost. Warm, unhurried, and free for everyone.
@@ -1218,6 +1241,20 @@
       notifyNativePremium(); // keep the Android wrapper's ad state in sync
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    //  Email verification (4-digit one-time code).
+    //  API_BASE points at the CubeFinance backend (see backend/src/routes/auth.js).
+    //  Leave it empty and the app runs fully offline: the code is generated
+    //  locally and shown on screen, clearly marked as a local dev code. Real
+    //  email delivery ALWAYS requires the server — a browser cannot send mail,
+    //  and shipping mail credentials to the client would expose them.
+    // ─────────────────────────────────────────────────────────────────────
+    const API_BASE = "";                       // e.g. "http://192.168.1.20:4000"
+    const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
+    const RESEND_COOLDOWN_MS = 30 * 1000;
+    const MAX_CODE_ATTEMPTS = 5;
+    let vf = null; // { email, pw, digits[], error, expiresAt, resendAt, localCode, attempts, busy }
+
     // ---- Android wrapper bridge -------------------------------------------
     // When this page runs inside the CubeFinance Android app, a small native
     // bridge is injected. It lets us switch AdMob interstitials off for premium
@@ -1582,6 +1619,7 @@
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
       if (state.screen === "auth") return renderAuth();
+      if (state.screen === "verify") return renderVerify();
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "terms") return renderTermsPage();
@@ -1664,7 +1702,9 @@
           return;
         }
         if (lockTimer) { clearInterval(lockTimer); lockTimer = null; }
-        enterApp(res.user); // signup -> onboarding; login -> dashboard or onboarding
+        // New accounts must verify their email before reaching the survey.
+        if (isSignup) { startVerification(res.user.email, pass.value); return; }
+        enterApp(res.user); // login -> dashboard or onboarding
       };
       v.querySelector("#aSubmit").onclick = submit;
       pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
@@ -1674,6 +1714,220 @@
       const slBox = v.querySelector("#authSeclog");
       renderSecLogInto(slBox);
       v.querySelector("#slToggle").onclick = () => { slBox.classList.toggle("hidden"); renderSecLogInto(slBox); };
+    }
+
+    // =====================================================================
+    // Email verification screen — 4 one-time digits.
+    // Flow: register → a code is mailed → this screen → survey (onboarding).
+    // =====================================================================
+    function randomCode4() {
+      // CSPRNG in the browser; falls back only if crypto is unavailable.
+      try {
+        const a = new Uint32Array(1);
+        crypto.getRandomValues(a);
+        return String(a[0] % 10000).padStart(4, "0");
+      } catch (e) { return String(Math.floor(Math.random() * 10000)).padStart(4, "0"); }
+    }
+
+    async function apiPost(path, body) {
+      const res = await fetch(API_BASE + path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      let data = {};
+      try { data = await res.json(); } catch (e) {}
+      return { status: res.status, data: data };
+    }
+
+    /** Ask for a code — via the backend when configured, locally otherwise. */
+    async function requestCode(email, isResend) {
+      vf.busy = true; vf.error = ""; renderVerify();
+      try {
+        if (API_BASE) {
+          const r = await apiPost(isResend ? "/api/auth/resend" : "/api/auth/register", { email: email });
+          if (r.status === 429) {
+            vf.error = (r.data && r.data.message) || "נשלחו יותר מדי קודים. נסו שוב מאוחר יותר.";
+            vf.busy = false; renderVerify(); return false;
+          }
+          if (!r.data || r.data.ok !== true) {
+            vf.error = (r.data && r.data.message) || "שליחת הקוד נכשלה. נסו שוב.";
+            vf.busy = false; renderVerify(); return false;
+          }
+          vf.localCode = r.data.devCode || null;   // only present in dev
+        } else {
+          // Offline mode: the code lives only in memory on this device.
+          vf.localCode = randomCode4();
+          secLog("INFO", "נוצר קוד אימות חד-פעמי (מצב מקומי — ללא שרת דואר)");
+        }
+        vf.expiresAt = Date.now() + VERIFY_TTL_MS;
+        vf.resendAt = Date.now() + RESEND_COOLDOWN_MS;
+        vf.attempts = 0;
+        vf.digits = ["", "", "", ""];
+        vf.busy = false;
+        renderVerify();
+        showToast(isResend ? "📧 נשלח קוד חדש" : "📧 שלחנו קוד בן 4 ספרות");
+        return true;
+      } catch (e) {
+        vf.error = "אין חיבור לשרת. בדקו את החיבור ונסו שוב.";
+        vf.busy = false; renderVerify(); return false;
+      }
+    }
+
+    function startVerification(email, pw) {
+      vf = { email: email, pw: pw, digits: ["", "", "", ""], error: "", expiresAt: 0,
+             resendAt: 0, localCode: null, attempts: 0, busy: false };
+      state.screen = "verify";
+      render();
+      requestCode(email, false);
+    }
+
+    async function submitCode() {
+      const code = vf.digits.join("");
+      if (code.length !== 4) return;
+      vf.busy = true; vf.error = ""; renderVerify();
+
+      let ok = false, msg = "";
+      if (API_BASE) {
+        try {
+          const r = await apiPost("/api/auth/verify", { email: vf.email, code: code });
+          ok = !!(r.data && r.data.ok);
+          msg = (r.data && r.data.message) || "";
+          if (!ok && r.data && typeof r.data.attemptsLeft === "number") vf.attempts = MAX_CODE_ATTEMPTS - r.data.attemptsLeft;
+        } catch (e) { msg = "אין חיבור לשרת."; }
+      } else {
+        // Local mode mirrors the server's rules: expiry + attempt cap.
+        if (Date.now() > vf.expiresAt) { msg = "הקוד פג תוקף. בקשו קוד חדש."; }
+        else if (vf.attempts >= MAX_CODE_ATTEMPTS) { msg = "יותר מדי ניסיונות שגויים. בקשו קוד חדש."; }
+        else if (code === vf.localCode) { ok = true; }
+        else {
+          vf.attempts++;
+          const left = MAX_CODE_ATTEMPTS - vf.attempts;
+          msg = left > 0 ? "הקוד שגוי. נותרו " + left + " ניסיונות." : "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
+        }
+      }
+
+      vf.busy = false;
+      if (ok) {
+        secLog("INFO", "האימייל אומת בהצלחה עם קוד חד-פעמי");
+        markEmailVerified(vf.email);
+        const users = loadUsers();
+        const u = users[vf.email];
+        vf = null;
+        showToast("✅ האימייל אומת!");
+        if (u) enterApp({ id: u.id, email: u.email });   // → the survey (onboarding)
+        else { state.screen = "auth"; render(); }
+        return;
+      }
+      vf.error = msg || "הקוד שגוי. בדקו את הספרות ונסו שוב.";
+      vf.digits = ["", "", "", ""];
+      renderVerify();
+      const w = document.querySelector(".otpwrap");
+      if (w) { w.classList.add("bad"); setTimeout(() => w.classList.remove("bad"), 450); }
+      secLog("WARN", "ניסיון אימות שגוי נרשם");
+    }
+
+    function markEmailVerified(email) {
+      const users = loadUsers();
+      if (users[email]) { users[email].emailVerified = true; saveUsers(users); }
+    }
+
+    let vfTimer = null;
+    function renderVerify() {
+      if (!vf) return;
+      const v = $("view"); v.innerHTML = "";
+      if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
+
+      const wrap = el("div", "authwrap");
+      const secsLeft = Math.max(0, Math.ceil((vf.expiresAt - Date.now()) / 1000));
+      const mm = String(Math.floor(secsLeft / 60)).padStart(2, "0");
+      const ss = String(secsLeft % 60).padStart(2, "0");
+      const canResend = Date.now() >= vf.resendAt && !vf.busy;
+      const resendIn = Math.max(0, Math.ceil((vf.resendAt - Date.now()) / 1000));
+
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">📧 אימות אימייל</div>' +
+          '<h2 class="authtitle">הזינו את הקוד</h2>' +
+          '<p class="otpmail">שלחנו קוד בן 4 ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
+          '<div class="otpwrap" id="otpWrap">' +
+            [0,1,2,3].map((i) =>
+              '<input class="otpbox' + (vf.digits[i] ? " filled" : "") + '" id="otp' + i + '" inputmode="numeric" ' +
+              'autocomplete="one-time-code" maxlength="1" value="' + esc(vf.digits[i]) + '"' +
+              (vf.busy ? " disabled" : "") + '>').join("") +
+          '</div>' +
+          '<div class="otperr">' + esc(vf.error || "") + '</div>' +
+          (vf.localCode ? '<div class="devcode">🧪 <b>' + esc(vf.localCode) + '</b><br>' +
+             'מצב מקומי ללא שרת דואר — הקוד מוצג כאן במקום להישלח במייל. ' +
+             'בחיבור לשרת (API_BASE) הקוד יישלח לתיבה האמיתית ולא יוצג.</div>' : "") +
+          '<div class="otpmeta">' +
+            '<span class="otptimer" id="otpTimer">' + (secsLeft > 0 ? "הקוד תקף עוד " + mm + ":" + ss : "הקוד פג תוקף") + '</span>' +
+            '<button class="otpresend" id="otpResend"' + (canResend ? "" : " disabled") + '>' +
+              (canResend ? "שלח קוד חדש" : "שלח קוד חדש (" + resendIn + ")") + '</button>' +
+          '</div>' +
+          '<button class="obexit" id="otpBack">← חזרה למסך ההרשמה</button>' +
+        '</div>';
+      v.appendChild(wrap);
+
+      const boxes = [0,1,2,3].map((i) => wrap.querySelector("#otp" + i));
+      const focusFirstEmpty = () => {
+        const idx = vf.digits.findIndex((d) => !d);
+        (boxes[idx === -1 ? 3 : idx] || boxes[0]).focus();
+      };
+      boxes.forEach((box, i) => {
+        box.oninput = () => {
+          const digits = box.value.replace(/\D/g, "");
+          if (digits.length > 1) { spread(digits, i); return; }   // handles paste
+          vf.digits[i] = digits;
+          box.value = digits;
+          box.classList.toggle("filled", !!digits);
+          if (digits && i < 3) boxes[i + 1].focus();
+          if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
+        };
+        box.onkeydown = (e) => {
+          if (e.key === "Backspace" && !box.value && i > 0) { boxes[i - 1].focus(); vf.digits[i - 1] = ""; boxes[i - 1].value = ""; }
+          if (e.key === "ArrowLeft" && i > 0) boxes[i - 1].focus();
+          if (e.key === "ArrowRight" && i < 3) boxes[i + 1].focus();
+          if (e.key === "Enter" && vf.digits.every((d) => d)) submitCode();
+        };
+        box.onpaste = (e) => {
+          e.preventDefault();
+          const t = (e.clipboardData || window.clipboardData).getData("text") || "";
+          spread(t.replace(/\D/g, ""), 0);
+        };
+      });
+      function spread(digits, from) {
+        for (let k = 0; k < digits.length && from + k < 4; k++) {
+          vf.digits[from + k] = digits[k];
+          boxes[from + k].value = digits[k];
+          boxes[from + k].classList.add("filled");
+        }
+        focusFirstEmpty();
+        if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
+      }
+
+      wrap.querySelector("#otpResend").onclick = () => { if (Date.now() >= vf.resendAt) requestCode(vf.email, true); };
+      wrap.querySelector("#otpBack").onclick = () => {
+        if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
+        vf = null; state.screen = "auth"; state.authMode = "login"; render();
+      };
+      if (!vf.busy) setTimeout(focusFirstEmpty, 60);
+
+      // live countdown + resend cooldown, without re-rendering the whole screen
+      vfTimer = setInterval(() => {
+        if (!vf || state.screen !== "verify") { clearInterval(vfTimer); vfTimer = null; return; }
+        const left = Math.max(0, Math.ceil((vf.expiresAt - Date.now()) / 1000));
+        const t = $("otpTimer");
+        if (t) t.textContent = left > 0
+          ? "הקוד תקף עוד " + String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0")
+          : "הקוד פג תוקף";
+        const rb = $("otpResend");
+        if (rb) {
+          const wait = Math.max(0, Math.ceil((vf.resendAt - Date.now()) / 1000));
+          rb.disabled = wait > 0 || vf.busy;
+          rb.textContent = wait > 0 ? "שלח קוד חדש (" + wait + ")" : "שלח קוד חדש";
+        }
+      }, 1000);
     }
 
     // ---- Onboarding (multi-step, conditional, with skip-estimates) --------
