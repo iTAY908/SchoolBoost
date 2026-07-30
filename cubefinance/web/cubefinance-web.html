@@ -424,6 +424,75 @@
     .leddesc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ledamt { font-weight: 800; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
     .ledamt.pos { color: var(--success); } .ledamt.neg { color: #ff8f8f; }
+    /* ==================================================================
+       "רגע של רוגע" — a short CBT-style grounding flow for stress, anger,
+       or feeling lost. Warm, unhurried, and free for everyone.
+       ================================================================== */
+    .calmwrap { display: flex; flex-direction: column; gap: 14px; }
+    .calmintro { color: var(--dim); font-size: 14.5px; line-height: 1.65; }
+    .calmintro b { color: var(--text); }
+    .moodgrid { display: flex; flex-direction: column; gap: 10px; }
+    .moodbtn { display: flex; align-items: center; gap: 14px; text-align: right; cursor: pointer;
+      background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+      padding: 16px; font-family: var(--font); color: var(--text); transition: .16s; }
+    .moodbtn:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .moodbtn .me { font-size: 30px; flex: none; }
+    .moodbtn .mt { display: flex; flex-direction: column; gap: 3px; }
+    .moodbtn .mt b { font-size: 15.5px; font-weight: 800; }
+    .moodbtn .mt span { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+    /* the warm "you're allowed to feel this" card */
+    .calmcard { background: linear-gradient(168deg, var(--card-2), var(--card) 60%);
+      border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px;
+      font-size: 15px; line-height: 1.75; box-shadow: var(--shadow-card); }
+    .calmcard .ce { font-size: 30px; display: block; margin-bottom: 10px; }
+    .calmcard b { color: var(--text); }
+    .calmstep { color: var(--dim); font-size: 12.5px; font-weight: 800; letter-spacing: .4px; }
+    /* body-release checklist */
+    .bodylist { display: flex; flex-direction: column; gap: 10px; }
+    .bodyitem { display: flex; align-items: flex-start; gap: 11px; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: 14px; padding: 13px 15px; font-size: 14px; line-height: 1.55; }
+    .bodyitem .bi { font-size: 20px; flex: none; }
+    /* the breathing circle */
+    .breathe { display: grid; place-items: center; padding: 12px 0 4px; }
+    .bcircle { width: 190px; height: 190px; border-radius: 50%; display: grid; place-items: center;
+      background: radial-gradient(closest-side, rgba(100,114,255,.30), rgba(100,114,255,.06));
+      border: 2px solid rgba(143,154,255,.55); transform: scale(.62);
+      transition: transform 4s cubic-bezier(.4,0,.5,1), background 4s ease; }
+    .bcircle.in { transform: scale(1); background: radial-gradient(closest-side, rgba(143,154,255,.45), rgba(100,114,255,.12)); }
+    .bcircle.out { transform: scale(.62); transition-duration: 6s; }
+    .bcircle.hold { transition-duration: .8s; }
+    .btext { font-size: 19px; font-weight: 800; }
+    .bsub { display: block; font-size: 13px; font-weight: 700; color: var(--dim); margin-top: 6px;
+      font-variant-numeric: tabular-nums; }
+    .bcount { text-align: center; color: var(--dim); font-size: 13px; font-weight: 700; margin-top: 14px; }
+    /* the one small step */
+    .stepq { font-size: 17px; font-weight: 800; line-height: 1.6; margin: 4px 0 6px; }
+    .stepnote { color: var(--dim); font-size: 13.5px; line-height: 1.6; margin-bottom: 12px; }
+    .stepin { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px;
+      color: var(--text); font-family: var(--font); font-size: 15px; padding: 14px; resize: none; outline: none; }
+    .stepin:focus { border-color: var(--primary); }
+    .calmdone { text-align: center; padding: 10px 0; }
+    .calmdone .de { font-size: 46px; display: block; margin-bottom: 10px; }
+    .pastlist { display: flex; flex-direction: column; gap: 8px; }
+    .pastitem { display: flex; gap: 10px; align-items: flex-start; background: var(--card);
+      border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; font-size: 13.5px; line-height: 1.5; }
+    .pastitem i { font-style: normal; color: var(--dim); font-size: 11.5px; flex: none; }
+    /* quiet, non-alarming route to real help */
+    .helpline { margin-top: 6px; background: rgba(100,114,255,.07); border: 1px solid var(--border);
+      border-radius: 14px; padding: 14px; font-size: 13px; line-height: 1.7; color: var(--dim); }
+    .helpline b { color: var(--text); }
+    .helpline .hlt { display: block; margin-bottom: 8px; font-size: 13.5px; }
+    .helpline .hlrow { display: block; margin-top: 4px; }
+    .helpline .tel { unicode-bidi: plaintext; font-weight: 800; }
+    .helpline a { color: var(--primary-2); font-weight: 800; text-decoration: none; }
+    .calmskip { width: 100%; background: none; border: none; color: var(--dim); font-weight: 700;
+      font-size: 13.5px; padding: 12px; cursor: pointer; font-family: var(--font); }
+    .calmskip:hover { color: var(--text); }
+    .calmfab { position: absolute; inset-inline-start: 18px; bottom: 22px; z-index: 30;
+      width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer; font-size: 24px;
+      background: linear-gradient(140deg, #4fd1c5, #2c9c92); display: grid; place-items: center;
+      box-shadow: 0 12px 28px -8px #2c9c92; transition: transform .15s; }
+    .calmfab:hover { transform: scale(1.07); }
     /* ---- מדריך דור העתיד (youth guide hub) ---- */
     .guidehub { display: flex; flex-direction: column; gap: 10px; }
     .gcardw { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
@@ -881,6 +950,7 @@
       <div class="view" id="view"></div>
       <div class="coins" id="coins"></div>
       <button class="fab" id="fab" aria-label="פתח צ׳אט">🧊<span class="fablock" id="fablock">🔒</span></button>
+      <button class="calmfab" id="calmfab" aria-label="רגע של רוגע" title="רגע של רוגע">🌿</button>
       <div class="chatwrap" id="chatwrap"></div>
       <div class="ccwrap" id="ccwrap"></div>
       <div class="ccwrap" id="depwrap"></div>
@@ -927,6 +997,7 @@
       game: { points: 0, claimed: {}, flags: {} }, // challenges + badges
       shared: [],                                   // shared cubes with friends
       debts: [],                                    // debt optimizer entries
+      calmLog: [],                                  // "one small step" notes from the calm flow
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -1126,6 +1197,7 @@
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
           incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
+          calmLog: state.calmLog,
         }));
       } catch (e) {}
     }
@@ -1142,6 +1214,7 @@
       state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
       state.debts = s && Array.isArray(s.debts) ? s.debts : [];
+      state.calmLog = s && Array.isArray(s.calmLog) ? s.calmLog : [];
       notifyNativePremium(); // keep the Android wrapper's ad state in sync
     }
 
@@ -1170,6 +1243,7 @@
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
       state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
+      state.calmLog = [];
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
       render();
     }
@@ -1180,6 +1254,7 @@
       bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null;
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
       shForm = null; guideFeat = null; cc = null; settStep = 0;
+      try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
       try { resetChat(); } catch (e) {}
     }
@@ -1500,6 +1575,9 @@
     // ---- render dispatcher ------------------------------------------------
     function render() {
       $("fab").style.display = state.screen === "app" ? "grid" : "none";
+      // The calm button rides along with the chat FAB — a hard moment shouldn't
+      // require hunting through menus. It is FREE, never behind the paywall.
+      { const cf = $("calmfab"); if (cf) cf.style.display = state.screen === "app" ? "grid" : "none"; }
       { const fl = $("fablock"); if (fl) fl.style.display = state.premium ? "none" : "grid"; }
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
@@ -1509,6 +1587,7 @@
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
       if (state.screen === "upgrade") return renderUpgradePage();
+      if (state.screen === "calm") return renderCalmPage();
       if (state.screen === "guide") return renderGuidePage();
       if (state.screen === "challenges") return renderChallengesPage();
       if (state.screen === "shared") return renderSharedPage();
@@ -1857,14 +1936,14 @@
       // engagement modules nav — kids only see the age-appropriate modules
       const nav = el("div", "modnav");
       const modules = kid
-        ? [["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
-        : [["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["🔮", "סימולטור", "whatif"],
-           ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]];
+        ? [["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
+        : [["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"],
+           ["🔮", "סימולטור", "whatif"], ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]];
       modules.forEach((m) => {
         const b = el("button", "modbtn");
         const isPrem = (m[2] === "debt" || m[2] === "bank") && !state.premium;
         b.innerHTML = '<span class="mi">' + m[0] + (isPrem ? '<span class="lockb">🔒</span>' : "") + '</span><span>' + m[1] + '</span>';
-        b.onclick = () => { state.screen = m[2]; render(); };
+        b.onclick = () => { if (m[2] === "calm") { openCalm(); return; } state.screen = m[2]; render(); };
         nav.appendChild(b);
       });
       v.appendChild(nav);
@@ -3991,6 +4070,246 @@
       },
     ];
 
+    // =====================================================================
+    // "רגע של רוגע" — a ~3 minute CBT-style grounding flow.
+    //
+    // Structure (in this order, per mood):
+    //   1. Validation — the feeling is allowed, no fixing yet.
+    //   2. Physical release — unclench the body (anger/stress).
+    //   3. Breathing — one slow round, 4s in / 6s out.
+    //   4. Cognitive focus — you don't have to solve your life right now;
+    //      one question: the smallest thing that makes the next hour 1% better.
+    //
+    // Free for everyone, works in kids mode, and never stores anything off-device.
+    // =====================================================================
+    const CALM_MOODS = {
+      anger: {
+        emoji: "😤", title: "כועס", sub: "משהו הרתיח אותי ואני מלא בזה",
+        validate: "כעס זה לא משהו רע — הוא בדרך כלל סימן שמשהו חשוב לך נדרס. מותר לך להיות כועס. " +
+                  "לא נעשה עכשיו כלום עם הסיבה, רק ניתן לגוף להוריד קצת מהלחץ.",
+        body: true,
+      },
+      stress: {
+        emoji: "😰", title: "לחוץ / מוצף", sub: "יותר מדי דברים בבת אחת",
+        validate: "זה לגמרי מובן להרגיש מוצף כשהכול נערם. זה לא אומר שאתה לא מסתדר — " +
+                  "זה אומר שיש הרבה. בוא ניקח דקה אחת רק בשביל לנשום.",
+        body: true,
+      },
+      lost: {
+        emoji: "🌫️", title: "אבוד", sub: "לא יודע מה אני עושה עם החיים שלי",
+        validate: "התחושה הזאת מוכרת להרבה יותר אנשים ממה שנדמה, וזה בסדר גמור להרגיש אותה. " +
+                  "אתה לא חייב לדעת עכשיו לאן הכול הולך.",
+        body: false,
+      },
+    };
+
+    // { mood, step, cycle, phase }  step: 'mood'|'validate'|'body'|'breathe'|'focus'|'done'
+    let calm = null;
+    let calmTimers = [];
+    function clearCalmTimers() { calmTimers.forEach(clearTimeout); calmTimers = []; }
+    function openCalm() {
+      clearCalmTimers();
+      calm = { mood: null, step: "mood", cycle: 0, phase: "idle", answer: "" };
+      state.screen = "calm"; render();
+    }
+    function calmGo(step) { clearCalmTimers(); calm.step = step; render(); }
+
+    const BREATH_CYCLES = 3;
+    function renderCalmPage() {
+      if (!calm) calm = { mood: null, step: "mood", cycle: 0, phase: "idle", answer: "" };
+      const body = pageShell("רגע של רוגע 🌿", () => { clearCalmTimers(); calm = null; state.screen = "app"; render(); });
+      const wrap = el("div", "calmwrap"); body.appendChild(wrap);
+      const m = calm.mood ? CALM_MOODS[calm.mood] : null;
+
+      // ---------- 0. what are you feeling ----------
+      if (calm.step === "mood") {
+        const intro = el("p", "calmintro");
+        intro.innerHTML = "אם עכשיו קשה — עצור רגע. <b>שלוש דקות</b>, בלי לפתור כלום, רק להוריד את עוצמת הרעש.<br>מה הכי קרוב למה שאתה מרגיש?";
+        wrap.appendChild(intro);
+        const grid = el("div", "moodgrid");
+        Object.keys(CALM_MOODS).forEach((k) => {
+          const d = CALM_MOODS[k];
+          const b = el("button", "moodbtn");
+          b.innerHTML = '<span class="me">' + d.emoji + '</span><span class="mt"><b>' + d.title + '</b><span>' + d.sub + '</span></span>';
+          b.onclick = () => { calm.mood = k; calmGo("validate"); };
+          grid.appendChild(b);
+        });
+        wrap.appendChild(grid);
+
+        if ((state.calmLog || []).length) {
+          const t = el("div", "section-t"); t.textContent = "הצעדים הקטנים שלך"; wrap.appendChild(t);
+          const list = el("div", "pastlist");
+          state.calmLog.slice(-4).reverse().forEach((e) => {
+            const it = el("div", "pastitem");
+            it.innerHTML = '<i>' + esc(e.date) + '</i><span>' + esc(e.text) + '</span>';
+            list.appendChild(it);
+          });
+          wrap.appendChild(list);
+        }
+        wrap.appendChild(helplineCard());
+        return;
+      }
+
+      // ---------- 1. validation ----------
+      if (calm.step === "validate") {
+        const st = el("div", "calmstep"); st.textContent = "שלב 1 מתוך 3 · קודם כול"; wrap.appendChild(st);
+        const c = el("div", "calmcard");
+        c.innerHTML = '<span class="ce">' + m.emoji + '</span>' + m.validate;
+        wrap.appendChild(c);
+        const next = el("button", "distbtn wide");
+        next.textContent = m.body ? "בוא נשחרר קצת את הגוף →" : "בוא ננשום רגע →";
+        next.onclick = () => calmGo(m.body ? "body" : "breathe");
+        wrap.appendChild(next);
+        return;
+      }
+
+      // ---------- 2. physical release ----------
+      if (calm.step === "body") {
+        const st = el("div", "calmstep"); st.textContent = "שלב 2 מתוך 3 · הגוף"; wrap.appendChild(st);
+        const intro = el("p", "calmintro");
+        intro.textContent = "כעס ולחץ נתפסים בגוף לפני שהם מגיעים לראש. עבור על שלושת אלה לאט — כל אחד כמה שניות:";
+        wrap.appendChild(intro);
+        const items = [
+          ["✊", "<b>אגרופים.</b> סגור חזק את שתי כפות הידיים, ספור 3… ואז פתח לגמרי ותן לאצבעות ליפול."],
+          ["😬", "<b>לסת.</b> שים לב אם השיניים קפוצות. הרפה את הלסת, תן לפה להיפתח קצת."],
+          ["🤷", "<b>כתפיים.</b> הרם אותן לאוזניים, החזק רגע — ותפיל אותן בבת אחת."],
+        ];
+        const list = el("div", "bodylist");
+        items.forEach((it) => {
+          const d = el("div", "bodyitem");
+          d.innerHTML = '<span class="bi">' + it[0] + '</span><span>' + it[1] + '</span>';
+          list.appendChild(d);
+        });
+        wrap.appendChild(list);
+        const next = el("button", "distbtn wide");
+        next.textContent = "שחררתי — עכשיו נשימות →";
+        next.onclick = () => calmGo("breathe");
+        wrap.appendChild(next);
+        return;
+      }
+
+      // ---------- 3. breathing: 4 in / 6 out ----------
+      if (calm.step === "breathe") {
+        const st = el("div", "calmstep"); st.textContent = "שלב " + (m.body ? "3" : "2") + " · נשימה"; wrap.appendChild(st);
+        const intro = el("p", "calmintro");
+        intro.innerHTML = "נשיפה ארוכה מהשאיפה היא מה שמרגיע את הגוף. פשוט לך אחרי העיגול — <b>4 שניות פנימה, 6 החוצה</b>.";
+        wrap.appendChild(intro);
+
+        const bwrap = el("div", "breathe");
+        const circle = el("div", "bcircle");
+        circle.innerHTML = '<div style="text-align:center"><span class="btext" id="bTxt">מתכוננים…</span><span class="bsub" id="bSub"></span></div>';
+        bwrap.appendChild(circle);
+        wrap.appendChild(bwrap);
+        const counter = el("div", "bcount"); counter.id = "bCount";
+        counter.textContent = "סבב " + Math.min(calm.cycle + 1, BREATH_CYCLES) + " מתוך " + BREATH_CYCLES;
+        wrap.appendChild(counter);
+
+        const skip = el("button", "calmskip"); skip.textContent = "דלג לשאלה האחרונה ←";
+        skip.onclick = () => { calm.cycle = 0; calmGo("focus"); };
+        wrap.appendChild(skip);
+
+        const txt = circle.querySelector("#bTxt"), sub = circle.querySelector("#bSub");
+        const at = (ms, fn) => calmTimers.push(setTimeout(fn, ms));
+        // count down inside each phase so the user always knows how long is left
+        const countdown = (secs) => {
+          for (let i = 0; i < secs; i++) at(i * 1000, () => { if (sub) sub.textContent = String(secs - i); });
+        };
+        const runCycle = () => {
+          if (!calm || calm.step !== "breathe") return;
+          if (calm.cycle >= BREATH_CYCLES) { calmGo("focus"); return; }
+          const cnt = $("bCount");
+          if (cnt) cnt.textContent = "סבב " + (calm.cycle + 1) + " מתוך " + BREATH_CYCLES;
+          // inhale 4s
+          circle.className = "bcircle in";
+          if (txt) txt.textContent = "שאף פנימה";
+          countdown(4);
+          // short hold
+          at(4000, () => { circle.className = "bcircle hold in"; if (txt) txt.textContent = "החזק"; if (sub) sub.textContent = ""; });
+          // exhale 6s
+          at(4800, () => {
+            circle.className = "bcircle out";
+            if (txt) txt.textContent = "נשוף לאט";
+            countdown(6);
+          });
+          at(11000, () => { calm.cycle++; runCycle(); });
+        };
+        at(600, runCycle);
+        return;
+      }
+
+      // ---------- 4. one small step ----------
+      if (calm.step === "focus") {
+        const st = el("div", "calmstep"); st.textContent = "לסיום · צעד אחד קטן"; wrap.appendChild(st);
+        const c = el("div", "calmcard");
+        c.innerHTML = '<span class="ce">🌱</span>' +
+          '<b>אתה לא צריך לפתור את כל החיים שלך עכשיו.</b><br>' +
+          'אף אחד לא מסדר הכול ברגע אחד, וזו גם לא המטרה כרגע. המטרה היא רק להחזיר לעצמך שליטה קטנה אחת.';
+        wrap.appendChild(c);
+
+        const q = el("div", "stepq");
+        q.textContent = "מה הדבר הקטן האחד שאתה יכול לעשות בשעה הקרובה כדי להרגיש 1% יותר טוב?";
+        wrap.appendChild(q);
+        const note = el("p", "stepnote");
+        note.textContent = "משהו קטן ממש. לשתות מים, לצאת 5 דקות החוצה, לשלוח הודעה אחת, לסדר פינה אחת בשולחן.";
+        wrap.appendChild(note);
+
+        const ta = el("textarea", "stepin");
+        ta.rows = 3; ta.placeholder = "הדבר הקטן שלי הוא…";
+        ta.value = calm.answer || "";
+        ta.oninput = () => { calm.answer = ta.value; const b = wrap.querySelector("#calmSave"); if (b) b.disabled = !ta.value.trim(); };
+        wrap.appendChild(ta);
+
+        const save = el("button", "distbtn wide"); save.id = "calmSave";
+        save.textContent = "זה הצעד שלי 🌿";
+        save.disabled = !(calm.answer || "").trim();
+        save.onclick = () => {
+          const text = (calm.answer || "").trim();
+          if (!text) return;
+          const d = new Date();
+          const date = String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0");
+          state.calmLog = (state.calmLog || []).concat([{ date: date, text: text }]).slice(-20);
+          saveState();
+          calmGo("done");
+        };
+        wrap.appendChild(save);
+        setTimeout(() => ta.focus(), 60);
+        return;
+      }
+
+      // ---------- done ----------
+      if (calm.step === "done") {
+        const d = el("div", "calmdone");
+        d.innerHTML = '<span class="de">🌿</span>' +
+          '<div class="calmcard" style="text-align:right">' +
+            'זהו. לא פתרנו את הכול — רק הורדנו קצת את עוצמת הרעש, וזה מספיק לעכשיו.<br><br>' +
+            '<b>הצעד שלך לשעה הקרובה:</b><br>' + esc((calm.answer || "").trim()) +
+          '</div>';
+        wrap.appendChild(d);
+        const again = el("button", "distbtn wide"); again.textContent = "חזרה לקוביות";
+        again.onclick = () => { clearCalmTimers(); calm = null; state.screen = "app"; render(); };
+        wrap.appendChild(again);
+        const more = el("button", "calmskip"); more.textContent = "לעשות עוד סבב ↻";
+        more.onclick = () => openCalm();
+        wrap.appendChild(more);
+        wrap.appendChild(helplineCard());
+        return;
+      }
+    }
+
+    // A quiet, non-alarming route to real human help. A self-help exercise is
+    // not a substitute for support, and this must never be hidden.
+    function helplineCard() {
+      const h = el("div", "helpline");
+      h.innerHTML = '<b class="hlt">צריך יותר מזה? זה בסדר גמור.</b>' +
+        'התרגיל הזה עוזר לרגע קשה — הוא לא תחליף לאדם אמיתי. אם קשה לך באמת, או שהמחשבות מפחידות אותך, ' +
+        'מותר ואפשר לדבר עכשיו עם מישהו:' +
+        '<span class="hlrow">• <b>ער״ן</b> — קו סיוע 24/7: <a class="tel" href="tel:1201">1201</a></span>' +
+        '<span class="hlrow">• <b>סה״ר</b> — תמיכה רגשית בצ׳אט: <a href="https://sahar.org.il" target="_blank" rel="noopener">sahar.org.il</a></span>' +
+        '<span class="hlrow">• <b>נט״ל</b> — <a class="tel" href="tel:1800363363">1-800-363-363</a></span>' +
+        '<span class="hlrow">ואם יש סכנה מיידית — <a class="tel" href="tel:101">101</a> (מד״א).</span>';
+      return h;
+    }
+
     function renderGuidePage() {
       const kid = isKidMode();
       const features = kid ? KID_GUIDE_FEATURES : GUIDE_FEATURES;
@@ -4165,6 +4484,7 @@
     }
 
     $("fab").onclick = openChat;
+    $("calmfab").onclick = openCalm;
 
     // ---- boot -------------------------------------------------------------
     initAuth();
