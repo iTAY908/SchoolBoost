@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:single": "tsc -b && vite build --base=./ && node scripts/inline.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -5,10 +5,15 @@ Framer Motion and Lucide React on Vite.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # tsc -b && vite build
+npm run dev           # http://localhost:5173
+npm run build         # tsc -b && vite build
 npm run preview
+npm run build:single  # -> jack-3d-creator.html, one file, opens from disk
 ```
+
+`build:single` folds the app's CSS and JS into a single HTML file you can open
+without a server. It is a build output and is gitignored — regenerate it rather
+than committing it.
 
 ## Sections
 
