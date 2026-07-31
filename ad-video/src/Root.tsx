@@ -9,6 +9,13 @@ import { SceneGallery } from "./scenes/SceneGallery";
 import { SceneHook } from "./scenes/SceneHook";
 import { SceneResults } from "./scenes/SceneResults";
 import { PitchUpgrade } from "./pitch/PitchUpgrade";
+import { ReelVideo } from "./reel/ReelVideo";
+import {
+  TOTAL_DURATION as REEL_DURATION,
+  FPS as REEL_FPS,
+  HEIGHT as REEL_HEIGHT,
+  WIDTH as REEL_WIDTH,
+} from "./reel/theme";
 import {
   TOTAL_DURATION as PITCH_DURATION,
   FPS as PITCH_FPS,
@@ -40,6 +47,16 @@ export const RemotionRoot: React.FC = () => {
         component={AdVideo}
         durationInFrames={TOTAL_DURATION}
         {...base}
+      />
+
+      {/* ריל שמחבר את שני הצילומים לסרטון אחד */}
+      <Composition
+        id="ReelVideo"
+        component={ReelVideo}
+        durationInFrames={REEL_DURATION}
+        fps={REEL_FPS}
+        width={REEL_WIDTH}
+        height={REEL_HEIGHT}
       />
 
       {/* העריכה המשודרגת של סרטון הפיץ' האישי */}

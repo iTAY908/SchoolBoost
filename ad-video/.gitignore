@@ -8,3 +8,7 @@ out
 
 # חומר גלם אישי — לא נדחף לגיט. ראו README (הרכבת סרטון הפיץ').
 public/source
+# רצועות הדיבור נגזרות מחומר הגלם — נוצרות מחדש ב-scripts/prepare-clips.mjs
+public/audio/*-voice.m4a
+# קובצי הביניים של מחולל האודיו
+public/audio/*.wav
