@@ -20,6 +20,9 @@ export const PopWords: React.FC<{
   fontSize?: number;
   lineHeight?: number;
   maxWidth?: number;
+  /** צבע המילים המודגשות — מאפשר שימוש חוזר בפלטות שונות */
+  accentColor?: string;
+  baseColor?: string;
 }> = ({
   words,
   startAt = 0,
@@ -27,6 +30,8 @@ export const PopWords: React.FC<{
   fontSize = 132,
   lineHeight = 1.14,
   maxWidth = 900,
+  accentColor = COLORS.gold,
+  baseColor = COLORS.white,
 }) => {
   const frame = useCurrentFrame();
 
@@ -55,10 +60,10 @@ export const PopWords: React.FC<{
             key={`${word.text}-${i}`}
             style={{
               display: "inline-block",
-              color: word.accent ? COLORS.gold : COLORS.white,
+              color: word.accent ? accentColor : baseColor,
               textShadow: word.accent
-                ? "0 0 46px rgba(255,216,77,0.55), 0 8px 28px rgba(70,0,35,0.4)"
-                : "0 0 40px rgba(255,255,255,0.28), 0 8px 28px rgba(70,0,35,0.4)",
+                ? `0 0 46px ${accentColor}8C, 0 8px 28px rgba(20,0,35,0.45)`
+                : "0 0 40px rgba(255,255,255,0.28), 0 8px 28px rgba(20,0,35,0.45)",
               opacity: interpolate(frame, [appear, appear + 5], [0, 1], {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",

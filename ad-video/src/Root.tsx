@@ -8,6 +8,13 @@ import { SceneCta } from "./scenes/SceneCta";
 import { SceneGallery } from "./scenes/SceneGallery";
 import { SceneHook } from "./scenes/SceneHook";
 import { SceneResults } from "./scenes/SceneResults";
+import { PitchUpgrade } from "./pitch/PitchUpgrade";
+import {
+  TOTAL_DURATION as PITCH_DURATION,
+  FPS as PITCH_FPS,
+  HEIGHT as PITCH_HEIGHT,
+  WIDTH as PITCH_WIDTH,
+} from "./pitch/theme";
 
 const base = {
   fps: FPS,
@@ -33,6 +40,16 @@ export const RemotionRoot: React.FC = () => {
         component={AdVideo}
         durationInFrames={TOTAL_DURATION}
         {...base}
+      />
+
+      {/* העריכה המשודרגת של סרטון הפיץ' האישי */}
+      <Composition
+        id="PitchUpgrade"
+        component={PitchUpgrade}
+        durationInFrames={PITCH_DURATION}
+        fps={PITCH_FPS}
+        width={PITCH_WIDTH}
+        height={PITCH_HEIGHT}
       />
 
       {/* כל שקופית רשומה בנפרד — נוח לערוך ולייצא אותה לבד */}

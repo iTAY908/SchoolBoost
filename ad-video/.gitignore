@@ -5,3 +5,6 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# חומר גלם אישי — לא נדחף לגיט. ראו README (הרכבת סרטון הפיץ').
+public/source
