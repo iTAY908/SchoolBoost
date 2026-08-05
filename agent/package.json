@@ -1,0 +1,21 @@
+{
+  "name": "schoolboost-whatsapp-agent",
+  "version": "2.0.0",
+  "private": true,
+  "description": "WhatsApp AI agent for SchoolBoost — Meta Cloud API on Cloudflare Workers",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260804.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.118.0"
+  }
+}
