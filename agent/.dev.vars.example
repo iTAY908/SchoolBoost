@@ -1,0 +1,11 @@
+# Copy to .dev.vars for `wrangler dev`. Gitignored — never commit the real one.
+# In production these are set with `wrangler secret put <NAME>` instead.
+
+# Permanent access token from Meta > WhatsApp > API Setup
+WHATSAPP_TOKEN=
+# A string you invent. Meta echoes it back when verifying the webhook.
+WHATSAPP_VERIFY_TOKEN=
+# App Secret from Meta > App Settings > Basic
+WHATSAPP_APP_SECRET=
+# From console.anthropic.com
+ANTHROPIC_API_KEY=

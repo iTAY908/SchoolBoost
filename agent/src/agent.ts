@@ -1,8 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { config } from "./config.js";
-import { getHistory, appendTurn } from "./store.js";
-
-const client = new Anthropic({ apiKey: config.anthropic.apiKey });
+import { type Env, model } from "./env.js";
+import { getHistory, saveHistory } from "./store.js";
 
 const SYSTEM_PROMPT = `אתה הסוכן של SchoolBoost, עונה לאנשים בוואטסאפ. השפה הראשית היא עברית — ענה בעברית אלא אם פנו אליך בשפה אחרת, ואז ענה באותה שפה.
 
@@ -18,56 +16,50 @@ const SYSTEM_PROMPT = `אתה הסוכן של SchoolBoost, עונה לאנשים
 אין לך גישה לקבצים, למיילים או לאינטרנט — אתה עונה מתוך ידע וההקשר של השיחה בלבד.`;
 
 /**
- * WhatsApp caps a message at 4096 characters, and the system prompt asks for
- * short replies — a large output budget here would only fund verbosity the
- * channel can't display well. Longer answers are still split by sendText().
+ * WhatsApp caps a message at 4096 characters and the system prompt asks for
+ * short replies, so a larger budget would only fund output the channel drops.
+ * Longer answers are still split by sendText().
  */
-const MAX_TOKENS = 4096;
+const MAX_TOKENS = 2048;
 
-export interface AgentReply {
-  text: string;
-  refused: boolean;
-}
+export async function respondTo(env: Env, contact: string, userMessage: string): Promise<string> {
+  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const history = await getHistory(env, contact);
 
-export async function respondTo(contact: string, userMessage: string): Promise<AgentReply> {
-  const history = getHistory(contact);
-
-  const params = {
-    model: config.anthropic.model,
+  const response = await client.messages.create({
+    model: model(env),
     max_tokens: MAX_TOKENS,
-    system: SYSTEM_PROMPT,
-    thinking: { type: "adaptive" },
+    system: [
+      {
+        type: "text",
+        text: SYSTEM_PROMPT,
+        // The prompt is identical on every request, so caching it turns the
+        // largest fixed part of each call into a cache read.
+        cache_control: { type: "ephemeral" },
+      },
+    ],
     messages: [...history, { role: "user", content: userMessage }],
-    // Opus 5's safety classifiers can decline a request outright. "default"
-    // lets the API re-serve it on Anthropic's recommended fallback model
-    // instead of handing us an empty response.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-  };
+  });
 
-  const response = await client.beta.messages.create(
-    params as unknown as Parameters<typeof client.beta.messages.create>[0],
-  );
-
-  if ("stop_reason" in response && response.stop_reason === "refusal") {
-    return {
-      text: "אני לא יכול לענות על ההודעה הזאת. נסה לנסח אותה אחרת או לשאול משהו אחר.",
-      refused: true,
-    };
+  if (response.stop_reason === "refusal") {
+    return "אני לא יכול לענות על ההודעה הזאת. נסה לנסח אותה אחרת או לשאול משהו אחר.";
   }
 
-  const text = ("content" in response ? response.content : [])
-    .filter((block): block is Anthropic.Beta.BetaTextBlock => block.type === "text")
+  const text = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
     .map((block) => block.text)
     .join("\n")
     .trim();
 
   if (!text) {
-    return { text: "לא הצלחתי לנסח תשובה. אפשר לנסות שוב?", refused: false };
+    return "לא הצלחתי לנסח תשובה. אפשר לנסות שוב?";
   }
 
-  appendTurn(contact, { role: "user", content: userMessage });
-  appendTurn(contact, { role: "assistant", content: text });
+  await saveHistory(env, contact, [
+    ...history,
+    { role: "user", content: userMessage },
+    { role: "assistant", content: text },
+  ]);
 
-  return { text, refused: false };
+  return text;
 }

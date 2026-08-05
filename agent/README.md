@@ -1,113 +1,139 @@
 # SchoolBoost WhatsApp Agent
 
-A WhatsApp agent: people message the business number, Claude answers, the reply
-goes back over WhatsApp. Infobip fronts the WhatsApp Business API; Claude Opus 5
-produces the answers.
+People message the WhatsApp business number, Claude answers, the reply goes back
+over WhatsApp. Runs as a Cloudflare Worker against Meta's WhatsApp Cloud API.
 
 ```
-person on WhatsApp  ──▶  Meta  ──▶  Infobip  ──▶  POST /webhook/whatsapp
-                                                        │
-                                                        ▼
-                                                  Claude Opus 5
-                                                        │
-person on WhatsApp  ◀──  Meta  ◀──  Infobip  ◀──  POST /whatsapp/1/message/text
+person on WhatsApp  ──▶  Meta  ──▶  POST /webhook  (Cloudflare Worker)
+                                          │
+                                          ▼
+                                   Claude Haiku 4.5
+                                          │
+person on WhatsApp  ◀──  Meta  ◀──  POST /{phone-number-id}/messages
 ```
 
-## The chat link
-
-```
-https://wa.me/447860088970
-```
-
-That opens a WhatsApp chat with the Infobip sender number. **It only answers
-while this server is running and reachable at the URL configured as Infobip's
-inbound webhook.** Without that, messages arrive at Infobip and nothing replies.
+No middleman BSP, so there is nothing to pay for the WhatsApp side beyond
+Meta's own conversation pricing — and conversations the user starts are free.
+Cloudflare's free tier covers the hosting. Claude API usage is the running cost.
 
 ## Setup
+
+### 1. Meta — get four values
+
+In [developers.facebook.com](https://developers.facebook.com), create a Business
+app and add the **WhatsApp** product. From **WhatsApp > API Setup** you need:
+
+| Value | Where |
+| --- | --- |
+| Phone number ID | API Setup. A numeric ID, **not** the phone number |
+| Access token | API Setup. The temporary one expires in 24h — generate a permanent System User token for real use |
+| App Secret | App Settings > Basic |
+| Graph API version | Shown in the API Setup URL, e.g. `v21.0` |
+
+Also add your own number under **API Setup > To > Manage phone number list**,
+or Meta won't deliver test messages to you.
+
+### 2. Cloudflare — deploy
 
 ```bash
 cd agent
 npm install
-cp .env.example .env      # fill it in
-npm run build
-npm start
+npx wrangler login
+
+# Create the KV namespace and paste the printed id into wrangler.toml
+npx wrangler kv namespace create HISTORY
 ```
 
-### Environment
+Fill in `wrangler.toml`: the KV `id`, `WHATSAPP_PHONE_NUMBER_ID`, and
+`GRAPH_API_VERSION`. Then set the secrets:
 
-| Variable | What it is |
+```bash
+npx wrangler secret put WHATSAPP_TOKEN
+npx wrangler secret put WHATSAPP_VERIFY_TOKEN   # any string you invent — remember it
+npx wrangler secret put WHATSAPP_APP_SECRET
+npx wrangler secret put ANTHROPIC_API_KEY
+
+npx wrangler deploy
+```
+
+Deploy prints your URL, something like
+`https://schoolboost-whatsapp-agent.<subdomain>.workers.dev`. Check it:
+
+```bash
+curl https://<your-worker>.workers.dev/health
+# {"status":"ok","model":"claude-haiku-4-5","phone_number_id":"..."}
+```
+
+### 3. Meta — point the webhook at the Worker
+
+**WhatsApp > Configuration > Webhook > Edit**:
+
+| Field | Value |
 | --- | --- |
-| `INFOBIP_BASE_URL` | Base URL from the Infobip portal, no scheme (`8vn9v1.api.infobip.com`) |
-| `INFOBIP_API_KEY` | Infobip API key, sent as `Authorization: App <key>` |
-| `INFOBIP_SENDER` | WhatsApp Business sender number, digits only, no `+` |
-| `INFOBIP_TEMPLATE_NAME` | Approved template for messages outside the 24h window |
-| `ANTHROPIC_API_KEY` | Anthropic API key |
-| `ANTHROPIC_MODEL` | Defaults to `claude-opus-5` |
-| `WEBHOOK_TOKEN` | Random secret; Infobip must call `?token=<this>` |
-| `PORT` | Defaults to `3000` |
-| `HISTORY_TURNS` | Conversation turns kept per contact, default 20 |
+| Callback URL | `https://<your-worker>.workers.dev/webhook` |
+| Verify token | Whatever you set as `WHATSAPP_VERIFY_TOKEN` |
 
-### Point Infobip at the webhook
+Click **Verify and save** — Meta calls the Worker with a challenge and the
+Worker echoes it back. Then **Manage** the webhook fields and subscribe to
+**messages**. Without that subscription nothing is ever delivered.
 
-The server must be reachable over public HTTPS. In the Infobip portal, set the
-inbound WhatsApp webhook to:
+### 4. Test
 
-```
-https://<your-host>/webhook/whatsapp?token=<WEBHOOK_TOKEN>
-```
+Message the business number from WhatsApp. A reply should arrive in seconds.
+`npx wrangler tail` streams live logs if it doesn't.
 
-For local development, tunnel it (`ngrok http 3000`) and use the tunnel URL.
-Requests without the right `token` get a 401, so the endpoint isn't open to
-anyone who finds the path.
-
-Verify the server is up:
+## Local development
 
 ```bash
-curl https://<your-host>/health
-# {"status":"ok","sender":"447860088970","model":"claude-opus-5"}
+cp .dev.vars.example .dev.vars   # fill in
+npx wrangler dev
 ```
 
-## Sending a message yourself
-
-```bash
-node dist/send.js 972584080951 --template Itay     # template, works anytime
-node dist/send.js 972584080951 "היי, הסוכן באוויר"  # free text, 24h window only
-```
-
-## The 24-hour window
-
-Meta only delivers free-form text within 24 hours of the contact's last message
-to the business. Outside that window only pre-approved **templates** go through.
-The agent replies to inbound messages, so it is always inside the window — but
-anything the agent initiates (a reminder, a proactive alert) needs an approved
-template. `sendTemplate()` in `src/infobip.ts` covers that case.
+Meta can't reach `localhost`, so to test inbound end to end you need a tunnel
+(`cloudflared tunnel --url http://localhost:8787`) and the tunnel URL in the
+webhook config.
 
 ## Behavior
 
 - Answers in Hebrew by default, switching to whatever language it's addressed in.
 - Formatting is tuned for WhatsApp: no markdown headings, tables, or code
   blocks, since WhatsApp doesn't render them.
-- Replies longer than WhatsApp's 4096-character limit are split on paragraph
+- Replies past WhatsApp's 4096-character limit are split on paragraph
   boundaries rather than truncated.
-- Per-contact conversation history, capped at `HISTORY_TURNS`.
+- Per-contact history in KV, capped at `HISTORY_TURNS` and expiring after 30
+  days of silence.
 - `/reset` or `איפוס` clears a contact's history.
 
 ## Files
 
 | File | Role |
 | --- | --- |
-| `src/server.ts` | Express webhook, dedupe, error handling |
+| `src/index.ts` | Worker entry: routing, Meta verification, signature check |
 | `src/agent.ts` | Claude call, system prompt, refusal handling |
-| `src/infobip.ts` | Outbound text and template sends, message splitting |
-| `src/store.ts` | In-memory conversation history |
-| `src/config.ts` | Environment loading, fails fast on anything missing |
-| `src/send.ts` | One-off CLI sender |
+| `src/whatsapp.ts` | Cloud API sends, signature verification, payload parsing |
+| `src/store.ts` | KV-backed history and message-ID dedupe |
+| `src/env.ts` | Binding types and defaults |
+
+## Cost
+
+Claude is the only per-use cost. At roughly 1,300 input and 200 output tokens
+per exchange, Haiku 4.5 works out near $0.002 per message — about $7/month at
+100 messages a day. The system prompt is cached, which takes a bite out of the
+input side. Switch models with the `ANTHROPIC_MODEL` var in `wrangler.toml`.
+
+Cloudflare's free tier allows 100,000 requests/day and doesn't sleep. Meta
+charges nothing for conversations the user initiates.
 
 ## Known limits
 
-- **History is in memory.** Restarting the process clears every conversation,
-  and two instances behind a load balancer will disagree. Move `src/store.ts`
-  to Redis or Postgres before running more than one.
-- **No inbound signature verification.** The `token` query parameter is the only
-  check. Infobip supports IP allowlisting — worth adding in front of this.
-- **Text only.** Images, audio, and documents get a "text only" reply.
+- **The 24-hour window.** Meta only delivers free-form text within 24 hours of
+  the contact's last message. The agent only ever replies, so it stays inside
+  the window — but anything it initiates (a reminder, an alert) needs an
+  approved template, which isn't implemented.
+- **Dedupe is best-effort.** KV is eventually consistent, so a Meta retry
+  arriving a second after the original can slip past the check. The cost is a
+  duplicate answer.
+- **Text only.** Images, audio, and documents get a "text only" reply; image
+  and document captions are read.
+- **Graph API versions expire.** Meta retires them roughly two years after
+  release. When sends start failing, bump `GRAPH_API_VERSION`.

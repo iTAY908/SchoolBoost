@@ -1,0 +1,26 @@
+name = "schoolboost-whatsapp-agent"
+main = "src/index.ts"
+compatibility_date = "2025-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Conversation history and message-ID dedupe.
+# Create with: wrangler kv namespace create HISTORY
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "HISTORY"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+[vars]
+ANTHROPIC_MODEL = "claude-haiku-4-5"
+HISTORY_TURNS = "20"
+# Phone number ID from Meta > WhatsApp > API Setup. Not the phone number.
+WHATSAPP_PHONE_NUMBER_ID = ""
+# Meta retires Graph API versions roughly two years after release — check the
+# version shown in your Meta dashboard and set it here.
+GRAPH_API_VERSION = "v21.0"
+
+# Secrets are NOT set here. Run each of these once:
+#   wrangler secret put WHATSAPP_TOKEN
+#   wrangler secret put WHATSAPP_VERIFY_TOKEN
+#   wrangler secret put WHATSAPP_APP_SECRET
+#   wrangler secret put ANTHROPIC_API_KEY
