@@ -14,11 +14,13 @@
 // embeds a full URL — errors carry the method name only.
 
 export class GreenApiError extends Error {
-  constructor(message, { status, body } = {}) {
+  constructor(message, { status, body, networkPolicy } = {}) {
     super(message);
     this.name = 'GreenApiError';
     this.status = status;
     this.body = body;
+    /** True when the request never reached Green API — blocked by an egress proxy. */
+    this.networkPolicy = networkPolicy ?? false;
   }
 }
 
@@ -86,6 +88,14 @@ export class GreenApi {
     }
 
     if (!res.ok) {
+      // A 403 can come from an egress proxy rather than Green API — same status,
+      // completely different fix, so don't let it read as a bad token.
+      if (res.status === 403 && /allowlist|egress|proxy/i.test(String(parsed))) {
+        throw new GreenApiError(
+          `${method} blocked by network policy, not by Green API: ${String(parsed)}`,
+          { status: res.status, body: parsed, networkPolicy: true },
+        );
+      }
       throw new GreenApiError(`${method} returned HTTP ${res.status}`, {
         status: res.status,
         body: parsed,

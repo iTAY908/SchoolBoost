@@ -281,10 +281,15 @@ run(process.argv.slice(2))
   .catch((err) => {
     if (err instanceof GreenApiError) {
       console.error(`❌ ${err.message}`);
-      if (err.status === 401 || err.status === 403) {
-        console.error('   The token or instance id looks wrong — re-check GREEN_API_* values.');
+      if (err.networkPolicy) {
+        console.error('   Green API was never reached. Allow the host in your network');
+        console.error('   egress settings, or run this from a machine with direct access.');
+      } else if (err.status === 401 || err.status === 403) {
+        console.error('   The token or instance id looks wrong — re-check idInstance');
+        console.error('   and apiTokenInstance in .env against the Green API console.');
+      } else if (err.body) {
+        console.error(`   ${JSON.stringify(err.body)}`);
       }
-      if (err.body) console.error(`   ${JSON.stringify(err.body)}`);
     } else {
       console.error(`❌ ${err.stack || err.message}`);
     }
