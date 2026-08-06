@@ -1,0 +1,9 @@
+node_modules/
+
+# Credentials — never commit.
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store

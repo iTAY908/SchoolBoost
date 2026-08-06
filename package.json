@@ -1,0 +1,16 @@
+{
+  "name": "schoolboost",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SchoolBoost — WhatsApp bridge over the Green API HTTP interface.",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "check": "node --env-file-if-exists=.env scripts/check-connection.js",
+    "test": "node --test \"test/**/*.test.js\""
+  },
+  "dependencies": {}
+}
