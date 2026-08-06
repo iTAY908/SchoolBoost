@@ -1,0 +1,8 @@
+node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+whatsapp/.env
+whatsapp/qr.png
