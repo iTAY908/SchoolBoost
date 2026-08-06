@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // WhatsApp CLI over Green API.
 //
-//   node --env-file=whatsapp/.env whatsapp/cli.mjs <command> [args]
+//   node --env-file=.env whatsapp/cli.mjs <command> [args]
 //
 // Run with no arguments for the command list.
 
+import { readFile, writeFile } from 'node:fs/promises';
+import { basename } from 'node:path';
 import { GreenApi, GreenApiError, toChatId, messageText } from './green-api.mjs';
 import { waitForScan } from './qr.mjs';
 import { listen } from './listener.mjs';
@@ -14,6 +16,8 @@ const COMMANDS = {
   connect: 'Link a WhatsApp account (writes a QR to whatsapp/qr.png to scan)',
   'send <phone> <message...>': 'Send a text message',
   'send-file <phone> <url> [fileName] [caption]': 'Send a file by URL',
+  'upload <phone> <path> [caption]': 'Send a local file',
+  'download <phone> <idMessage> [outPath]': 'Download a file from a received message',
   'history <phone> [count]': 'Print the last messages of one chat (default 50)',
   'incoming [minutes]': 'Print incoming messages across all chats (default 1440)',
   'outgoing [minutes]': 'Print outgoing messages across all chats (default 1440)',
@@ -28,7 +32,7 @@ const COMMANDS = {
 };
 
 function usage() {
-  console.log('Usage: node --env-file=whatsapp/.env whatsapp/cli.mjs <command> [args]\n');
+  console.log('Usage: node --env-file=.env whatsapp/cli.mjs <command> [args]\n');
   console.log('Commands:');
   const width = Math.max(...Object.keys(COMMANDS).map((k) => k.length));
   for (const [cmd, desc] of Object.entries(COMMANDS)) {
@@ -45,10 +49,11 @@ function printMessages(messages) {
     return;
   }
   for (const m of messages) {
-    const { text, type } = messageText(m);
+    const { text, type, fileName } = messageText(m);
     const who = m.type === 'incoming' ? '←' : '→';
     const name = m.senderName || m.chatId || '';
-    const shown = text ?? `[${type}]`;
+    // Media has no text of its own — show what it is, and the id `download` needs.
+    const shown = text ?? `[${type}${fileName ? ` ${fileName}` : ''}  id=${m.idMessage}]`;
     console.log(`${who} ${fmtTime(m.timestamp)}  ${name}\n   ${shown}`);
   }
 }
@@ -121,6 +126,36 @@ async function run(argv) {
       const caption = captionParts.join(' ');
       const res = await api.sendFileByUrl(chatId, url, name, caption ? { caption } : {});
       console.log(`✅ Sent ${name} to ${chatId} (idMessage: ${res?.idMessage ?? 'unknown'})`);
+      return 0;
+    }
+
+    case 'upload': {
+      const [phone, path, ...captionParts] = args;
+      if (!phone || !path) return usageError('upload <phone> <path> [caption]');
+      await requireAuthorized(api);
+      const chatId = toChatId(phone);
+      const bytes = await readFile(path);
+      const caption = captionParts.join(' ');
+      const res = await api.sendFileByUpload(chatId, bytes, basename(path),
+        caption ? { caption } : {});
+      console.log(`✅ Uploaded ${basename(path)} to ${chatId} (idMessage: ${res?.idMessage ?? 'unknown'})`);
+      return 0;
+    }
+
+    case 'download': {
+      const [phone, idMessage, outPath] = args;
+      if (!phone || !idMessage) return usageError('download <phone> <idMessage> [outPath]');
+      await requireAuthorized(api);
+      const chatId = toChatId(phone);
+      const res = await api.downloadFile(chatId, idMessage);
+      if (!res?.downloadUrl) {
+        console.error(`❌ No downloadUrl for ${idMessage}: ${JSON.stringify(res)}`);
+        return 1;
+      }
+      const target = outPath || res.fileName || new URL(res.downloadUrl).pathname.split('/').pop();
+      const bytes = await api.fetchMedia(res.downloadUrl);
+      await writeFile(target, bytes);
+      console.log(`✅ Saved ${bytes.length} bytes to ${target}`);
       return 0;
     }
 

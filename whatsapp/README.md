@@ -7,22 +7,30 @@ messages and files, reading history, and streaming incoming messages live.
 ## Setup
 
 ```bash
-cp whatsapp/.env.example whatsapp/.env
-# fill in the instance id, token and API URL from the Green API console
+cp .env.example .env   # then fill it in from the Green API console
 ```
 
-`whatsapp/.env` is gitignored. Credentials are read from the environment only
-(`GREEN_API_URL`, `GREEN_API_INSTANCE`, `GREEN_API_TOKEN`) — nothing is
-hardcoded, and the token never appears in log or error output even though Green
-API carries it in the request path.
+`.env` lives at the repo root and is gitignored. Its field names match the
+Green API console exactly, so values can be pasted straight across:
+
+```
+idInstance
+apiTokenInstance
+apiUrl
+mediaUrl
+```
+
+Credentials are read from the environment only — nothing is hardcoded, and the
+token never appears in log or error output even though Green API carries it in
+the request path. The older `GREEN_API_*` names still work as a fallback.
 
 All commands below assume Node 20.6+ for `--env-file`; on older versions export
-the three variables yourself.
+the four fields yourself.
 
 ## Commands
 
 ```bash
-node --env-file=whatsapp/.env whatsapp/cli.mjs <command> [args]
+node --env-file=.env whatsapp/cli.mjs <command> [args]
 ```
 
 | Command | What it does |
@@ -31,6 +39,8 @@ node --env-file=whatsapp/.env whatsapp/cli.mjs <command> [args]
 | `connect` | Link an account — writes the login QR to `whatsapp/qr.png` |
 | `send <phone> <message...>` | Send a text message |
 | `send-file <phone> <url> [fileName] [caption]` | Send a file by URL |
+| `upload <phone> <path> [caption]` | Send a local file (goes via `mediaUrl`) |
+| `download <phone> <idMessage> [outPath]` | Save a file from a received message |
 | `history <phone> [count]` | Last messages of one chat (default 50) |
 | `incoming [minutes]` | Incoming messages across all chats (default 1440) |
 | `outgoing [minutes]` | Outgoing messages across all chats |
@@ -46,7 +56,7 @@ node --env-file=whatsapp/.env whatsapp/cli.mjs <command> [args]
 ### Linking
 
 ```bash
-node --env-file=whatsapp/.env whatsapp/cli.mjs connect
+node --env-file=.env whatsapp/cli.mjs connect
 ```
 
 If the instance is already linked it says so. Otherwise it polls for the login
@@ -83,7 +93,7 @@ check with `settings`, and enable them in the Green API console if
 import { GreenApi, toChatId } from './whatsapp/green-api.mjs';
 import { listen } from './whatsapp/listener.mjs';
 
-const api = new GreenApi();                       // reads GREEN_API_* from env
+const api = new GreenApi();                       // reads the .env fields from env
 
 await api.sendMessage(toChatId('0501234567'), 'שלום');
 const history = await api.getChatHistory(toChatId('0501234567'), 20);
@@ -103,6 +113,16 @@ with the untouched webhook body always on `raw`.
 `messageText(messageData)` normalizes any message body to
 `{ type, text, caption, url, fileName }`, accepting both the nested shape
 webhooks use and the flattened shape the REST history endpoints return.
+
+## Downloading received files
+
+`history` and `incoming` print an `id=` for any message carrying media. Pass it
+to `download`:
+
+```bash
+node --env-file=.env whatsapp/cli.mjs history 0501234567
+node --env-file=.env whatsapp/cli.mjs download 0501234567 BAE5xxxxxxxx report.pdf
+```
 
 ## Notes
 

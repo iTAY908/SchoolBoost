@@ -1,9 +1,14 @@
 // Green API (WhatsApp) client — no dependencies, Node 18+.
 //
-// Credentials come from the environment, never from source:
-//   GREEN_API_URL       e.g. https://7107.api.greenapi.com
-//   GREEN_API_INSTANCE  the waInstance id
-//   GREEN_API_TOKEN     the instance API token
+// Credentials come from the environment, never from source. The variable names
+// match the Green API console so values can be pasted straight across:
+//   idInstance        the waInstance id
+//   apiTokenInstance  the instance API token
+//   apiUrl            e.g. https://7107.api.greenapi.com
+//   mediaUrl          e.g. https://7107.media.greenapi.com (file uploads)
+//
+// The older GREEN_API_INSTANCE / GREEN_API_TOKEN / GREEN_API_URL /
+// GREEN_API_MEDIA_URL names are still accepted as a fallback.
 //
 // Green API puts the token in the request path, so nothing here ever logs or
 // embeds a full URL — errors carry the method name only.
@@ -17,21 +22,28 @@ export class GreenApiError extends Error {
   }
 }
 
+const trimSlash = (s) => (s || '').trim().replace(/\/+$/, '');
+
 export function configFromEnv(env = process.env) {
-  const apiUrl = (env.GREEN_API_URL || '').replace(/\/+$/, '');
-  const instanceId = env.GREEN_API_INSTANCE || '';
-  const token = env.GREEN_API_TOKEN || '';
+  const apiUrl = trimSlash(env.apiUrl || env.GREEN_API_URL);
+  const instanceId = (env.idInstance || env.GREEN_API_INSTANCE || '').trim();
+  const token = (env.apiTokenInstance || env.GREEN_API_TOKEN || '').trim();
+  // Optional: only the upload endpoint needs it, and it can be derived.
+  const mediaUrl = trimSlash(env.mediaUrl || env.GREEN_API_MEDIA_URL)
+    || apiUrl.replace('.api.', '.media.');
 
   const missing = [
-    !apiUrl && 'GREEN_API_URL',
-    !instanceId && 'GREEN_API_INSTANCE',
-    !token && 'GREEN_API_TOKEN',
+    !apiUrl && 'apiUrl',
+    !instanceId && 'idInstance',
+    !token && 'apiTokenInstance',
   ].filter(Boolean);
 
   if (missing.length) {
-    throw new GreenApiError(`Missing environment variables: ${missing.join(', ')}`);
+    throw new GreenApiError(
+      `Missing environment variables: ${missing.join(', ')} — fill them in .env from the Green API console`,
+    );
   }
-  return { apiUrl, instanceId, token };
+  return { apiUrl, instanceId, token, mediaUrl };
 }
 
 export class GreenApi {
@@ -134,6 +146,48 @@ export class GreenApi {
     });
   }
 
+  /**
+   * Uploads a local file and sends it. Goes to the media host rather than the
+   * API host, as multipart rather than JSON.
+   * @param {Uint8Array|Buffer} bytes
+   */
+  async sendFileByUpload(chatId, bytes, fileName, opts = {}) {
+    const { mediaUrl, instanceId, token } = this.config;
+    if (!mediaUrl) throw new GreenApiError('mediaUrl is not configured');
+
+    const form = new FormData();
+    form.append('chatId', chatId);
+    form.append('fileName', fileName);
+    if (opts.caption) form.append('caption', opts.caption);
+    form.append('file', new Blob([bytes]), fileName);
+
+    let res;
+    try {
+      res = await fetch(`${mediaUrl}/waInstance${instanceId}/sendFileByUpload/${token}`, {
+        method: 'POST',
+        body: form,
+        signal: AbortSignal.timeout(opts.timeoutMs ?? 120_000),
+      });
+    } catch (cause) {
+      throw new GreenApiError(`sendFileByUpload failed: ${cause.message}`);
+    }
+
+    const text = await res.text();
+    let parsed;
+    try {
+      parsed = text ? JSON.parse(text) : null;
+    } catch {
+      parsed = text;
+    }
+    if (!res.ok) {
+      throw new GreenApiError(`sendFileByUpload returned HTTP ${res.status}`, {
+        status: res.status,
+        body: parsed,
+      });
+    }
+    return parsed;
+  }
+
   sendLocation(chatId, latitude, longitude, opts = {}) {
     return this.request('sendLocation', {
       body: { chatId, latitude, longitude, ...opts },
@@ -176,6 +230,20 @@ export class GreenApi {
   /** All chats known to the instance. */
   getChats() {
     return this.request('getChats');
+  }
+
+  /** Resolves a received file to a direct download URL. */
+  downloadFile(chatId, idMessage) {
+    return this.request('downloadFile', { body: { chatId, idMessage } });
+  }
+
+  /** Fetches the bytes behind a downloadUrl. */
+  async fetchMedia(url, { timeoutMs = 120_000 } = {}) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+    if (!res.ok) {
+      throw new GreenApiError(`media download returned HTTP ${res.status}`, { status: res.status });
+    }
+    return Buffer.from(await res.arrayBuffer());
   }
 
   /** Mark a chat (or one message in it) as read. */
