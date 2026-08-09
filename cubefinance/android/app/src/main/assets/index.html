@@ -124,6 +124,10 @@
     .segtoggle button small { display: block; font-size: 10.5px; font-weight: 600; opacity: .75; margin-top: 3px; }
     .depgoal { margin-top: 12px; background: rgba(108,99,255,.10); border: 1.5px solid var(--primary-dim);
       border-radius: 12px; padding: 11px 13px; font-size: 13px; font-weight: 700; text-align: center; }
+    .emgline { margin-top: 12px; background: rgba(0,184,148,.10); border: 1.5px solid rgba(0,184,148,.42);
+      border-radius: 12px; padding: 10px 13px; font-size: 12.5px; font-weight: 700; line-height: 1.55;
+      color: var(--dim); text-align: center; }
+    .emgline.done { color: #00b894; }
     .cube .track { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 14px; }
     .cube .track > i { display: block; height: 100%; border-radius: 999px; width: 0;
       transition: width .8s cubic-bezier(.2,.8,.2,1); }
@@ -206,6 +210,39 @@
     .setcard.warn p { margin: 0; color: var(--dim); line-height: 1.6; font-size: 14px; }
     .setlbl { color: var(--dim); font-size: 12.5px; font-weight: 700; }
     .setmail { font-weight: 800; font-size: 15px; margin-top: 4px; unicode-bidi: plaintext; }
+    .privline { color: var(--dim); font-size: 13.5px; line-height: 1.65; padding: 7px 0; border-bottom: 1px solid var(--border); }
+    .privline:last-child { border-bottom: none; padding-bottom: 0; }
+    .privline b { color: var(--text); }
+    /* income → percentage buckets */
+    .pctrow { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid var(--border); }
+    .pctrow:last-child { border-bottom: none; padding-bottom: 0; }
+    .pctname { font-size: 14px; font-weight: 700; }
+    .pctname .must { font-style: normal; font-size: 10.5px; font-weight: 800; color: #00b894;
+      background: #00b8941f; border-radius: 999px; padding: 2px 7px; margin-inline-start: 5px; }
+    .pctrow.lockedrow .pctname { color: var(--dim); }
+    .pctfixed { color: var(--dim); font-size: 13px; font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+    .pctinput { display: flex; align-items: center; gap: 4px; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 5px 9px; flex: none; }
+    .pctinput:focus-within { border-color: var(--primary); }
+    .pctinput input { width: 46px; background: none; border: none; outline: none; color: var(--text);
+      font-family: var(--font); font-size: 15px; font-weight: 800; text-align: center; }
+    .pctinput b { color: var(--dim); font-size: 13px; }
+    .pctprev { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0;
+      font-size: 14px; border-bottom: 1px solid var(--border); }
+    .pctprev:last-child { border-bottom: none; padding-bottom: 0; }
+    .pctprev b { direction: ltr; unicode-bidi: isolate; font-weight: 800; }
+    .pctprev.leftover span, .pctprev.leftover b { color: var(--dim); }
+    /* expense journal */
+    .exchips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .exchips .fchip { font-size: 13px; padding: 8px 13px; cursor: pointer; }
+    .ledrow.exrow { align-items: flex-start; }
+    .exrow .leddesc { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .extag { font-style: normal; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 2px 8px;
+      background: #00b8941f; color: #00b894; }
+    .extag.warn { background: #ffb14e1f; color: var(--warning); }
+    .excube { font-style: normal; font-size: 11px; font-weight: 700; color: var(--dim);
+      border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; }
     .setlist { display: flex; flex-direction: column; gap: 10px; }
     .setitem { text-align: right; background: var(--card); border: 1.5px solid var(--border); color: var(--text);
       border-radius: var(--radius); padding: 15px 16px; font-weight: 800; font-size: 15px; cursor: pointer;
@@ -231,19 +268,10 @@
     .pwmeter i.great { background: var(--success); }
     .pwlbl { color: var(--dim); font-size: 12px; line-height: 1.5; margin: 0 2px 4px; min-height: 16px; }
     .locknote { color: var(--warning); font-size: 13px; font-weight: 800; min-height: 18px; margin: 0 2px 8px; unicode-bidi: plaintext; }
-    .seclogbtn { margin-top: 14px; background: #0c0c14; border: 1px solid var(--primary-dim); color: var(--primary-2);
-      border-radius: 999px; padding: 9px 16px; font-weight: 800; font-size: 13px; cursor: pointer; font-family: var(--font); }
-    .seclogbtn:hover { filter: brightness(1.2); }
-    /* the log keeps a dark terminal look in BOTH themes — deliberate */
-    .seclog { width: 100%; max-width: 340px; max-height: 180px; overflow-y: auto; margin-top: 10px;
-      background: #07070d; border: 1px solid #23233a; border-radius: 12px; padding: 10px 12px;
-      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 11.5px; line-height: 1.7; }
-    .seclog.hidden { display: none; }
-    .pagebody .seclog { max-width: none; max-height: 240px; }
-    .sl { color: #9fd8b4; unicode-bidi: plaintext; text-align: right; }
-    .sl span { color: #5a5a78; }
-    .sl.warn { color: #ffd98a; }
-    .sl.error { color: #ff9c9c; }
+    /* The "live security log" panel was removed on purpose: it rendered raw
+       account events (including the signed-in email address) on screen, which
+       is user data no end user should ever be shown. Its styles are gone too so
+       nothing can accidentally re-mount it. */
     .swrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .sw { position: relative; width: 48px; height: 27px; border-radius: 999px; background: var(--border);
       border: none; cursor: pointer; transition: background .2s; flex: none; }
@@ -311,6 +339,14 @@
     .fld.small { flex: 1; margin: 0; }
     .shactions .distbtn { padding: 10px 14px; font-size: 13.5px; }
     .wichips { display: flex; flex-direction: column; gap: 8px; }
+    /* growth simulator */
+    .gsout { display: flex; flex-direction: column; gap: 12px; }
+    .gshead { background: var(--card); border: 1.5px solid var(--primary-dim); border-radius: var(--radius-lg); padding: 16px; }
+    .gsbig { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .gsbig span { color: var(--dim); font-size: 13px; font-weight: 700; }
+    .gsbig b { font-size: 27px; font-weight: 900; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+    .gssub { margin-top: 8px; color: var(--dim); font-size: 13px; line-height: 1.6; }
+    .gssub b { color: var(--success, #00b894); }
     .witable { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; }
     .wirow { display: grid; grid-template-columns: 52px 1fr 1fr; gap: 10px; align-items: center; padding: 6px 0; }
     .wirow.head span { color: var(--dim); font-size: 12px; font-weight: 800; }
@@ -387,6 +423,20 @@
     .dropzone .dzs { font-size: 12.5px; }
     .dropzone.over { border-color: var(--primary); background: #6c5ce715; }
     .dropzone.busy { opacity: .5; pointer-events: none; }
+    /* privacy notice + one-file consent gate for the current-account import */
+    .banknote { display: flex; gap: 10px; align-items: flex-start; background: var(--card-2);
+      border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 12px 14px; }
+    .banknote span { font-size: 18px; line-height: 1.3; flex: none; }
+    .banknote p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.6; }
+    .banknote b { color: var(--text); }
+    .setcard.consent { border-color: var(--primary); }
+    .consenth { font-weight: 800; font-size: 16px; }
+    .consentf { margin-top: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 13px;
+      color: var(--primary-2); background: var(--bg); border-radius: 9px; padding: 8px 10px; overflow-wrap: anywhere; }
+    .consentp { margin: 10px 0 0; color: var(--dim); font-size: 13px; line-height: 1.6; }
+    .consentp b { color: var(--text); }
+    .consentbtns { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+    .consentbtns .distbtn { width: 100%; }
     .bankfiles { display: flex; gap: 10px; }
     .bankfile { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
       background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
@@ -716,6 +766,9 @@
     .prio input[type=range] { flex: 1; accent-color: var(--primary); height: 6px; }
     .priov { min-width: 40px; text-align: center; font-size: 20px; font-weight: 800; color: var(--primary);
       background: #ffffff10; border-radius: 10px; padding: 4px 6px; font-variant-numeric: tabular-nums; }
+    .priov.hot { color: #ff9f68; background: #ff9f6820; }
+    .prioband { margin: 8px 2px 0; color: var(--dim); font-size: 12.5px; font-weight: 700; }
+    .prioband.hot { color: #ff9f68; }
     .aiRes { margin-top: 14px; background: linear-gradient(150deg, #201d38, #17161f);
       border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 14px; }
     .aiAmt { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; }
@@ -998,6 +1051,7 @@
       landlord:    { name: "בעל הדירה (שכירות)", emoji: "🔑", color: "#6C5CE7",          note: "שכר דירה חודשי (נעול)" },
       bills:       { name: "חשבונות הבית", emoji: "⚡", color: "#00CEC9",               note: "ארנונה, ועד, חשמל ומים" },
       essentials:  { name: "שוטף",           emoji: "🛒", color: "var(--c-essentials)",  note: "אוכל, תחבורה, חשבונות" },
+      emergency:   { name: "קרן חירום",      emoji: "🛟", color: "#00B894",              note: "רשת הביטחון — נוגעים בה רק במקרה חירום" },
       savings:     { name: "חיסכון",         emoji: "💰", color: "var(--c-savings)",     note: "כרית ביטחון ויעדים" },
       investments: { name: "השקעות",         emoji: "📈", color: "var(--c-investments)", note: "בניית הון לטווח ארוך" },
       lifestyle:   { name: "בילויים ופנאי",  emoji: "🎉", color: "var(--c-lifestyle)",   note: "כיף, מסעדות, חברים" },
@@ -1021,6 +1075,9 @@
       shared: [],                                   // shared cubes with friends
       debts: [],                                    // debt optimizer entries
       calmLog: [],                                  // "one small step" notes from the calm flow
+      // budgeting core
+      salary: { auto: true, lastApplied: "", history: [] }, // fixed monthly income → buckets
+      expenses: [],                                 // expense journal (what left, and why)
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -1029,17 +1086,18 @@
     function generateCubes(p) {
       const income = p.works ? (Number(p.income) || 0) : 0;
       const rnd = (n) => Math.round(n * 10) / 10;
-      const mk = (key, pct, amount, locked, noteOverride) => ({
+      const mk = (key, pct, amount, locked, noteOverride, mandatory) => ({
         key, name: META[key].name, emoji: META[key].emoji, color: META[key].color,
         note: noteOverride || META[key].note,
-        pct, amount: Math.round(amount), locked: !!locked, balance: 0,
+        pct, amount: Math.round(amount), locked: !!locked, balance: 0, mandatory: !!mandatory,
       });
       const cubes = [];
       if (p.withParents) {
-        // parents: no housing cubes at all — wealth cubes get the boost
-        const W = { essentials: 0.25, savings: 0.30, investments: 0.27, lifestyle: 0.18 };
-        ["essentials", "savings", "investments", "lifestyle"].forEach((k) =>
-          cubes.push(mk(k, rnd(W[k] * 100), W[k] * income)));
+        // parents: no housing cubes at all — wealth cubes get the boost.
+        // The emergency fund is carved out first: it is mandatory for everyone.
+        const W = { essentials: 0.23, emergency: 0.12, savings: 0.25, investments: 0.23, lifestyle: 0.17 };
+        ["essentials", "emergency", "savings", "investments", "lifestyle"].forEach((k) =>
+          cubes.push(mk(k, rnd(W[k] * 100), W[k] * income, false, null, k === "emergency")));
         return cubes;
       }
       // lives alone / with roommates
@@ -1054,11 +1112,12 @@
         "ארנונה " + fmt(Number(e.arnona) || 0) + " · ועד " + fmt(Number(e.committee) || 0) +
         " · חשמל " + fmt(Number(e.electricity) || 0) + " · מים " + fmt(Number(e.water) || 0)));
       if (food > 0) cubes.push(mk("essentials", pctOf(food), food, false, "אוכל וסופר"));
-      // whatever's left after fixed expenses flows to wealth-building cubes
+      // Whatever's left after fixed expenses flows to wealth-building cubes —
+      // and the mandatory emergency fund is funded off the top of that money.
       const disc = Math.max(0, income - rent - bills - food);
-      const W = { savings: 0.40, investments: 0.32, lifestyle: 0.28 };
-      ["savings", "investments", "lifestyle"].forEach((k) =>
-        cubes.push(mk(k, pctOf(W[k] * disc), W[k] * disc)));
+      const W = { emergency: 0.15, savings: 0.32, investments: 0.28, lifestyle: 0.25 };
+      ["emergency", "savings", "investments", "lifestyle"].forEach((k) =>
+        cubes.push(mk(k, pctOf(W[k] * disc), W[k] * disc, false, null, k === "emergency")));
       return cubes;
     }
     // ---- Kids mode --------------------------------------------------------
@@ -1076,16 +1135,22 @@
         pct: pct, amount: Math.round(m * pct / 100), locked: false, balance: 0, kid: true,
       }, extra || {});
       const goal = p.goal && p.goal.name && p.goal.price > 0 ? p.goal : null;
+      // Kids get the emergency fund too — in kid words: the cube you don't touch,
+      // for when something breaks or gets lost. Same habit, age-appropriate name.
+      const emg = (pct) => mk("emergency", "קופת חירום", "🛟", "#00B894",
+        "לא נוגעים — למקרה שמשהו נשבר או הולך לאיבוד", pct, { mandatory: true });
       const cubes = [];
       if (goal) {
-        cubes.push(mk("kidgoal", goal.name, "🎯", "#FD79A8", "היעד שלי · ₪" + fmt(goal.price), 40, { goalTarget: goal.price }));
-        cubes.push(mk("kidfun", "כיף וממתקים", "🍬", "var(--c-lifestyle)", "מה שבא לי עכשיו", 25));
-        cubes.push(mk("kidsave", "חיסכון גדול", "🐷", "var(--c-savings)", "לדברים גדולים בהמשך", 25));
-        cubes.push(mk("kidgive", "מתנות ועזרה", "🎁", "var(--c-essentials)", "מתנות לחברים ולעזור לאחרים", 10));
+        cubes.push(mk("kidgoal", goal.name, "🎯", "#FD79A8", "היעד שלי · ₪" + fmt(goal.price), 35, { goalTarget: goal.price }));
+        cubes.push(mk("kidfun", "כיף וממתקים", "🍬", "var(--c-lifestyle)", "מה שבא לי עכשיו", 22));
+        cubes.push(emg(12));
+        cubes.push(mk("kidsave", "חיסכון גדול", "🐷", "var(--c-savings)", "לדברים גדולים בהמשך", 22));
+        cubes.push(mk("kidgive", "מתנות ועזרה", "🎁", "var(--c-essentials)", "מתנות לחברים ולעזור לאחרים", 9));
       } else {
-        cubes.push(mk("kidsave", "חיסכון גדול", "🐷", "var(--c-savings)", "הכסף שגדל לדברים גדולים", 45));
-        cubes.push(mk("kidfun", "כיף וממתקים", "🍬", "var(--c-lifestyle)", "מה שבא לי עכשיו", 35));
-        cubes.push(mk("kidgive", "מתנות ועזרה", "🎁", "var(--c-essentials)", "מתנות לחברים ולעזור לאחרים", 20));
+        cubes.push(mk("kidsave", "חיסכון גדול", "🐷", "var(--c-savings)", "הכסף שגדל לדברים גדולים", 40));
+        cubes.push(mk("kidfun", "כיף וממתקים", "🍬", "var(--c-lifestyle)", "מה שבא לי עכשיו", 30));
+        cubes.push(emg(15));
+        cubes.push(mk("kidgive", "מתנות ועזרה", "🎁", "var(--c-essentials)", "מתנות לחברים ולעזור לאחרים", 15));
       }
       return cubes;
     }
@@ -1098,6 +1163,197 @@
         if (state.cubes.find((c) => c.key === "landlord")) return "landlord";
       }
       return "essentials";
+    }
+
+    // =====================================================================
+    // BUDGETING CORE
+    //   • one fixed monthly income, split into the cubes by their percentages
+    //   • a mandatory "קרן חירום" cube that every account has, old or new
+    //   • an expense journal where money that left is reported and reflected on
+    // =====================================================================
+    const EMERGENCY_KEY = "emergency";
+    const isEmergency = (c) => c && c.key === EMERGENCY_KEY;
+
+    // The single monthly figure the whole budget is built on: salary for adults,
+    // pocket money for kids. Everything else is a percentage of this.
+    function monthlyIncome() {
+      const p = state.profile;
+      if (!p) return 0;
+      if (p.kid) return Math.max(0, Math.round(Number(p.kidMonthly) || 0));
+      return p.works ? Math.max(0, Math.round(Number(p.income) || 0)) : 0;
+    }
+    function setMonthlyIncome(amount) {
+      const v = Math.max(0, Math.round(Number(amount) || 0));
+      if (!state.profile) return;
+      if (state.profile.kid) { state.profile.kidMonthly = v; state.profile.income = v; }
+      else { state.profile.income = v; state.profile.works = v > 0; }
+      retargetCubes(); // percentages are the source of truth — money follows them
+      saveState();
+    }
+    // Recompute every flexible cube's monthly target from its percentage.
+    // Locked cubes (rent, bills) keep their real-world amount untouched.
+    function retargetCubes() {
+      const income = monthlyIncome();
+      if (income <= 0) return;
+      state.cubes.forEach((c) => {
+        if (c.locked) return;
+        c.amount = Math.round(income * ((Number(c.pct) || 0) / 100));
+      });
+    }
+
+    // ---- mandatory emergency fund -----------------------------------------
+    // Three months of the money you cannot skip — rent, bills, food. With no
+    // expense data yet, half the income is a reasonable stand-in.
+    function essentialMonthlySpend() {
+      const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
+      const sum = ["landlord", "bills", "housing", "essentials"]
+        .reduce((s, k) => s + (by[k] ? Number(by[k].amount) || 0 : 0), 0);
+      if (sum > 0) return Math.round(sum);
+      const income = monthlyIncome();
+      return income > 0 ? Math.round(income * 0.5) : 0;
+    }
+    const emergencyTarget = () => Math.round(essentialMonthlySpend() * 3);
+
+    // Back-fill for accounts created before the emergency fund existed. The new
+    // cube is funded by trimming 15% off every FLEXIBLE cube's target (locked
+    // housing costs are never touched), so the percentages still add up to the
+    // same total and nobody's rent quietly shrinks.
+    function ensureEmergencyCube() {
+      if (!Array.isArray(state.cubes) || !state.cubes.length) return false;
+      if (state.cubes.some(isEmergency)) return false;
+      const share = 0.15;
+      const flexible = state.cubes.filter((c) => !c.locked);
+      let pct = 0, amount = 0;
+      flexible.forEach((c) => {
+        const cutPct = Math.round((Number(c.pct) || 0) * share * 10) / 10;
+        const cutAmt = Math.round((Number(c.amount) || 0) * share);
+        c.pct = Math.round(Math.max(0, (Number(c.pct) || 0) - cutPct) * 10) / 10;
+        c.amount = Math.max(0, Math.round((Number(c.amount) || 0) - cutAmt));
+        pct += cutPct; amount += cutAmt;
+      });
+      const kid = !!(state.profile && state.profile.kid);
+      const cube = {
+        key: EMERGENCY_KEY,
+        name: kid ? "קופת חירום" : META.emergency.name,
+        emoji: META.emergency.emoji, color: META.emergency.color,
+        note: kid ? "לא נוגעים — למקרה שמשהו נשבר או הולך לאיבוד" : META.emergency.note,
+        pct: Math.round(pct * 10) / 10, amount: Math.round(amount),
+        locked: false, balance: 0, mandatory: true,
+      };
+      // Sits right after the fixed costs so it reads as a bill you pay yourself.
+      const at = state.cubes.findIndex((c) => !c.locked);
+      state.cubes.splice(at < 0 ? state.cubes.length : at, 0, cube);
+      return true;
+    }
+
+    // ---- fixed monthly income → percentage buckets -------------------------
+    const monthKey = (d) => { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+    const monthLabel = () => ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"][new Date().getMonth()];
+
+    // Split `amount` across the cubes and return what each one got.
+    //
+    // Bills come first: a locked cube (rent, utilities) is a real obligation, so
+    // it receives its exact fixed amount — NOT a percentage share, which would
+    // silently overpay the landlord the moment the salary went up. Whatever is
+    // left is then divided among the flexible cubes by their percentage of the
+    // income. If those percentages ask for more than remains, every share is
+    // scaled down proportionally rather than starving the last cube in the list.
+    // Any remainder stays available, so money is never invented and never lost.
+    function splitByPercent(amount) {
+      amount = Math.max(0, Math.round(amount));
+      let remaining = amount, given = 0;
+      const rows = [];
+      const row = (c, give) => rows.push({ key: c.key, name: c.name, emoji: c.emoji, color: c.color,
+        pct: Number(c.pct) || 0, amount: give, fixed: !!c.locked });
+
+      state.cubes.forEach((c) => {
+        if (!c.locked) return;
+        const give = Math.min(remaining, Math.max(0, Math.round(Number(c.amount) || 0)));
+        remaining -= give; given += give;
+        row(c, give);
+      });
+
+      const flexible = state.cubes.filter((c) => !c.locked);
+      const want = flexible.map((c) => Math.max(0, Math.round(amount * ((Number(c.pct) || 0) / 100))));
+      const wantTotal = want.reduce((s, n) => s + n, 0);
+      const scale = wantTotal > remaining && wantTotal > 0 ? remaining / wantTotal : 1;
+      flexible.forEach((c, i) => {
+        let give = Math.round(want[i] * scale);
+        if (give > remaining) give = remaining;
+        remaining -= give; given += give;
+        row(c, give);
+      });
+      // keep the rows in the same order the dashboard shows the cubes
+      const order = state.cubes.map((c) => c.key);
+      rows.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+      return { rows: rows, given: given, leftover: remaining };
+    }
+
+    // Deposit one month's income and split it. `auto` runs it at most once per
+    // calendar month; the manual button can always be pressed again.
+    function receiveMonthlyIncome(manual) {
+      const income = monthlyIncome();
+      if (income <= 0) return { ok: false, reason: "noincome" };
+      const mk = monthKey();
+      if (!manual && state.salary.lastApplied === mk) return { ok: false, reason: "already" };
+      const plan = splitByPercent(income);
+      plan.rows.forEach((r) => { if (r.amount > 0) { const c = state.cubes.find((x) => x.key === r.key); if (c) c.balance += r.amount; } });
+      state.pool += plan.leftover;
+      state.salary.lastApplied = mk;
+      state.salary.history = (state.salary.history || []).concat([{ m: mk, amount: income, given: plan.given }]).slice(-24);
+      state.game.flags.dist = true;
+      saveState();
+      return { ok: true, income: income, given: plan.given, leftover: plan.leftover, rows: plan.rows };
+    }
+
+    // ---- expense journal ---------------------------------------------------
+    // "What did you actually do with the money?" — amount, which cube it left,
+    // what it was for, and one honest reflection. The reflection is the point:
+    // it is what turns a list of numbers into a habit you can change.
+    const SPEND_REASONS = [
+      { id: "need",    label: "הייתי חייב", emoji: "🧱", tone: "ok",   note: "הוצאה הכרחית" },
+      { id: "planned", label: "תכננתי מראש", emoji: "🗓️", tone: "ok",   note: "היה בתוכנית" },
+      { id: "worth",   label: "התפנקתי ושווה", emoji: "😄", tone: "ok",   note: "פינוק מודע" },
+      { id: "impulse", label: "נסחפתי", emoji: "🌀", tone: "warn", note: "החלטה של רגע" },
+      { id: "regret",  label: "מתחרט", emoji: "😞", tone: "warn", note: "לא היה שווה" },
+    ];
+    const reasonById = (id) => SPEND_REASONS.find((r) => r.id === id) || SPEND_REASONS[0];
+
+    function logExpense(entry) {
+      state.expenses.unshift({
+        id: "e" + Date.now(),
+        at: new Date().toISOString(),
+        amount: Math.max(0, Math.round(Number(entry.amount) || 0)),
+        cubeKey: entry.cubeKey || null,
+        cubeName: entry.cubeName || "",
+        what: (entry.what || "").trim(),
+        reason: entry.reason || "need",
+      });
+      if (state.expenses.length > 300) state.expenses.length = 300;
+      state.game.flags.logged = true;
+      saveState();
+    }
+    // Reads the journal back as something actionable rather than a receipt pile.
+    function expenseInsights() {
+      const list = state.expenses || [];
+      if (!list.length) return null;
+      const since = Date.now() - 30 * 24 * 3600 * 1000;
+      const recent = list.filter((e) => Date.parse(e.at) >= since);
+      const use = recent.length ? recent : list;
+      const total = use.reduce((s, e) => s + e.amount, 0);
+      const byReason = {};
+      use.forEach((e) => { byReason[e.reason] = (byReason[e.reason] || 0) + e.amount; });
+      const regretted = (byReason.impulse || 0) + (byReason.regret || 0);
+      const byCube = {};
+      use.forEach((e) => { const k = e.cubeName || "ללא קובייה"; byCube[k] = (byCube[k] || 0) + e.amount; });
+      const topCube = Object.keys(byCube).sort((a, b) => byCube[b] - byCube[a])[0] || null;
+      return {
+        count: use.length, total: total, windowed: recent.length > 0,
+        byReason: byReason, regretted: regretted,
+        regretPct: total > 0 ? Math.round((regretted / total) * 100) : 0,
+        topCube: topCube, topCubeAmount: topCube ? byCube[topCube] : 0,
+        byCube: byCube,
+      };
     }
 
     // ====================================================================
@@ -1120,30 +1376,26 @@
     const normEmail = (e) => (e || "").trim().toLowerCase();
 
     // ====================================================================
-    // Security core — live security log, password policy, rate limiting.
+    // Security core — password policy, lockout / rate limiting.
+    //
+    // The "live security log" was REMOVED. It used to persist a rolling event
+    // list to localStorage under "cubefinance_web:seclog" and paint it on the
+    // login screen and in Settings → Privacy. Several of those events embedded
+    // the account's email address, so anyone holding the device (or reading the
+    // browser's storage) could recover it. There is no user-facing benefit to
+    // showing security internals, so both the storage and the view are gone.
+    //
+    // secLog() is intentionally kept as an inert no-op: dozens of call sites
+    // across the app mark security-relevant moments, and keeping the calls
+    // (without keeping any data) documents those moments without a chance of a
+    // future edit accidentally resurrecting the panel.
     // ====================================================================
-    const SECLOG_KEY = "cubefinance_web:seclog";
-    let secLogArr = [];
-    try { secLogArr = JSON.parse(localStorage.getItem(SECLOG_KEY) || "[]"); } catch (e) {}
-    function secLog(level, msg) {
-      const t = new Date();
-      const hh = String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") + ":" + String(t.getSeconds()).padStart(2, "0");
-      secLogArr.push({ t: hh, level: level, msg: msg });
-      if (secLogArr.length > 60) secLogArr.splice(0, secLogArr.length - 60);
-      try { localStorage.setItem(SECLOG_KEY, JSON.stringify(secLogArr)); } catch (e) {}
-      document.querySelectorAll(".seclog").forEach(renderSecLogInto); // live panels update instantly
-    }
-    function renderSecLogInto(box) {
-      box.innerHTML = secLogArr.length
-        ? secLogArr.map((l) => '<div class="sl ' + l.level.toLowerCase() + '"><span dir="ltr">' + l.t + " [" + l.level + "]</span> " + l.msg + "</div>").join("")
-        : '<div class="sl info">אין רישומים עדיין — בצעו הרשמה או התחברות כדי לראות את מנגנוני האבטחה בפעולה.</div>';
-      box.scrollTop = box.scrollHeight;
-    }
-    function clearSecLog() {
-      secLogArr = [];
-      try { localStorage.removeItem(SECLOG_KEY); } catch (e) {}
-      document.querySelectorAll(".seclog").forEach(renderSecLogInto);
-    }
+    const SECLOG_KEY = "cubefinance_web:seclog"; // legacy key — purged, never written
+    function secLog() { /* intentionally does nothing — no security events are recorded or displayed */ }
+    // Purge anything an older build of the app left on this device, including
+    // the email addresses those entries contained.
+    function clearSecLog() { try { localStorage.removeItem(SECLOG_KEY); } catch (e) {} }
+    clearSecLog();
 
     // Password policy: 8+ chars, uppercase, lowercase, digit, special char.
     const PW_RULES = [
@@ -1220,7 +1472,7 @@
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
           incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
-          calmLog: state.calmLog,
+          calmLog: state.calmLog, salary: state.salary, expenses: state.expenses,
         }));
       } catch (e) {}
     }
@@ -1238,6 +1490,9 @@
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
       state.debts = s && Array.isArray(s.debts) ? s.debts : [];
       state.calmLog = s && Array.isArray(s.calmLog) ? s.calmLog : [];
+      const sal = (s && s.salary) || {};
+      state.salary = { auto: sal.auto !== false, lastApplied: sal.lastApplied || "", history: Array.isArray(sal.history) ? sal.history : [] };
+      state.expenses = s && Array.isArray(s.expenses) ? s.expenses : [];
       notifyNativePremium(); // keep the Android wrapper's ad state in sync
     }
 
@@ -1273,6 +1528,18 @@
       loadState();
       if (state.onboarded) { state.screen = "app"; }
       else { startOnboarding(); state.screen = "onboarding"; }
+      if (state.onboarded) {
+        // Migration: the emergency fund is mandatory, so accounts created before
+        // it existed get one now — funded by trimming the flexible cubes, never
+        // by inventing money.
+        const added = ensureEmergencyCube();
+        // Fixed monthly income lands in the cubes on its own, once per calendar
+        // month, the first time the app is opened that month.
+        const auto = state.salary.auto ? receiveMonthlyIncome(false) : { ok: false };
+        if (added || auto.ok) saveState();
+        if (added) setTimeout(() => showToast("🛟 נוספה לך קוביית קרן חירום — רשת הביטחון של כל תקציב"), 700);
+        if (auto.ok) setTimeout(() => showToast("💸 הכנסת " + monthLabel() + " חולקה אוטומטית — ₪" + fmt(auto.given) + " לקוביות"), added ? 2600 : 700);
+      }
       render();
     }
     function logout() {
@@ -1281,6 +1548,7 @@
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
       state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
       state.calmLog = [];
+      state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = [];
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
       render();
     }
@@ -1288,11 +1556,12 @@
     // report, debt result, simulator/guide UI state, chat) so a different user
     // logging in on the same device never sees the previous account's data.
     function resetModuleGlobals() {
-      bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null;
+      bankForget(); // imported statement + its derived report never outlive the session
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
-      shForm = null; guideFeat = null; cc = null; settStep = 0;
+      shForm = null; guideFeat = null; cc = null; settStep = 0; exDraft = null;
       try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
+      gs = { target: "__all", extra: "", months: 12 };
       try { resetChat(); } catch (e) {}
     }
     function initAuth() {
@@ -1520,44 +1789,125 @@
       at(4500, () => $("ivBrand").classList.add("on"));
     }
 
-    // ---- Custom cube: AI allocation by 1–10 priority ----------------------
+    // =====================================================================
+    // GOAL ENGINE — how much a personal cube should get every month.
+    //
+    // The old version derived everything from (salary − housing). Anyone
+    // without a salary on file — a kid, someone between jobs, anyone who
+    // skipped the income question — got a flat "₪0 לחודש" with no explanation,
+    // and the ₪50 floor was itself gated behind income > 0 so it never
+    // rescued them. allocationBase() now walks through every honest source of
+    // a monthly number and, when there genuinely isn't one, says so instead of
+    // printing a zero.
+    // =====================================================================
     const CUSTOM_COLORS = ["#A29BFE", "#55EFC4", "#FD79A8", "#74B9FF", "#81ECEC", "#FAB1A0", "#B2BEC3"];
-    function allocateCustomCube(priority) {
+
+    function allocationBase() {
+      const income = monthlyIncome();
+      if (income > 0) {
+        const fixed = state.cubes.filter((c) => c.locked).reduce((s, c) => s + (Number(c.amount) || 0), 0);
+        return { amount: Math.max(0, Math.round(income - fixed)), source: "income",
+                 label: "התקציב החודשי הפנוי שלך" };
+      }
+      // No income recorded — use what the cubes themselves already plan to move.
+      const planned = state.cubes.filter((c) => !c.locked).reduce((s, c) => s + (Number(c.amount) || 0), 0);
+      if (planned > 0) return { amount: Math.round(planned), source: "cubes",
+                                label: "הסכום החודשי שכבר מתוכנן בקוביות" };
+      // Still nothing — spread what is actually saved over half a year.
+      const savedUp = Math.round(totalBalance() + state.pool);
+      if (savedUp > 0) return { amount: Math.max(1, Math.round(savedUp / 6)), source: "balance",
+                                label: "היתרות הקיימות שלך פרוסות על חצי שנה" };
+      return { amount: 0, source: "none", label: "" };
+    }
+
+    // priority > 7 ⇒ the aggressive band. Below it the cube gets a deliberately
+    // small, symbolic share so the main savings goals keep the budget.
+    const PRIORITY_AGGRESSIVE = 7;
+    function priorityShare(p) {
+      return p > PRIORITY_AGGRESSIVE
+        ? 0.12 + (p - 8) * 0.09    // 12% → 21% → 30% of the free budget
+        : 0.01 + (p - 1) * 0.008;  // 1% → ~5.8%
+    }
+
+    // goal = { price, months } — both optional. With a price and a deadline the
+    // engine works backwards from what the goal actually costs per month.
+    function allocateCustomCube(priority, goal) {
       const p = Math.max(1, Math.min(10, Math.round(priority)));
-      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
-      const housing = state.cubes.find((c) => c.key === "housing");
-      const discretionary = Math.max(0, income - (housing ? (housing.amount || 0) : 0));
-      let pct, tone;
-      if (p >= 8) { pct = 0.10 + (p - 8) * 0.05; tone = "high"; } // 10% / 15% / 20%
-      else { pct = 0.01 + (p - 1) * 0.005; tone = "low"; }        // ~1%..4% (symbolic)
-      let amount = Math.round(discretionary * pct);
-      if (income > 0 && amount < 50) amount = 50;
-      const explanation = tone === "high"
-        ? "דירגת את זה " + p + "/10 — עדיפות גבוהה. הקצאתי ₪" + fmt(amount) + " בחודש, נתח משמעותי מהתקציב הפנוי (₪" + fmt(discretionary) + "), על חשבון צמצום קל בקוביית ההנאות."
-        : "דירגת את זה " + p + "/10, אז זה לא דחוף. הקצאתי סכום קטן וסמלי של ₪" + fmt(amount) + " בחודש כדי שתוכל להמשיך להתמקד ביעדי החיסכון העיקריים.";
-      return { amount: amount, priority: p, tone: tone, discretionary: discretionary, explanation: explanation };
+      const base = allocationBase();
+      const aggressive = p > PRIORITY_AGGRESSIVE;
+      goal = goal || {};
+      const price = Math.max(0, Math.round(Number(goal.price) || 0));
+      const months = Math.max(0, Math.round(Number(goal.months) || 0));
+      const needed = price > 0 && months > 0 ? Math.ceil(price / months) : 0;
+
+      if (base.amount <= 0) {
+        // Be honest rather than confidently wrong. The UI turns this into a
+        // shortcut to the income screen instead of showing "₪0 לחודש".
+        return { ok: false, amount: 0, priority: p, tone: aggressive ? "high" : "low", base: base,
+          explanation: "אין לי עדיין מספר חודשי לעבוד איתו — לא הכנסה, לא יעדים חודשיים בקוביות ולא יתרה. " +
+            "הזינו סכום חודשי במסך „הכנסה חודשית” ואחשב לכם הקצאה אמיתית." };
+      }
+
+      let amount = Math.round(base.amount * priorityShare(p));
+      let note = "";
+      if (needed > 0) {
+        if (aggressive) {
+          // Urgent AND on a deadline: fund what the deadline actually needs,
+          // capped at 60% of the free budget so the rest of life still works.
+          const cap = Math.round(base.amount * 0.6);
+          const want = Math.min(needed, cap);
+          if (want > amount) { amount = want; note = " העליתי את הסכום כדי לעמוד בלוח הזמנים שביקשת."; }
+          if (needed > cap) note = " היעד דורש ₪" + fmt(needed) + " בחודש — יותר מדי ביחס לתקציב, אז הקצאתי את המקסימום הבטוח (₪" + fmt(cap) + ").";
+        } else if (needed < amount) {
+          amount = needed; note = " זה בדיוק מה שצריך כדי להגיע ליעד בזמן, בלי להקצות יותר מדי.";
+        } else {
+          note = " בקצב הזה היעד יושג תוך " + Math.ceil(price / Math.max(1, amount)) + " חודשים — קצת אחרי מה שביקשת, אבל בלי לפגוע בשאר התקציב.";
+        }
+      }
+      // A real, non-zero floor whenever there IS money to work with.
+      const floor = Math.min(aggressive ? 100 : 50, base.amount);
+      if (amount < floor) amount = floor;
+      if (amount > base.amount) amount = base.amount;
+
+      const monthsToGoal = price > 0 && amount > 0 ? Math.ceil(price / amount) : 0;
+      const share = Math.round((amount / base.amount) * 100);
+      const src = share + "% מ" + base.label + ", שעומד על ₪" + fmt(base.amount);
+      const head = aggressive
+        ? "דירגת את זה " + p + "/10 — זו עדיפות גבוהה, אז עברתי למצב אגרסיבי: ₪" + fmt(amount) +
+          " בחודש. זה " + src + ", על חשבון צמצום בקוביית הבילויים."
+        : "דירגת את זה " + p + "/10, אז זה לא דחוף. הקצאתי ₪" + fmt(amount) +
+          " בחודש — " + src + " — כדי שהיעדים העיקריים יישארו במרכז.";
+      const tail = monthsToGoal > 0 ? " בקצב הזה תגיע ל-₪" + fmt(price) + " תוך " + monthsToGoal + " חודשים." : "";
+      return { ok: true, amount: amount, priority: p, tone: aggressive ? "high" : "low", base: base,
+               needed: needed, monthsToGoal: monthsToGoal, explanation: head + note + tail };
     }
 
     function createCustomCube(name, amount, meta) {
       meta = meta || {};
-      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
+      const income = monthlyIncome();
       amount = Math.max(0, Math.round(amount));
       const idx = state.cubes.filter((c) => c.custom).length;
+      const price = Math.max(0, Math.round(Number(meta.goalPrice) || 0));
+      // With no salary on file, percentages are taken against whatever monthly
+      // budget the engine actually used — otherwise every custom cube shows 0%.
+      const pctBase = income > 0 ? income : allocationBase().amount;
       const cube = {
         key: "custom_" + Date.now(),
         name: (name || "").trim() || "קובייה אישית",
         emoji: "🎯", color: CUSTOM_COLORS[idx % CUSTOM_COLORS.length],
-        note: meta.priority ? "יעד אישי · עדיפות " + meta.priority + "/10" : "יעד אישי",
-        pct: income > 0 ? Math.round((amount / income) * 1000) / 10 : 0,
+        note: (meta.priority ? "יעד אישי · עדיפות " + meta.priority + "/10" : "יעד אישי") +
+              (price > 0 ? " · יעד ₪" + fmt(price) : ""),
+        pct: pctBase > 0 ? Math.round((amount / pctBase) * 1000) / 10 : 0,
         amount: amount, locked: false, balance: 0, custom: true, priority: meta.priority || null,
       };
-      // High-priority cubes "make room" by trimming the Lifestyle target.
-      if (meta.priority && meta.priority >= 8) {
+      if (price > 0) cube.goalTarget = price; // the card then fills toward the price
+      // Urgent cubes (priority > 7) "make room" by trimming the Lifestyle target.
+      if (meta.priority && meta.priority > PRIORITY_AGGRESSIVE) {
         const life = state.cubes.find((c) => c.key === "lifestyle");
         if (life) {
           const cut = Math.min(life.amount || 0, amount);
           life.amount = Math.round((life.amount || 0) - cut);
-          life.pct = income > 0 ? Math.round((life.amount / income) * 1000) / 10 : life.pct;
+          life.pct = pctBase > 0 ? Math.round((life.amount / pctBase) * 1000) / 10 : life.pct;
         }
       }
       state.cubes.push(cube);
@@ -1624,6 +1974,8 @@
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
+      if (state.screen === "income") return renderIncomePage();
+      if (state.screen === "expenses") return renderExpensesPage();
       if (state.screen === "upgrade") return renderUpgradePage();
       if (state.screen === "calm") return renderCalmPage();
       if (state.screen === "guide") return renderGuidePage();
@@ -1660,9 +2012,7 @@
           '<button class="distbtn wide" id="aSubmit">' + (isSignup ? "הרשמה" : "התחברות") + '</button>' +
           '<div class="aswitch">' + (isSignup ? "כבר יש לך חשבון?" : "עדיין אין לך חשבון?") +
             ' <button id="aToggle">' + (isSignup ? "התחבר" : "הירשם") + '</button></div>' +
-        '</div>' +
-        '<button class="seclogbtn" id="slToggle">🛰️ יומן אבטחה חי</button>' +
-        '<div class="seclog hidden" id="authSeclog"></div>';
+        '</div>';
       v.appendChild(wrap);
       const email = v.querySelector("#aEmail"), pass = v.querySelector("#aPass");
 
@@ -1709,11 +2059,6 @@
       v.querySelector("#aSubmit").onclick = submit;
       pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
       v.querySelector("#aToggle").onclick = () => { state.authMode = isSignup ? "login" : "signup"; state.authError = ""; render(); };
-
-      // live security log panel
-      const slBox = v.querySelector("#authSeclog");
-      renderSecLogInto(slBox);
-      v.querySelector("#slToggle").onclick = () => { slBox.classList.toggle("hidden"); renderSecLogInto(slBox); };
     }
 
     // =====================================================================
@@ -2107,6 +2452,7 @@
         state.profile = kidProfile;
         state.cubes = generateKidCubes(kidProfile);
         state.pool = monthly; // start with one month's pocket money ready to split
+        state.salary.lastApplied = monthKey(); // this month's money is already in the pool
         state.onboarded = true;
         state.screen = "app";
         clearOb();
@@ -2129,6 +2475,7 @@
       state.profile = profile;
       state.cubes = generateCubes(profile);
       state.pool = profile.balance || (profile.works ? profile.income : 0);
+      state.salary.lastApplied = monthKey(); // this month's income is already in the pool
       state.onboarded = true;
       state.screen = "app";
       clearOb(); // questionnaire done — drop the saved draft
@@ -2190,9 +2537,11 @@
       // engagement modules nav — kids only see the age-appropriate modules
       const nav = el("div", "modnav");
       const modules = kid
-        ? [["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
-        : [["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"],
-           ["🔮", "סימולטור", "whatif"], ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]];
+        ? [["💸", "כסף חודשי", "income"], ["🧾", "הוצאות", "expenses"], ["🔮", "סימולטור", "whatif"],
+           ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
+        : [["💸", "הכנסה", "income"], ["🧾", "הוצאות", "expenses"], ["🔮", "סימולטור", "whatif"],
+           ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"],
+           ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]];
       modules.forEach((m) => {
         const b = el("button", "modbtn");
         const isPrem = (m[2] === "debt" || m[2] === "bank") && !state.premium;
@@ -2216,7 +2565,8 @@
 
     // ---- Custom cube modal ------------------------------------------------
     let cc = null;
-    function openCustomCube() { clearToasts(); cc = { mode: null, name: "", amount: "", priority: 5, computed: false, explanation: "" }; renderCustomCube(); }
+    const PRIO_BANDS = ["", "נחמד שיהיה", "נחמד שיהיה", "לא בוער", "לא בוער", "רוצה את זה", "רוצה את זה", "חשוב לי", "חשוב מאוד 🔥", "דחוף 🔥", "קריטי 🔥"];
+    function openCustomCube() { clearToasts(); cc = { mode: null, name: "", amount: "", priority: 5, goalPrice: "", goalMonths: "", computed: false, explanation: "", blocked: "" }; renderCustomCube(); }
     function closeCustomCube() { cc = null; $("ccwrap").className = "ccwrap"; $("ccwrap").innerHTML = ""; }
     function renderCustomCube() {
       if (!cc) return;
@@ -2239,11 +2589,20 @@
         inner += '<div class="unknote" style="margin-top:12px">🔒 <b>הקצאת AI היא פיצ׳ר Premium.</b> בגרסה החינמית ההזנה ידנית בלבד — או ששודרגים ופותחים הכול.</div>' +
           '<button class="fchip wide on" id="ccUpg" style="margin-top:10px">👑 שדרוג ל-AI Premium</button>';
       } else if (cc.mode === "ai") {
-        inner += '<label class="flbl">כמה חשובה לך הקובייה? (1 = נמוך, 10 = קריטי)</label>' +
-          '<div class="prio"><input type="range" min="1" max="10" value="' + cc.priority + '" id="ccPrio"><span class="priov" id="ccPrioV">' + cc.priority + '</span></div>' +
+        const aggressive = cc.priority > PRIORITY_AGGRESSIVE;
+        inner += '<label class="flbl">כמה דחוף וחשוב לך היעד הזה? (1 = נחמד שיהיה, 10 = קריטי)</label>' +
+          '<div class="prio"><input type="range" min="1" max="10" value="' + cc.priority + '" id="ccPrio"><span class="priov' + (aggressive ? " hot" : "") + '" id="ccPrioV">' + cc.priority + '</span></div>' +
+          '<div class="prioband' + (aggressive ? " hot" : "") + '" id="ccBand">' + PRIO_BANDS[cc.priority] +
+            (aggressive ? ' · מעל 7 — מצב חיסכון אגרסיבי' : ' · הקצאה מתונה') + '</div>' +
+          '<label class="flbl">כמה היעד עולה? (לא חובה)</label>' +
+          '<div class="fld"><span class="cur">₪</span><input id="ccGoalP" inputmode="numeric" placeholder="6,000" value="' + esc(cc.goalPrice) + '"></div>' +
+          '<label class="flbl">תוך כמה חודשים תרצה להגיע? (לא חובה)</label>' +
+          '<div class="fld"><input id="ccGoalM" inputmode="numeric" placeholder="10" value="' + esc(cc.goalMonths) + '"><span class="cur">חודשים</span></div>' +
           '<button class="distbtn wide" id="ccCalc" style="margin-top:10px">חשב עם AI 🤖</button>' +
+          (cc.blocked ? '<div class="gwarn" style="margin-top:12px">' + esc(cc.blocked) + '</div>' +
+            '<button class="fchip wide on" id="ccIncome" style="margin-top:8px">💸 למסך ההכנסה החודשית</button>' : "") +
           '<div class="aiRes" id="ccRes" style="display:' + (cc.computed ? "block" : "none") + '">' +
-            (cc.computed ? '<div class="aiAmt">₪' + fmt(cc.amount) + ' <span>לחודש</span></div><div class="aiExp">' + cc.explanation + '</div>' : "") + '</div>';
+            (cc.computed ? '<div class="aiAmt">₪' + fmt(cc.amount) + ' <span>לחודש</span></div><div class="aiExp">' + esc(cc.explanation) + '</div>' : "") + '</div>';
       }
       inner += '<button class="distbtn wide" id="ccCreate" style="margin-top:16px"' + (canCreate ? "" : " disabled") + '>צור קובייה</button>' +
         '<button class="obback" id="ccCancel">ביטול</button>';
@@ -2255,22 +2614,44 @@
       const amt = w.querySelector("#ccAmt");
       if (amt) amt.oninput = () => { amt.value = amt.value.replace(/[^0-9]/g, ""); cc.amount = amt.value; syncCC(); };
       const prio = w.querySelector("#ccPrio");
-      if (prio) prio.oninput = () => { cc.priority = Number(prio.value); w.querySelector("#ccPrioV").textContent = cc.priority; cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC(); };
+      if (prio) prio.oninput = () => {
+        cc.priority = Number(prio.value);
+        const hot = cc.priority > PRIORITY_AGGRESSIVE;
+        const pv = w.querySelector("#ccPrioV"); pv.textContent = cc.priority; pv.classList.toggle("hot", hot);
+        const band = w.querySelector("#ccBand");
+        band.textContent = PRIO_BANDS[cc.priority] + (hot ? " · מעל 7 — מצב חיסכון אגרסיבי" : " · הקצאה מתונה");
+        band.classList.toggle("hot", hot);
+        cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC();
+      };
+      const gp = w.querySelector("#ccGoalP");
+      if (gp) gp.oninput = () => { gp.value = gp.value.replace(/[^0-9]/g, ""); cc.goalPrice = gp.value; cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC(); };
+      const gm = w.querySelector("#ccGoalM");
+      if (gm) gm.oninput = () => { gm.value = gm.value.replace(/[^0-9]/g, ""); cc.goalMonths = gm.value; cc.computed = false; w.querySelector("#ccRes").style.display = "none"; syncCC(); };
       const upg = w.querySelector("#ccUpg");
       if (upg) upg.onclick = () => { closeCustomCube(); state.screen = "upgrade"; render(); };
+      const toInc = w.querySelector("#ccIncome");
+      if (toInc) toInc.onclick = () => { closeCustomCube(); state.screen = "income"; render(); };
       const calc = w.querySelector("#ccCalc");
       if (calc) calc.onclick = () => {
-        const r = allocateCustomCube(cc.priority);
-        cc.amount = r.amount; cc.explanation = r.explanation; cc.computed = true;
+        const r = allocateCustomCube(cc.priority, { price: cc.goalPrice, months: cc.goalMonths });
+        if (!r.ok) {
+          // Never print a confident "₪0 לחודש" — say what's missing and where to fix it.
+          cc.computed = false; cc.amount = ""; cc.blocked = r.explanation;
+          renderCustomCube();
+          return;
+        }
+        cc.blocked = ""; cc.amount = r.amount; cc.explanation = r.explanation; cc.computed = true;
         const res = w.querySelector("#ccRes");
         res.style.display = "block";
-        res.innerHTML = '<div class="aiAmt">₪' + fmt(r.amount) + ' <span>לחודש</span></div><div class="aiExp">' + r.explanation + '</div>';
+        res.innerHTML = '<div class="aiAmt">₪' + fmt(r.amount) + ' <span>לחודש</span></div><div class="aiExp">' + esc(r.explanation) + '</div>';
         syncCC();
       };
       w.querySelector("#ccCancel").onclick = closeCustomCube;
       w.querySelector("#ccCreate").onclick = () => {
         if (!((cc.name || "").trim() && Number(cc.amount) > 0 && (cc.mode === "manual" || (cc.mode === "ai" && cc.computed)))) return;
-        const meta = cc.mode === "ai" ? { priority: cc.priority, explanation: cc.explanation } : {};
+        const meta = cc.mode === "ai"
+          ? { priority: cc.priority, explanation: cc.explanation, goalPrice: cc.goalPrice }
+          : {};
         const name = cc.name, amount = Number(cc.amount);
         closeCustomCube();
         createCustomCube(name, amount, meta);
@@ -2279,11 +2660,24 @@
       setTimeout(() => { const f = w.querySelector("#ccName"); if (f && !cc.name) f.focus(); }, 40);
     }
 
+    // The emergency fund's real goal isn't a monthly target — it's how many
+    // months you could survive with no income at all. That's the number that
+    // makes people keep funding it, so the card says it out loud.
+    function emergencyLine(c) {
+      const goal = emergencyTarget();
+      const per = essentialMonthlySpend();
+      if (goal <= 0 || per <= 0) return '<div class="emgline">🛟 קרן חירום — היעד נקבע לפי ההוצאות החודשיות שלך. הזינו הכנסה חודשית כדי לחשב אותו.</div>';
+      const months = Math.floor((c.balance / per) * 10) / 10;
+      if (c.balance >= goal) return '<div class="emgline done">🛟 יש לך רשת ביטחון מלאה — כ-3 חודשי הוצאות (₪' + fmt(goal) + '). זה הישג אמיתי.</div>';
+      return '<div class="emgline">🛟 ₪' + fmt(c.balance) + ' מתוך ₪' + fmt(goal) + ' (3 חודשי הוצאות) · מכסה כרגע כ-' +
+        (months >= 1 ? months + " חודשים" : Math.round((c.balance / per) * 30) + " ימים") + ' בלי הכנסה</div>';
+    }
+
     function cubeCard(c) {
       // Stable monthly target: locked cubes = their fixed amount; others = the
       // set amount, else a share of income. Never fall back to the current
       // balance (that made the bar read 100% with a meaningless "₪1" target).
-      const income = (state.profile && Number(state.profile.income)) || 0;
+      const income = monthlyIncome();
       const monthly = c.locked ? (c.amount || 0)
         : (c.amount && c.amount > 0 ? c.amount : Math.round(income * ((c.pct || 0) / 100)));
       // A goal cube (kid's "new bike", a personal target) fills toward its total
@@ -2311,7 +2705,7 @@
           ? '<div class="depgoal">' + (reached
               ? '🎉 הגעת ליעד! אפשר לקנות את ' + esc(c.name)
               : '🎯 עוד ₪' + fmt(target - c.balance) + ' ואתה שם!') + '</div>'
-          : '');
+          : (isEmergency(c) ? emergencyLine(c) : ''));
       requestAnimationFrame(() => { const bar = card.querySelector(".track > i"); if (bar) bar.style.width = fill + "%"; });
       card.querySelector(".depbtn").onclick = (e) => { e.stopPropagation(); openDeposit(c.key); };
       return card;
@@ -2398,21 +2792,13 @@
       const pool = state.pool;
       if (pool <= 0) return;
       state.game.flags.dist = true; // badge: distributed a budget
-      // Give each cube its percentage share. If the cubes are over-allocated
-      // (e.g. a personal cube was added on top of a full 100% base) scale every
-      // share down proportionally so ALL cubes — including the newest one — get
-      // their fair slice instead of the last one being starved. Shares are
-      // clamped to what's left so a cube can never go negative; any rounding
-      // remainder (or an under-allocated pool) stays as available balance.
-      const totalPct = state.cubes.reduce((s, c) => s + (c.pct || 0), 0);
-      const scale = totalPct > 100 ? 100 / totalPct : 1;
-      let remaining = pool, distributed = 0;
-      state.cubes.forEach((c) => {
-        let give = Math.max(0, Math.round(pool * ((c.pct || 0) / 100) * scale));
-        if (give > remaining) give = remaining;
-        c.balance += give; remaining -= give; distributed += give;
-      });
-      state.pool = remaining;
+      // One shared allocator for every path that moves money into cubes (this
+      // button, the monthly income, the simulator preview) — bills first, then
+      // percentages, remainder stays free.
+      const plan = splitByPercent(pool);
+      plan.rows.forEach((r) => { const c = state.cubes.find((x) => x.key === r.key); if (c) c.balance += r.amount; });
+      const distributed = plan.given;
+      state.pool = plan.leftover;
       state.justFunded = new Set(state.cubes.map((c) => c.key));
       burstCoins();
       render();
@@ -2469,7 +2855,7 @@
     // =====================================================================
     let chatBuilt = false, chatOpen = false, streaming = false, pendingAction = null;
     const chatLog = [];
-    const SUGG = ["מה המצב שלי?", "אפשר להרשות 500 ₪?", "תכניס 100 ₪ לחיסכון"];
+    const SUGG = ["עזור לי להחליט מה לקנות", "מה מצב קרן החירום?", "כמה אני יכול לחסוך בחודש?", "תכניס 100 ₪ לחיסכון"];
 
     function scrollToBottom() { const m = $("msgs"); if (m) m.scrollTop = m.scrollHeight; }
 
@@ -2481,7 +2867,7 @@
         '<div class="chat" id="chatbox">' +
           '<div class="ch"><div><div class="t">Cubey 🧊</div><div class="s" id="chstate">היועץ הפיננסי החכם שלך · מכיר את הקוביות</div></div>' +
           '<button class="x" id="chx" aria-label="סגור">✕</button></div>' +
-          '<div class="msgs" id="msgs"><div class="intro" id="chintro"><div class="e">👋</div><p>היי! אני Cubey. אפשר לשאול, לדווח על הוצאה — וגם לבקש פעולות, למשל: "תכניס 200 ₪ לקוביית טיול".</p></div></div>' +
+          '<div class="msgs" id="msgs"><div class="intro" id="chintro"><div class="e">👋</div><p>היי! אני Cubey, היועץ הפיננסי שלך. אני רואה את הקוביות, את ההכנסה ואת קרן החירום — אז אפשר להתייעץ איתי באמת: <b>"כדאי לי לקנות אוזניות ב-600 או שעון ב-900?"</b>, "מתי אגיע ליעד?", "בזבזתי 200 על מסעדה", או פשוט "תכניס 200 ₪ לקוביית טיול".</p></div></div>' +
           '<div class="sugg" id="sugg"></div>' +
           '<div class="inbar"><input id="cin" placeholder="כתוב ל-Cubey…"><button id="csend">➤</button></div>' +
         '</div>';
@@ -2618,6 +3004,7 @@
       savings: ["חיסכון", "חסכון"],
       investments: ["השקעות", "השקעה"],
       housing: ["דיור", "שכירות"],
+      emergency: ["חירום", "קרן חירום", "רשת ביטחון", "קופת חירום"],
     };
     function findCubeByName(nameRaw) {
       const n = (nameRaw || "").trim();
@@ -2670,6 +3057,145 @@
       ];
     }
 
+    // =====================================================================
+    // AI FINANCIAL ADVISOR
+    // Cubey is wired into the same engine the rest of the app runs on — the
+    // income, the percentage split, the emergency fund, the goal cubes and the
+    // expense journal. Every answer below is computed from those numbers, so
+    // the advice moves when the user's money moves.
+    // =====================================================================
+    function advisorSnapshot() {
+      const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
+      const fun = by.lifestyle || by.kidfun || null;
+      const emg = state.cubes.find(isEmergency) || null;
+      const income = monthlyIncome();
+      const committedFlex = state.cubes.reduce((s, c) => s + (c.locked ? 0 : cubeMonthlyInflow(c)), 0);
+      const slack = Math.max(0, freeMonthlyBudget() - committedFlex);
+      return {
+        income: income,
+        total: Math.round(totalBalance() + state.pool),
+        pool: Math.round(state.pool),
+        fun: fun, funBalance: fun ? Math.round(fun.balance) : 0,
+        emergency: emg, emgBalance: emg ? Math.round(emg.balance) : 0,
+        emgGoal: emergencyTarget(), essentials: essentialMonthlySpend(),
+        emgMonths: emg && essentialMonthlySpend() > 0 ? Math.round((emg.balance / essentialMonthlySpend()) * 10) / 10 : 0,
+        slack: Math.round(slack), // money not yet promised to any cube each month
+        goals: state.cubes.filter((c) => Number(c.goalTarget) > 0),
+      };
+    }
+
+    // The core consultation: is spending `amount` on `label` a good idea, and why?
+    // Returns a verdict plus the numbers that produced it, so the chat can
+    // explain rather than pronounce.
+    function advisePurchase(amount, label) {
+      const s = advisorSnapshot();
+      const name = label ? '"' + label + '"' : "הקנייה הזו";
+      const perMonth = s.slack > 0 ? s.slack : (s.income > 0 ? Math.round(s.income * 0.1) : 0);
+      const monthsToSave = perMonth > 0 ? Math.ceil(amount / perMonth) : 0;
+      const shareOfAll = s.total > 0 ? amount / s.total : 99;
+      const emgThin = s.emgGoal > 0 && s.emgBalance < s.essentials; // less than one month of cover
+
+      let verdict, why;
+      if (amount > s.total) {
+        verdict = "no";
+        why = "₪" + fmt(amount) + " זה יותר מכל מה שיש לך כרגע (₪" + fmt(s.total) + "). " +
+          (monthsToSave > 0
+            ? "בקצב שלך (₪" + fmt(perMonth) + " פנויים בחודש) זה " + monthsToSave + " חודשי חיסכון — אפשר לפתוח על זה קובייה ולראות את זה מתקרב."
+            : "כדי לתכנן את זה צריך קודם להזין הכנסה חודשית במסך „הכנסה”.");
+      } else if (emgThin && shareOfAll > 0.2) {
+        verdict = "no";
+        why = "בקרן החירום יש ₪" + fmt(s.emgBalance) + " — פחות מחודש הוצאות (₪" + fmt(s.essentials) + "). " +
+          "הוצאה של ₪" + fmt(amount) + " עכשיו תיקח נתח משמעותי מהרשת שלך. הייתי קודם מביא את קרן החירום לחודש אחד לפחות, ואז חוזר לזה — " +
+          (perMonth > 0 ? "זה עניין של " + Math.ceil(Math.max(0, s.essentials - s.emgBalance) / perMonth) + " חודשים בערך." : "גם ₪100 בחודש עושים את זה.");
+      } else if (s.fun && amount <= s.funBalance) {
+        verdict = "yes";
+        why = "יש ₪" + fmt(s.funBalance) + ' בקוביית "' + s.fun.name + '" — הכסף הזה כבר מיועד בדיוק לדברים כאלה. ' +
+          "אחרי הקנייה יישארו שם ₪" + fmt(s.funBalance - amount) + ", וכל השאר לא זז.";
+      } else if (shareOfAll <= 0.15) {
+        verdict = "yes";
+        why = "₪" + fmt(amount) + " זה " + Math.round(shareOfAll * 100) + "% מהכסף שלך — הוצאה קטנה יחסית. " +
+          (s.fun ? 'בקוביית "' + s.fun.name + '" חסרים ₪' + fmt(Math.max(0, amount - s.funBalance)) + ", אז שווה למשוך את ההפרש משם או מהיתרה הפנויה במודע." : "רק תרשמו את זה ביומן ההוצאות כדי שהמספרים יישארו אמיתיים.");
+      } else if (monthsToSave > 0 && monthsToSave <= 3) {
+        verdict = "wait";
+        why = "אפשר, אבל לא הכי חכם עכשיו: " + name + " שווה " + Math.round(shareOfAll * 100) + "% מכל הכסף שלך. " +
+          "אם תחכה " + monthsToSave + " חודש" + (monthsToSave > 1 ? "ים" : "") + " ותשים בצד ₪" + fmt(perMonth) +
+          " בחודש, תקנה את זה בלי לגעת בשום קובייה. זו אותה קנייה — רק בלי המחיר הנסתר.";
+      } else {
+        verdict = "careful";
+        why = "זה גבולי. ₪" + fmt(amount) + " זה " + Math.round(shareOfAll * 100) + "% מהכסף שלך" +
+          (s.fun ? ", ובקוביית הבילויים יש רק ₪" + fmt(s.funBalance) : "") + ". " +
+          "אפשר לעשות את זה, אבל ההפרש ייצא מחיסכון — כלומר תשלם על זה בעוד כמה חודשים, לא היום.";
+      }
+      return { verdict: verdict, why: why, amount: amount, label: label || "", snapshot: s, monthsToSave: monthsToSave, perMonth: perMonth };
+    }
+    const VERDICT_HEAD = { yes: "כן, אפשר בשקט ✅", wait: "כן — אבל שווה לחכות ⏳", careful: "בזהירות ⚖️", no: "לא עכשיו 🛑" };
+
+    // Free-form "X or Y" comparison. Handles prices when they're there, and
+    // gives a real decision framework when they aren't.
+    // Strip the question wrapper off a captured item name, one leading word at a
+    // time — "כדאי לי לקנות אוזניות" must come out as just "אוזניות".
+    const ITEM_PREFIXES = [/^מה\s+/, /^אז\s+/, /^האם\s+/, /^עדיף\s+/, /^כדאי\s+/, /^שווה\s+/, /^תגיד\s+/,
+      /^לי\s+/, /^לך\s+/, /^אני\s+/, /^צריך\s+/, /^רוצה\s+/, /^מתלבט\s+/, /^בין\s+/,
+      /^לקנות\s+/, /^קניית\s+/, /^לבחור\s+/, /^לקחת\s+/, /^להוציא\s+/, /^על\s+/, /^את\s+/];
+    function cleanItemName(s) {
+      let out = String(s || "").replace(/^[\s,?!־-]+/, "").trim();
+      for (let pass = 0; pass < 8; pass++) {
+        const before = out;
+        ITEM_PREFIXES.forEach((re) => { out = out.replace(re, ""); });
+        if (out === before) break;
+      }
+      return out.replace(/["'.!?]+$/g, "").trim();
+    }
+
+    function parseComparison(text) {
+      const t = text.replace(/,/g, " ").replace(/\s+/g, " ").trim();
+      const clean = cleanItemName;
+      const money = "(?:₪|ש\"ח|שח|שקלים|שקל)?";
+      const two = new RegExp("([^,?!]{1,40}?)\\s*(?:ב|במחיר)\\s*[-־]?\\s*(\\d{2,7})\\s*" + money +
+                             "\\s*(?:או|לעומת|מול|vs\\.?)\\s*([^,?!]{1,40}?)\\s*(?:ב|במחיר)\\s*[-־]?\\s*(\\d{2,7})");
+      const m = t.match(two);
+      if (m) return { a: { name: clean(m[1]), price: Number(m[2]) }, b: { name: clean(m[3]), price: Number(m[4]) } };
+      const m2 = t.match(/([^,?!]{1,40}?)\s+(?:או|לעומת|מול)\s+([^,?!]{1,40}?)\s*[?.!]?$/);
+      if (m2 && /(עדיף|כדאי|לקנות|לבחור|שווה|אקנה|להחליט)/.test(t))
+        return { a: { name: clean(m2[1]), price: 0 }, b: { name: clean(m2[2]), price: 0 } };
+      return null;
+    }
+
+    function adviseComparison(cmp) {
+      const s = advisorSnapshot();
+      if (!cmp.a.price || !cmp.b.price) {
+        return { text: "בכיף, בוא נחליט ביחד בין " + cmp.a.name + " ל" + cmp.b.name + " 🤔\n" +
+          "כדי לתת לך תשובה אמיתית ולא ניחוש, אני צריך שני דברים: כמה כל אחד עולה, ובאיזה מהם תשתמש יותר בחודש הקרוב.\n" +
+          'כתוב לי למשל: "' + cmp.a.name + " ב-800 או " + cmp.b.name + ' ב-1,200" ואני ארוץ על המספרים שלך.' };
+      }
+      const cheap = cmp.a.price <= cmp.b.price ? cmp.a : cmp.b;
+      const rich = cmp.a.price <= cmp.b.price ? cmp.b : cmp.a;
+      const diff = rich.price - cheap.price;
+      const ac = advisePurchase(cheap.price, cheap.name);
+      const ar = advisePurchase(rich.price, rich.name);
+      const lines = [];
+      lines.push("בוא נשים את שניהם על השולחן 👇");
+      lines.push("• " + cheap.name + " — ₪" + fmt(cheap.price) + ": " + VERDICT_HEAD[ac.verdict]);
+      lines.push("• " + rich.name + " — ₪" + fmt(rich.price) + ": " + VERDICT_HEAD[ar.verdict]);
+      lines.push("");
+      const rank = { yes: 3, wait: 2, careful: 1, no: 0 };
+      if (rank[ac.verdict] > rank[ar.verdict]) {
+        lines.push("ההמלצה שלי: " + cheap.name + ". " + ac.why);
+        lines.push("ההפרש של ₪" + fmt(diff) + " הוא לא רק כסף — " +
+          (s.emgGoal > 0 && s.emgBalance < s.emgGoal
+            ? "אם הוא נכנס לקרן החירום, הרשת שלך גדלה בעוד " + Math.round((diff / Math.max(1, s.essentials)) * 30) + " ימי כיסוי."
+            : "אם הוא נשאר בצד, זה " + (ac.perMonth > 0 ? Math.round(diff / ac.perMonth * 10) / 10 + " חודשי חיסכון שחסכת לעצמך." : "כסף שנשאר לך פנוי.")));
+      } else if (rank[ar.verdict] === rank[ac.verdict]) {
+        lines.push("מבחינה כספית שניהם באותו מקום אצלך, אז המספרים לא יכריעו — מה שיכריע זה שימוש.");
+        lines.push("השאלה שאני תמיד שואל: באיזה מהם תשתמש יותר ב-30 הימים הקרובים? זה שתשתמש בו יותר שווה את ההפרש של ₪" + fmt(diff) + ", והשני לא.");
+      } else {
+        lines.push("ההמלצה שלי: " + rich.name + " דווקא. " + ar.why);
+      }
+      lines.push("");
+      lines.push("ואם בא לך, אני יכול לפתוח קובייה לאחד מהם — פשוט תכתוב: \"תכניס " + fmt(Math.min(cheap.price, 200)) + " ₪ ל" + cheap.name + "\".");
+      return { text: lines.join("\n") };
+    }
+
     function respond(text) {
       const q = text.toLowerCase();
       const cubes = state.cubes;
@@ -2707,37 +3233,113 @@
         };
       }
 
-      // 2. Affordability
-      if (/(afford|אפשר להרשות|יכול להרשות|אפשר לקנות)/.test(q) && num) {
+      // 2. Free-form consultation: "כדאי לי X ב-500 או Y ב-800?"
+      const cmp = parseComparison(text);
+      if (cmp) return adviseComparison(cmp);
+
+      // 3. Purchase decision: "כדאי לי לקנות אוזניות ב-600?" / "אפשר להרשות 500 ₪?"
+      if (/(afford|אפשר להרשות|יכול להרשות|אפשר לקנות|כדאי לי|שווה לי|האם לקנות|לקנות|להוציא|שווה לקנות)/.test(q) && num) {
         const amount = Number(num);
-        const life = byKey.lifestyle;
-        if (!life) return { text: 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב".' };
-        if (amount <= life.balance)
-          return { text: "כן! 🎉 הוצאה של ₪" + fmt(amount) + ' מקוביית "בילויים ופנאי" (יתרה ₪' + fmt(life.balance) + ") משאירה לך ₪" + fmt(life.balance - amount) + " שם. אפשר בשקט." };
-        if (amount <= total)
-          return { text: "קצת גבולי — בקוביית הבילויים יש רק ₪" + fmt(life.balance) + ". יש לך ₪" + fmt(total) + " בסך הכל, אז אם ממש צריך קח את ההפרש מהחיסכון במודע." };
-        return { text: "הייתי אומר לא כרגע. ₪" + fmt(amount) + " זה יותר מכל היתרה שלך (₪" + fmt(total) + ")." };
+        if (!cubes.length) return { text: 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב" ואז נוכל לדבר במספרים אמיתיים.' };
+        // pull the thing being bought out of the sentence, if it's there
+        const itemM = text.match(/(?:לקנות|קניית|על)\s+([^\d,?!]{2,30}?)\s*(?:ב|במחיר|-)?\s*\d/);
+        const item = itemM ? cleanItemName(itemM[1]) : "";
+        const a = advisePurchase(amount, item);
+        const s = a.snapshot;
+        const extra = s.goals.length && a.verdict !== "no"
+          ? "\n\nשים לב שזה גם משפיע על היעדים שלך: " + s.goals.slice(0, 2).map((g) =>
+              '"' + g.name + '" (₪' + fmt(g.balance) + " מתוך ₪" + fmt(Number(g.goalTarget)) + ")").join(", ") + "."
+          : "";
+        return {
+          text: VERDICT_HEAD[a.verdict] + "\n\n" + a.why + extra,
+          quick: a.verdict === "no" || a.verdict === "wait"
+            ? [{ label: "פתח לי קובייה לזה 🎯", run: () => {
+                const nm = item || "הקנייה הבאה";
+                createCustomCube(nm, a.perMonth > 0 ? a.perMonth : Math.max(50, Math.round(amount / 6)), { priority: 8, goalPrice: amount });
+                return { text: 'נוצרה קובייה "' + nm + '" עם יעד של ₪' + fmt(amount) + ". כל חודש היא תתמלא, ותראה בדיוק כמה נשאר 🎯" };
+              } }]
+            : null,
+        };
       }
 
-      // 3. Expense report
+      // 4. Expense report → straight into the expense journal, with a reflection.
       if (/(בזבזתי|הוצאתי|קניתי|שילמתי|spent)/.test(q) && num) {
-        const life = byKey.lifestyle || cubes.find((c) => c.key !== "housing");
-        if (life) { life.balance = Math.max(0, life.balance - Number(num)); syncAfterChange([life.key]); }
-        return { text: "רשמתי ✅ הורדתי ₪" + fmt(Number(num)) + ' מקוביית "' + (life ? life.name : "") + '". היתרה החדשה: ₪' + fmt(life ? life.balance : 0) + "." };
+        const amount = Number(num);
+        const onM = text.match(/(?:על|ב)\s+([^\d,?!]{2,30}?)\s*$/);
+        const what = onM ? onM[1].trim() : "";
+        // Prefer an explicitly named cube, then the fun cube, then anything flexible.
+        const named = findCubeByName(what);
+        const from = (named && !named.locked ? named : null) || byKey.lifestyle || byKey.kidfun || cubes.find((c) => !c.locked && !isEmergency(c));
+        if (!from) return { text: "אין לי קובייה גמישה להוריד ממנה 🤔 אפשר לרשום את זה במסך „יומן הוצאות”." };
+        if (from.balance < amount)
+          return { text: 'בקובייה "' + from.name + '" יש רק ₪' + fmt(from.balance) + ", אז לא ארשום הורדה שתשאיר אותה שלילית. " +
+            "אפשר לרשום את זה במסך „יומן הוצאות” ולבחור משם קובייה אחרת 🙂" };
+        from.balance = Math.max(0, from.balance - amount);
+        logExpense({ amount: amount, cubeKey: from.key, cubeName: from.name, what: what, reason: "need" });
+        syncAfterChange([from.key]);
+        return {
+          text: "רשמתי ✅ ₪" + fmt(amount) + (what ? " על " + what : "") + ' ירדו מ"' + from.name + '" (נשאר ₪' + fmt(from.balance) + ").\n\n" +
+            "רק שאלה אחת, והיא זו שבאמת משנה: זה היה משהו שהיית חייב, או משהו שנסחפת אליו?",
+          quick: SPEND_REASONS.map((r) => ({
+            label: r.emoji + " " + r.label,
+            kind: r.tone === "warn" ? "danger" : null,
+            run: () => {
+              if (state.expenses[0]) { state.expenses[0].reason = r.id; saveState(); }
+              const ins = expenseInsights();
+              return { text: r.tone === "warn"
+                ? "תודה על הכנות 🙏 דווקא ההוצאות האלה הן אלה ששווה להסתכל עליהן בסוף החודש." +
+                  (ins && ins.regretPct > 0 ? " עד כה " + ins.regretPct + "% מהכסף שדיווחת עליו נכנס לקטגוריה הזו." : "")
+                : "מעולה, סימנתי ✅ הוצאה מודעת היא לא בעיה — זו בדיוק המטרה של הקוביות." };
+            },
+          })),
+        };
       }
 
-      // 4. Status
+      // 5. Emergency-fund consultation
+      if (/(חירום|רשת ביטחון|קרן חירום)/.test(q)) {
+        const s = advisorSnapshot();
+        if (!s.emergency) return { text: "אין לך עדיין קוביית קרן חירום — אפתח לך אותה ברגע שתחלק תקציב 🙂" };
+        if (s.emgGoal <= 0) return { text: "כדי לחשב כמה קרן החירום שלך צריכה להכיל אני צריך את ההוצאות החודשיות שלך. הזן הכנסה חודשית במסך „הכנסה” ואחזור עם מספר." };
+        const left = Math.max(0, s.emgGoal - s.emgBalance);
+        if (left <= 0) return { text: "קרן החירום שלך מלאה 🛟 יש בה ₪" + fmt(s.emgBalance) + " — כשלושה חודשי הוצאות. זה המצב שרוב האנשים לא מגיעים אליו, אז תשמור עליו." };
+        const per = s.slack > 0 ? s.slack : (s.emergency.amount || 0);
+        return { text: "בקרן החירום יש ₪" + fmt(s.emgBalance) + " מתוך יעד של ₪" + fmt(s.emgGoal) + " (3 חודשי הוצאות של ₪" + fmt(s.essentials) + " כל אחד).\n" +
+          "זה מכסה אותך היום כ-" + s.emgMonths + " חודשים בלי הכנסה.\n" +
+          (per > 0 ? "בקצב של ₪" + fmt(per) + " בחודש תסגור את הפער תוך " + Math.ceil(left / per) + " חודשים." : "כדי לסגור את הפער צריך להקצות סכום חודשי — אפשר במסך „הכנסה”.") };
+      }
+
+      // 6. Savings capacity
+      if (/(כמה.*(לחסוך|אני יכול)|יכול לחסוך|כמה נשאר לי|תקציב פנוי)/.test(q)) {
+        const s = advisorSnapshot();
+        if (s.income <= 0) return { text: "עוד לא סיפרת לי כמה נכנס לך כל חודש 🙂 הזן את זה במסך „הכנסה חודשית” ואחשב לך בדיוק כמה אפשר לחסוך." };
+        return { text: "מתוך ₪" + fmt(s.income) + " בחודש:\n" +
+          "• ₪" + fmt(s.income - freeMonthlyBudget()) + " הולכים להוצאות קבועות ונעולות\n" +
+          "• ₪" + fmt(freeMonthlyBudget()) + " הם התקציב הגמיש שלך\n" +
+          "• ₪" + fmt(s.slack) + " מתוכו עוד לא הובטחו לאף קובייה — זה הסכום שאפשר להפנות היום ליעד חדש.\n\n" +
+          "רוצה שאראה לך כמה זה שווה בעוד שנה? פתח את הסימולטור 🔮" };
+      }
+
+      // 7. Status
       if (/(מצב|סטטוס|כמה יש|how|status|doing)/.test(q)) {
-        const low = [...cubes].sort((a, b) => a.balance - b.balance)[0];
-        return { text: "סה״כ בקוביות: ₪" + fmt(total) + "." + (low ? ' הקובייה הכי נמוכה כרגע: "' + low.name + '" עם ₪' + fmt(low.balance) + "." : "") };
+        const s = advisorSnapshot();
+        const low = [...cubes].filter((c) => !c.locked).sort((a, b) => a.balance - b.balance)[0];
+        const ins = expenseInsights();
+        return { text: "סה״כ אצלך: ₪" + fmt(s.total) + (s.pool > 0 ? " (מתוכם ₪" + fmt(s.pool) + " עוד לא חולקו)" : "") + ".\n" +
+          (s.emergency ? "🛟 קרן חירום: ₪" + fmt(s.emgBalance) + (s.emgGoal > 0 ? " מתוך ₪" + fmt(s.emgGoal) : "") + ".\n" : "") +
+          (low ? '📉 הקובייה הכי נמוכה: "' + low.name + '" עם ₪' + fmt(low.balance) + ".\n" : "") +
+          (ins ? "🧾 דיווחת על ₪" + fmt(ins.total) + " הוצאות" + (ins.regretPct > 0 ? ", מתוכן " + ins.regretPct + "% סומנו כ\"נסחפתי\"." : ".") : "עוד לא דיווחת על הוצאות — זה המקום שבו התמונה מתחילה להתחדד.") };
       }
 
-      // 5. Greeting
+      // 8. Greeting
       if (/^(היי|הי|שלום|מה קורה|hi|hey|hello)/.test(q))
-        return { text: "היי! 👋 אני Cubey. יש לך ₪" + fmt(total) + ' בקוביות. אפשר לשאול "אפשר להרשות 300 ₪?", לדווח "בזבזתי 200 ₪", או לבקש "תכניס 100 ₪ לחיסכון".' };
+        return { text: "היי! 👋 יש לך ₪" + fmt(total) + " בקוביות.\nאפשר להתייעץ איתי בחופשיות — למשל \"כדאי לי אוזניות ב-600 או שעון ב-900?\", \"מה מצב קרן החירום?\", \"בזבזתי 200 על מסעדה\", או \"תכניס 100 ₪ לחיסכון\"." };
 
-      // 6. Fallback
-      return { text: "אני Cubey 🧊 — רואה את הקוביות שלך (סה״כ ₪" + fmt(total) + '). נסה: "אפשר להרשות 500 ₪?", "בזבזתי 200 ₪", או "תכניס 100 ₪ לחיסכון".' };
+      // 9. Advisor fallback — a real answer with the user's numbers, not a shrug.
+      const s = advisorSnapshot();
+      return { text: "אני כאן בדיוק בשביל התלבטויות כאלה 🧊\n" +
+        "התמונה שלך כרגע: ₪" + fmt(s.total) + " בקוביות" + (s.income > 0 ? ", ₪" + fmt(s.income) + " נכנסים בחודש, ₪" + fmt(s.slack) + " פנויים להפניה" : "") +
+        (s.emergency && s.emgGoal > 0 ? ", וקרן חירום על ₪" + fmt(s.emgBalance) + " מתוך ₪" + fmt(s.emgGoal) : "") + ".\n\n" +
+        "כדי שאוכל לעזור באמת, תן לי את המספרים: \"כדאי לי לקנות X ב-800?\", \"X ב-500 או Y ב-900?\", \"מתי אגיע ליעד?\" — או פשוט תגיד לי מה עובר לך בראש ואני אשאל את השאלות." };
     }
 
     // =====================================================================
@@ -2874,8 +3476,12 @@
         account: state.authUser ? state.authUser.email : null,
         profile: state.profile,
         freePool: state.pool,
-        cubes: state.cubes.map((c) => ({ name: c.name, percent: c.pct, monthlyTarget: c.amount, balance: c.balance, custom: !!c.custom, locked: !!c.locked })),
+        cubes: state.cubes.map((c) => ({ name: c.name, percent: c.pct, monthlyTarget: c.amount, balance: c.balance, custom: !!c.custom, locked: !!c.locked, mandatory: !!c.mandatory })),
         totalBalance: totalBalance(),
+        monthlyIncome: monthlyIncome(),
+        emergencyFundTarget: emergencyTarget(),
+        salary: state.salary,
+        expenses: (state.expenses || []).map((e) => ({ at: e.at, amount: e.amount, cube: e.cubeName, what: e.what, reason: e.reason })),
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
@@ -2894,6 +3500,246 @@
       clearSecLog();
       secLog("INFO", "היסטוריית הפעולות והצ׳אט נוקתה לבקשת המשתמש");
       showToast("🧹 ההיסטוריה נוקתה");
+    }
+
+    // =====================================================================
+    // Fixed monthly income → percentage buckets.
+    // One number in, a transparent split out. The percentages are editable and
+    // are the single source of truth: the monthly targets are derived from them,
+    // never the other way round.
+    // =====================================================================
+    function renderIncomePage() {
+      const kid = isKidMode();
+      const body = pageShell(kid ? "הכסף החודשי שלי 💸" : "הכנסה חודשית קבועה 💸", () => { state.screen = "app"; render(); });
+      const applied = state.salary.lastApplied === monthKey();
+
+      const amtCard = el("div", "setcard");
+      amtCard.innerHTML =
+        '<div class="setlbl">' + (kid ? "כמה כסף נכנס לך כל חודש? (דמי כיס, עבודות קטנות)" : "כמה נכנס לחשבון כל חודש, נטו?") + '</div>' +
+        '<div class="fld" style="margin-top:8px"><span class="cur">₪</span><input id="incAmt" inputmode="numeric" placeholder="8000" value="' + (monthlyIncome() || "") + '"></div>' +
+        '<div class="setlbl" style="margin-top:10px">כל האחוזים למטה מחושבים מהסכום הזה.</div>';
+      body.appendChild(amtCard);
+
+      const autoCard = el("div", "setcard swrow");
+      autoCard.innerHTML = '<div><div class="setmail">חלוקה אוטומטית בכל חודש 🔁</div>' +
+        '<div class="setlbl" style="margin-top:4px">בפעם הראשונה שתפתח/י את האפליקציה בחודש חדש, ההכנסה נכנסת לקוביות לפי האחוזים — בלי ללחוץ כלום</div></div>' +
+        '<button class="sw' + (state.salary.auto ? " on" : "") + '" id="swAuto" aria-label="חלוקה אוטומטית"></button>';
+      body.appendChild(autoCard);
+      autoCard.querySelector("#swAuto").onclick = () => {
+        state.salary.auto = !state.salary.auto;
+        autoCard.querySelector("#swAuto").classList.toggle("on", state.salary.auto);
+        saveState();
+        showToast(state.salary.auto ? "🔁 חלוקה אוטומטית מופעלת" : "חלוקה אוטומטית כבויה — אפשר תמיד לחלק ידנית");
+      };
+
+      const st1 = el("div", "section-t"); st1.textContent = "החלוקה לקוביות"; body.appendChild(st1);
+
+      const editor = el("div", "setcard");
+      body.appendChild(editor);
+      const preview = el("div", "setcard");
+      body.appendChild(preview);
+
+      const goBtn = el("button", "distbtn wide");
+      body.appendChild(goBtn);
+      const hint = el("div", "setlbl"); hint.style.textAlign = "center";
+      body.appendChild(hint);
+
+      // Repaint only the derived parts, so typing in a field never steals focus.
+      function paintDerived() {
+        const income = monthlyIncome();
+        const plan = splitByPercent(income);
+        preview.innerHTML =
+          '<div class="setlbl">כך ייראה חודש שלם של ₪' + fmt(income) + '</div>' +
+          (income > 0
+            ? plan.rows.map((r) => '<div class="pctprev"><span>' + r.emoji + ' ' + esc(r.name) + (r.fixed ? ' 🔒' : "") + '</span>' +
+                '<b style="color:' + r.color + '">₪' + fmt(r.amount) + '</b></div>').join("") +
+              (plan.leftover > 0 ? '<div class="pctprev leftover"><span>🪙 נשאר ביתרה הפנויה</span><b>₪' + fmt(plan.leftover) + '</b></div>' : "")
+            : '<div class="setlbl" style="margin-top:8px">הזינו סכום חודשי למעלה כדי לראות את החלוקה.</div>');
+        // Locked bills are paid in full first, so only the flexible cubes'
+        // percentages compete for what's left — that's the number to report.
+        const fixed = state.cubes.reduce((s, c) => s + (c.locked ? Math.round(Number(c.amount) || 0) : 0), 0);
+        const flexPct = Math.round(state.cubes.reduce((s, c) => s + (c.locked ? 0 : Number(c.pct) || 0), 0) * 10) / 10;
+        const room = income > 0 ? Math.round(((income - fixed) / income) * 1000) / 10 : 0;
+        const over = flexPct > room + 0.5;
+        hint.textContent = income <= 0 ? ""
+          : (fixed > 0 ? "₪" + fmt(fixed) + " הולכים להוצאות קבועות ונעולות (" + (Math.round((100 - room) * 10) / 10) + "%), ונשארים " + room + "% לחלוקה. " : "") +
+            (over
+              ? "האחוזים שהגדרת מסתכמים ב-" + flexPct + "% — יותר ממה שנשאר, אז החלוקה תוקטן פרופורציונלית."
+              : "האחוזים שהגדרת: " + flexPct + "%" + (flexPct < room - 0.5 ? " — ההפרש יישאר כיתרה פנויה לחלוקה ידנית." : ""));
+        hint.style.color = over ? "var(--warning)" : "var(--dim)";
+        goBtn.disabled = income <= 0;
+        goBtn.textContent = income <= 0
+          ? "הזינו סכום חודשי"
+          : (applied ? "💸 חלק שוב ₪" + fmt(income) + " (" + monthLabel() + " כבר חולק)" : "💸 קבל את הכנסת " + monthLabel() + " וחלק לקוביות");
+      }
+
+      // Percentage editor — locked cubes show their real fixed cost and are not
+      // editable; the emergency fund is marked mandatory and cannot go to 0.
+      editor.innerHTML = '<div class="setlbl">אחוז מההכנסה לכל קובייה</div>' +
+        state.cubes.map((c, i) =>
+          '<div class="pctrow' + (c.locked ? " lockedrow" : "") + '">' +
+            '<span class="pctname">' + c.emoji + ' ' + esc(c.name) + (c.mandatory ? ' <i class="must">חובה</i>' : "") + '</span>' +
+            (c.locked
+              ? '<span class="pctfixed">₪' + fmt(c.amount || 0) + ' קבוע 🔒</span>'
+              : '<span class="pctinput"><input inputmode="numeric" data-i="' + i + '" value="' + (Number(c.pct) || 0) + '"><b>%</b></span>') +
+          '</div>').join("");
+      editor.querySelectorAll(".pctinput input").forEach((inp) => {
+        inp.oninput = () => {
+          inp.value = inp.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
+          const cube = state.cubes[Number(inp.dataset.i)];
+          if (!cube) return;
+          let v = Math.max(0, Math.min(100, Number(inp.value) || 0));
+          if (cube.mandatory && v < 1) v = Number(inp.value) === 0 ? 0 : v; // allow clearing while typing
+          cube.pct = Math.round(v * 10) / 10;
+          retargetCubes();
+          saveState();
+          paintDerived();
+        };
+        inp.onblur = () => {
+          const cube = state.cubes[Number(inp.dataset.i)];
+          if (!cube) return;
+          // The emergency fund is mandatory: it may be lowered, never switched off.
+          if (cube.mandatory && (Number(cube.pct) || 0) < 5) { cube.pct = 5; showToast("🛟 קרן החירום היא חובה — הושארה על 5% לפחות"); }
+          inp.value = Number(cube.pct) || 0;
+          retargetCubes(); saveState(); paintDerived();
+        };
+      });
+
+      goBtn.onclick = () => {
+        const r = receiveMonthlyIncome(true);
+        if (!r.ok) { showToast("קודם הזינו סכום חודשי 🙂"); return; }
+        state.justFunded = new Set(r.rows.filter((x) => x.amount > 0).map((x) => x.key));
+        state.screen = "app";
+        burstCoins();
+        render();
+        animateCounts();
+        showToast("🪙 חולקו ₪" + fmt(r.given) + " לקוביות" + (r.leftover > 0 ? " · ₪" + fmt(r.leftover) + " נשארו ביתרה" : ""));
+        setTimeout(() => { state.justFunded = new Set(); }, 800);
+      };
+
+      amtCard.querySelector("#incAmt").oninput = (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        setMonthlyIncome(e.target.value);
+        paintDerived();
+      };
+
+      paintDerived();
+      const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
+    }
+
+    // =====================================================================
+    // Expense journal — report what actually happened to the money, and say
+    // why. The "why" is the feature: five honest options turn a receipt list
+    // into something you can act on next month.
+    // =====================================================================
+    let exDraft = null;
+    function newExDraft() {
+      const first = state.cubes.find((c) => !c.locked) || state.cubes[0];
+      return { amount: "", cubeKey: first ? first.key : null, what: "", reason: "need", deduct: true };
+    }
+    function renderExpensesPage() {
+      const kid = isKidMode();
+      const body = pageShell(kid ? "על מה הוצאתי כסף 🧾" : "יומן הוצאות 🧾", () => { exDraft = null; state.screen = "app"; render(); });
+      if (!exDraft) exDraft = newExDraft();
+
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl">' + (kid
+        ? "כל פעם שהוצאת כסף — ספר כאן על מה ולמה. ככה תראה בעצמך לאן הכסף שלך הולך."
+        : "דווחו כאן על כסף שיצא: כמה, מאיזו קובייה, על מה — ובעיקר <b>למה</b>. הדיווח מוריד את הסכום מהקובייה כדי שהיתרות יישארו אמיתיות.") + '</div>';
+      body.appendChild(intro);
+
+      // --- the report form
+      const form = el("div", "setcard");
+      const cubeOpts = state.cubes.filter((c) => !c.locked);
+      form.innerHTML =
+        '<label class="flbl" style="margin-top:0">כמה יצא?</label>' +
+        '<div class="fld"><span class="cur">₪</span><input id="exAmt" inputmode="numeric" placeholder="120" value="' + esc(exDraft.amount) + '"></div>' +
+        '<label class="flbl">מאיזו קובייה?</label>' +
+        '<div class="exchips" id="exCubes">' + cubeOpts.map((c) =>
+          '<button class="fchip' + (exDraft.cubeKey === c.key ? " on" : "") + '" data-k="' + esc(c.key) + '">' + c.emoji + ' ' + esc(c.name) + '</button>').join("") + '</div>' +
+        '<label class="flbl">על מה?</label>' +
+        '<div class="fld"><input id="exWhat" placeholder="' + (kid ? "ממתקים בקיוסק" : "ארוחה עם חברים") + '" value="' + esc(exDraft.what) + '"></div>' +
+        '<label class="flbl">ולמה? (התשובה הכי חשובה)</label>' +
+        '<div class="exchips" id="exReasons">' + SPEND_REASONS.map((r) =>
+          '<button class="fchip' + (exDraft.reason === r.id ? " on" : "") + '" data-r="' + r.id + '">' + r.emoji + ' ' + r.label + '</button>').join("") + '</div>' +
+        '<div class="swrow" style="margin-top:14px"><div class="setlbl">להוריד את הסכום מיתרת הקובייה</div>' +
+          '<button class="sw' + (exDraft.deduct ? " on" : "") + '" id="exDeduct" aria-label="הורדה מהיתרה"></button></div>';
+      body.appendChild(form);
+
+      const save = el("button", "distbtn wide");
+      const amt = () => Math.round(Number(exDraft.amount) || 0);
+      const syncSave = () => { save.disabled = !(amt() > 0); save.textContent = amt() > 0 ? "רשום הוצאה של ₪" + fmt(amt()) : "רשום הוצאה"; };
+      body.appendChild(save);
+
+      form.querySelector("#exAmt").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); exDraft.amount = e.target.value; syncSave(); };
+      form.querySelector("#exWhat").oninput = (e) => { exDraft.what = e.target.value; };
+      form.querySelectorAll("#exCubes .fchip").forEach((b) => {
+        b.onclick = () => { exDraft.cubeKey = b.dataset.k; form.querySelectorAll("#exCubes .fchip").forEach((x) => x.classList.toggle("on", x === b)); };
+      });
+      form.querySelectorAll("#exReasons .fchip").forEach((b) => {
+        b.onclick = () => { exDraft.reason = b.dataset.r; form.querySelectorAll("#exReasons .fchip").forEach((x) => x.classList.toggle("on", x === b)); };
+      });
+      form.querySelector("#exDeduct").onclick = () => {
+        exDraft.deduct = !exDraft.deduct;
+        form.querySelector("#exDeduct").classList.toggle("on", exDraft.deduct);
+      };
+      save.onclick = () => {
+        const value = amt();
+        if (value <= 0) return;
+        const cube = state.cubes.find((c) => c.key === exDraft.cubeKey) || null;
+        if (exDraft.deduct && cube && cube.balance < value) {
+          showToast('בקובייה "' + cube.name + '" יש רק ₪' + fmt(cube.balance) + " — אפשר לכבות את ההורדה מהיתרה או לבחור קובייה אחרת");
+          return;
+        }
+        if (exDraft.deduct && cube) cube.balance = Math.max(0, cube.balance - value);
+        logExpense({ amount: value, cubeKey: cube ? cube.key : null, cubeName: cube ? cube.name : "", what: exDraft.what, reason: exDraft.reason });
+        const r = reasonById(exDraft.reason);
+        exDraft = newExDraft();
+        render();
+        showToast(r.tone === "warn"
+          ? "📝 נרשם — " + r.label + ". טוב שאמרת את זה, זה בדיוק מה שמשנה חודש הבא."
+          : "✅ נרשמו ₪" + fmt(value) + (cube ? " מ" + cube.name : ""));
+      };
+      syncSave();
+
+      // --- what the journal says back
+      const ins = expenseInsights();
+      if (ins) {
+        const st = el("div", "section-t"); st.textContent = "מה זה מספר לך 🪞"; body.appendChild(st);
+        const card = el("div", "setcard");
+        const lines = [];
+        lines.push('<div class="privline">💰 דיווחת על <b>' + (ins.count === 1 ? "הוצאה אחת" : ins.count + " הוצאות") + '</b> בסך <b>₪' + fmt(ins.total) + '</b>' + (ins.windowed ? " ב-30 הימים האחרונים" : "") + '.</div>');
+        if (ins.topCube) lines.push('<div class="privline">📍 הכי הרבה יצא מ<b>' + esc(ins.topCube) + '</b> — ₪' + fmt(ins.topCubeAmount) + '.</div>');
+        if (ins.regretted > 0) {
+          lines.push('<div class="privline">🌀 <b>' + ins.regretPct + '%</b> מהכסף (₪' + fmt(ins.regretted) + ') סומן כ"נסחפתי" או "מתחרט".' +
+            (ins.regretPct >= 30
+              ? ' זה הרבה — לו רק חצי מזה היה נכנס לקרן החירום, היו לך שם ₪' + fmt(Math.round(ins.regretted / 2)) + ' יותר.'
+              : ' זה בסדר גמור — כולם נסחפים לפעמים.') + '</div>');
+        } else {
+          lines.push('<div class="privline">🎯 כל ההוצאות שדיווחת היו מודעות — לא "נסחפתי" ולא חרטה. זה נדיר, תמשיך ככה.</div>');
+        }
+        card.innerHTML = lines.join("");
+        body.appendChild(card);
+      }
+
+      // --- the entries themselves
+      if ((state.expenses || []).length) {
+        const st2 = el("div", "section-t"); st2.textContent = "מה דיווחת"; body.appendChild(st2);
+        const led = el("div", "ledger");
+        state.expenses.slice(0, 40).forEach((e) => {
+          const r = reasonById(e.reason);
+          const d = new Date(e.at);
+          const row = el("div", "ledrow exrow");
+          row.innerHTML = '<span class="leddate">' + String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0") + '</span>' +
+            '<span class="leddesc">' + (e.what ? esc(e.what) : "הוצאה") +
+              '<i class="extag ' + r.tone + '">' + r.emoji + " " + r.label + '</i>' +
+              (e.cubeName ? '<i class="excube">' + esc(e.cubeName) + '</i>' : "") + '</span>' +
+            '<span class="ledamt neg">−₪' + fmt(e.amount) + '</span>';
+          led.appendChild(row);
+        });
+        body.appendChild(led);
+      }
+      const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
     }
 
     function renderPrivacyPage() {
@@ -2920,11 +3766,15 @@
       mk("🧹 ניקוי היסטוריית פעולות", "setitem", clearHistory);
       body.appendChild(list);
 
-      // live security log
-      const st = el("div", "section-t"); st.textContent = "יומן אבטחה חי 🛰️"; body.appendChild(st);
-      const box = el("div", "seclog");
-      body.appendChild(box);
-      renderSecLogInto(box);
+      // What the app does NOT do — stated plainly instead of dumping an event log.
+      const st = el("div", "section-t"); st.textContent = "מה נשמר עליך 📋"; body.appendChild(st);
+      const facts = el("div", "setcard");
+      facts.innerHTML =
+        '<div class="privline">🔐 <b>הכול נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.</div>' +
+        '<div class="privline">🏦 <b>אין חיבור לחשבון הבנק שלך.</b> האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת שום קובץ בלי אישור מפורש שלך לכל קובץ בנפרד.</div>' +
+        '<div class="privline">🧾 <b>תנועות עו״ש לא נשמרות.</b> קובץ שמייבאים מנותח בזיכרון בלבד ונמחק ברגע שיוצאים מהמסך.</div>' +
+        '<div class="privline">🚫 <b>אין רישום אירועים גלוי.</b> האפליקציה לא מציגה ולא שומרת רישום פנימי של פעולות התחברות — רישום כזה עלול לחשוף את כתובת המייל שלך למי שמחזיק במכשיר.</div>';
+      body.appendChild(facts);
     }
 
     // =====================================================================
@@ -3678,10 +4528,12 @@
       const moves = [];
       const targets = {};
       Object.keys(report.byCube).forEach((k) => { targets[k] = Math.round(report.byCube[k].total); });
-      // Donors: surplus above each cube's own spending need (locked cubes never give).
+      // Donors: surplus above each cube's own spending need. Locked cubes never
+      // give, and neither does the emergency fund — a rebalance is exactly the
+      // kind of "small automatic move" that quietly empties a safety net.
       const donors = [];
       state.cubes.forEach((c) => {
-        if (c.locked) return;
+        if (c.locked || isEmergency(c)) return;
         const surplus = c.balance - (targets[c.key] || 0);
         if (surplus > 0) donors.push({ cube: c, avail: surplus });
       });
@@ -3708,14 +4560,34 @@
       return { moves: moves, fullyCovered: fullyCovered };
     }
 
+    // =====================================================================
+    // Current-account (עו״ש) import — DELIBERATELY NOT AUTOMATIC.
+    //
+    // The app has no bank connection, no credentials, no scheduled sync and no
+    // background fetch of any kind. A statement can only ever enter the app
+    // through this path, which requires TWO separate deliberate acts:
+    //   1. the user picks or drops one specific file, and
+    //   2. the user then approves that exact file by name and size.
+    // Dropping a file no longer reads it — it only queues the approval card.
+    //
+    // Nothing about the statement is persisted: the raw text is released as
+    // soon as it has been analysed, the derived report lives in memory only
+    // (saveState() never touches it) and leaving the screen wipes both.
+    // =====================================================================
     let bankData = null, bankPhase = "idle", bankReport = null, bankMoves = null;
+    let bankPending = null; // a File the user picked, waiting for explicit approval
+    function bankForget() {
+      bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null; bankPending = null;
+    }
     function startBankCSV(label, csv) {
       if (bankPhase === "proc") return;
-      if (parseBankCSV(csv).length === 0) { showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 ודאו שיש עמודות של תאריך, תיאור וסכום (או חובה/זכות). מפריד פסיק, נקודה-פסיק או טאב — הכול נתמך."); return; }
-      bankData = { label: label, csv: csv }; bankPhase = "proc"; bankReport = null; bankMoves = null;
+      const count = parseBankCSV(csv).length;
+      if (count === 0) { showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 ודאו שיש עמודות של תאריך, תיאור וסכום (או חובה/זכות). מפריד פסיק, נקודה-פסיק או טאב — הכול נתמך."); return; }
+      bankData = { label: label, csv: csv, count: count }; bankPhase = "proc"; bankReport = null; bankMoves = null;
       render();
       setTimeout(() => {
         bankReport = analyzeStatement(bankData.csv);
+        bankData.csv = null; // raw statement released the moment it is no longer needed
         bankPhase = "done";
         state.game.flags.bank = true; saveState();
         render();
@@ -3723,19 +4595,32 @@
     }
     function startBankProcess(id) { startBankCSV(BANK_FILES[id].label, BANK_FILES[id].csv); }
     function renderBankPage() {
-      const body = pageShell("ניהול עו״ש אוטומטי 🏦", () => { bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null; state.screen = "app"; render(); });
+      const body = pageShell("ניהול עו״ש אוטומטי 🏦", () => { bankForget(); state.screen = "app"; render(); });
       const locked = applyPremiumLock(body); // strict lock when isPremiumUser === false
 
-      // AGENT 3 — real upload zone: native FileReader, drag&drop + click-to-pick
+      // Standing promise, shown before anything else on the screen.
+      const vow = el("div", "banknote");
+      vow.innerHTML = '<span>🛡️</span><p><b>האפליקציה לא מחוברת לבנק שלך.</b> אין חיבור, אין סיסמאות ואין שליפה אוטומטית של תנועות. ' +
+        'קובץ נקרא רק אחרי שתאשר אותו בשמו — והנתונים נמחקים ביציאה מהמסך ולא נשמרים במכשיר.</p>';
+      body.appendChild(vow);
+
+      // Upload zone: picking/dropping only QUEUES the file; reading needs approval.
       const dz = el("div", "dropzone" + (bankPhase === "proc" ? " busy" : ""));
-      dz.innerHTML = '<span class="dzi">📄</span><b>העלאת קובץ תנועות עו״ש (CSV)</b>' +
-        '<span class="dzs">גררו לכאן קובץ CSV מהבנק או לחצו לבחירה · תומך בכל בנק ישראלי (פסיק / נקודה-פסיק / טאב, כולל עמודות חובה/זכות)</span>' +
+      dz.innerHTML = '<span class="dzi">📄</span><b>ייבוא חד-פעמי של קובץ תנועות (CSV)</b>' +
+        '<span class="dzs">גררו לכאן קובץ CSV מהבנק או לחצו לבחירה — ותתבקשו לאשר אותו לפני שייקרא · תומך בכל בנק ישראלי (פסיק / נקודה-פסיק / טאב, כולל עמודות חובה/זכות)</span>' +
         '<input type="file" id="bankFileIn" accept=".csv,.txt,text/csv,text/plain,application/vnd.ms-excel,application/octet-stream" hidden>';
       const fin = dz.querySelector("#bankFileIn");
-      const readRealFile = (file) => {
+      // Step 1 — queue only. No bytes are read here.
+      const queueRealFile = (file) => {
         if (!file) return;
-        if (!state.premium) { showToast("🔒 העלאת קובץ אמיתי היא פיצ׳ר Premium"); return; }
+        if (!state.premium) { showToast("🔒 ייבוא קובץ אמיתי הוא פיצ׳ר Premium"); return; }
         if (/\.xlsx?$/i.test(file.name)) { showToast("קובץ Excel — ייצאו מאתר הבנק כ-CSV (או שמרו מ-Excel בפורמט CSV) ולאחר מכן העלו 🙂"); return; }
+        bankPending = file;
+        render();
+      };
+      // Step 2 — runs ONLY from the approval button below.
+      const readApprovedFile = (file) => {
+        if (!file || !state.premium) return;
         const reader = new FileReader();
         reader.onload = () => {
           // Try every encoding real Israeli-bank exports use and pick the one
@@ -3760,18 +4645,32 @@
             showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 תחילת הקובץ נראית כך: \"" + preview + "\". אם זה HTML/סיכום ולא טבלת תנועות — ייצאו מהבנק כ-CSV אמיתי.");
             return;
           }
-          secLog("INFO", 'נקרא קובץ מקומי "' + file.name + '" (' + file.size + ' בתים, קידוד: ' + best.enc + ', ' + best.count + ' תנועות) דרך FileReader');
           startBankCSV(file.name, best.text);
         };
         reader.onerror = () => showToast("קריאת הקובץ נכשלה");
         reader.readAsArrayBuffer(file);
       };
       dz.onclick = (e) => { if (e.target !== fin) fin.click(); };
-      fin.onchange = () => { readRealFile(fin.files[0]); fin.value = ""; };
+      fin.onchange = () => { queueRealFile(fin.files[0]); fin.value = ""; };
       dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); };
       dz.ondragleave = () => dz.classList.remove("over");
-      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); readRealFile(e.dataTransfer.files && e.dataTransfer.files[0]); };
+      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); queueRealFile(e.dataTransfer.files && e.dataTransfer.files[0]); };
       body.appendChild(dz);
+
+      // The consent gate. Until "אשר" is pressed the file's contents are never read.
+      if (bankPending) {
+        const kb = Math.max(1, Math.round(bankPending.size / 1024));
+        const ask = el("div", "setcard consent");
+        ask.innerHTML = '<div class="consenth">🔐 לאשר קריאה חד-פעמית של הקובץ?</div>' +
+          '<div class="consentf" style="unicode-bidi:plaintext">' + esc(bankPending.name) + ' · ' + fmt(kb) + ' KB</div>' +
+          '<p class="consentp">האפליקציה תקרא את הקובץ הזה <b>פעם אחת בלבד</b>, תנתח אותו במכשיר שלך, ולא תשמור אותו בשום מקום. ' +
+          'לא נשמרת גישה לקבצים אחרים ולא לחשבון הבנק — כל קובץ דורש אישור נפרד.</p>' +
+          '<div class="consentbtns"><button class="distbtn" id="bcYes">✓ אשר קריאה חד-פעמית</button>' +
+          '<button class="obback" id="bcNo">ביטול</button></div>';
+        body.appendChild(ask);
+        ask.querySelector("#bcYes").onclick = () => { const f = bankPending; bankPending = null; render(); readApprovedFile(f); };
+        ask.querySelector("#bcNo").onclick = () => { bankPending = null; render(); showToast("בוטל — הקובץ לא נקרא 👍"); };
+      }
 
       const files = el("div", "bankfiles");
       Object.keys(BANK_FILES).forEach((id) => {
@@ -3784,7 +4683,7 @@
 
       if (bankPhase === "proc") {
         const pr = el("div", "setcard procbox");
-        pr.innerHTML = '<div class="procbar"><i></i></div><div class="proclbl">🤖 סוכן ה-AI קורא את הקובץ, מזהה תבניות ומסווג ' + parseBankCSV(bankData.csv).length + ' תנועות…</div>';
+        pr.innerHTML = '<div class="procbar"><i></i></div><div class="proclbl">🤖 סוכן ה-AI קורא את הקובץ, מזהה תבניות ומסווג ' + fmt(bankData.count) + ' תנועות…</div>';
         body.appendChild(pr);
         return;
       }
@@ -3864,6 +4763,13 @@
           body.appendChild(mv);
         }
       }
+
+      // Explicit "forget it now" — the data also disappears on its own when the
+      // screen is left, but users deserve a visible way to end the import early.
+      const forget = el("button", "obback");
+      forget.textContent = "🧹 מחק את נתוני הייבוא מהמסך";
+      forget.onclick = () => { bankForget(); render(); showToast("🧹 נתוני הייבוא נמחקו"); };
+      body.appendChild(forget);
     }
 
     // =====================================================================
@@ -4604,7 +5510,7 @@
     ];
     function wiModel() {
       const by = Object.fromEntries(state.cubes.map((c) => [c.key, c]));
-      const income = state.profile && state.profile.works ? (Number(state.profile.income) || 0) : 0;
+      const income = monthlyIncome();
       const housing = (by.housing ? by.housing.amount : 0) + (by.landlord ? by.landlord.amount : 0) + (by.bills ? by.bills.amount : 0);
       const ess = by.essentials ? by.essentials.amount : 0;
       const life = by.lifestyle ? by.lifestyle.amount : 0;
@@ -4625,9 +5531,187 @@
       }
       return rows;
     }
+    // =====================================================================
+    // GROWTH SIMULATOR — "what if I put ₪X extra into this cube every month,
+    // and how much will I actually have in N months?"
+    //
+    // Two projections side by side: the current path (what each cube already
+    // receives every month) and the boosted path. No interest is invented —
+    // this is deposits only, which is the honest model for a budgeting app.
+    // =====================================================================
+    let gs = { target: "__all", extra: "", months: 12 };
+    const GS_MONTHS = [3, 6, 12, 24, 36];
+
+    // What one cube receives in a normal month. Locked cubes are bills that
+    // pass straight through, so they never "grow".
+    function cubeMonthlyInflow(c) {
+      if (!c || c.locked) return 0;
+      const set = Math.round(Number(c.amount) || 0);
+      if (set > 0) return set;
+      return Math.round(monthlyIncome() * ((Number(c.pct) || 0) / 100));
+    }
+    // The money that is genuinely free to redirect into an extra contribution.
+    function freeMonthlyBudget() {
+      const income = monthlyIncome();
+      if (income <= 0) return 0;
+      const committed = state.cubes.reduce((s, c) => s + (c.locked ? Math.round(Number(c.amount) || 0) : 0), 0);
+      return Math.max(0, income - committed);
+    }
+
+    function growthProject(targetKey, extra, months) {
+      const all = targetKey === "__all";
+      const cube = all ? null : state.cubes.find((c) => c.key === targetKey);
+      if (!all && !cube) return null;
+      const perMonth = all
+        ? state.cubes.reduce((s, c) => s + cubeMonthlyInflow(c), 0)
+        : cubeMonthlyInflow(cube);
+      const start = all ? Math.round(totalBalance() + state.pool) : Math.round(cube.balance);
+      const rows = [];
+      for (let m = 0; m <= months; m++) {
+        rows.push({ month: m, base: Math.round(start + perMonth * m), boost: Math.round(start + (perMonth + extra) * m) });
+      }
+      const goal = !all && Number(cube.goalTarget) > 0 ? Number(cube.goalTarget)
+                 : (!all && cube.key === EMERGENCY_KEY ? emergencyTarget() : 0);
+      const hit = (rate) => (goal > 0 && rate > 0 ? Math.ceil(Math.max(0, goal - start) / rate) : 0);
+      return {
+        rows: rows, start: start, perMonth: perMonth, extra: extra, months: months,
+        end: rows[rows.length - 1], goal: goal,
+        goalMonthsBase: hit(perMonth), goalMonthsBoost: hit(perMonth + extra),
+        name: all ? "כל הכסף שלך" : cube.name, emoji: all ? "🧊" : cube.emoji,
+        color: all ? "var(--primary)" : cube.color,
+      };
+    }
+    // Up to 7 evenly spaced sample points, always including now and the end.
+    function growthSamples(rows) {
+      const last = rows.length - 1;
+      if (last <= 6) return rows;
+      const out = [];
+      for (let i = 0; i <= 6; i++) out.push(rows[Math.round((last * i) / 6)]);
+      return out;
+    }
+
+    function renderGrowthSection(body) {
+      const st = el("div", "section-t"); st.textContent = "כמה הכסף שלי יגדל? 📈"; body.appendChild(st);
+
+      const intro = el("div", "setcard");
+      intro.innerHTML = '<div class="setlbl">בחרו קובייה, הוסיפו סכום חודשי — ותראו בדיוק כמה יהיה לכם בעוד כמה חודשים, מול המסלול הנוכחי.</div>';
+      body.appendChild(intro);
+
+      // target picker
+      const growable = state.cubes.filter((c) => !c.locked);
+      const pick = el("div", "exchips");
+      const mkChip = (key, label) => {
+        const b = el("button", "fchip" + (gs.target === key ? " on" : ""));
+        b.textContent = label;
+        b.onclick = () => { gs.target = key; render(); };
+        pick.appendChild(b);
+      };
+      mkChip("__all", "🧊 כל הכסף שלי");
+      growable.forEach((c) => mkChip(c.key, c.emoji + " " + c.name));
+      body.appendChild(pick);
+
+      // extra + horizon
+      const ctl = el("div", "setcard");
+      ctl.innerHTML =
+        '<label class="flbl" style="margin-top:0">כמה להוסיף כל חודש?</label>' +
+        '<div class="fld"><span class="cur">₪</span><input id="gsExtra" inputmode="numeric" placeholder="200" value="' + esc(gs.extra) + '"></div>' +
+        '<div class="depchips" id="gsQuick">' + [50, 100, 200, 500].map((n) =>
+          '<button class="fchip depq' + (Number(gs.extra) === n ? " on" : "") + '" data-n="' + n + '">' + n + ' ₪</button>').join("") + '</div>' +
+        '<label class="flbl">לכמה זמן קדימה?</label>' +
+        '<div class="exchips" id="gsMonths">' + GS_MONTHS.map((n) =>
+          '<button class="fchip' + (gs.months === n ? " on" : "") + '" data-m="' + n + '">' + n + ' חודשים</button>').join("") + '</div>';
+      body.appendChild(ctl);
+      ctl.querySelector("#gsExtra").oninput = (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, "");
+        gs.extra = e.target.value;
+        paint();
+        ctl.querySelectorAll("#gsQuick .depq").forEach((b) => b.classList.toggle("on", Number(gs.extra) === Number(b.dataset.n)));
+      };
+      ctl.querySelectorAll("#gsQuick .depq").forEach((b) => {
+        b.onclick = () => { gs.extra = b.dataset.n; ctl.querySelector("#gsExtra").value = gs.extra; render(); };
+      });
+      ctl.querySelectorAll("#gsMonths .fchip").forEach((b) => {
+        b.onclick = () => { gs.months = Number(b.dataset.m); render(); };
+      });
+
+      const out = el("div", "gsout");
+      body.appendChild(out);
+
+      function paint() {
+        const extra = Math.max(0, Math.round(Number(gs.extra) || 0));
+        const p = growthProject(gs.target, extra, gs.months);
+        out.innerHTML = "";
+        if (!p) return;
+
+        // headline
+        const head = el("div", "gshead");
+        const gain = p.end.boost - p.end.base;
+        head.innerHTML =
+          '<div class="gsbig"><span>' + p.emoji + ' ' + esc(p.name) + ' בעוד ' + p.months + ' חודשים</span>' +
+            '<b style="color:' + p.color + '">₪' + fmt(p.end.boost) + '</b></div>' +
+          '<div class="gssub">במסלול הנוכחי: ₪' + fmt(p.end.base) +
+            (extra > 0 ? ' · התוספת מוסיפה <b>₪' + fmt(gain) + '</b>' : '') + '</div>';
+        out.appendChild(head);
+
+        if (p.perMonth <= 0 && extra <= 0) {
+          const w = el("div", "wiwarn");
+          w.innerHTML = '<b>אין עדיין קצב חודשי.</b> הקובייה הזו לא מקבלת סכום חודשי קבוע. הזינו הכנסה חודשית במסך „הכנסה”, או הוסיפו כאן סכום חודשי כדי לראות תחזית.';
+          out.appendChild(w);
+          return;
+        }
+
+        // visual growth timeline
+        const rows = growthSamples(p.rows);
+        const max = Math.max(1, p.end.boost, p.end.base, p.goal || 0);
+        const tbl = el("div", "witable");
+        tbl.innerHTML = '<div class="wirow head"><span>חודש</span><span>מסלול נוכחי</span><span>' + (extra > 0 ? "עם ₪" + fmt(extra) + " בחודש" : "עם התוספת") + '</span></div>';
+        rows.forEach((r) => {
+          const row = el("div", "wirow");
+          row.innerHTML = '<span>' + (r.month === 0 ? "עכשיו" : r.month) + '</span>' +
+            '<span class="wibar"><i class="cur" style="width:' + Math.round((r.base / max) * 100) + '%"></i><em>₪' + fmt(r.base) + '</em></span>' +
+            '<span class="wibar"><i class="sim" style="width:' + Math.round((r.boost / max) * 100) + '%"></i><em>₪' + fmt(r.boost) + '</em></span>';
+          tbl.appendChild(row);
+        });
+        out.appendChild(tbl);
+
+        // goal callout
+        if (p.goal > 0) {
+          const g = el("div", p.goalMonthsBoost > 0 && p.goalMonthsBoost <= p.months ? "wisafe" : "setcard");
+          if (p.start >= p.goal) g.textContent = "🎉 כבר הגעת ליעד של ₪" + fmt(p.goal) + ".";
+          else if (p.goalMonthsBoost > 0) {
+            const saved = p.goalMonthsBase > 0 ? p.goalMonthsBase - p.goalMonthsBoost : 0;
+            g.innerHTML = "🎯 עם התוספת תגיע ל-₪" + fmt(p.goal) + " תוך <b>" + p.goalMonthsBoost + " חודשים</b>" +
+              (saved > 0 ? " — " + saved + " חודשים מוקדם יותר מהמסלול הנוכחי." :
+               (p.goalMonthsBase > 0 ? " (כמו במסלול הנוכחי)." : "."));
+          } else g.textContent = "🎯 היעד הוא ₪" + fmt(p.goal) + ", אבל בקצב הנוכחי לא מתקדמים אליו — הוסיפו סכום חודשי.";
+          out.appendChild(g);
+        }
+
+        // is the extra actually affordable?
+        const free = freeMonthlyBudget();
+        const committedFlex = state.cubes.reduce((s, c) => s + (c.locked ? 0 : cubeMonthlyInflow(c)), 0);
+        const slack = Math.max(0, free - committedFlex);
+        if (extra > 0) {
+          const note = el("div", extra > slack ? "wiwarn" : "wisafe");
+          if (extra > slack) {
+            note.innerHTML = '<b>מאיפה ייקח הכסף?</b> התקציב החודשי שלך כבר מחולק כמעט כולו. ₪' + fmt(extra) +
+              ' בחודש ידרשו לצמצם קובייה אחרת' + (slack > 0 ? ' — פנויים כרגע רק ₪' + fmt(slack) + ' בחודש.' : '.') +
+              ' הקובייה הכי טבעית לצמצום היא בדרך כלל הבילויים.';
+          } else {
+            note.textContent = "✅ ₪" + fmt(extra) + " בחודש נכנסים בתקציב — נשארים ₪" + fmt(slack - extra) + " חופשיים.";
+          }
+          out.appendChild(note);
+        }
+      }
+      paint();
+    }
+
     function renderWhatIfPage() {
       const body = pageShell("סימולטור מה-אם? 🔮", () => { wiScenario = null; wiWithCut = false; state.screen = "app"; render(); });
 
+      renderGrowthSection(body);
+
+      const st2 = el("div", "section-t"); st2.textContent = "מה קורה אם משהו משתנה? ⚠️"; body.appendChild(st2);
       const intro = el("div", "setcard");
       intro.innerHTML = '<div class="setlbl">בחרו תרחיש — ה-AI יקרין את המצב הכספי שלכם 6 חודשים קדימה, מול המסלול הנוכחי.</div>';
       body.appendChild(intro);
@@ -4672,7 +5756,7 @@
         wiWithCut = false; render();
       };
 
-      if (!wiScenario) return;
+      if (!wiScenario) { const s0 = el("div"); s0.style.height = "40px"; body.appendChild(s0); return; }
 
       const rows = wiProject(wiScenario.opts, wiWithCut ? 0.4 : 0);
       const crisis = rows.find((r) => r.sim < 0);
@@ -4721,6 +5805,7 @@
           : "✅ התרחיש בטוח — היתרה נשארת חיובית לאורך כל 6 החודשים.";
         body.appendChild(ok);
       }
+      const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
     }
 
     // Worker 4 — hard wipe: per-account state + user record + session + chat.
