@@ -128,6 +128,30 @@
       border-radius: 12px; padding: 10px 13px; font-size: 12.5px; font-weight: 700; line-height: 1.55;
       color: var(--dim); text-align: center; }
     .emgline.done { color: #00b894; }
+    /* ===== prepaid card panel ===== */
+    /* deliberately dark in BOTH themes — it is meant to read as a physical card */
+    .ppcard { position: relative; overflow: hidden; border-radius: var(--radius-lg); padding: 18px;
+      background: linear-gradient(145deg, #2b2a55, #1b1a2e 62%); border: 1.5px solid var(--primary-dim); }
+    .ppcard::after { content: ""; position: absolute; inset-inline-end: -40px; top: -50px; width: 170px; height: 170px;
+      border-radius: 50%; background: radial-gradient(circle, rgba(108,99,255,.30), transparent 70%); pointer-events: none; }
+    .pptop { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .ppchip { font-size: 12.5px; font-weight: 800; color: #fff; background: rgba(255,255,255,.12);
+      border-radius: 999px; padding: 5px 11px; }
+    .ppno { color: #a8a6c8; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+      direction: ltr; unicode-bidi: isolate; letter-spacing: 1.5px; }
+    .pplbl { color: #a8a6c8; font-size: 12.5px; font-weight: 700; margin-top: 16px; }
+    .ppval { color: #fff; font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-top: 2px;
+      font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+    .ppsplit { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .ppsplit > div { background: rgba(255,255,255,.07); border-radius: 12px; padding: 10px 12px; }
+    .ppsplit span { display: block; color: #a8a6c8; font-size: 11.5px; font-weight: 700; }
+    .ppsplit b { color: #fff; font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums;
+      direction: ltr; unicode-bidi: isolate; }
+    .ppnote { margin-top: 13px; color: #cfcdea; font-size: 12px; font-weight: 700; line-height: 1.6; }
+    .ppbtn { width: 100%; margin-top: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2);
+      color: #fff; border-radius: var(--radius); padding: 12px; font-family: var(--font); font-size: 14.5px;
+      font-weight: 800; cursor: pointer; transition: background .15s; }
+    .ppbtn:hover { background: rgba(255,255,255,.24); }
     .cube .track { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 14px; }
     .cube .track > i { display: block; height: 100%; border-radius: 999px; width: 0;
       transition: width .8s cubic-bezier(.2,.8,.2,1); }
@@ -414,59 +438,14 @@
       color: var(--dim); font-size: 12.5px; padding: 9px 12px; margin-top: 8px; line-height: 1.5; }
     .unknote b { color: var(--primary-2); }
 
-    /* ===== bank statement manager ===== */
-    .dropzone { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
-      border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 26px 14px;
-      color: var(--dim); transition: border-color .2s, background .2s; }
-    .dropzone .dzi { font-size: 34px; }
-    .dropzone b { color: var(--text); font-size: 14.5px; }
-    .dropzone .dzs { font-size: 12.5px; }
-    .dropzone.over { border-color: var(--primary); background: #6c5ce715; }
-    .dropzone.busy { opacity: .5; pointer-events: none; }
-    /* privacy notice + one-file consent gate for the current-account import */
-    .banknote { display: flex; gap: 10px; align-items: flex-start; background: var(--card-2);
-      border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 12px 14px; }
-    .banknote span { font-size: 18px; line-height: 1.3; flex: none; }
-    .banknote p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.6; }
-    .banknote b { color: var(--text); }
-    .setcard.consent { border-color: var(--primary); }
-    .consenth { font-weight: 800; font-size: 16px; }
-    .consentf { margin-top: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 13px;
-      color: var(--primary-2); background: var(--bg); border-radius: 9px; padding: 8px 10px; overflow-wrap: anywhere; }
-    .consentp { margin: 10px 0 0; color: var(--dim); font-size: 13px; line-height: 1.6; }
-    .consentp b { color: var(--text); }
-    .consentbtns { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
-    .consentbtns .distbtn { width: 100%; }
-    .bankfiles { display: flex; gap: 10px; }
-    .bankfile { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
-      background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
-      padding: 12px 8px; cursor: pointer; font-family: var(--font); color: var(--text);
-      transition: border-color .15s, transform .15s; }
-    .bankfile span { font-size: 22px; }
-    .bankfile b { font-size: 12px; text-align: center; line-height: 1.4; unicode-bidi: plaintext; }
-    .bankfile:hover { border-color: var(--primary); transform: translateY(-2px); }
-    .bankfile.on { border-color: var(--primary); background: var(--card-2); }
+    /* ===== progress bar (onboarding "AI is building your cubes") ===== */
     .procbox { text-align: center; }
     .procbar { height: 8px; border-radius: 999px; background: var(--bg); overflow: hidden; margin-bottom: 12px; }
     .procbar i { display: block; height: 100%; width: 40%; border-radius: 999px;
       background: linear-gradient(90deg, var(--primary), #46e0b4); animation: procslide 1.1s ease-in-out infinite alternate; }
     @keyframes procslide { from { margin-inline-start: 0; } to { margin-inline-start: 60%; } }
     .proclbl { color: var(--dim); font-size: 13.5px; font-weight: 700; }
-    .bankbig { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    .bankmetric { border-radius: var(--radius); padding: 16px 14px; border: 1.5px solid var(--border); }
-    .bankmetric span { display: block; color: var(--dim); font-size: 13px; font-weight: 800; margin-bottom: 6px; }
-    .bankmetric b { font-size: 26px; font-weight: 900; font-variant-numeric: tabular-nums; letter-spacing: -.5px;
-      white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
-    .bankmetric.inc { background: rgba(46,204,113,.10); border-color: rgba(46,204,113,.35); }
-    .bankmetric.inc b { color: var(--success); }
-    .bankmetric.exp { background: rgba(255,143,143,.10); border-color: rgba(255,143,143,.35); }
-    .bankmetric.exp b { color: #ff8f8f; }
-    .banknet { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
-      border-radius: var(--radius); border: 1.5px solid var(--border); margin-bottom: 4px; }
-    .banknet span { color: var(--dim); font-size: 12.5px; font-weight: 700; }
-    .banknet b { font-size: 18px; font-weight: 900; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
-    .banknet.pos { background: rgba(46,204,113,.07); } .banknet.pos b { color: var(--success); }
-    .banknet.neg { background: rgba(255,143,143,.07); } .banknet.neg b { color: #ff8f8f; }
+    /* ===== ledger rows (expense journal) ===== */
     .ledger { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--card); }
     .ledrow { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-top: 1px solid var(--border); font-size: 13.5px; }
     .ledrow:first-child { border-top: none; }
@@ -633,20 +612,6 @@
     .s3 span { display: block; color: var(--dim); font-size: 12px; font-weight: 700; margin-bottom: 4px; }
     .s3 b { font-size: 16.5px; font-variant-numeric: tabular-nums; }
     .s3 .pos { color: var(--success); } .s3 .negv { color: #ff8f8f; }
-    .catrow { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
-    .catname { min-width: 128px; font-size: 13px; font-weight: 700; }
-    .catname i { color: var(--dim); font-style: normal; font-size: 11px; font-weight: 600; }
-    .cattrack { flex: 1; height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; }
-    .cattrack i { display: block; height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(.2,.8,.2,1); }
-    .catamt { min-width: 64px; text-align: left; font-weight: 800; font-size: 13px; font-variant-numeric: tabular-nums; }
-    .insight { display: flex; gap: 10px; align-items: flex-start; border-radius: var(--radius); padding: 12px 14px;
-      font-size: 13.5px; line-height: 1.6; }
-    .insight span { font-size: 16px; }
-    .insight p { margin: 0; }
-    .insight.warn { background: #2a1f14; border: 1px solid #5c4a26; color: #ffd98a; }
-    .insight.info { background: #14212a; border: 1px solid #26465c; color: #9fd0f0; }
-    .moveline { padding: 6px 0; color: var(--dim); font-size: 13.5px; }
-    .moveline b { color: var(--text); font-variant-numeric: tabular-nums; }
 
     /* ===== premium: paywall, lock overlay, Google Play sheet ===== */
     .lockblur { filter: blur(7px) saturate(.8); pointer-events: none; user-select: none; }
@@ -731,7 +696,7 @@
     .ob-opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: right; color: var(--text);
       background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 15px;
       margin-bottom: 10px; cursor: pointer; font-family: var(--font); transition: border-color .15s, background .15s; }
-    .ob-opt:hover { border-color: #3c3c52; }
+    .ob-opt:hover { border-color: var(--primary-dim); } /* token, so light mode doesn't get a dark ring */
     .ob-opt.on { border-color: var(--primary); background: var(--card-2); }
     .ob-opt .obrad { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
       display: grid; place-items: center; flex: none; }
@@ -834,22 +799,18 @@
       .wisafe { background: #e9f7f0; border-color: #bfe3d2; color: #1e5c44; }
       .wibar em.negt { color: #c0392b; }
       .obexit:hover { color: #c0392b; }
-      .ledamt.neg, .logout, .bankmetric.exp b { color: #c0392b; }
-      .ledamt.pos, .banknet.pos b, .bankmetric.inc b { color: #0b8f66; }
-      .banknet.neg b { color: #c0392b; }
+      .ledamt.neg, .logout { color: #c0392b; }
+      .ledamt.pos { color: #0b8f66; }
       .claimbtn { color: #402b00; }
-      .insight.warn { background: #fdf3e2; border-color: #ecd9ae; color: #7a5a12; }
       .lockoverlay { background: radial-gradient(420px 320px at 50% 40%, #ffffffaa, transparent); }
       .payhero { background: linear-gradient(165deg, #fdf6e0, #ffffff 60%); }
       .payprice { color: #b8860b; }
       .setitem.gold { color: #b8860b; }
       .gpaybtn { background: #1a1a2e; color: #fff; }
-      .insight.info { background: #e8f2fb; border-color: #c3ddf1; color: #23557e; }
       .s3 .negv { color: #c0392b; }
-      .procbar, .cattrack { background: #eceef6; }
+      .procbar { background: #eceef6; }
       .cube.landlordc { background: linear-gradient(160deg, #efecff, #ffffff); }
       .skipbtn { color: var(--primary); }
-      .dropzone.over { background: #6c5ce715; }
       .unknote { color: #4a4468; }
       /* the intro's brand screen follows the app theme — swap the dark corner
          glows for light ones so they don't read as smudges on a light page.
@@ -1091,13 +1052,18 @@
         note: noteOverride || META[key].note,
         pct, amount: Math.round(amount), locked: !!locked, balance: 0, mandatory: !!mandatory,
       });
+      // The pot the buckets are sized against. With a salary it's the salary;
+      // without one — a prepaid-card user, someone between jobs — it's the money
+      // actually on hand, so the AI can still break a real amount into buckets
+      // instead of handing back a row of zeros.
+      const potBase = income > 0 ? income : (Number(p.balance) || 0);
       const cubes = [];
       if (p.withParents) {
         // parents: no housing cubes at all — wealth cubes get the boost.
         // The emergency fund is carved out first: it is mandatory for everyone.
         const W = { essentials: 0.23, emergency: 0.12, savings: 0.25, investments: 0.23, lifestyle: 0.17 };
         ["essentials", "emergency", "savings", "investments", "lifestyle"].forEach((k) =>
-          cubes.push(mk(k, rnd(W[k] * 100), W[k] * income, false, null, k === "emergency")));
+          cubes.push(mk(k, rnd(W[k] * 100), W[k] * potBase, false, null, k === "emergency")));
         return cubes;
       }
       // lives alone / with roommates
@@ -1105,7 +1071,7 @@
       const rent = p.ownership === "rent" ? (Number(e.rent) || 0) : 0; // owned => NO rent cube
       const bills = (Number(e.arnona) || 0) + (Number(e.committee) || 0) + (Number(e.electricity) || 0) + (Number(e.water) || 0);
       const food = Number(e.food) || 0;
-      const base = income > 0 ? income : ((Number(p.balance) || 0) || 1);
+      const base = potBase || 1;
       const pctOf = (amt) => rnd(Math.min(100, (amt / base) * 100));
       if (rent > 0) cubes.push(mk("landlord", pctOf(rent), rent, true));
       if (bills > 0) cubes.push(mk("bills", pctOf(bills), bills, true,
@@ -1114,7 +1080,7 @@
       if (food > 0) cubes.push(mk("essentials", pctOf(food), food, false, "אוכל וסופר"));
       // Whatever's left after fixed expenses flows to wealth-building cubes —
       // and the mandatory emergency fund is funded off the top of that money.
-      const disc = Math.max(0, income - rent - bills - food);
+      const disc = Math.max(0, potBase - rent - bills - food);
       const W = { emergency: 0.15, savings: 0.32, investments: 0.28, lifestyle: 0.25 };
       ["emergency", "savings", "investments", "lifestyle"].forEach((k) =>
         cubes.push(mk(k, pctOf(W[k] * disc), W[k] * disc, false, null, k === "emergency")));
@@ -1173,6 +1139,27 @@
     // =====================================================================
     const EMERGENCY_KEY = "emergency";
     const isEmergency = (c) => c && c.key === EMERGENCY_KEY;
+
+    // ---- prepaid card ("כרטיס נטען") --------------------------------------
+    // A prepaid card is not a bank account: there is no credit line and no
+    // overdraft, so spending is bound to the amount that was loaded onto it.
+    // In this app that means one hard rule — the money in the cubes plus the
+    // free balance IS the card, and nothing may be spent beyond it.
+    const isPrepaid = () => !!(state.profile && state.profile.prepaid);
+    const loadedTotal = () => Math.round(totalBalance() + state.pool);
+    // Top up the card: new money the user physically loaded onto it.
+    function topUpCard(amount, autoSplit) {
+      const v = Math.max(0, Math.round(Number(amount) || 0));
+      if (v <= 0) return null;
+      if (state.profile) state.profile.prepaidBalance = loadedTotal() + v;
+      if (!autoSplit) { state.pool += v; saveState(); return { loaded: v, split: null }; }
+      const plan = splitByPercent(v);
+      plan.rows.forEach((r) => { const c = state.cubes.find((x) => x.key === r.key); if (c) c.balance += r.amount; });
+      state.pool += plan.leftover;
+      state.game.flags.dist = true;
+      saveState();
+      return { loaded: v, split: plan };
+    }
 
     // The single monthly figure the whole budget is built on: salary for adults,
     // pocket money for kids. Everything else is a percentage of this.
@@ -1556,9 +1543,8 @@
     // report, debt result, simulator/guide UI state, chat) so a different user
     // logging in on the same device never sees the previous account's data.
     function resetModuleGlobals() {
-      bankForget(); // imported statement + its derived report never outlive the session
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
-      shForm = null; guideFeat = null; cc = null; settStep = 0; exDraft = null;
+      shForm = null; guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
       try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
       gs = { target: "__all", extra: "", months: 12 };
@@ -1927,7 +1913,8 @@
     function startOnboarding() {
       // Resume an in-progress questionnaire if the user refreshed mid-flow.
       const saved = loadOb();
-      ob = saved || { i: 0, building: false, d: { age: "", hasBank: null, balance: "", works: null, income: "",
+      ob = saved || { i: 0, building: false, d: { age: "", account: null, balance: "", prepaidAmount: "",
+                        works: null, income: "",
                         living: null, ownership: null, exp: {}, expEst: {},
                         kidAmount: "", kidFreq: null, kidGoalName: "", kidGoalPrice: "", kidGoalSkip: false } };
       ob.building = false; // never resume stuck inside the build animation
@@ -1940,7 +1927,13 @@
       const s = ["age"];
       // Kids get a short, concrete track: pocket money + what they're saving for.
       if (age > 0 && age < KID_AGE_MAX) { s.push("kidAllowance", "kidGoal"); return s; }
-      if (age >= 16) { s.push("bank"); if (d.hasBank) s.push("balance"); }
+      // How the money is actually held. Asked from 13 up (not 16) because a
+      // prepaid card is exactly the instrument a 13–15 year old can hold, under
+      // a parent's name — and it is also the answer for anyone who simply never
+      // wants to be able to go into overdraft.
+      s.push("account");
+      if (d.account === "prepaid" || d.account === "both") s.push("prepaidAmount");
+      if (d.account === "bank" || d.account === "both") s.push("balance");
       s.push("living");
       if (d.living === "alone") { s.push("property", "expenses"); }
       s.push("work"); if (d.works) s.push("income");
@@ -1983,7 +1976,9 @@
       if (state.screen === "shared") return renderSharedPage();
       if (state.screen === "whatif") return renderWhatIfPage();
       if (state.screen === "debt") return renderDebtPage();
-      if (state.screen === "bank") return renderBankPage();
+      // NOTE: the bank-statement ("עו״ש") module was removed from the product.
+      // Any stale route lands on the dashboard instead of a blank screen.
+      if (state.screen === "bank") state.screen = "app";
       renderDashboard();
     }
 
@@ -2305,8 +2300,9 @@
           case "age": { const a = Number(d.age); return a >= 6 && a <= 120; }
           case "kidAllowance": return d.kidFreq === "none" || (!!d.kidFreq && Number(d.kidAmount) > 0);
           case "kidGoal": return !!d.kidGoalSkip || (!!(d.kidGoalName || "").trim() && Number(d.kidGoalPrice) > 0);
-          case "bank": return d.hasBank !== null;
+          case "account": return d.account !== null;
           case "balance": return d.balance !== "" && Number(d.balance) >= 0;
+          case "prepaidAmount": return d.prepaidAmount !== "" && Number(d.prepaidAmount) >= 0;
           case "living": return d.living !== null;
           case "property": return d.ownership !== null;
           case "expenses": return expFields().every((k) => d.exp[k] !== undefined && d.exp[k] !== "");
@@ -2330,9 +2326,24 @@
         '<div class="stepcount">שלב ' + (idx + 1) + ' מתוך ' + steps.length + '</div>';
 
       if (step === "age") inner += '<h2 class="authtitle">בן כמה את/ה?</h2><p class="authsub">נשאל שאלות מותאמות לגיל שלך. מתחת לגיל 13 נעבור למצב ילדים — קצר ופשוט, בליווי הורה 🧒</p>' + money("f", "גיל", "17", d.age);
-      else if (step === "bank") inner += '<h2 class="authtitle">יש לך חשבון בנק?</h2><p class="authsub">מגיל 16 אפשר לנהל יתרה עצמאית.</p>' +
-        choice("1", "כן, יש לי חשבון", "", d.hasBank === true) + choice("0", "לא, אין לי עדיין", "נדלג על שאלת היתרה", d.hasBank === false);
-      else if (step === "balance") inner += '<h2 class="authtitle">מה היתרה לניהול?</h2><p class="authsub">הסכום שתרצה לעקוב אחריו ולחלק (מדומה — ללא חיבור לבנק).</p>' + money("f", "יתרה נוכחית משוערת", "3000", d.balance);
+      else if (step === "account") {
+        const minor = age > 0 && age < 16;
+        inner += '<h2 class="authtitle">איפה הכסף שלך יושב?</h2><p class="authsub">' +
+          (minor
+            ? "מתחת לגיל 16 אי אפשר לפתוח חשבון עצמאי — אבל אפשר לקבל <b>כרטיס נטען</b> על שם ההורה. זו הדרך הכי בטוחה להתחיל 💳"
+            : "הבחירה הזו קובעת איך נחשב את התקציב — ואם בכלל אפשר להיכנס למינוס.") + '</p>' +
+          choice("prepaid", "כרטיס נטען (פריפייד) 💳",
+            "טוענים סכום מראש ומוציאים רק אותו — אי אפשר להיכנס למינוס" + (minor ? " · אפשר על שם ההורה" : ""),
+            d.account === "prepaid") +
+          choice("bank", "חשבון בנק רגיל 🏦", "יתרה שוטפת שאני מנהל בעצמי", d.account === "bank") +
+          choice("both", "גם וגם", "חשבון בנק ולצידו כרטיס נטען להוצאות היומיום", d.account === "both") +
+          choice("none", "אין לי עדיין", "נתחיל בלי סכום פתיחה — אפשר להוסיף בכל רגע", d.account === "none");
+      }
+      else if (step === "prepaidAmount") inner += '<h2 class="authtitle">כמה סכום יש בכרטיס? 💳</h2>' +
+        '<p class="authsub">הסכום שטעון בכרטיס כרגע. ה-AI יפרק אותו לקוביות ויבנה ממנו תוכנית — <b>ותוכל להוציא רק אותו</b>, בלי מינוס וללא חריגה.</p>' +
+        money("f", "סכום טעון בכרטיס", "500", d.prepaidAmount) +
+        '<div class="unknote" style="margin-top:12px">🔒 אין חיבור לכרטיס האמיתי. זה מספר שאתה מזין ומעדכן בעצמך בכל טעינה.</div>';
+      else if (step === "balance") inner += '<h2 class="authtitle">מה היתרה בחשבון?</h2><p class="authsub">הסכום שתרצה לעקוב אחריו ולחלק (מדומה — ללא חיבור לבנק).</p>' + money("f", "יתרה נוכחית משוערת", "3000", d.balance);
       else if (step === "kidAllowance") inner += '<h2 class="authtitle">כמה כסף אתה מקבל? 💰</h2><p class="authsub">דמי כיס, עבודה קטנה או מתנות — מה שיש 🙂</p>' +
         money("f", "סכום", "50", d.kidAmount) +
         '<label class="flbl">כל כמה זמן?</label>' +
@@ -2377,6 +2388,7 @@
       const bindNum = (id, key) => { const inp = v.querySelector("#" + id); if (inp) inp.oninput = () => { inp.value = digits(inp.value); d[key] = inp.value; syncNext(); }; };
       if (step === "age") bindNum("f", "age");
       else if (step === "balance") bindNum("f", "balance");
+      else if (step === "prepaidAmount") bindNum("f", "prepaidAmount");
       else if (step === "income") bindNum("f", "income");
       else if (step === "kidAllowance") bindNum("f", "kidAmount");
       else if (step === "kidGoal") {
@@ -2410,7 +2422,11 @@
       v.querySelectorAll(".ob-opt").forEach((b) => {
         b.onclick = () => {
           const raw = b.dataset.v;
-          if (step === "bank") { d.hasBank = raw === "1"; if (raw !== "1") d.balance = ""; }
+          if (step === "account") {
+            d.account = raw;
+            if (raw !== "bank" && raw !== "both") d.balance = "";
+            if (raw !== "prepaid" && raw !== "both") d.prepaidAmount = "";
+          }
           else if (step === "work") { d.works = raw === "1"; if (raw !== "1") d.income = ""; }
           else if (step === "living") { d.living = raw; if (raw === "parents") { d.ownership = null; d.exp = {}; d.expEst = {}; } }
           else if (step === "property") { if (d.ownership !== raw) { d.exp = {}; d.expEst = {}; } d.ownership = raw; }
@@ -2461,8 +2477,14 @@
         showToast("🧊 הקוביות שלך מוכנות!");
         return;
       }
+      const prepaid = d.account === "prepaid" || d.account === "both";
       const profile = {
-        age: age, kid: false, hasBank: !!d.hasBank, balance: num(d.balance),
+        age: age, kid: false,
+        accountType: d.account || "none",
+        prepaid: prepaid,
+        prepaidBalance: prepaid ? num(d.prepaidAmount) : 0,
+        hasBank: d.account === "bank" || d.account === "both",
+        balance: num(d.balance) + (prepaid ? num(d.prepaidAmount) : 0),
         works: !!d.works, income: num(d.income),
         withParents: d.living === "parents",
         ownership: d.living === "alone" ? d.ownership : null,
@@ -2479,9 +2501,110 @@
       state.onboarded = true;
       state.screen = "app";
       clearOb(); // questionnaire done — drop the saved draft
+
+      // A prepaid card holds one concrete sum, so there is nothing to wait for:
+      // the AI breaks that exact amount into the buckets straight away and the
+      // user lands on a finished plan rather than an untouched pile of money.
+      let split = null;
+      if (profile.prepaid && state.pool > 0) {
+        split = splitByPercent(state.pool);
+        split.rows.forEach((r) => { const c = state.cubes.find((x) => x.key === r.key); if (c) c.balance += r.amount; });
+        state.pool = split.leftover;
+        state.game.flags.dist = true;
+        state.justFunded = new Set(split.rows.filter((r) => r.amount > 0).map((r) => r.key));
+      }
       render();
       saveState();
-      showToast("🧊 הקוביות שלך מוכנות!");
+      if (split) {
+        burstCoins("💳");
+        animateCounts();
+        showToast("💳 ה-AI פירק את ₪" + fmt(split.given) + " שבכרטיס ל-" + split.rows.filter((r) => r.amount > 0).length + " קוביות");
+        setTimeout(() => { state.justFunded = new Set(); }, 800);
+      } else {
+        showToast("🧊 הקוביות שלך מוכנות!");
+      }
+    }
+
+    // =====================================================================
+    // PREPAID CARD panel + top-up sheet.
+    // Everything here exists to make one thing unmissable: the loaded amount
+    // is the ceiling. There is no overdraft to fall into.
+    // =====================================================================
+    function prepaidCard() {
+      const loaded = loadedTotal();
+      const emg = state.cubes.find(isEmergency);
+      const untouchable = emg ? Math.round(emg.balance) : 0;
+      const spendable = Math.max(0, loaded - untouchable);
+      const burn = essentialMonthlySpend();
+      const card = el("div", "ppcard");
+      card.innerHTML =
+        '<div class="pptop"><span class="ppchip">💳 כרטיס נטען</span>' +
+          '<span class="ppno">•••• ' + String(1000 + ((loaded * 7) % 9000)).slice(-4) + '</span></div>' +
+        '<div class="pplbl">טעון בכרטיס</div>' +
+        '<div class="ppval">₪' + fmt(loaded) + '</div>' +
+        '<div class="ppsplit">' +
+          '<div><span>זמין להוצאה</span><b>₪' + fmt(spendable) + '</b></div>' +
+          '<div><span>שמור לחירום 🛟</span><b>₪' + fmt(untouchable) + '</b></div>' +
+        '</div>' +
+        '<div class="ppnote">🚫 אי אפשר להיכנס למינוס — אפשר להוציא רק את מה שטעון' +
+          (burn > 0 && spendable > 0 ? ' · הסכום הזה מחזיק אותך כ-' + (Math.round((spendable / burn) * 10) / 10) + ' חודשים' : '') + '</div>' +
+        '<button class="ppbtn" id="ppTop">＋ טענתי כסף לכרטיס</button>';
+      card.querySelector("#ppTop").onclick = openTopUp;
+      return card;
+    }
+
+    let topUp = null; // { amount, auto }
+    function openTopUp() { clearToasts(); dep = null; topUp = { amount: "", auto: true }; renderTopUp(); }
+    function closeTopUp() { notifyNativeBusy(false); topUp = null; const w = $("depwrap"); w.classList.remove("on"); w.innerHTML = ""; }
+    function renderTopUp() {
+      if (!topUp) return;
+      notifyNativeBusy(true);
+      const amt = Math.round(Number(topUp.amount) || 0);
+      const w = $("depwrap"); w.className = "ccwrap on";
+      w.onclick = (e) => { if (e.target === w) closeTopUp(); };
+      const preview = amt > 0 && topUp.auto ? splitByPercent(amt) : null;
+      w.innerHTML = '<div class="ccsheet">' +
+        '<div class="handle"></div>' +
+        '<h2 class="authtitle" style="font-size:22px">💳 טעינת הכרטיס</h2>' +
+        '<p class="authsub">כמה כסף טענת עכשיו לכרטיס? הסכום הזה מצטרף למה שכבר יש (₪' + fmt(loadedTotal()) + ').</p>' +
+        '<div class="fld"><span class="cur">₪</span><input id="tuAmt" inputmode="numeric" placeholder="200" value="' + esc(topUp.amount) + '"></div>' +
+        '<div class="depchips">' + [50, 100, 200, 500].map((n) =>
+          '<button class="fchip depq' + (amt === n ? " on" : "") + '" data-n="' + n + '">' + n + ' ₪</button>').join("") + '</div>' +
+        '<div class="swrow" style="margin-top:16px"><div><div class="setmail">חלוקה אוטומטית לקוביות 🤖</div>' +
+          '<div class="setlbl" style="margin-top:4px">ה-AI יפרק את הטעינה לפי האחוזים שהגדרת</div></div>' +
+          '<button class="sw' + (topUp.auto ? " on" : "") + '" id="tuAuto" aria-label="חלוקה אוטומטית"></button></div>' +
+        (preview
+          ? '<div class="setcard" style="margin-top:12px">' + preview.rows.filter((r) => r.amount > 0).map((r) =>
+              '<div class="pctprev"><span>' + r.emoji + ' ' + esc(r.name) + '</span><b style="color:' + r.color + '">₪' + fmt(r.amount) + '</b></div>').join("") +
+              (preview.leftover > 0 ? '<div class="pctprev leftover"><span>🪙 יישאר ביתרה הפנויה</span><b>₪' + fmt(preview.leftover) + '</b></div>' : "") +
+            '</div>'
+          : "") +
+        '<button class="distbtn wide" id="tuGo" style="margin-top:16px"' + (amt > 0 ? "" : " disabled") + '>' +
+          (amt > 0 ? "טען ₪" + fmt(amt) : "טעינה") + '</button>' +
+        '<button class="obback" id="tuCancel">ביטול</button>' +
+      '</div>';
+      const inp = w.querySelector("#tuAmt");
+      inp.oninput = () => { inp.value = inp.value.replace(/[^0-9]/g, ""); topUp.amount = inp.value; renderTopUp(); };
+      w.querySelectorAll(".depq").forEach((b) => { b.onclick = () => { topUp.amount = b.dataset.n; renderTopUp(); }; });
+      w.querySelector("#tuAuto").onclick = () => { topUp.auto = !topUp.auto; renderTopUp(); };
+      w.querySelector("#tuCancel").onclick = closeTopUp;
+      w.querySelector("#tuGo").onclick = () => {
+        const value = Math.round(Number(topUp.amount) || 0);
+        const auto = topUp.auto;
+        if (value <= 0) return;
+        closeTopUp();
+        const res = topUpCard(value, auto);
+        if (!res) return;
+        if (res.split) state.justFunded = new Set(res.split.rows.filter((r) => r.amount > 0).map((r) => r.key));
+        burstCoins("💳");
+        render();
+        animateCounts();
+        showToast(res.split
+          ? "💳 נטענו ₪" + fmt(value) + " וחולקו אוטומטית לקוביות"
+          : "💳 נטענו ₪" + fmt(value) + " — מחכים ביתרה הפנויה לחלוקה");
+        setTimeout(() => { state.justFunded = new Set(); }, 800);
+      };
+      setTimeout(() => { const f = w.querySelector("#tuAmt"); if (f && !topUp.amount) f.focus(); }, 40);
     }
 
     // ---- Dashboard --------------------------------------------------------
@@ -2522,6 +2645,10 @@
       };
       btn.textContent = splitLabel();
 
+      // Prepaid card panel — the card IS the money, so it sits right under the
+      // total and says out loud what is loaded and what that buys.
+      if (isPrepaid()) v.appendChild(prepaidCard());
+
       // living-situation notice (based on the answered profile)
       const prof = state.profile || {};
       const note = el("div", "parents");
@@ -2541,10 +2668,10 @@
            ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
         : [["💸", "הכנסה", "income"], ["🧾", "הוצאות", "expenses"], ["🔮", "סימולטור", "whatif"],
            ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"],
-           ["💳", "חובות", "debt"], ["🏦", "עו״ש בנק", "bank"]];
+           ["💳", "חובות", "debt"]];
       modules.forEach((m) => {
         const b = el("button", "modbtn");
-        const isPrem = (m[2] === "debt" || m[2] === "bank") && !state.premium;
+        const isPrem = m[2] === "debt" && !state.premium;
         b.innerHTML = '<span class="mi">' + m[0] + (isPrem ? '<span class="lockb">🔒</span>' : "") + '</span><span>' + m[1] + '</span>';
         b.onclick = () => { if (m[2] === "calm") { openCalm(); return; } state.screen = m[2]; render(); };
         nav.appendChild(b);
@@ -2719,6 +2846,7 @@
       const cube = state.cubes.find((c) => c.key === key);
       if (!cube) return;
       clearToasts();
+      topUp = null;
       dep = { key: key, amount: "", source: state.pool > 0 ? "pool" : "new" };
       renderDeposit();
     }
@@ -2742,7 +2870,8 @@
           '<button class="fchip depq' + (amt === n ? " on" : "") + '" data-n="' + n + '">' + n + ' ₪</button>').join("") + '</div>' +
         '<label class="flbl" style="margin-top:16px">מאיפה הכסף?</label>' +
         '<div class="segtoggle" id="depSrc">' +
-          '<button data-s="new" class="' + (dep.source === "new" ? "on" : "") + '">💝 כסף חדש<small>מתנה · דמי כיס · עבודה</small></button>' +
+          '<button data-s="new" class="' + (dep.source === "new" ? "on" : "") + '">' +
+            (isPrepaid() ? '💳 טעינה חדשה<small>כסף שנטען עכשיו לכרטיס</small>' : '💝 כסף חדש<small>מתנה · דמי כיס · עבודה</small>') + '</button>' +
           '<button data-s="pool" class="' + (dep.source === "pool" ? "on" : "") + '"' + (avail <= 0 ? " disabled" : "") + '>🪙 מהיתרה הפנויה<small>' + (avail > 0 ? "זמין ₪" + fmt(avail) : "אין יתרה פנויה") + '</small></button>' +
         '</div>' +
         (overPool ? '<div class="gwarn">ביתרה הפנויה יש רק ₪' + fmt(avail) + ' — אפשר לבחור "כסף חדש" 🙂</div>' : "") +
@@ -2772,6 +2901,9 @@
         if (amt > state.pool) { showToast("אין מספיק ביתרה הפנויה 🙂"); return; }
         state.pool -= amt;
       }
+      // On a prepaid card, "new money" is a top-up — keep the recorded card
+      // balance in step so the panel never drifts from the cubes.
+      if (!fromPool && isPrepaid() && state.profile) state.profile.prepaidBalance = loadedTotal() + amt;
       cube.balance += amt;
       const name = cube.name, key = cube.key;
       const reached = Number(cube.goalTarget) > 0 && cube.balance >= Number(cube.goalTarget);
@@ -3081,6 +3213,7 @@
         emgMonths: emg && essentialMonthlySpend() > 0 ? Math.round((emg.balance / essentialMonthlySpend()) * 10) / 10 : 0,
         slack: Math.round(slack), // money not yet promised to any cube each month
         goals: state.cubes.filter((c) => Number(c.goalTarget) > 0),
+        prepaid: isPrepaid(), // no overdraft exists — the loaded amount is the ceiling
       };
     }
 
@@ -3098,10 +3231,12 @@
       let verdict, why;
       if (amount > s.total) {
         verdict = "no";
-        why = "₪" + fmt(amount) + " זה יותר מכל מה שיש לך כרגע (₪" + fmt(s.total) + "). " +
+        why = (s.prepaid
+            ? "בכרטיס טעונים ₪" + fmt(s.total) + ", ו-₪" + fmt(amount) + " זה יותר מזה — העסקה פשוט תידחה בקופה. אין מינוס בכרטיס נטען. "
+            : "₪" + fmt(amount) + " זה יותר מכל מה שיש לך כרגע (₪" + fmt(s.total) + "). ") +
           (monthsToSave > 0
             ? "בקצב שלך (₪" + fmt(perMonth) + " פנויים בחודש) זה " + monthsToSave + " חודשי חיסכון — אפשר לפתוח על זה קובייה ולראות את זה מתקרב."
-            : "כדי לתכנן את זה צריך קודם להזין הכנסה חודשית במסך „הכנסה”.");
+            : (s.prepaid ? "אפשר לפתוח על זה קובייה ולצבור אליה בכל טעינה." : "כדי לתכנן את זה צריך קודם להזין הכנסה חודשית במסך „הכנסה”."));
       } else if (emgThin && shareOfAll > 0.2) {
         verdict = "no";
         why = "בקרן החירום יש ₪" + fmt(s.emgBalance) + " — פחות מחודש הוצאות (₪" + fmt(s.essentials) + "). " +
@@ -3124,7 +3259,9 @@
         verdict = "careful";
         why = "זה גבולי. ₪" + fmt(amount) + " זה " + Math.round(shareOfAll * 100) + "% מהכסף שלך" +
           (s.fun ? ", ובקוביית הבילויים יש רק ₪" + fmt(s.funBalance) : "") + ". " +
-          "אפשר לעשות את זה, אבל ההפרש ייצא מחיסכון — כלומר תשלם על זה בעוד כמה חודשים, לא היום.";
+          (s.prepaid
+            ? "בכרטיס נטען אין מינוס, אז ההפרש חייב לצאת מקובייה אחרת — כלומר אתה לא באמת מוסיף כסף, אתה לוקח אותו ממשהו אחר שרצית."
+            : "אפשר לעשות את זה, אבל ההפרש ייצא מחיסכון — כלומר תשלם על זה בעוד כמה חודשים, לא היום.");
       }
       return { verdict: verdict, why: why, amount: amount, label: label || "", snapshot: s, monthsToSave: monthsToSave, perMonth: perMonth };
     }
@@ -3295,6 +3432,19 @@
         };
       }
 
+      // 4b. The prepaid card itself
+      if (/(כרטיס נטען|פריפייד|נטען|כמה טעון|כמה יש בכרטיס|מינוס|אוברדרפט)/.test(q)) {
+        const s = advisorSnapshot();
+        if (!s.prepaid) return { text: "החשבון שלך לא מוגדר ככרטיס נטען 🙂 אם עברת לכרטיס נטען אפשר להגדיר את זה מחדש דרך השאלון." };
+        const untouchable = s.emgBalance;
+        const spendable = Math.max(0, s.total - untouchable);
+        return { text: "בכרטיס טעונים ₪" + fmt(s.total) + ".\n" +
+          "• ₪" + fmt(spendable) + " זמינים להוצאה\n" +
+          "• ₪" + fmt(untouchable) + " שמורים בקרן החירום — לא נוגעים\n\n" +
+          "וזה כל מה שיש: בכרטיס נטען אין מסגרת אשראי ואי אפשר להיכנס למינוס. אם תנסה להוציא יותר, העסקה פשוט לא תעבור.\n" +
+          "טענת כסף? לחץ על „טענתי כסף לכרטיס” בדשבורד ואחלק אותו לקוביות לפי האחוזים שלך." };
+      }
+
       // 5. Emergency-fund consultation
       if (/(חירום|רשת ביטחון|קרן חירום)/.test(q)) {
         const s = advisorSnapshot();
@@ -3324,7 +3474,7 @@
         const s = advisorSnapshot();
         const low = [...cubes].filter((c) => !c.locked).sort((a, b) => a.balance - b.balance)[0];
         const ins = expenseInsights();
-        return { text: "סה״כ אצלך: ₪" + fmt(s.total) + (s.pool > 0 ? " (מתוכם ₪" + fmt(s.pool) + " עוד לא חולקו)" : "") + ".\n" +
+        return { text: (s.prepaid ? "טעון בכרטיס: ₪" : "סה״כ אצלך: ₪") + fmt(s.total) + (s.pool > 0 ? " (מתוכם ₪" + fmt(s.pool) + " עוד לא חולקו)" : "") + ".\n" +
           (s.emergency ? "🛟 קרן חירום: ₪" + fmt(s.emgBalance) + (s.emgGoal > 0 ? " מתוך ₪" + fmt(s.emgGoal) : "") + ".\n" : "") +
           (low ? '📉 הקובייה הכי נמוכה: "' + low.name + '" עם ₪' + fmt(low.balance) + ".\n" : "") +
           (ins ? "🧾 דיווחת על ₪" + fmt(ins.total) + " הוצאות" + (ins.regretPct > 0 ? ", מתוכן " + ins.regretPct + "% סומנו כ\"נסחפתי\"." : ".") : "עוד לא דיווחת על הוצאות — זה המקום שבו התמונה מתחילה להתחדד.") };
@@ -3771,8 +3921,8 @@
       const facts = el("div", "setcard");
       facts.innerHTML =
         '<div class="privline">🔐 <b>הכול נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.</div>' +
-        '<div class="privline">🏦 <b>אין חיבור לחשבון הבנק שלך.</b> האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת שום קובץ בלי אישור מפורש שלך לכל קובץ בנפרד.</div>' +
-        '<div class="privline">🧾 <b>תנועות עו״ש לא נשמרות.</b> קובץ שמייבאים מנותח בזיכרון בלבד ונמחק ברגע שיוצאים מהמסך.</div>' +
+        '<div class="privline">🏦 <b>אין חיבור לחשבון הבנק שלך.</b> האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת קבצים מהמכשיר. פיצ׳ר קריאת העו״ש הוסר מהמערכת לגמרי.</div>' +
+        '<div class="privline">💳 <b>גם כרטיס נטען לא מחובר.</b> הסכום שבכרטיס הוא מספר שאתה מזין ומעדכן בעצמך — אין גישה לכרטיס האמיתי ואין תנועות נסתרות.</div>' +
         '<div class="privline">🚫 <b>אין רישום אירועים גלוי.</b> האפליקציה לא מציגה ולא שומרת רישום פנימי של פעולות התחברות — רישום כזה עלול לחשוף את כתובת המייל שלך למי שמחזיק במכשיר.</div>';
       body.appendChild(facts);
     }
@@ -3848,6 +3998,15 @@
       const intro = el("div", "setcard");
       intro.innerHTML = '<div class="setlbl">הזינו את החובות שלכם והסכום החודשי הפנוי — ה-AI יחשב את סדר ההחזר האופטימלי (שיטת מפולת/כדור שלג) וכמה ריבית תחסכו.</div>';
       body.appendChild(intro);
+
+      // A prepaid card cannot go negative, so the classic "מינוס" simply is not
+      // one of the debts this user can accumulate. Worth saying — it is half the
+      // reason to choose a prepaid card in the first place.
+      if (isPrepaid()) {
+        const n = el("div", "wisafe");
+        n.textContent = "💳 אתה מנהל כרטיס נטען — אי אפשר להיכנס איתו למינוס או לאוברדרפט. החובות היחידים שרלוונטיים לך הם כאלה שנלקחו מחוץ לכרטיס.";
+        body.appendChild(n);
+      }
 
       // debts list
       state.debts.forEach((d, idx) => {
@@ -4089,7 +4248,7 @@
         '<div class="payprice">⁦' + priceLabel() + '⁩ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
         '<ul class="payfeat">' +
           '<li>💬 צ׳אט עם Cubey — היועץ הפיננסי החכם שמכיר את הקוביות שלך</li>' +
-          '<li>🏦 ניהול עו״ש אוטומטי — העלאת קובץ CSV אמיתי, סיווג ותובנות AI</li>' +
+          '<li>🎯 הקצאת AI לכרטיס נטען — פירוק הסכום הטעון לקוביות ותוכנית חיסכון</li>' +
           '<li>💳 אופטימיזציית חובות — מפולת/כדור שלג עם חיסכון ריבית מחושב</li>' +
           '<li>🎯 הקצאת AI לקוביות אישיות לפי עדיפות</li>' +
         '</ul>';
@@ -4204,572 +4363,6 @@
       $("view").appendChild(ov);
       ov.querySelector("#lockUp").onclick = () => { state.screen = "upgrade"; render(); };
       return true;
-    }
-
-    // =====================================================================
-    // MODULE — Bank Statement AI Manager.
-    // Real pipeline: the mock "files" are genuine CSV text that gets parsed
-    // line-by-line, categorized with keyword rules, and analyzed for
-    // duplicates / subscriptions / anomalies — nothing is hardcoded output.
-    // =====================================================================
-    const BANK_FILES = {
-      june: { label: 'דוגמה · עו״ש יוני 2026', csv:
-"תאריך,תיאור,סכום\n" +
-"01/06/2026,משכורת - אלביט מערכות,10000\n" +
-"02/06/2026,שכר דירה - העברה,-3500\n" +
-"03/06/2026,שופרסל דיל,-620\n" +
-"08/06/2026,בזק בינלאומי,-99\n" +
-"10/06/2026,רמי לוי,-450\n" +
-"12/06/2026,נטפליקס,-33\n" +
-"14/06/2026,קפה גרג,-48\n" +
-"15/06/2026,בזק בינלאומי,-99\n" +
-"18/06/2026,חברת החשמל,-430\n" +
-"20/06/2026,סופר פארם,-170\n" +
-"22/06/2026,וולט,-96\n" +
-"25/06/2026,ספוטיפיי,-20\n" +
-"28/06/2026,מסעדת האחים,-240" },
-      july: { label: 'דוגמה · עו״ש יולי 2026', csv:
-"תאריך,תיאור,סכום\n" +
-"01/07/2026,משכורת - אלביט מערכות,10000\n" +
-"02/07/2026,שכר דירה - העברה,-3500\n" +
-"04/07/2026,זארה ביגוד,-1450\n" +
-"06/07/2026,שופרסל דיל,-580\n" +
-"09/07/2026,הוט מובייל,-129\n" +
-"11/07/2026,רמי לוי,-390\n" +
-"12/07/2026,נטפליקס,-33\n" +
-"15/07/2026,וולט,-120\n" +
-"17/07/2026,הוט מובייל,-129\n" +
-"19/07/2026,חברת החשמל,-410\n" +
-"21/07/2026,קפה נמרוד,-52\n" +
-"24/07/2026,ספוטיפיי,-20\n" +
-"27/07/2026,מסעדה איטלקית,-310" },
-    };
-    // keyword → cube categorization rules ("the AI classifier").
-    // The classifier reads each transaction description with .includes()-style
-    // matching and maps it to the right cube:
-    //   שופרסל / יוחננוף / רמי לוי  → קוביית אוכל (essentials)
-    //   עירייה / ארנונה / חברת החשמל → חשבונות קבועים (housing/bills)
-    //   משכורת / העברה נכנסת        → הכנסה (income)
-    const INCOME_RE = /(משכורת|שכר עבודה|העברה נכנסת|זיכוי|החזר מס|מענק|קצבה|מלגה)/;
-    const BANK_RULES = [
-      { re: /(שכר דירה|ארנונה|עירייה|חברת החשמל|חשמל|בזק|הוט|פרטנר|סלקום|גולן|ועד בית|מים|תאגיד מים|גז)/, cube: "housing" },
-      { re: /(נטפליקס|ספוטיפיי|ספוטיפי|דיסני|yes|youtube premium|מנוי)/i, cube: "lifestyle", sub: true },
-      { re: /(שופרסל|יוחננוף|רמי לוי|ויקטורי|יינות ביתן|טיב טעם|אושר עד|סופר|פארם|מכולת|יינות)/, cube: "essentials" },
-      { re: /(קפה|מסעד|וולט|wolt|בר |פאב|סינמה|זארה|castro|ביגוד|אופנה|בגדים|קניון|נעל)/i, cube: "lifestyle" },
-    ];
-    // AGENT 3 — robust, HEADER-AWARE parser for real-world CSV exports.
-    // Tolerates BOM, CRLF endings, quoted cells, currency symbols and
-    // thousands separators. Detects the common Israeli-bank column layouts:
-    //   • single signed "סכום" column (positive = credit, negative = debit)
-    //   • split "חובה"/"זכות" (debit / credit) columns
-    // It locates the "תיאור" (description) column by header name, and falls
-    // back to positional order (date,desc,amount) when there is no header row.
-    function splitCSVLine(line, delim) {
-      // quoted-CSV splitter so the delimiter inside "..." doesn't break cells.
-      // delim is auto-detected per file (real Israeli exports often use ";" or TAB).
-      delim = delim || ",";
-      const out = []; let cur = "", q = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') { if (q && line[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
-        else if (ch === delim && !q) { out.push(cur); cur = ""; }
-        else cur += ch;
-      }
-      out.push(cur);
-      return out.map((x) => x.replace(/^["\s]+|["\s]+$/g, ""));
-    }
-    // Pick the delimiter that most consistently splits the data lines. Excel in
-    // a Hebrew locale saves CSV with ";", and some banks export TAB-separated.
-    function detectDelimiter(lines) {
-      const cands = [";", "\t", ",", "|"];
-      let best = ",", bestScore = -1;
-      cands.forEach((d) => {
-        const counts = lines.map((l) => l.split(d).length - 1).filter((c) => c > 0);
-        if (counts.length < Math.max(1, lines.length * 0.4)) return;
-        counts.sort((a, b) => a - b);
-        const med = counts[Math.floor(counts.length / 2)];
-        const score = med * counts.length;
-        if (score > bestScore) { bestScore = score; best = d; }
-      });
-      return best;
-    }
-    // Robust number parser: handles ₪/spaces, US "1,234.56" and European
-    // "1.234,56" thousands/decimal conventions, and parentheses-for-negative.
-    function toNum(s) {
-      s = String(s == null ? "" : s).trim();
-      if (!s) return 0;
-      const neg = /^\(.*\)$/.test(s) || /^-/.test(s) || /-$/.test(s); // leading/trailing sign only
-      s = s.replace(/[^\d.,]/g, "");
-      if (!s) return 0;
-      if (s.indexOf(",") > -1 && s.indexOf(".") > -1) {
-        if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
-        else s = s.replace(/,/g, "");
-      } else if (s.indexOf(",") > -1) {
-        const parts = s.split(",");
-        if (parts.length === 2 && parts[1].length <= 2) s = parts[0] + "." + parts[1]; // decimal comma
-        else s = s.replace(/,/g, ""); // thousands
-      }
-      let n = Number(s);
-      if (isNaN(n)) n = 0;
-      return neg ? -Math.abs(n) : n;
-    }
-    function isNumericCell(s) {
-      s = String(s == null ? "" : s).trim();
-      if (!s) return false;
-      if (/^\d{1,2}[\/.\-]\d{1,2}([\/.\-]\d{2,4})?$/.test(s)) return false; // a date, not a number
-      const n = s.replace(/[^0-9.\-]/g, "");
-      return n !== "" && /\d/.test(s) && !isNaN(Number(n));
-    }
-    function isDateCell(s) { return /^\d{1,2}[\/.\-]\d{1,2}([\/.\-]\d{2,4})?$/.test(String(s || "").trim()); }
-    function hasLetter(s) { return /[A-Za-z֐-׿]/.test(String(s || "")); }
-
-    // Header synonyms across the common Israeli banks (Leumi / Hapoalim / Discount / Mizrahi …)
-    const H_DESC = /(תיאור|תאור|פירוט|פרטים|שם בית העסק|בית עסק|תנועה|פעולה|הפעולה|העסקה)/;
-    const H_DATE = /(תאריך|ת\.? ?ערך|יום)/;
-    const H_AMOUNT = /(^\s*סכום|סכום התנועה|סכום העסקה|סכום בש|סכום חיוב|סכום זיכוי)/;
-    const H_DEBIT = /(חובה|בחובה|^\s*חיוב\s*$|משיכה|יצא)/;
-    const H_CREDIT = /(זכות|בזכות|^\s*זיכוי\s*$|הפקדה|נכנס)/;
-    const H_BALANCE = /(יתרה)/;
-
-    // AGENT 3 — robust, DATA-AWARE parser for real-world CSV exports.
-    // 1. Splits quoted CSV (commas inside "..." are safe), strips BOM/CRLF/₪/thousands.
-    // 2. If a header row exists, maps columns BY NAME (description, date, signed
-    //    amount, or split חובה/זכות) and never mistakes a יתרה (balance) column
-    //    for the amount.
-    // 3. If there is NO header, it INFERS the columns from the data itself —
-    //    the text column is the description, date-shaped column is the date,
-    //    a cumulative always-filled numeric column is the balance (ignored),
-    //    and the remaining numeric column(s) are the amount / debit+credit.
-    //    This is what stops a plain "date,desc,debit,credit,balance" export from
-    //    being misread as pure income.
-    function inferLayout(rows) {
-      const cols = Math.max.apply(null, rows.map((r) => r.length));
-      const stat = [];
-      for (let c = 0; c < cols; c++) {
-        let numeric = 0, letters = 0, dates = 0, filled = 0, signed = 0, sumAbs = 0;
-        rows.forEach((r) => {
-          const cell = (r[c] == null ? "" : r[c]).trim();
-          if (cell) filled++;
-          if (isDateCell(cell)) dates++;
-          else if (isNumericCell(cell)) { numeric++; const v = toNum(cell); sumAbs += Math.abs(v); if (v < 0 || /-/.test(cell)) signed++; }
-          else if (cell && hasLetter(cell)) letters++;
-        });
-        stat.push({ c: c, numeric: numeric, letters: letters, dates: dates, filled: filled, signed: signed, avgAbs: numeric ? sumAbs / numeric : 0 });
-      }
-      const n = rows.length;
-      const dateI = (stat.filter((s) => s.dates >= n * 0.6).sort((a, b) => b.dates - a.dates)[0] || {}).c;
-      const descI = (stat.filter((s) => s.c !== dateI && s.letters >= s.numeric).sort((a, b) => b.letters - a.letters)[0] || {}).c;
-      // A "number column" contains numbers and no free text — even a sparse
-      // credit column that only holds the monthly salary counts.
-      let numCols = stat.filter((s) => s.c !== dateI && s.c !== descI && s.numeric >= 1 && s.letters === 0 && s.numeric >= s.filled * 0.8);
-      // a balance column is filled on (almost) every row and carries the largest values
-      let balanceI = -1;
-      if (numCols.length > 1) {
-        const cand = numCols.slice().sort((a, b) => (b.filled - a.filled) || (b.avgAbs - a.avgAbs))[0];
-        if (cand && cand.filled >= n * 0.9 && cand.avgAbs >= Math.max.apply(null, numCols.map((x) => x.avgAbs)) * 0.9)
-          balanceI = cand.c;
-      }
-      numCols = numCols.filter((s) => s.c !== balanceI);
-      // date defaults to -1 (no date) rather than colliding with the desc column
-      const layout = { date: dateI == null ? -1 : dateI, desc: descI == null ? 1 : descI, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: false };
-      if (numCols.length >= 2) {
-        // two amount columns with mostly-exclusive fills → debit then credit (Israeli order)
-        numCols.sort((a, b) => a.c - b.c);
-        layout.mode = "split"; layout.debit = numCols[0].c; layout.credit = numCols[1].c;
-      } else if (numCols.length === 1) {
-        layout.mode = "signed"; layout.amount = numCols[0].c; layout.signedCol = numCols[0].signed > 0;
-      } else {
-        layout.mode = "signed"; layout.amount = 2; layout.signedCol = false;
-      }
-      return layout;
-    }
-    function mapHeader(first) {
-      const find = (re) => first.findIndex((c) => re.test(c));
-      const dateI = find(H_DATE), descI = find(H_DESC);
-      const amtI = first.findIndex((c) => H_AMOUNT.test(c) && !H_BALANCE.test(c));
-      const debI = first.findIndex((c) => H_DEBIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
-      const creI = first.findIndex((c) => H_CREDIT.test(c) && !H_BALANCE.test(c) && !H_AMOUNT.test(c));
-      // date defaults to -1 (no date) rather than colliding with column 0 / the desc
-      const layout = { date: dateI >= 0 ? dateI : -1, desc: descI >= 0 ? descI : 1, mode: "signed", amount: -1, debit: -1, credit: -1, signedCol: true };
-      if (debI >= 0 && creI >= 0) { layout.mode = "split"; layout.debit = debI; layout.credit = creI; }
-      else if (amtI >= 0) { layout.mode = "signed"; layout.amount = amtI; }
-      else if (debI >= 0) { layout.mode = "debitOnly"; layout.debit = debI; }
-      else if (creI >= 0) { layout.mode = "creditOnly"; layout.credit = creI; }
-      else { layout.mode = "signed"; layout.amount = 2; }
-      return layout;
-    }
-    // Public entry: try every reasonable delimiter and pick the one that yields
-    // the most valid transactions. That way "; delimited with commas inside
-    // descriptions" and "comma delimited with semicolons inside" both work.
-    function parseBankCSV(csv) {
-      const raw = String(csv).replace(/^﻿/, "").replace(/‎|‏/g, ""); // strip BOM + LRM/RLM
-      const lines = raw.split(/\r?\n/).filter((l) => l.trim() !== "");
-      if (!lines.length) return [];
-      const auto = detectDelimiter(lines);
-      const candidates = [auto, ";", "\t", ",", "|"].filter((v, i, a) => a.indexOf(v) === i);
-      let best = [];
-      for (const d of candidates) {
-        let result = []; try { result = parseBankCSVWith(lines, d); } catch (e) {}
-        if (result.length > best.length) best = result;
-      }
-      return best;
-    }
-    function parseBankCSVWith(lines, delim) {
-      let rows = lines.map((l) => splitCSVLine(l, delim)).filter((r) => r.length >= 2);
-      // Keep only rows the caller can plausibly read as a transaction: at least
-      // one text cell AND at least one numeric cell — this drops preambles,
-      // account-number banners and blank-line separators without a rigid
-      // "must match median width" filter that used to reject uneven exports.
-      const candidateRows = rows.filter((r) =>
-        r.some((c) => hasLetter(c)) && r.some((c) => isNumericCell(c))
-      );
-      const headerCandidate = rows.find((r) =>
-        r.some((c) => H_DESC.test(c)) &&
-        r.some((c) => H_AMOUNT.test(c) || H_DEBIT.test(c) || H_CREDIT.test(c) || H_BALANCE.test(c)) &&
-        !r.some((c) => isNumericCell(c))
-      );
-      let layout, dataRows;
-      if (headerCandidate) {
-        layout = mapHeader(headerCandidate);
-        const headerIdx = rows.indexOf(headerCandidate);
-        dataRows = rows.slice(headerIdx + 1).filter((r) =>
-          r.some((c) => hasLetter(c) || isNumericCell(c))
-        );
-      } else {
-        if (!candidateRows.length) return [];
-        layout = inferLayout(candidateRows);
-        dataRows = candidateRows;
-      }
-      // Sign inference for a single signed-amount column.
-      let anyNegative = false;
-      if (layout.mode === "signed" && layout.amount >= 0) {
-        anyNegative = dataRows.some((r) => toNum(r[layout.amount]) < 0);
-      }
-      // Helper: locate the "best" description cell in a row when the mapped
-      // one is empty or purely numeric (e.g. exports where the description
-      // column drifts a slot on some rows).
-      const bestDescCell = (parts) => {
-        for (let i = 0; i < parts.length; i++) {
-          if (i === layout.date || i === layout.amount || i === layout.debit || i === layout.credit) continue;
-          if (hasLetter(parts[i]) && !isDateCell(parts[i])) return parts[i];
-        }
-        return "";
-      };
-      return dataRows.map((parts) => {
-        if (parts.length < 2) return null;
-        let desc = layout.desc >= 0 && parts[layout.desc] != null ? String(parts[layout.desc]).trim() : "";
-        if (!desc || !hasLetter(desc)) desc = bestDescCell(parts);
-        if (!desc) return null;
-        let amount = 0;
-        if (layout.mode === "split") {
-          const debit = layout.debit >= 0 ? Math.abs(toNum(parts[layout.debit])) : 0;
-          const credit = layout.credit >= 0 ? Math.abs(toNum(parts[layout.credit])) : 0;
-          amount = credit - debit; // זכות (credit)=income(+), חובה (debit)=spend(−)
-        } else if (layout.mode === "debitOnly") {
-          amount = -Math.abs(toNum(parts[layout.debit]));
-        } else if (layout.mode === "creditOnly") {
-          amount = Math.abs(toNum(parts[layout.credit]));
-        } else if (layout.amount >= 0) {
-          amount = toNum(parts[layout.amount]);
-          if (amount > 0 && !anyNegative) amount = INCOME_RE.test(desc) ? amount : -amount;
-        }
-        if (amount !== 0 && INCOME_RE.test(desc)) amount = Math.abs(amount); // salary/refund is always income
-        return { date: layout.date >= 0 && parts[layout.date] != null ? parts[layout.date] : "", desc: desc, amount: amount };
-      }).filter((t) => t && t.desc && !isNaN(t.amount) && t.amount !== 0);
-    }
-    function analyzeStatement(csv) {
-      const txns = parseBankCSV(csv);
-      const income = txns.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
-      const expenses = txns.filter((t) => t.amount < 0);
-      const totalOut = expenses.reduce((s, t) => s - t.amount, 0);
-
-      // categorize
-      const byCube = {}, subs = [];
-      expenses.forEach((t) => {
-        const rule = BANK_RULES.find((r) => r.re.test(t.desc));
-        const cube = cubeFor(rule ? rule.cube : "essentials"); // housing -> bills/landlord fallback
-        (byCube[cube] = byCube[cube] || { total: 0, count: 0, txns: [] });
-        byCube[cube].total += -t.amount; byCube[cube].count++; byCube[cube].txns.push(t);
-        if (rule && rule.sub) subs.push(t);
-      });
-
-      // insights — all computed from the data
-      const insights = [];
-      const seen = {};
-      expenses.forEach((t) => {
-        const k = t.desc + "|" + t.amount;
-        seen[k] = (seen[k] || 0) + 1;
-      });
-      Object.keys(seen).forEach((k) => {
-        if (seen[k] >= 2) {
-          const parts = k.split("|");
-          insights.push({ kind: "warn", text: 'זיהיתי חיוב כפול החודש: "' + parts[0] + '" (₪' + fmt(-parts[1]) + ' × ' + seen[k] + ') — מומלץ לבדוק מול הספק.' });
-        }
-      });
-      subs.forEach((t) => {
-        insights.push({ kind: "info", text: 'זיהיתי מינוי פעיל: ' + t.desc + ' (₪' + fmt(-t.amount) + '/חודש) — שויך אוטומטית כהוצאה קבועה בקוביית הבילויים.' });
-      });
-      const avgExp = totalOut / Math.max(1, expenses.length);
-      expenses.filter((t) => -t.amount >= 1000 && !/שכר דירה/.test(t.desc)).forEach((t) => {
-        insights.push({ kind: "warn", text: 'הוצאה חריגה: ' + t.desc + ' ₪' + fmt(-t.amount) + ' — גבוהה פי ' + Math.round(-t.amount / avgExp) + ' מהממוצע החודשי לתנועה.' });
-      });
-      const net = income - totalOut;
-      if (net > 0) insights.push({ kind: "info", text: 'נשאר לך עודף של ₪' + fmt(net) + ' החודש — מומלץ להעביר אותו לקוביית החיסכון.' });
-      else insights.push({ kind: "warn", text: 'הוצאת ₪' + fmt(-net) + ' יותר ממה שנכנס החודש — האיזון האוטומטי יסייע למנוע מינוס.' });
-
-      return { txns: txns, income: income, totalOut: totalOut, net: net, byCube: byCube, insights: insights };
-    }
-    // Automated re-balancing: top up each cube so it can cover its real-world
-    // spending this month. Money is only ever pulled from the free pool and from
-    // cubes that hold MORE than their own spending need — a cube that is itself
-    // short is never used as a donor, so money never shuttles in circles.
-    // Returns { moves, fullyCovered }.
-    function rebalanceFromBank(report) {
-      const moves = [];
-      const targets = {};
-      Object.keys(report.byCube).forEach((k) => { targets[k] = Math.round(report.byCube[k].total); });
-      // Donors: surplus above each cube's own spending need. Locked cubes never
-      // give, and neither does the emergency fund — a rebalance is exactly the
-      // kind of "small automatic move" that quietly empties a safety net.
-      const donors = [];
-      state.cubes.forEach((c) => {
-        if (c.locked || isEmergency(c)) return;
-        const surplus = c.balance - (targets[c.key] || 0);
-        if (surplus > 0) donors.push({ cube: c, avail: surplus });
-      });
-      const deficits = state.cubes
-        .map((c) => ({ cube: c, gap: Math.round((targets[c.key] || 0) - c.balance) }))
-        .filter((d) => d.gap > 0);
-      let fullyCovered = true;
-      deficits.forEach((d) => {
-        let need = d.gap;
-        if (state.pool > 0 && need > 0) {
-          const take = Math.min(state.pool, need);
-          state.pool -= take; need -= take; d.cube.balance += take;
-          moves.push({ from: "היתרה הפנויה", to: d.cube.name, amount: take });
-        }
-        for (let i = 0; i < donors.length && need > 0; i++) {
-          const src = donors[i];
-          if (src.avail <= 0 || src.cube === d.cube) continue;
-          const take = Math.min(src.avail, need);
-          src.avail -= take; need -= take; src.cube.balance -= take; d.cube.balance += take;
-          moves.push({ from: src.cube.name, to: d.cube.name, amount: take });
-        }
-        if (need > 0) fullyCovered = false; // the money genuinely isn't there
-      });
-      return { moves: moves, fullyCovered: fullyCovered };
-    }
-
-    // =====================================================================
-    // Current-account (עו״ש) import — DELIBERATELY NOT AUTOMATIC.
-    //
-    // The app has no bank connection, no credentials, no scheduled sync and no
-    // background fetch of any kind. A statement can only ever enter the app
-    // through this path, which requires TWO separate deliberate acts:
-    //   1. the user picks or drops one specific file, and
-    //   2. the user then approves that exact file by name and size.
-    // Dropping a file no longer reads it — it only queues the approval card.
-    //
-    // Nothing about the statement is persisted: the raw text is released as
-    // soon as it has been analysed, the derived report lives in memory only
-    // (saveState() never touches it) and leaving the screen wipes both.
-    // =====================================================================
-    let bankData = null, bankPhase = "idle", bankReport = null, bankMoves = null;
-    let bankPending = null; // a File the user picked, waiting for explicit approval
-    function bankForget() {
-      bankData = null; bankPhase = "idle"; bankReport = null; bankMoves = null; bankPending = null;
-    }
-    function startBankCSV(label, csv) {
-      if (bankPhase === "proc") return;
-      const count = parseBankCSV(csv).length;
-      if (count === 0) { showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 ודאו שיש עמודות של תאריך, תיאור וסכום (או חובה/זכות). מפריד פסיק, נקודה-פסיק או טאב — הכול נתמך."); return; }
-      bankData = { label: label, csv: csv, count: count }; bankPhase = "proc"; bankReport = null; bankMoves = null;
-      render();
-      setTimeout(() => {
-        bankReport = analyzeStatement(bankData.csv);
-        bankData.csv = null; // raw statement released the moment it is no longer needed
-        bankPhase = "done";
-        state.game.flags.bank = true; saveState();
-        render();
-      }, 2000);
-    }
-    function startBankProcess(id) { startBankCSV(BANK_FILES[id].label, BANK_FILES[id].csv); }
-    function renderBankPage() {
-      const body = pageShell("ניהול עו״ש אוטומטי 🏦", () => { bankForget(); state.screen = "app"; render(); });
-      const locked = applyPremiumLock(body); // strict lock when isPremiumUser === false
-
-      // Standing promise, shown before anything else on the screen.
-      const vow = el("div", "banknote");
-      vow.innerHTML = '<span>🛡️</span><p><b>האפליקציה לא מחוברת לבנק שלך.</b> אין חיבור, אין סיסמאות ואין שליפה אוטומטית של תנועות. ' +
-        'קובץ נקרא רק אחרי שתאשר אותו בשמו — והנתונים נמחקים ביציאה מהמסך ולא נשמרים במכשיר.</p>';
-      body.appendChild(vow);
-
-      // Upload zone: picking/dropping only QUEUES the file; reading needs approval.
-      const dz = el("div", "dropzone" + (bankPhase === "proc" ? " busy" : ""));
-      dz.innerHTML = '<span class="dzi">📄</span><b>ייבוא חד-פעמי של קובץ תנועות (CSV)</b>' +
-        '<span class="dzs">גררו לכאן קובץ CSV מהבנק או לחצו לבחירה — ותתבקשו לאשר אותו לפני שייקרא · תומך בכל בנק ישראלי (פסיק / נקודה-פסיק / טאב, כולל עמודות חובה/זכות)</span>' +
-        '<input type="file" id="bankFileIn" accept=".csv,.txt,text/csv,text/plain,application/vnd.ms-excel,application/octet-stream" hidden>';
-      const fin = dz.querySelector("#bankFileIn");
-      // Step 1 — queue only. No bytes are read here.
-      const queueRealFile = (file) => {
-        if (!file) return;
-        if (!state.premium) { showToast("🔒 ייבוא קובץ אמיתי הוא פיצ׳ר Premium"); return; }
-        if (/\.xlsx?$/i.test(file.name)) { showToast("קובץ Excel — ייצאו מאתר הבנק כ-CSV (או שמרו מ-Excel בפורמט CSV) ולאחר מכן העלו 🙂"); return; }
-        bankPending = file;
-        render();
-      };
-      // Step 2 — runs ONLY from the approval button below.
-      const readApprovedFile = (file) => {
-        if (!file || !state.premium) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          // Try every encoding real Israeli-bank exports use and pick the one
-          // whose parser produces the most transactions — so UTF-8, UTF-16LE/BE
-          // (Excel default), and legacy Windows-1255 all "just work".
-          const buf = new Uint8Array(reader.result);
-          const encodings = ["utf-8", "utf-16le", "utf-16be", "windows-1255"];
-          let best = { text: "", count: -1, enc: "utf-8" };
-          for (const enc of encodings) {
-            let t = ""; try { t = new TextDecoder(enc, { fatal: false }).decode(buf); } catch (e) { continue; }
-            if (!t) continue;
-            // Some exports (esp. Discount) hand out an HTML table with a .csv extension
-            if (/^\s*<(!doctype|html|\?xml|table)/i.test(t)) {
-              showToast("הקובץ הזה בפורמט HTML/XML ולא CSV אמיתי. במסך הייצוא בבנק בחרו 'CSV / Excel' במקום 'תדפיס' 🙂");
-              return;
-            }
-            let count = 0; try { count = parseBankCSV(t).length; } catch (e) {}
-            if (count > best.count) best = { text: t, count: count, enc: enc };
-          }
-          if (best.count <= 0) {
-            const preview = best.text.slice(0, 160).replace(/\s+/g, " ").trim() || "(ריק)";
-            showToast("לא הצלחתי לקרוא תנועות מהקובץ 😕 תחילת הקובץ נראית כך: \"" + preview + "\". אם זה HTML/סיכום ולא טבלת תנועות — ייצאו מהבנק כ-CSV אמיתי.");
-            return;
-          }
-          startBankCSV(file.name, best.text);
-        };
-        reader.onerror = () => showToast("קריאת הקובץ נכשלה");
-        reader.readAsArrayBuffer(file);
-      };
-      dz.onclick = (e) => { if (e.target !== fin) fin.click(); };
-      fin.onchange = () => { queueRealFile(fin.files[0]); fin.value = ""; };
-      dz.ondragover = (e) => { e.preventDefault(); dz.classList.add("over"); };
-      dz.ondragleave = () => dz.classList.remove("over");
-      dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove("over"); queueRealFile(e.dataTransfer.files && e.dataTransfer.files[0]); };
-      body.appendChild(dz);
-
-      // The consent gate. Until "אשר" is pressed the file's contents are never read.
-      if (bankPending) {
-        const kb = Math.max(1, Math.round(bankPending.size / 1024));
-        const ask = el("div", "setcard consent");
-        ask.innerHTML = '<div class="consenth">🔐 לאשר קריאה חד-פעמית של הקובץ?</div>' +
-          '<div class="consentf" style="unicode-bidi:plaintext">' + esc(bankPending.name) + ' · ' + fmt(kb) + ' KB</div>' +
-          '<p class="consentp">האפליקציה תקרא את הקובץ הזה <b>פעם אחת בלבד</b>, תנתח אותו במכשיר שלך, ולא תשמור אותו בשום מקום. ' +
-          'לא נשמרת גישה לקבצים אחרים ולא לחשבון הבנק — כל קובץ דורש אישור נפרד.</p>' +
-          '<div class="consentbtns"><button class="distbtn" id="bcYes">✓ אשר קריאה חד-פעמית</button>' +
-          '<button class="obback" id="bcNo">ביטול</button></div>';
-        body.appendChild(ask);
-        ask.querySelector("#bcYes").onclick = () => { const f = bankPending; bankPending = null; render(); readApprovedFile(f); };
-        ask.querySelector("#bcNo").onclick = () => { bankPending = null; render(); showToast("בוטל — הקובץ לא נקרא 👍"); };
-      }
-
-      const files = el("div", "bankfiles");
-      Object.keys(BANK_FILES).forEach((id) => {
-        const f = el("button", "bankfile" + (bankData && bankData.label === BANK_FILES[id].label ? " on" : ""));
-        f.innerHTML = '<span>📑</span><b>' + BANK_FILES[id].label + '</b>';
-        f.onclick = () => startBankProcess(id);
-        files.appendChild(f);
-      });
-      body.appendChild(files);
-
-      if (bankPhase === "proc") {
-        const pr = el("div", "setcard procbox");
-        pr.innerHTML = '<div class="procbar"><i></i></div><div class="proclbl">🤖 סוכן ה-AI קורא את הקובץ, מזהה תבניות ומסווג ' + fmt(bankData.count) + ' תנועות…</div>';
-        body.appendChild(pr);
-        return;
-      }
-      if (bankPhase !== "done" || !bankReport) return;
-      const r = bankReport;
-
-      // summary — big live metrics computed straight from the CSV math
-      const st0 = el("div", "section-t"); st0.textContent = "סיכום " + bankData.label.replace(/\.csv$/i, ""); body.appendChild(st0);
-      const bigm = el("div", "bankbig");
-      bigm.innerHTML =
-        '<div class="bankmetric inc"><span>סך הכנסות</span><b>' + fmt(r.income) + ' ₪</b></div>' +
-        '<div class="bankmetric exp"><span>סך הוצאות</span><b>' + fmt(r.totalOut) + ' ₪</b></div>';
-      body.appendChild(bigm);
-      const netc = el("div", "banknet " + (r.net >= 0 ? "pos" : "neg"));
-      netc.innerHTML = '<span>נטו החודש (' + r.txns.length + ' תנועות נקראו מהקובץ)</span>' +
-        '<b>' + (r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net)) + ' ₪</b>';
-      body.appendChild(netc);
-
-      // transparent transaction ledger — every row parsed from the CSV, so the
-      // numbers are verifiable and clearly NOT made up.
-      const stT = el("div", "section-t"); stT.textContent = "התנועות שנקראו מהקובץ 🧾"; body.appendChild(stT);
-      const led = el("div", "ledger");
-      r.txns.forEach((t) => {
-        const row = el("div", "ledrow");
-        row.innerHTML = '<span class="leddate">' + esc(t.date || "") + '</span>' +
-          '<span class="leddesc">' + esc(t.desc) + '</span>' +
-          '<span class="ledamt ' + (t.amount >= 0 ? "pos" : "neg") + '">' + (t.amount >= 0 ? "+" : "−") + '₪' + fmt(Math.abs(t.amount)) + '</span>';
-        led.appendChild(row);
-      });
-      body.appendChild(led);
-
-      // auto-categorization
-      const st1 = el("div", "section-t"); st1.textContent = "סיווג אוטומטי לקוביות"; body.appendChild(st1);
-      const catbox = el("div", "setcard");
-      Object.keys(r.byCube).forEach((k) => {
-        const meta = META[k] || { name: k, emoji: "🧊", color: "var(--primary)" };
-        const pct = Math.round((r.byCube[k].total / r.totalOut) * 100);
-        const row = el("div", "catrow");
-        row.innerHTML = '<span class="catname">' + meta.emoji + " " + meta.name + ' <i>(' + r.byCube[k].count + ' תנועות)</i></span>' +
-          '<div class="cattrack"><i style="width:0%;background:' + meta.color + '"></i></div>' +
-          '<span class="catamt">₪' + fmt(r.byCube[k].total) + '</span>';
-        catbox.appendChild(row);
-        requestAnimationFrame(() => { row.querySelector(".cattrack i").style.width = pct + "%"; });
-      });
-      body.appendChild(catbox);
-
-      // AI insights
-      const st2 = el("div", "section-t"); st2.textContent = "תובנות ה-AI 🧠"; body.appendChild(st2);
-      r.insights.forEach((ins) => {
-        const c = el("div", "insight " + ins.kind);
-        c.innerHTML = '<span>' + (ins.kind === "warn" ? "⚠️" : "💡") + '</span><p>' + esc(ins.text) + '</p>';
-        body.appendChild(c);
-      });
-
-      // automated re-balancing
-      if (!bankMoves) {
-        const btn = el("button", "distbtn wide"); btn.style.marginTop = "6px";
-        btn.textContent = "🤖 אשר ניהול ואיזון קוביות אוטומטי";
-        btn.onclick = () => {
-          bankMoves = rebalanceFromBank(r);
-          syncAfterChange(bankMoves.moves.map((m) => m.to));
-          saveState();
-          render();
-        };
-        body.appendChild(btn);
-      } else {
-        const done = el("div", bankMoves.fullyCovered ? "wisafe" : "wiwarn");
-        done.innerHTML = !bankMoves.moves.length
-          ? "✅ לא נדרש איזון — כל הקוביות כבר מכסות את ההוצאות בפועל."
-          : bankMoves.fullyCovered
-            ? "✅ בוצע איזון — הועבר כסף מקוביות עודפות ומהיתרה הפנויה כדי לכסות את ההוצאות בפועל."
-            : "⚠️ בוצע איזון חלקי — הועבר כל הכסף הזמין מקוביות עודפות, אך ההוצאות החודש גבוהות מסך היתרות. שקלו לצמצם הוצאות או להגדיל הכנסה.";
-        body.appendChild(done);
-        if (bankMoves.moves.length) {
-          const mv = el("div", "setcard");
-          mv.innerHTML = bankMoves.moves.map((m) => '<div class="moveline">הועברו <b>₪' + fmt(m.amount) + '</b> מ"' + esc(m.from) + '" ל"' + esc(m.to) + '"</div>').join("");
-          body.appendChild(mv);
-        }
-      }
-
-      // Explicit "forget it now" — the data also disappears on its own when the
-      // screen is left, but users deserve a visible way to end the import early.
-      const forget = el("button", "obback");
-      forget.textContent = "🧹 מחק את נתוני הייבוא מהמסך";
-      forget.onclick = () => { bankForget(); render(); showToast("🧹 נתוני הייבוא נמחקו"); };
-      body.appendChild(forget);
     }
 
     // =====================================================================
