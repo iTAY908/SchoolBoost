@@ -288,6 +288,71 @@ const counter = () => {
   return normalizeTo(d, 0.82);
 };
 
+/**
+ * מכות ההדגשה של קטע השואוקייס — קובץ אחד שמותקן פעם אחת ב-26.70s.
+ * שלוש מכות, אחת לכל ביט של הקטע, על רשת התיבות:
+ *   0.0000s (=26.700) כותרת קינטית — בהיר וחד
+ *   2.0538s (=28.754) קיר הכרטיסים — רחב יותר, עם זנב סוחף
+ *   4.1077s (=30.808) נחיתת המותג  — הגדולה מכולן, עם סאב ופעמון בסול
+ * הצלילים מכוונים לסול מינור כדי שיישבו בתוך הפסקול ולא לידו.
+ */
+const showcaseHits = (bar) => {
+  const d = buffer(6.5);
+
+  // מכה 1 — כותרת קינטית: קצרה, בהירה, מתקדמת
+  const h1 = buffer(0.9);
+  for (let i = 0; i < h1.length; i++) {
+    const t = i / SR;
+    const f = 190 * Math.exp(-t * 14) + 98; // צונח אל סול
+    const body = Math.sin(2 * Math.PI * f * t) * decay(t, 0.17);
+    const snap = (Math.random() * 2 - 1) * decay(t, 0.014) * 0.5;
+    const ring = Math.sin(2 * Math.PI * 587.33 * t) * decay(t, 0.09) * 0.22; // D5
+    h1[i] = (body * 0.85 + snap + ring) * attack(t, 0.0015);
+  }
+  lowpass(h1, 6000);
+  mix(d, h1, 0, 0.72);
+
+  // מכה 2 — קיר הכרטיסים: רחבה יותר, עם זנב רעש שנסחף פנימה
+  const h2 = buffer(1.2);
+  for (let i = 0; i < h2.length; i++) {
+    const t = i / SR;
+    const f = 165 * Math.exp(-t * 10) + 87.31; // צונח אל פה
+    const body = Math.sin(2 * Math.PI * f * t) * decay(t, 0.22);
+    const snap = (Math.random() * 2 - 1) * decay(t, 0.02) * 0.4;
+    // זנב מסונן — נותן רוחב בלי להוסיף עוצמה
+    const sweep = (Math.random() * 2 - 1) * decay(t, 0.16) * 0.16;
+    const ring = Math.sin(2 * Math.PI * 466.16 * t) * decay(t, 0.13) * 0.2; // Bb4
+    h2[i] = (body * 0.85 + snap + sweep + ring) * attack(t, 0.002);
+  }
+  lowpass(h2, 5200);
+  mix(d, h2, bar, 0.78);
+
+  // מכה 3 — נחיתת המותג: סאב עמוק + פעמון בסול, הגדולה מכולן
+  const h3 = buffer(2.0);
+  for (let i = 0; i < h3.length; i++) {
+    const t = i / SR;
+    const f = 210 * Math.exp(-t * 9) + 49; // צניחה עמוקה אל סול נמוך
+    const body = Math.sin(2 * Math.PI * f * t) * decay(t, 0.34);
+    const sub = Math.sin(2 * Math.PI * 49 * t) * decay(t, 0.5) * 0.6;
+    const snap = (Math.random() * 2 - 1) * decay(t, 0.016) * 0.45;
+    // פעמון על הטוניקה — מה שהופך את הנחיתה ל"מותגית" ולא סתם בום
+    const bell =
+      Math.sin(2 * Math.PI * 783.99 * t) * decay(t, 0.3) + // G5
+      Math.sin(2 * Math.PI * 1174.66 * t) * decay(t, 0.2) * 0.45 + // D6
+      Math.sin(2 * Math.PI * 1567.98 * t) * decay(t, 0.13) * 0.22; // G6
+    const shimmer = (Math.random() * 2 - 1) * decay(t, 0.1) * 0.1;
+    h3[i] = (body * 0.8 + sub + snap + bell * 0.34 + shimmer) * attack(t, 0.0018);
+  }
+  lowpass(h3, 9000);
+  highpass(h3, 28);
+  mix(d, h3, bar * 2, 1.0);
+
+  softClip(d, 1.05);
+  fadeTail(d, 0.1);
+  // 0.83 ולא יותר: קידוד AAC מגדיל את השיא בכ-5% על טרנזיאנטים חדים כאלה
+  return normalizeTo(d, 0.83);
+};
+
 /* ── פס המוזיקה ─────────────────────────────────────────── */
 
 /**
@@ -307,14 +372,34 @@ const CH = {
   F: { root: 87.31, notes: [174.61, 220.0, 261.63] }, // VII
 };
 
-/** 15 תיבות מכסות 30.81s — נחתך ל-29.2s בדיוק */
+/**
+ * מפת המבנה על רשת התיבות.
+ *   תיבה  3 = 6.1615s — סטינגר המעבר (יעד 6.17)
+ *   תיבה 13 = 26.700s — פתיחת השואוקייס (מדויק)
+ *   תיבה 16 = 32.8615s — הפתרון לטוניקה, סוף הפעימה
+ *
+ * 33.20 (קלף הסיום) אינו יכול להיות דאונביט יחד עם 26.70:
+ * 26.70/6.50 = 267/65, כלומר יישור מדויק של שניהם דורש תיבה של 0.1s.
+ * לכן הפתרון נוחת בתיבה 16 ו**נמשך** אל תוך הקלף, והתופים נעצרים שם —
+ * כך שבקטע הסיום אין דאונביט שיכול "לפספס" את החיתוך.
+ */
+const BAR_STING = 3;
+const BAR_SHOWCASE = 13;
+const BAR_RESOLVE = 16;
+const SHOWCASE_AT = BAR * BAR_SHOWCASE; // 26.700s
+
+/** 18 תיבות מכסות 36.97s — נחתך ל-35.7s בדיוק */
 const CHART = [
   "Gm", "Eb", "Bb", "F", // 0.00 – 8.22  (תיבה 3 = 6.1615, בר הסטינגר)
   "Gm", "Eb", "Bb", "F", // 8.22 – 16.43
   "Gm", "Eb", "Bb", "F", // 16.43 – 24.65
-  "Eb", // 24.65 – 26.70 — מתיחה לקראת הסיום
-  "Gm", "Gm", // 26.70 – 30.81 — פותר לטוניקה בדיוק על קלף הסיום ומחזיק
+  "Eb", // 24.65 – 26.70 — מתיחה לקראת השיא
+  "Gm", "Eb", "F", // 26.70 – 32.86 — השואוקייס: i · VI · VII
+  "Gm", "Gm", // 32.86 – 36.97 — פתרון לטוניקה, מוחזק מתחת לקלף הסיום
 ];
+
+/** התיבות שבהן הארנג'מנט נפתח לשיא (חלון השואוקייס) */
+const isClimax = (bar) => bar >= BAR_SHOWCASE && bar < BAR_RESOLVE;
 
 const kick = () => {
   const d = buffer(0.42);
@@ -383,86 +468,165 @@ const buildMusic = (seconds, lifts) => {
     const at = bar * BAR;
     if (at >= seconds) break;
     const { root, notes } = CH[CHART[bar]];
+    const climax = isClimax(bar);
+    const tail = bar >= BAR_RESOLVE; // אחרי הפתרון — אקורד מוחזק בלי פעימה
 
-    // בס — תו ארוך עם נגיעה מקדימה בפעימה 3.5
-    for (const [off, len, g] of [
-      [0, BAR * 0.72, 1.0],
-      [BEAT * 3.5, BEAT * 0.5, 0.6],
-    ]) {
-      const bass = buffer(len);
+    /* בס */
+    if (tail) {
+      // תו ארוך מאוד שמחזיק מתחת לקלף הסיום
+      const bass = buffer(BAR * 1.8);
       for (let i = 0; i < bass.length; i++) {
         const t = i / SR;
-        const env = attack(t, 0.014) * decay(t, len * 0.6);
+        const env = attack(t, 0.02) * decay(t, 2.4);
         bass[i] =
           (Math.sin(2 * Math.PI * root * t) * 0.82 +
             Math.sin(2 * Math.PI * root * 2 * t) * 0.2) *
           env;
       }
       lowpass(bass, 460);
-      mix(out, bass, at + off, 0.52 * g);
+      mix(out, bass, at, 0.5);
+    } else if (climax) {
+      // בשיא — שמיניות מונעות, אוקטבה מתחלפת. זה מה שדוחף את הקטע קדימה.
+      for (let e = 0; e < 8; e++) {
+        const f = root * (e % 4 === 3 ? 2 : 1);
+        const len = BEAT * 0.46;
+        const bass = buffer(len);
+        for (let i = 0; i < bass.length; i++) {
+          const t = i / SR;
+          const env = attack(t, 0.006) * decay(t, len * 0.5);
+          bass[i] =
+            (Math.sin(2 * Math.PI * f * t) * 0.82 +
+              Math.sin(2 * Math.PI * f * 2 * t) * 0.24) *
+            env;
+        }
+        lowpass(bass, 520);
+        mix(out, bass, at + e * (BEAT / 2), 0.5);
+      }
+    } else {
+      // בס — תו ארוך עם נגיעה מקדימה בפעימה 3.5
+      for (const [off, len, g] of [
+        [0, BAR * 0.72, 1.0],
+        [BEAT * 3.5, BEAT * 0.5, 0.6],
+      ]) {
+        const bass = buffer(len);
+        for (let i = 0; i < bass.length; i++) {
+          const t = i / SR;
+          const env = attack(t, 0.014) * decay(t, len * 0.6);
+          bass[i] =
+            (Math.sin(2 * Math.PI * root * t) * 0.82 +
+              Math.sin(2 * Math.PI * root * 2 * t) * 0.2) *
+            env;
+        }
+        lowpass(bass, 460);
+        mix(out, bass, at + off, 0.52 * g);
+      }
     }
 
-    // פד — אקורד מוחזק עם התקפה איטית וריחוף קל
-    const pad = buffer(BAR * 1.05);
+    // פד — אקורד מוחזק עם התקפה איטית וריחוף קל.
+    // בשיא נוספת אוקטבה עליונה שמרחיבה את האקורד.
+    const padLen = tail ? BAR * 2.4 : BAR * 1.05;
+    const pad = buffer(padLen);
     for (let i = 0; i < pad.length; i++) {
       const t = i / SR;
-      const env = attack(t, 0.26) * (1 - 0.3 * (t / BAR)) * decay(t, 2.6);
+      const env = tail
+        ? attack(t, 0.12) * decay(t, 3.4)
+        : attack(t, 0.26) * (1 - 0.3 * (t / BAR)) * decay(t, 2.6);
       let s = 0;
       for (const f of notes) {
         s += Math.sin(2 * Math.PI * f * t);
         s += Math.sin(2 * Math.PI * f * 1.004 * t) * 0.55;
         s += Math.sin(2 * Math.PI * f * 0.5 * t) * 0.22;
+        if (climax) s += Math.sin(2 * Math.PI * f * 2 * t) * 0.3;
       }
       pad[i] = (s / (notes.length * 1.8)) * env;
     }
-    lowpass(pad, 1700);
+    lowpass(pad, climax ? 2400 : 1700);
     highpass(pad, 150);
-    mix(out, pad, at, 0.3);
+    mix(out, pad, at, climax ? 0.4 : tail ? 0.36 : 0.3);
 
-    // תופים — קיק על 1 ו-3.5, מחיאה על 3
-    mix(out, kickS, at, 0.78);
-    mix(out, kickS, at + BEAT * 2.5, 0.6);
-    mix(out, clapS, at + BEAT * 2, 0.2);
-
-    // היי־האט בשש־עשרה עם הדגשות
-    for (let e = 0; e < 16; e++) {
-      const isOpen = e === 14;
-      const accent = e % 4 === 2 ? 1.0 : e % 2 === 0 ? 0.72 : 0.42;
-      mix(
-        out,
-        isOpen ? hatOpen : hatClosed,
-        at + e * (BEAT / 4),
-        (isOpen ? 0.16 : 0.1) * accent,
-      );
-    }
-
-    // פלאק־ארפג'ו קליל מעל האקורד, בתבנית מנוקדת
-    const pattern = [0, 2, 1, 3, 2, 0];
-    for (let e = 0; e < pattern.length; e++) {
-      const f = notes[pattern[e] % notes.length] * 2;
-      const arp = buffer(BEAT * 0.8);
-      for (let i = 0; i < arp.length; i++) {
-        const t = i / SR;
-        arp[i] =
-          (Math.sin(2 * Math.PI * f * t) +
-            Math.sin(2 * Math.PI * f * 2 * t) * 0.18) *
-          decay(t, 0.075) *
-          attack(t, 0.003);
+    /* תופים */
+    if (!tail) {
+      if (climax) {
+        // ארבע על הרצפה + מחיאות על 2 ו-4 — האנרגיה המלאה של השואוקייס
+        for (let e = 0; e < 4; e++) {
+          mix(out, kickS, at + e * BEAT, e === 0 ? 0.88 : 0.72);
+        }
+        mix(out, clapS, at + BEAT, 0.32);
+        mix(out, clapS, at + BEAT * 3, 0.32);
+      } else {
+        // קיק על 1 ו-3.5, מחיאה על 3
+        mix(out, kickS, at, 0.78);
+        mix(out, kickS, at + BEAT * 2.5, 0.6);
+        mix(out, clapS, at + BEAT * 2, 0.2);
       }
-      mix(out, arp, at + BEAT * 0.5 + e * BEAT * 0.5, 0.085);
+
+      // היי־האט בשש־עשרה עם הדגשות
+      for (let e = 0; e < 16; e++) {
+        const isOpen = climax ? e % 4 === 3 : e === 14;
+        const accent = e % 4 === 2 ? 1.0 : e % 2 === 0 ? 0.72 : 0.42;
+        mix(
+          out,
+          isOpen ? hatOpen : hatClosed,
+          at + e * (BEAT / 4),
+          (isOpen ? 0.16 : 0.1) * accent * (climax ? 1.45 : 1),
+        );
+      }
+
+      // פלאק־ארפג'ו קליל מעל האקורד, בתבנית מנוקדת
+      const pattern = [0, 2, 1, 3, 2, 0];
+      for (let e = 0; e < pattern.length; e++) {
+        const f = notes[pattern[e] % notes.length] * 2;
+        const arp = buffer(BEAT * 0.8);
+        for (let i = 0; i < arp.length; i++) {
+          const t = i / SR;
+          arp[i] =
+            (Math.sin(2 * Math.PI * f * t) +
+              Math.sin(2 * Math.PI * f * 2 * t) * 0.18) *
+            decay(t, 0.075) *
+            attack(t, 0.003);
+        }
+        mix(out, arp, at + BEAT * 0.5 + e * BEAT * 0.5, climax ? 0.13 : 0.085);
+      }
+
+      // ליד — רק בשיא. מוטיב קצר על תווי האקורד, אוקטבה מעל הארפג'ו.
+      if (climax) {
+        const motif = [0, 1, 2, 1];
+        for (let e = 0; e < motif.length; e++) {
+          const f = notes[motif[e] % notes.length] * 2;
+          const lead = buffer(BEAT * 1.1);
+          for (let i = 0; i < lead.length; i++) {
+            const t = i / SR;
+            // גל דמוי־מסור רך: כמה הרמוניות בדעיכה
+            let s = 0;
+            for (let h = 1; h <= 4; h++) {
+              s += Math.sin(2 * Math.PI * f * h * t) / h;
+            }
+            lead[i] = s * 0.5 * decay(t, 0.2) * attack(t, 0.012);
+          }
+          lowpass(lead, 4200);
+          mix(out, lead, at + e * BEAT, 0.1);
+        }
+      }
+    } else if (bar === BAR_RESOLVE) {
+      // מכת הפתרון — הפעימה האחרונה של הטראק
+      mix(out, kickS, at, 0.9);
     }
   }
 
   // קראשים על הרגעים המעוצבים — כולם על דאונביט
   mix(out, crashS, 0.0, 0.3); // פתיח
-  mix(out, crashS, BAR * 3, 0.34); // 6.1615 — סטינגר המעבר
-  mix(out, crashS, BAR * 12, 0.22); // 24.646 — מתיחה
-  mix(out, crashS, BAR * 13, 0.3); // 26.700 — קלף הסיום
+  mix(out, crashS, BAR * BAR_STING, 0.34); // 6.1615 — סטינגר המעבר
+  mix(out, crashS, BAR * 12, 0.22); // 24.646 — מתיחה לקראת השיא
+  mix(out, crashS, SHOWCASE_AT, 0.42); // 26.700 — פתיחת השואוקייס
+  mix(out, crashS, BAR * BAR_RESOLVE, 0.34); // 32.8615 — הפתרון
 
   /* מעטפת עוצמה — שומרת על הקול בחזית.
      הרמפות מוחלקות כדי שלא יישמעו קפיצות עוצמה. */
   const gain = new Float32Array(out.length);
-  const DUCK = 0.2;
+  /* עומק הדאק מכויל כך שאחרי הנרמול הסופי ה-RMS מתחת לדיבור יוצא ~0.025 —
+     אותה רמה כמו בגרסאות הקודמות ו-כמו music-bed.m4a הקיים, כדי
+     ש-volume 0.7 ב-Remotion יישאר נכון גם אחרי שהשיא התחזק. */
+  const DUCK = 0.232;
   for (let i = 0; i < gain.length; i++) {
     const t = i / SR;
     let g = DUCK;
@@ -501,13 +665,13 @@ const buildMusic = (seconds, lifts) => {
 
 /* ── כתיבה ──────────────────────────────────────────────── */
 
-const TOTAL = 29.2; // 876 פריימים @30fps
+const TOTAL = 35.7; // 1071 פריימים @30fps
 
 const musicOnly = process.argv.includes("--music-only");
 
 console.log(
   `סינתזה — סול מינור, ${BPM.toFixed(2)} BPM, Gm·E♭maj7·B♭·F` +
-    (musicOnly ? "  (רק פס המוזיקה)" : ""),
+    (musicOnly ? "  (רק נכסי הפסקול)" : ""),
 );
 
 if (!musicOnly) {
@@ -518,21 +682,25 @@ if (!musicOnly) {
   writeSound("story-counter", counter());
 }
 
+writeSound("story-showcase-hits", showcaseHits(BAR));
+
 /**
  * הרמות העוצמה. ה"from" מוקדם ב-~0.1s מגבול הקטע כי מעטפת העוצמה
- * מוחלקת — כך ההרמה כבר בשיאה כשהקלף נכנס בפועל.
+ * מוחלקת — כך ההרמה כבר בשיאה כשהקטע נכנס בפועל.
  *   0.00–1.50  קלף פתיחה   → הרמה
  *   1.50–6.17  קליפ A      → דאק
- *   6.17–6.90  סטינגר      → ההרמה החזקה ביותר
+ *   6.17–6.90  סטינגר      → הרמה
  *   6.90–26.70 קליפ B      → דאק
- *  26.70–29.20 קלף סיום    → הרמה
+ *  26.70–33.20 שואוקייס    → השיא — אין דיבור, המוזיקה נפתחת במלואה
+ *  33.20–35.70 קלף סיום    → הרמה, אקורד מוחזק אחרי הפתרון
  */
 writeSound(
   "story-music",
   buildMusic(TOTAL, [
     { from: 0.0, to: 1.55, gain: 1.15 }, // קלף הפתיחה המעוצב
     { from: 6.08, to: 6.95, gain: 1.3 }, // סטינגר המעבר
-    { from: 26.55, to: TOTAL, gain: 1.25 }, // קלף הסיום
+    { from: 26.6, to: 33.2, gain: 1.6 }, // השואוקייס — השיא של הטראק
+    { from: 33.2, to: TOTAL, gain: 1.28 }, // קלף הסיום
   ]),
 );
 
@@ -562,6 +730,7 @@ const rmsOf = (data, from = 0, to = null) => {
 
 const NAMES = [
   "story-music",
+  "story-showcase-hits",
   "story-whoosh",
   "story-impact",
   "story-riser",
@@ -600,11 +769,12 @@ console.log(
 
 // השוואת חלונות מוחלשים מול חלונות מורמים
 const windows = [
-  ["הרמה — פתיח   0.30–1.40s", 0.3, 1.4],
-  ["הרמה — סטינגר 6.25–6.88s", 6.25, 6.88],
-  ["הרמה — סיום  26.90–28.70s", 26.9, 28.7],
-  ["דאק — קליפ A  2.50–6.00s", 2.5, 6.0],
-  ["דאק — קליפ B  9.00–26.00s", 9.0, 26.0],
+  ["הרמה — פתיח    0.30–1.40s", 0.3, 1.4],
+  ["הרמה — סטינגר  6.25–6.88s", 6.25, 6.88],
+  ["שיא  — שואוקייס 26.80–33.10s", 26.8, 33.1],
+  ["הרמה — סיום   33.30–35.20s", 33.3, 35.2],
+  ["דאק — קליפ A   2.50–6.00s", 2.5, 6.0],
+  ["דאק — קליפ B   9.00–26.00s", 9.0, 26.0],
 ];
 console.log("\nמעטפת העוצמה — RMS לפי חלון:");
 const vals = {};
@@ -613,13 +783,27 @@ for (const [label, a, b] of windows) {
   vals[label] = r;
   console.log(`  ${label}  RMS ${r.toFixed(4)}`);
 }
-const liftRms = Math.min(vals[windows[0][0]], vals[windows[1][0]], vals[windows[2][0]]);
-const duckRms = Math.max(vals[windows[3][0]], vals[windows[4][0]]);
+const liftRms = Math.min(
+  vals[windows[0][0]],
+  vals[windows[1][0]],
+  vals[windows[2][0]],
+  vals[windows[3][0]],
+);
+const duckRms = Math.max(vals[windows[4][0]], vals[windows[5][0]]);
 const ratioDb = 20 * Math.log10(liftRms / duckRms);
 const duckOk = ratioDb >= 8;
 if (!duckOk) ok = false;
 console.log(
   `\n  הרמה החלשה ביותר / דאק החזק ביותר = ${(liftRms / duckRms).toFixed(2)}× (${ratioDb.toFixed(1)} dB) → ${duckOk ? "הפרש ברור" : "לא מספיק"}`,
+);
+
+// השואוקייס אמור להיות הקטע החזק בטראק — זה השיא, לא עוד הרמה
+const showcaseRms = vals[windows[2][0]];
+const otherLifts = [vals[windows[0][0]], vals[windows[1][0]], vals[windows[3][0]]];
+const climaxOk = showcaseRms > Math.max(...otherLifts);
+if (!climaxOk) ok = false;
+console.log(
+  `  השואוקייס מול ההרמות האחרות = ${(showcaseRms / Math.max(...otherLifts)).toFixed(2)}× → ${climaxOk ? "הוא אכן השיא" : "לא בולט מספיק"}`,
 );
 
 console.log(`\nסיכום: ${ok ? "כל הבדיקות עברו" : "נמצאו בעיות"}`);

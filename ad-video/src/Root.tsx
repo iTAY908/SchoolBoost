@@ -18,6 +18,14 @@ import {
   CAPTIONS_PREVIEW_DURATION,
   CaptionsPreview,
 } from "./story/CaptionsPreview";
+import {
+  SHOWCASE_DURATION,
+  ShowcasePreview,
+} from "./story/ShowcasePreview";
+import {
+  GRAPHICS_PREVIEW_DURATION,
+  GraphicsPreview,
+} from "./story/GraphicsPreview";
 import { StoryVideo } from "./story/StoryVideo";
 import {
   FPS as STORY_FPS,
@@ -102,6 +110,28 @@ export const RemotionRoot: React.FC = () => {
         fps={PITCH_FPS}
         width={PITCH_WIDTH}
         height={PITCH_HEIGHT}
+      />
+
+      {/* רצף הראווה שמתחבר בסוף StoryVideo */}
+      <Composition
+        id="ShowcasePreview"
+        component={ShowcasePreview}
+        durationInFrames={SHOWCASE_DURATION}
+        fps={STORY_FPS}
+        width={STORY_WIDTH}
+        height={STORY_HEIGHT}
+      />
+
+      {/* תצוגת בדיקה לשכבות הגרפיקה — כרטיסי שירות ומבזקים
+          מעל הצילום האמיתי, באותו ציר זמן של StoryVideo */}
+      <Composition
+        id="GraphicsPreview"
+        component={GraphicsPreview}
+        durationInFrames={GRAPHICS_PREVIEW_DURATION}
+        fps={STORY_FPS}
+        width={STORY_WIDTH}
+        height={STORY_HEIGHT}
+        defaultProps={{ guides: false }}
       />
 
       {/* תצוגת בדיקה לכתוביות הסטורי */}
