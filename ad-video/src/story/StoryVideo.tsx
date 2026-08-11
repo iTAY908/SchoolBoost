@@ -56,6 +56,32 @@ const STING_LEN = sec(STING.to) - sec(STING.at) + STING_FADE;
 const OUTRO_FROM = sec(OUTRO.at);
 const OUTRO_LEN = sec(OUTRO.to) - sec(OUTRO.at);
 
+/** כמה פריימים כרטיס הסיום מקדים ומתמזג לתוך נעילת המותג של הראווה */
+const OUTRO_BLEND = 12;
+
+/**
+ * מזיג לכרטיס הסיום. הראווה מסיימת על לוגו + שם + שם משתמש,
+ * וכרטיס הסיום מציג את אותו לוגו בגודל אחר — ולכן חיתוך ביניהם
+ * קרא כשכפול. המזיגה הופכת את זה להתייצבות אחת רציפה.
+ */
+const OutroBlend: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: interpolate(frame, [0, OUTRO_BLEND], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+          easing: Easing.bezier(0.4, 0, 0.2, 1),
+        }),
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
+
 /**
  * ── רצף הראווה ──────────────────────────────────────────
  * `Showcase` הוא רצף סגור באורך 195 פריימים (6.5 שניות) שמביא איתו
@@ -388,15 +414,21 @@ export const StoryVideo: React.FC = () => {
         <SeamFlash />
       </Sequence>
 
+      {/*
+        קלף הסיום נכנס מוקדם ומתמזג לתוך נעילת המותג של הראווה.
+        בלי החפיפה הזו הלוקאפ יוצא, נשאר פריים ריק, והלוגו נבנה שוב
+        מאפס — המותג נוחת פעמיים עם פעימה מתה באמצע. בחפיפה הלוגו
+        פשוט מתייצב מגודל אחד לשני והסיום נקרא כרצף אחד.
+      */}
       <Sequence
         name="קלף סיום"
-        from={OUTRO_FROM}
-        durationInFrames={OUTRO_LEN}
+        from={OUTRO_FROM - OUTRO_BLEND}
+        durationInFrames={OUTRO_LEN + OUTRO_BLEND}
         layout="absolute-fill"
       >
-        <CardLayer>
+        <OutroBlend>
           <StoryOutroCard />
-        </CardLayer>
+        </OutroBlend>
       </Sequence>
 
       {/* גריין עדין מעל הכל — מאחד צילום גולמי וגרפיקה לאותו חומר */}

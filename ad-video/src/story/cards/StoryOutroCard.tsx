@@ -51,11 +51,16 @@ export const StoryOutroCard: React.FC = () => {
               "radial-gradient(circle, rgba(9,3,26,0.74) 0%, rgba(9,3,26,0.4) 42%, rgba(9,3,26,0) 70%)",
           }}
         />
+        {/*
+          בלי אנימציית כניסה. הקלף מתמזג לתוך נעילת המותג של הראווה,
+          שכבר מציגה את אותו לוגו — פופ נוסף כאן היה קורא כשכפול
+          במקום כהתייצבות.
+        */}
         <LogoBadge
           src={staticFile("source/logo.png")}
           size={280}
           ringWidth={6}
-          startFrame={0}
+          animate={false}
         />
       </Interactive.Div>
 
