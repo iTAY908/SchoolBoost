@@ -93,7 +93,7 @@ export const Captions: React.FC<{
             width: "100%",
             fontFamily,
             fontWeight: 900,
-            fontSize: 76,
+            fontSize: 84,
             lineHeight: 1.24,
             textAlign: "center",
           }}

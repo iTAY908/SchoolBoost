@@ -92,6 +92,16 @@ export const RemotionRoot: React.FC = () => {
         height={PITCH_HEIGHT}
       />
 
+      {/* תצוגת בדיקה לכתוביות הסטורי */}
+      <Composition
+        id="CaptionsPreview"
+        component={CaptionsPreview}
+        durationInFrames={CAPTIONS_PREVIEW_DURATION}
+        fps={STORY_FPS}
+        width={STORY_WIDTH}
+        height={STORY_HEIGHT}
+      />
+
       {/* כל שקופית רשומה בנפרד — נוח לערוך ולייצא אותה לבד */}
       <Folder name="Scenes">
         <Composition

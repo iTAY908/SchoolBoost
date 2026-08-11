@@ -90,8 +90,11 @@ export const AgeBar: React.FC<AgeBarProps> = ({
   /** כמה פריימים עברו מאז שהפס הגיע לסוף — לפופ של אבן הדרך */
   const sinceEnd = local - durationInFrames;
 
-  /** כניסת הרכיב עצמו — נכנס רגע לפני שהגדילה מתחילה */
-  const intro = local + 6;
+  /**
+   * כניסת הרכיב עצמו — מתחילה 6 פריימים לפני הגדילה, אבל אף פעם
+   * לא לפני הפריים הראשון, כדי שגם `startFrame={0}` ייכנס מאפס.
+   */
+  const intro = frame - Math.max(0, startFrame - 6);
 
   const ticks = Array.from({ length: toAge - fromAge + 1 }, (_, i) => i);
 

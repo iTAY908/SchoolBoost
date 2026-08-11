@@ -31,8 +31,8 @@ export const CaptionsPreview: React.FC = () => {
           position: "absolute",
           left: 0,
           right: 0,
-          top: 1180,
-          height: 300,
+          top: 1240,
+          height: 360,
           background:
             "linear-gradient(90deg, #F8FAFC 0%, #94A3B8 45%, #1E293B 100%)",
           opacity: 0.85,
