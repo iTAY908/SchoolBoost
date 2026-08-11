@@ -19,8 +19,10 @@ export const P = {
  * החליפו בשם ובשם המשתמש שלכם.
  */
 export const CREATOR = {
-  name: "ITAY",
-  handle: "@itay",
+  /** שם המותג — נלקח מהלוגו שסופק (public/source/logo.png) */
+  name: "ITAY EDITS",
+  /** שם המשתמש באינסטגרם — אומת מול הלקוח */
+  handle: "@itay_leiss",
   cta: "רוצה סרטון כזה?",
   action: "שלח לי הודעה עכשיו",
 };

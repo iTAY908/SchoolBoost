@@ -18,9 +18,11 @@ import {
   CAPTIONS_PREVIEW_DURATION,
   CaptionsPreview,
 } from "./story/CaptionsPreview";
+import { StoryVideo } from "./story/StoryVideo";
 import {
   FPS as STORY_FPS,
   HEIGHT as STORY_HEIGHT,
+  TOTAL_DURATION as STORY_DURATION,
   WIDTH as STORY_WIDTH,
 } from "./story/timeline";
 import {
@@ -80,6 +82,16 @@ export const RemotionRoot: React.FC = () => {
         fps={PITCH_FPS}
         width={PITCH_WIDTH}
         height={PITCH_HEIGHT}
+      />
+
+      {/* סרטון הסטורי — שני הצילומים הגולמיים בעריכה אחת */}
+      <Composition
+        id="StoryVideo"
+        component={StoryVideo}
+        durationInFrames={STORY_DURATION}
+        fps={STORY_FPS}
+        width={STORY_WIDTH}
+        height={STORY_HEIGHT}
       />
 
       {/* תצוגת בדיקה לאפקטים החדשים — AgeBar ו-LogoBadge */}
