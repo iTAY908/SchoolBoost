@@ -67,23 +67,28 @@ const AGE_FROM = AGE_GROWTH_START - AGE_BAR_START;
 
 type Sfx = { src: string; at: number; volume: number };
 
+/**
+ * העוצמות מכוילות מדידה על ה-PCM של הרינדור.
+ * `story-impact` נופל בדיוק על הקראש והדאונביט של פס המוזיקה,
+ * ולכן הוא מוחזק נמוך (0.38) — ב-0.6 השיא המצטבר הגיע ל-1.04 וגזר.
+ */
 const SFX: readonly Sfx[] = [
   /* פתיחה — הקלף נכנס יחד עם הבס הראשון של המוזיקה */
-  { src: "story-impact", at: INTRO.at, volume: 0.45 },
+  { src: "story-impact", at: INTRO.at, volume: 0.32 },
   /* וווש שנכנס אל החיתוך לצילום הראשון (1.50) */
-  { src: "story-whoosh", at: 1.22, volume: 0.5 },
+  { src: "story-whoosh", at: 1.22, volume: 0.44 },
   /* רַייזר באורך 1.259s — נבנה בדיוק אל תוך הסטינגר ב-6.17 */
-  { src: "story-riser", at: 4.95, volume: 0.45 },
+  { src: "story-riser", at: 4.95, volume: 0.4 },
   /* המכה של כניסת הסטינגר */
-  { src: "story-impact", at: STING.at, volume: 0.6 },
+  { src: "story-impact", at: STING.at, volume: 0.38 },
   /* וווש שיוצא מהסטינגר אל הצילום השני (6.90) */
-  { src: "story-whoosh", at: 6.62, volume: 0.5 },
+  { src: "story-whoosh", at: 6.62, volume: 0.44 },
   /* המונה — ההכרעה שלו ב-1.300s נופלת בדיוק על 9.30 */
-  { src: "story-counter", at: AGE_MOMENT - AGE_CLIMB_SECONDS, volume: 0.6 },
+  { src: "story-counter", at: AGE_MOMENT - AGE_CLIMB_SECONDS, volume: 0.55 },
   /* וווש אל תוך כרטיס הסיום (26.70) */
-  { src: "story-whoosh", at: 26.42, volume: 0.5 },
+  { src: "story-whoosh", at: 26.42, volume: 0.44 },
   /* המכה של כניסת כרטיס הסיום */
-  { src: "story-impact", at: OUTRO.at, volume: 0.6 },
+  { src: "story-impact", at: OUTRO.at, volume: 0.38 },
 ];
 
 /**

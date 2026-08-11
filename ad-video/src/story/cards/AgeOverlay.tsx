@@ -81,11 +81,20 @@ export const AgeOverlay: React.FC = () => {
           ),
         }}
       >
-        <AgeBar
-          startFrame={AGE_BAR_START}
-          durationInFrames={AGE_BAR_CLIMB}
-          trackWidth={820}
-        />
+        {/*
+          כיווץ אחיד של 0.9. ה-AgeBar מקבע את המספר אל קצה הקנבס
+          (ראו ה-clamp שלו), ולכן ב-100% ה"15" נעצר ~30px מהקצה הימני.
+          הכיווץ מושך אותו פנימה ל-~90px בלי לגעת ברכיב עצמו.
+          הוא יושב על עטיפה נפרדת כדי שאנימציית הכניסה של ה-AgeBar
+          תמשיך לפעול (שני ה-scale מוכפלים, לא דורסים זה את זה).
+        */}
+        <div style={{ display: "flex", scale: 0.9 }}>
+          <AgeBar
+            startFrame={AGE_BAR_START}
+            durationInFrames={AGE_BAR_CLIMB}
+            trackWidth={820}
+          />
+        </div>
       </AbsoluteFill>
     </AbsoluteFill>
   );
