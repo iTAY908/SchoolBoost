@@ -11,6 +11,19 @@ import { SceneResults } from "./scenes/SceneResults";
 import { PitchUpgrade } from "./pitch/PitchUpgrade";
 import { ReelVideo } from "./reel/ReelVideo";
 import {
+  EffectsPreview,
+  PREVIEW_DURATION,
+} from "./story/EffectsPreview";
+import {
+  CAPTIONS_PREVIEW_DURATION,
+  CaptionsPreview,
+} from "./story/CaptionsPreview";
+import {
+  FPS as STORY_FPS,
+  HEIGHT as STORY_HEIGHT,
+  WIDTH as STORY_WIDTH,
+} from "./story/timeline";
+import {
   TOTAL_DURATION as REEL_DURATION,
   FPS as REEL_FPS,
   HEIGHT as REEL_HEIGHT,
@@ -64,6 +77,16 @@ export const RemotionRoot: React.FC = () => {
         id="PitchUpgrade"
         component={PitchUpgrade}
         durationInFrames={PITCH_DURATION}
+        fps={PITCH_FPS}
+        width={PITCH_WIDTH}
+        height={PITCH_HEIGHT}
+      />
+
+      {/* תצוגת בדיקה לאפקטים החדשים — AgeBar ו-LogoBadge */}
+      <Composition
+        id="EffectsPreview"
+        component={EffectsPreview}
+        durationInFrames={PREVIEW_DURATION}
         fps={PITCH_FPS}
         width={PITCH_WIDTH}
         height={PITCH_HEIGHT}

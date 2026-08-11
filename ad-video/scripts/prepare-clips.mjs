@@ -14,10 +14,15 @@ const PUBLIC = path.join(process.cwd(), "public");
 const SRC = path.join(PUBLIC, "source");
 const OUT = path.join(PUBLIC, "audio");
 
-/** חייב להתאים ל-PART1 / PART2 ב-src/reel/timeline.ts */
+/**
+ * חייב להתאים ל-PART1 / PART2 ב-src/reel/timeline.ts
+ * ול-CLIP_A / CLIP_B ב-src/story/timeline.ts
+ */
 const CLIPS = [
   { name: "part1-voice", file: "part1.mp4", from: 0.0, to: 6.3 },
   { name: "part2-voice", file: "part2.mp4", from: 1.0, to: 10.35 },
+  { name: "story-a-voice", file: "story-a.mp4", from: 0.0, to: 4.67 },
+  { name: "story-b-voice", file: "story-b.mp4", from: 0.0, to: 19.8 },
 ];
 
 for (const clip of CLIPS) {
