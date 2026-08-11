@@ -37,11 +37,13 @@ export const ShowcaseHeadline: React.FC = () => {
           height: 940,
           borderRadius: "50%",
           border: `5px solid ${P.gold}`,
-          opacity: interpolate(frame, [0, 5, 32], [0.2, 0.5, 0], {
+          /* הפריים הראשון כבר נושא תמונה — הרצף עשוי להיחתך פנימה
+             בחיתוך חד, ואסור שיתחיל בריק. */
+          opacity: interpolate(frame, [0, 4, 30], [0.38, 0.5, 0], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
-          scale: interpolate(frame, [0, 32], [0.25, 1.2], {
+          scale: interpolate(frame, [0, 32], [0.32, 1.2], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.out(Easing.cubic),
@@ -90,11 +92,11 @@ export const ShowcaseHeadline: React.FC = () => {
             alignItems: "center",
             justifyContent: "center",
             boxShadow: `0 0 46px ${P.gold}55`,
-            opacity: interpolate(frame, [0, 8], [0, 0.95], {
+            opacity: interpolate(frame, [0, 6], [0.5, 0.95], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             }),
-            scale: interpolate(frame, [0, 18], [0.45, 1], {
+            scale: interpolate(frame, [0, 16], [0.6, 1], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.16, 1.4, 0.3, 1),
@@ -120,7 +122,7 @@ export const ShowcaseHeadline: React.FC = () => {
             { text: "וידאו" },
             { text: "מקצועית", accent: true },
           ]}
-          startAt={5}
+          startAt={4}
           stagger={6}
           fontSize={138}
           maxWidth={880}

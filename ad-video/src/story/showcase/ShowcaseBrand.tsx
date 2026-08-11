@@ -30,14 +30,17 @@ export const ShowcaseBrand: React.FC = () => {
         padding: 90,
       }}
     >
-      {/* טבעות ניאון שמסתובבות מאחורי הסמל */}
+      {/*
+        טבעות שממסגרות את כל הנעילה מבחוץ — לא עוברות דרך הטקסט.
+        שתיים מהן קשתות (רק שני צדדים צבועים) כדי שהסיבוב אכן ייראה:
+        עיגול מלא שמסתובב נראה סטטי לחלוטין.
+      */}
       <Interactive.Div
         name="Rings"
         style={{
           position: "absolute",
-          top: 560,
-          width: 860,
-          height: 860,
+          width: 1060,
+          height: 1060,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -45,32 +48,83 @@ export const ShowcaseBrand: React.FC = () => {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
-          rotate: interpolate(frame, [0, BRAND_DURATION], ["-22deg", "16deg"], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-            easing: Easing.out(Easing.cubic),
-          }),
         }}
       >
-        {[860, 660, 470].map((size, i) => (
-          <div
-            key={size}
-            style={{
-              position: "absolute",
-              width: size,
-              height: size,
-              borderRadius: "50%",
-              border: `${4 - i}px solid rgba(251,191,36,${0.62 - i * 0.15})`,
-              boxShadow: `0 0 ${54 - i * 12}px rgba(251,191,36,0.35)`,
-              scale: interpolate(frame, [0, 20 + i * 6], [0.62, 1], {
+        {/* טבעת מלאה דקה — עוגן שקט */}
+        <div
+          style={{
+            position: "absolute",
+            width: 1040,
+            height: 1040,
+            borderRadius: "50%",
+            border: "2px solid rgba(251,191,36,0.20)",
+            scale: interpolate(frame, [0, 26], [0.86, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.bezier(0.16, 1.2, 0.3, 1),
+              output: "perceptual-scale",
+            }),
+          }}
+        />
+
+        {/* קשת חיצונית — מסתובבת עם כיוון השעון */}
+        <div
+          style={{
+            position: "absolute",
+            width: 900,
+            height: 900,
+            borderRadius: "50%",
+            border: "4px solid transparent",
+            borderTopColor: "rgba(251,191,36,0.85)",
+            borderRightColor: "rgba(251,191,36,0.32)",
+            boxShadow: "0 0 46px rgba(251,191,36,0.22)",
+            rotate: interpolate(
+              frame,
+              [0, BRAND_DURATION],
+              ["-46deg", "18deg"],
+              {
                 extrapolateLeft: "clamp",
                 extrapolateRight: "clamp",
-                easing: Easing.bezier(0.16, 1.3, 0.3, 1),
-                output: "perceptual-scale",
-              }),
-            }}
-          />
-        ))}
+                easing: Easing.out(Easing.cubic),
+              },
+            ),
+            scale: interpolate(frame, [0, 24], [0.7, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.bezier(0.16, 1.3, 0.3, 1),
+              output: "perceptual-scale",
+            }),
+          }}
+        />
+
+        {/* קשת פנימית — מסתובבת נגד כיוון השעון */}
+        <div
+          style={{
+            position: "absolute",
+            width: 780,
+            height: 780,
+            borderRadius: "50%",
+            border: "3px solid transparent",
+            borderBottomColor: "rgba(251,191,36,0.55)",
+            borderLeftColor: "rgba(245,158,11,0.22)",
+            rotate: interpolate(
+              frame,
+              [0, BRAND_DURATION],
+              ["38deg", "-16deg"],
+              {
+                extrapolateLeft: "clamp",
+                extrapolateRight: "clamp",
+                easing: Easing.out(Easing.cubic),
+              },
+            ),
+            scale: interpolate(frame, [0, 30], [0.72, 1], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+              easing: Easing.bezier(0.16, 1.3, 0.3, 1),
+              output: "perceptual-scale",
+            }),
+          }}
+        />
       </Interactive.Div>
 
       <Interactive.Div
@@ -100,8 +154,8 @@ export const ShowcaseBrand: React.FC = () => {
           <div
             style={{
               position: "absolute",
-              width: 640,
-              height: 640,
+              width: 700,
+              height: 700,
               borderRadius: "50%",
               background:
                 "radial-gradient(circle, rgba(9,3,26,0.78) 0%, rgba(9,3,26,0.42) 44%, rgba(9,3,26,0) 70%)",
@@ -109,8 +163,8 @@ export const ShowcaseBrand: React.FC = () => {
           />
           <LogoBadge
             src={staticFile("source/logo.png")}
-            size={300}
-            ringWidth={6}
+            size={360}
+            ringWidth={7}
             startFrame={2}
           />
         </div>

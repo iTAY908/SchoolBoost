@@ -106,14 +106,16 @@ export const Emphasis: React.FC<EmphasisProps> = ({
       {variant === "burst"
         ? Array.from({ length: rays }, (_, i) => {
             const a = (360 / rays) * i + 8;
-            /* אורכים ומרחקים לסירוגין — בלי זה זה נראה כמו שמש */
+            /* קווים ארוכים ודקים — "קווי מהירות", לא נקודות מפוזרות.
+               הסירוגין קטן בכוונה: מספיק כדי שזה לא ייראה שמש,
+               לא מספיק כדי שזה ייראה קונפטי. */
             const odd = i % 2 === 1;
             const dist =
-              interpolate(p, [0, 1], [size * 0.2, size * 0.5]) *
-              (odd ? 0.78 : 1);
+              interpolate(p, [0, 1], [size * 0.14, size * 0.46]) *
+              (odd ? 0.88 : 1);
             const len =
-              interpolate(p, [0, 1], [size * 0.22, size * 0.04]) *
-              (odd ? 0.6 : 1);
+              interpolate(p, [0, 1], [size * 0.3, size * 0.1]) *
+              (odd ? 0.82 : 1);
 
             return (
               <div
@@ -131,9 +133,9 @@ export const Emphasis: React.FC<EmphasisProps> = ({
                   style={{
                     position: "absolute",
                     left: dist,
-                    top: -2.5,
+                    top: -2,
                     width: len,
-                    height: 5,
+                    height: 4,
                     borderRadius: 999,
                     background: `linear-gradient(90deg, ${color}00 0%, ${color} 100%)`,
                     boxShadow: `0 0 14px ${color}AA`,
