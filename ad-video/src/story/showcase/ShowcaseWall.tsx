@@ -151,6 +151,9 @@ export const ShowcaseWall: React.FC = () => {
           ]}
           startAt={52}
           stagger={5}
+          /* עוזבת רגע לפני שהמותג נכנס בדהייה — כך הסמל נוחת על
+             קיר נקי ולא על טקסט */
+          exitAt={84}
           fontSize={108}
           maxWidth={880}
         />

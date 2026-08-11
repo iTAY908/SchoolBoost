@@ -17,6 +17,10 @@ import { P } from "../../pitch/theme";
  * ואחרי `durationInFrames` הוא נשאר שקוף.
  *
  * המבזק **לא** חוסם כלום: `pointerEvents: none` והוא תמיד קצר.
+ *
+ * טווח ההשפעה בפועל הוא כ-`size * 0.6` מהמרכז לכל כיוון (הקווים
+ * עפים מעט מעבר לקוטר הנומינלי) — קחו את זה בחשבון כשמרחיקים אותו
+ * מתיבת הכתוביות (y 1250–1590) ומפניו של הדובר.
  */
 
 export type EmphasisVariant = "burst" | "ring" | "sweep";
@@ -189,16 +193,18 @@ const Sweep: React.FC<{
       borderRadius: 40,
     }}
   >
+    {/* `screen` — הפס נקרא כאור שעובר, לא כצבע שנמרח על התמונה */}
     <div
       style={{
         position: "absolute",
         top: -size * 0.6,
-        left: interpolate(p, [0, 1], [-size * 0.7, size * 1.1]),
-        width: size * 0.3,
+        left: interpolate(p, [0, 1], [-size * 0.5, size * 1.1]),
+        width: size * 0.13,
         height: size * 2.2,
         rotate: `${angle}deg`,
-        background: `linear-gradient(90deg, ${color}00 0%, ${color}CC 50%, ${color}00 100%)`,
-        filter: "blur(10px)",
+        mixBlendMode: "screen",
+        background: `linear-gradient(90deg, ${color}00 0%, ${color}AA 45%, ${color}00 100%)`,
+        filter: "blur(22px)",
       }}
     />
   </div>

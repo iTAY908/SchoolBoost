@@ -8,15 +8,16 @@
  *   1.50–6.17   story-a.mp4
  *   6.17–6.90   סטינגר מעבר
  *   6.90–26.70  story-b.mp4
- *   26.70–29.20 כרטיס סיום
+ *   26.70–33.20 רצף ראווה — מדגים בדיוק את מה שהדובר בדיוק סיים למנות
+ *   33.20–35.70 כרטיס סיום
  */
 
 export const FPS = 30;
 export const WIDTH = 1080;
 export const HEIGHT = 1920;
 
-export const TOTAL_SECONDS = 29.2;
-export const TOTAL_DURATION = 876;
+export const TOTAL_SECONDS = 35.7;
+export const TOTAL_DURATION = 1071;
 
 /** ממיר שניות בציר הפלט לפריימים */
 export const sec = (s: number) => Math.round(s * FPS);
@@ -25,7 +26,9 @@ export const CLIP_A = { at: 1.5, from: 0.0, to: 4.67 }; // story-a.mp4 → outpu
 export const CLIP_B = { at: 6.9, from: 0.0, to: 19.8 }; // story-b.mp4 → output 6.90–26.70
 export const STING = { at: 6.17, to: 6.9 };
 export const INTRO = { at: 0.0, to: 1.5 };
-export const OUTRO = { at: 26.7, to: 29.2 };
+/** רצף הראווה — 195 פריימים בדיוק, ראו `SHOWCASE_DURATION` */
+export const SHOWCASE = { at: 26.7, to: 33.2 };
+export const OUTRO = { at: 33.2, to: 35.7 };
 
 /** הרגע שבו נאמר "15" — אותר בתמלול. סרגל הגילים חייב לנחות כאן. */
 export const AGE_MOMENT = 9.3;

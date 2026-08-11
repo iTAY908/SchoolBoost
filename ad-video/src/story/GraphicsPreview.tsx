@@ -8,8 +8,8 @@ import {
   CAPTION_BAND_TOP,
   SAFE_TOP_BAND_BOTTOM,
   ServiceCard,
-  type ServiceCardProps,
 } from "./components/ServiceCards";
+import { SERVICE_WINDOWS } from "./StoryVideo";
 import { CLIP_B, sec } from "./timeline";
 
 /**
@@ -23,39 +23,10 @@ import { CLIP_B, sec } from "./timeline";
 
 /**
  * ── חלונות הכרטיסים ─────────────────────────────────────
- * הזמנים נלקחו מילה במילה מ-`CUES` ב-`./timeline`:
- *   18.26–21.35  "שיערוך בשבילכם סרטון בר מצווה מושקע"
- *   21.60–24.35  "סרטון לרשתות חברתיות"
- * הכיתוב על הכרטיס הוא תת־קבוצה של מילות הדובר, ותו לא.
+ * מקור אמת יחיד: החלונות מוגדרים ב-`StoryVideo` ומיובאים לכאן,
+ * כדי שהתצוגה הזו תראה בדיוק את מה שיוצא בסרטון.
  */
-export const SERVICE_WINDOWS: readonly {
-  start: number;
-  end: number;
-  card: ServiceCardProps;
-}[] = [
-  {
-    start: 18.26,
-    end: 21.35,
-    card: {
-      label: "בר מצווה",
-      mark: "star",
-      x: 70,
-      y: 250,
-      anchor: "left",
-    },
-  },
-  {
-    start: 21.6,
-    end: 24.35,
-    card: {
-      label: "רשתות חברתיות",
-      mark: "network",
-      x: 70,
-      y: 250,
-      anchor: "left",
-    },
-  },
-];
+export { SERVICE_WINDOWS };
 
 export const GRAPHICS_PREVIEW_DURATION = sec(26.7);
 
@@ -111,8 +82,9 @@ export const GraphicsPreview: React.FC<{ guides?: boolean }> = ({
       <Sequence name="Emphasis — burst" from={sec(12.0)} durationInFrames={24}>
         {/* על הקיר הבהיר — המקרה הקשה ביותר לזהב */}
         <Emphasis x={820} y={330} size={340} variant="burst" />
-        {/* ועל האזור הכהה ליד הכתף — המקרה הקל */}
-        <Emphasis x={250} y={1080} size={300} variant="burst" color={P.glow} />
+        {/* ועל האזור הכהה ליד הכתף — המקרה הקל.
+            y=1040 עם size=300 מגיע עד ~1220, מעל ראש הכתוביות (1250) */}
+        <Emphasis x={250} y={1040} size={300} variant="burst" color={P.glow} />
       </Sequence>
       <Sequence name="Emphasis — ring" from={sec(13.5)} durationInFrames={24}>
         <Emphasis x={820} y={330} size={360} variant="ring" color={P.glow} />
