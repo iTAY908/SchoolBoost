@@ -1,0 +1,485 @@
+import { Audio } from "@remotion/media";
+import {
+  AbsoluteFill,
+  Easing,
+  interpolate,
+  Sequence,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { FlashCard } from "../pitch/cards/FlashCard";
+import { PitchBackdrop } from "../pitch/components/PitchBackdrop";
+import { P } from "../pitch/theme";
+import { AgeOverlay, AGE_BAR_START, AGE_OVERLAY_DURATION } from "./cards/AgeOverlay";
+import { StoryIntroCard } from "./cards/StoryIntroCard";
+import { StoryOutroCard } from "./cards/StoryOutroCard";
+import { Captions } from "./components/Captions";
+import { Clip } from "./components/Clip";
+import { ServiceCard, type ServiceCardProps } from "./components/ServiceCards";
+import { Showcase, SHOWCASE_DURATION } from "./showcase/Showcase";
+import {
+  AGE_MOMENT,
+  CLIP_A,
+  CLIP_B,
+  CUES,
+  INTRO,
+  OUTRO,
+  sec,
+  SHOWCASE,
+  STING,
+} from "./timeline";
+
+/* ── חלונות בפריימים ────────────────────────────────────── */
+
+const CLIP_A_FROM = sec(CLIP_A.at);
+const CLIP_A_LEN = sec(CLIP_A.to - CLIP_A.from);
+
+const CLIP_B_FROM = sec(CLIP_B.at);
+const CLIP_B_LEN = sec(CLIP_B.to - CLIP_B.from);
+
+/**
+ * הקלפים אטומים, ולכן הם נחתכים **פנימה** בחדות (אין מה לערבב איתו —
+ * מתחת לפריים הראשון של הקלף אין עדיין צילום) ומתמוססים **החוצה**
+ * אל תוך הצילום שכבר רץ מתחתיהם. שני הצילומים כאן גולמיים לגמרי,
+ * בלי כתוביות או גרפיקה צרובות, ולכן דיסולב מותר וגם רצוי.
+ */
+const INTRO_FADE = 10;
+const STING_FADE = 8;
+
+const INTRO_FROM = sec(INTRO.at);
+const INTRO_LEN = sec(INTRO.to) - sec(INTRO.at) + INTRO_FADE;
+
+const STING_FROM = sec(STING.at);
+const STING_LEN = sec(STING.to) - sec(STING.at) + STING_FADE;
+
+const OUTRO_FROM = sec(OUTRO.at);
+const OUTRO_LEN = sec(OUTRO.to) - sec(OUTRO.at);
+
+/** כמה פריימים כרטיס הסיום מקדים ומתמזג לתוך נעילת המותג של הראווה */
+const OUTRO_BLEND = 12;
+
+/**
+ * מזיג לכרטיס הסיום. הראווה מסיימת על לוגו + שם + שם משתמש,
+ * וכרטיס הסיום מציג את אותו לוגו בגודל אחר — ולכן חיתוך ביניהם
+ * קרא כשכפול. המזיגה הופכת את זה להתייצבות אחת רציפה.
+ */
+const OutroBlend: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: interpolate(frame, [0, OUTRO_BLEND], [0, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+          easing: Easing.bezier(0.4, 0, 0.2, 1),
+        }),
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * ── רצף הראווה ──────────────────────────────────────────
+ * `Showcase` הוא רצף סגור באורך 195 פריימים (6.5 שניות) שמביא איתו
+ * גם את הרקע שלו, ולכן הוא פשוט מורכב כשכבה אטומה מעל הכל.
+ * 801 + 195 = 996 = 33.20 — בדיוק הפריים שבו נכנס כרטיס הסיום.
+ */
+const SHOWCASE_FROM = sec(SHOWCASE.at);
+
+/**
+ * ── התפר אל הראווה ──────────────────────────────────────
+ * הלקוח ביקש שהראווה תרגיש *מחוברת*, לא מודבקת. הדובר מסיים למנות
+ * מה הוא עורך, והתמונה נדחפת קדימה ומיטשטשת בעשרה הפריימים האחרונים
+ * שלו — תנועה שיש לה יעד. ההבזק הסגול־זהב מגיע לשיא **בדיוק** על
+ * פריים 801, אותו פריים שבו נוחתת המכה הראשונה של
+ * `story-showcase-hits` ונפתח הראווה, ואז דועך שמונה פריימים
+ * *לתוך* הראווה. כך החיתוך מתגלה מתוך האור: סיבה ותוצאה, לא קאט יבש.
+ */
+const WHIP_FRAMES = 10;
+const SEAM_IN = 9;
+const SEAM_OUT = 8;
+
+/**
+ * ── כרטיסי השירות ───────────────────────────────────────
+ * החלונות נלקחו מילה במילה מ-`CUES`: הכרטיס עולה כשהמילה נאמרת.
+ *   18.26–21.35  "שיערוך בשבילכם סרטון בר מצווה מושקע"
+ *   21.60–24.35  "סרטון לרשתות חברתיות"
+ * שניהם יושבים ברצועה העליונה (y 250, גובה ~130) — הרבה מעל הראש
+ * של הדובר ו-870 פיקסלים מעל ראש תיבת הכתוביות (y 1250).
+ */
+export const SERVICE_WINDOWS: readonly {
+  start: number;
+  end: number;
+  card: ServiceCardProps;
+}[] = [
+  {
+    start: 18.26,
+    end: 21.35,
+    card: { label: "בר מצווה", mark: "star", x: 70, y: 250, anchor: "left" },
+  },
+  {
+    start: 21.6,
+    end: 24.35,
+    card: {
+      label: "רשתות חברתיות",
+      mark: "network",
+      x: 70,
+      y: 250,
+      anchor: "left",
+    },
+  },
+];
+
+/**
+ * ── סרגל הגילים ─────────────────────────────────────────
+ * הגדילה חייבת להסתיים בדיוק ב-AGE_MOMENT (9.3s = פריים 279),
+ * ו-`story-counter.m4a` מכריע במכה שנמצאת 1.300s בתוך הקובץ.
+ * לכן גם הגדילה וגם הצליל מתחילים באותו רגע: 9.3 − 1.3 = 8.0s.
+ */
+const AGE_CLIMB_SECONDS = 1.3;
+const AGE_GROWTH_START = sec(AGE_MOMENT - AGE_CLIMB_SECONDS); // 240 = 8.00s
+/** ה-Sequence מקדים את הגדילה ב-AGE_BAR_START, כי `startFrame` יחסי אליו */
+const AGE_FROM = AGE_GROWTH_START - AGE_BAR_START;
+
+/* ── אפקטי קול ──────────────────────────────────────────── */
+
+type Sfx = { src: string; at: number; volume: number };
+
+/**
+ * העוצמות מכוילות מדידה על ה-PCM של הרינדור.
+ * `story-impact` נופל בדיוק על הקראש והדאונביט של פס המוזיקה,
+ * ולכן הוא מוחזק נמוך (0.38) — ב-0.6 השיא המצטבר הגיע ל-1.04 וגזר.
+ */
+const SFX: readonly Sfx[] = [
+  /* פתיחה — הקלף נכנס יחד עם הבס הראשון של המוזיקה */
+  { src: "story-impact", at: INTRO.at, volume: 0.32 },
+  /* וווש שנכנס אל החיתוך לצילום הראשון (1.50) */
+  { src: "story-whoosh", at: 1.22, volume: 0.44 },
+  /* רַייזר באורך 1.259s — נבנה בדיוק אל תוך הסטינגר ב-6.17 */
+  { src: "story-riser", at: 4.95, volume: 0.4 },
+  /* המכה של כניסת הסטינגר */
+  { src: "story-impact", at: STING.at, volume: 0.38 },
+  /* וווש שיוצא מהסטינגר אל הצילום השני (6.90) */
+  { src: "story-whoosh", at: 6.62, volume: 0.44 },
+  /* המונה — ההכרעה שלו ב-1.300s נופלת בדיוק על 9.30 */
+  { src: "story-counter", at: AGE_MOMENT - AGE_CLIMB_SECONDS, volume: 0.55 },
+  /* וווש שמושך מסוף הדיבור אל תוך הראווה (26.70) */
+  { src: "story-whoosh", at: 26.42, volume: 0.44 },
+  /**
+   * שלוש המכות של הראווה — נופלות על שלוש הפעימות שלו.
+   * 0.6 היא התקרה המעשית: הרצועה מגיעה ל-0.85 והמוזיקה מגיעה
+   * ל-0.82 באותו חלון בדיוק, ולכן 0.8 היה מצטבר ל-0.998 וגוזר.
+   */
+  { src: "story-showcase-hits", at: SHOWCASE.at, volume: 0.6 },
+  /* וווש אל תוך כרטיס הסיום (33.20) — אותו דקדוק כמו בשאר החיתוכים */
+  { src: "story-whoosh", at: OUTRO.at - 0.28, volume: 0.44 },
+  /* המכה של כניסת כרטיס הסיום */
+  { src: "story-impact", at: OUTRO.at, volume: 0.38 },
+];
+
+/**
+ * עוטף קלף אטום ומתמוסס ממנו החוצה בסוף החלון.
+ * חייב לשבת **בתוך** ה-Sequence — כך `useCurrentFrame` מקומי.
+ */
+const CardLayer: React.FC<{
+  children: React.ReactNode;
+  /** כמה פריימים אחרונים מוקדשים ליציאה. 0 = חיתוך חד */
+  fadeOut?: number;
+}> = ({ children, fadeOut = 0 }) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  return (
+    <AbsoluteFill
+      style={{
+        opacity:
+          fadeOut > 0
+            ? interpolate(
+                frame,
+                [durationInFrames - fadeOut, durationInFrames - 1],
+                [1, 0],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              )
+            : 1,
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * דחיפה קדימה בסוף החלון — הצילום מאיץ ומיטשטש אל תוך החיתוך.
+ * ה-scale מכסה על שולי הבלר, ולכן אין מסגרת שקופה בקצוות.
+ */
+const WhipOut: React.FC<{ children: React.ReactNode; frames: number }> = ({
+  children,
+  frames,
+}) => {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+
+  const p = interpolate(
+    frame,
+    [durationInFrames - frames, durationInFrames - 1],
+    [0, 1],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.in(Easing.quad),
+    },
+  );
+
+  return (
+    <AbsoluteFill
+      style={{
+        scale: 1 + 0.08 * p,
+        filter: `blur(${(9 * p).toFixed(2)}px) saturate(${1 + 0.3 * p})`,
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+/**
+ * ההבזק שמחזיק את התפר. השיא נופל על הפריים האחרון של הכניסה,
+ * ולכן ה-Sequence מתחיל SEAM_IN פריימים *לפני* 26.70 והשיא יושב
+ * בדיוק על 26.70. הפינות נשארות סגולות כהות — זה הבזק, לא פריים לבן.
+ */
+const SeamFlash: React.FC = () => {
+  const frame = useCurrentFrame();
+
+  const clamp = {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  } as const;
+
+  const rise = interpolate(frame, [0, SEAM_IN], [0, 1], {
+    ...clamp,
+    easing: Easing.in(Easing.quad),
+  });
+  const fall = interpolate(frame, [SEAM_IN, SEAM_IN + SEAM_OUT], [1, 0], {
+    ...clamp,
+    easing: Easing.out(Easing.quad),
+  });
+
+  const strength = Math.min(rise, fall);
+
+  return (
+    <AbsoluteFill
+      style={{
+        opacity: strength * 0.85,
+        scale: interpolate(strength, [0, 1], [0.88, 1.16], {
+          output: "perceptual-scale",
+        }),
+        background: `radial-gradient(circle at 50% 44%, rgba(255,255,255,0.95) 0%, ${P.glow}DD 26%, ${P.bright}99 52%, rgba(14,5,36,0) 78%)`,
+      }}
+    />
+  );
+};
+
+/**
+ * ── סרטון הסטורי ────────────────────────────────────────
+ *
+ *   0.00–1.50   כרטיס פתיחה
+ *   1.50–6.17   story-a.mp4 + story-a-voice
+ *   6.17–6.90   סטינגר ממותג שמכסה את התפר בין הקליפים
+ *   6.90–26.70  story-b.mp4 + story-b-voice  (סרגל הגילים ב-8.00–9.30,
+ *               כרטיסי שירות ב-18.26–21.35 וב-21.60–24.35)
+ *  26.70–33.20  רצף ראווה — הדובר בדיוק מנה מה הוא עורך, וכאן זה נראה
+ *  33.20–35.70  כרטיס סיום — הנעה לפעולה לאינסטגרם
+ *
+ * סדר השכבות מלמטה למעלה: רקע → צילום → סרגל הגילים → כתוביות →
+ * כרטיסי שירות → קלפים אטומים והראווה → הבזק התפר → גריין.
+ * הכתוביות חייבות לשבת מתחת לקלפים (הן ממילא מושתקות בחלונות שלהם
+ * דרך BLOCKED), והקלפים חייבים לכסות הכל.
+ */
+export const StoryVideo: React.FC = () => {
+  return (
+    <AbsoluteFill name="StoryVideo" style={{ backgroundColor: P.ink }}>
+      {/* בסיס — נראה רק אם משהו מעליו שקוף */}
+      <PitchBackdrop intensity={0.75} />
+
+      <Sequence
+        name="צילום א׳"
+        from={CLIP_A_FROM}
+        durationInFrames={CLIP_A_LEN}
+        layout="absolute-fill"
+      >
+        <Clip
+          src="source/story-a.mp4"
+          trimBefore={CLIP_A.from}
+          durationInFrames={CLIP_A_LEN}
+          zoom={[1.02, 1.09]}
+        />
+      </Sequence>
+
+      <Sequence
+        name="צילום ב׳"
+        from={CLIP_B_FROM}
+        durationInFrames={CLIP_B_LEN}
+        layout="absolute-fill"
+      >
+        {/* הדחיפה האחרונה — הצילום מאיץ אל תוך התפר ב-26.70 */}
+        <WhipOut frames={WHIP_FRAMES}>
+          <Clip
+            src="source/story-b.mp4"
+            trimBefore={CLIP_B.from}
+            durationInFrames={CLIP_B_LEN}
+            zoom={[1.09, 1.02]}
+          />
+        </WhipOut>
+      </Sequence>
+
+      {/* סרגל הגילים — שכבה מעל הצילום, לא במקומו */}
+      <Sequence
+        name="סרגל הגילים"
+        from={AGE_FROM}
+        durationInFrames={AGE_OVERLAY_DURATION}
+        layout="absolute-fill"
+      >
+        <AgeOverlay />
+      </Sequence>
+
+      {/* כתובית אחת לכל ציר הזמן — הרכיב מטפל בעצמו בפערים ובחסימות */}
+      <Captions />
+
+      {/* כרטיסי השירות — ברצועה העליונה, מעל הכתוביות בסדר השכבות
+          אבל רחוק מהן על המסך (y 250 מול y 1250) */}
+      {SERVICE_WINDOWS.map((win) => {
+        const from = sec(win.start);
+        const duration = sec(win.end) - from;
+
+        return (
+          <Sequence
+            key={win.card.label}
+            name={`כרטיס — ${win.card.label}`}
+            from={from}
+            durationInFrames={duration}
+            layout="absolute-fill"
+          >
+            <ServiceCard
+              {...win.card}
+              startFrame={0}
+              durationInFrames={duration}
+            />
+          </Sequence>
+        );
+      })}
+
+      <Sequence
+        name="קלף פתיחה"
+        from={INTRO_FROM}
+        durationInFrames={INTRO_LEN}
+        layout="absolute-fill"
+      >
+        <CardLayer fadeOut={INTRO_FADE}>
+          <StoryIntroCard />
+        </CardLayer>
+      </Sequence>
+
+      <Sequence
+        name="סטינגר"
+        from={STING_FROM}
+        durationInFrames={STING_LEN}
+        layout="absolute-fill"
+      >
+        <CardLayer fadeOut={STING_FADE}>
+          <FlashCard />
+        </CardLayer>
+      </Sequence>
+
+      {/* רצף הראווה — אטום, מביא איתו את הרקע שלו */}
+      <Sequence
+        name="ראווה"
+        from={SHOWCASE_FROM}
+        durationInFrames={SHOWCASE_DURATION}
+        layout="absolute-fill"
+      >
+        <Showcase />
+      </Sequence>
+
+      {/* ההבזק שמחבר את השניים — השיא יושב על SHOWCASE_FROM עצמו */}
+      <Sequence
+        name="הבזק התפר"
+        from={SHOWCASE_FROM - SEAM_IN}
+        durationInFrames={SEAM_IN + SEAM_OUT + 1}
+        layout="absolute-fill"
+      >
+        <SeamFlash />
+      </Sequence>
+
+      {/*
+        קלף הסיום נכנס מוקדם ומתמזג לתוך נעילת המותג של הראווה.
+        בלי החפיפה הזו הלוקאפ יוצא, נשאר פריים ריק, והלוגו נבנה שוב
+        מאפס — המותג נוחת פעמיים עם פעימה מתה באמצע. בחפיפה הלוגו
+        פשוט מתייצב מגודל אחד לשני והסיום נקרא כרצף אחד.
+      */}
+      <Sequence
+        name="קלף סיום"
+        from={OUTRO_FROM - OUTRO_BLEND}
+        durationInFrames={OUTRO_LEN + OUTRO_BLEND}
+        layout="absolute-fill"
+      >
+        <OutroBlend>
+          <StoryOutroCard />
+        </OutroBlend>
+      </Sequence>
+
+      {/* גריין עדין מעל הכל — מאחד צילום גולמי וגרפיקה לאותו חומר */}
+      <AbsoluteFill
+        name="Grain"
+        style={{
+          opacity: 0.09,
+          mixBlendMode: "overlay",
+          backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(
+            `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='180' height='180' filter='url(%23n)'/></svg>`,
+          )}")`,
+        }}
+      />
+
+      {/* ── פס הקול ───────────────────────────────────────
+          כל הנכסים הם m4a בכוונה: הרינדור של Remotion מנגן m4a
+          אבל **מפיל wav בשקט**, בלי שום שגיאה. */}
+
+      {/* הדיבור — שתי הרצועות כבר מנורמלות לאותה עוצמה */}
+      <Audio
+        src={staticFile("audio/story-a-voice.m4a")}
+        from={CLIP_A_FROM}
+        volume={1}
+      />
+      <Audio
+        src={staticFile("audio/story-b-voice.m4a")}
+        from={CLIP_B_FROM}
+        volume={1}
+      />
+
+      {/* המוזיקה — ההנמכה מתחת לדיבור כבר צרובה בקובץ עצמו */}
+      <Audio src={staticFile("audio/story-music.m4a")} volume={0.7} />
+
+      {SFX.map((effect, i) => (
+        <Audio
+          key={`${effect.src}-${i}`}
+          src={staticFile(`audio/${effect.src}.m4a`)}
+          from={sec(effect.at)}
+          volume={effect.volume}
+        />
+      ))}
+
+      {/* נקישה רכה בכל החלפת כתובית — story-tick כבר שקט מאוד בקובץ */}
+      {CUES.map((cue, i) => (
+        <Audio
+          key={`tick-${i}`}
+          src={staticFile("audio/story-tick.m4a")}
+          from={sec(cue.start)}
+          volume={1}
+        />
+      ))}
+    </AbsoluteFill>
+  );
+};
