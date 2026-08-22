@@ -1,0 +1,564 @@
+{
+  "generatedFor": "5,000 ₪: המשחק הפיננסי שלך",
+  "artDirection": {
+    "energy": "high",
+    "humanPresence": 0.3,
+    "captionVoice": "punchy",
+    "contrast": "boosted"
+  },
+  "styleSuffix": "flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation",
+  "pageCount": 50,
+  "pages": [
+    {
+      "page": 1,
+      "chapter": "הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב",
+      "sections": [],
+      "archetype": "cover",
+      "caption": "שורה תחתונה: הכסף נכנס. עכשיו מתחיל המשחק האמיתי.",
+      "alt": "הכסף נכנס. עכשיו מתחיל המשחק האמיתי. — איור 1 מתוך 50",
+      "prompt": "A hero opening spread: five oversized golden shekel coins arranged in a rising arc over a dark HUD panel, a violet glow disc behind them, corner brackets framing the scene, a coral \"START\" chip at the bottom. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 2,
+      "chapter": "הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב",
+      "sections": [],
+      "archetype": "chat",
+      "caption": "תזכרו את זה: ארבעה קולות צועקים על הכסף שלכם. אחד מהם לוחש.",
+      "alt": "ארבעה קולות צועקים על הכסף שלכם. אחד מהם לוחש. — איור 2 מתוך 50",
+      "prompt": "A group-chat panel with four stacked bubbles representing the brain, the friends, the internet and the future arguing over one wallet, the last bubble in violet and quieter, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 3,
+      "chapter": "הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב",
+      "sections": [],
+      "archetype": "scene",
+      "caption": "זהו הטריק: המשפט שנאמר — והתשובה שאתם בוחרים.",
+      "alt": "המשפט שנאמר — והתשובה שאתם בוחרים. — איור 3 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 4,
+      "chapter": "הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב",
+      "sections": [],
+      "archetype": "scene",
+      "caption": "קצר וברור: המשפט שנאמר — והתשובה שאתם בוחרים.",
+      "alt": "המשפט שנאמר — והתשובה שאתם בוחרים. — איור 4 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"הקדמה — ברוכים הבאים למשחק שבו הכסף הוא המשאב\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 5,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "הדילמה הגדולה"
+      ],
+      "archetype": "inventory",
+      "caption": "בלי דרמות: תיק הציוד של גיל 16: שמונה רצונות, ארנק אחד.",
+      "alt": "תיק הציוד של גיל 16: שמונה רצונות, ארנק אחד. — איור 5 מתוך 50",
+      "prompt": "A game inventory grid of eight glowing item slots, each holding a simple icon of a teenage want — a plane ticket, a phone, a driving licence, a scooter, a laptop, a graduation cap, a coin stack, a heart — with one slot pulsing. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 6,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "הדילמה הגדולה",
+        "למה בכלל לחלק?"
+      ],
+      "archetype": "hudPie",
+      "caption": "שורה תחתונה: מודל 40/30/20/10 — נקודת פתיחה, לא חוק טבע.",
+      "alt": "מודל 40/30/20/10 — נקודת פתיחה, לא חוק טבע. — איור 6 מתוך 50",
+      "prompt": "A clean HUD donut chart split 40/30/20/10 in lime, coral, violet and gold, the total 5,000 set in the middle, a legend column beside it, corner brackets, dark navy grid background. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 7,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "ארבעת הארנקים"
+      ],
+      "archetype": "wallets",
+      "caption": "תזכרו את זה: ארבעה ארנקים. לכל שקל יש שם ותפקיד.",
+      "alt": "ארבעה ארנקים. לכל שקל יש שם ותפקיד. — איור 7 מתוך 50",
+      "prompt": "Four upright wallet cards standing side by side like game loadout slots, each in a different accent colour with its amount printed large, thin outline, dark HUD backdrop with corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 8,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "ארבעת הארנקים"
+      ],
+      "archetype": "scene",
+      "caption": "זהו הטריק: ארבעת הארנקים",
+      "alt": "ארבעת הארנקים — איור 8 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"ארבעת הארנקים\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 9,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "Case Study — דניאל והחופשה",
+        "Case Study — דניאל והחופשה"
+      ],
+      "archetype": "scene",
+      "caption": "קצר וברור: דניאל תכנן 2,000 ₪ — לפני שהוסיף את כל השאר.",
+      "alt": "דניאל תכנן 2,000 ₪ — לפני שהוסיף את כל השאר. — איור 9 מתוך 50",
+      "prompt": "Comic panel: a teenager with a suitcase, confident speech bubble reading a budget number, while small ghosted receipts drift in from the edge of the frame; flat vector, violet hoodie, gold suitcase. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 10,
+      "chapter": "פרק 1 — תעשי לי סדר: מה עושים עם 5,000 שקלים?",
+      "sections": [
+        "טיפ הזהב שחוסך 100 ₪",
+        "משימת היומן"
+      ],
+      "archetype": "ledger",
+      "caption": "אם אתם לא יודעים מה בפנים — אתם לא יודעים כמה זה עולה.",
+      "alt": "אם אתם לא יודעים מה בפנים — אתם לא יודעים כמה זה עולה. — איור 10 מתוך 50",
+      "prompt": "A HUD budget breakdown table with four empty amount fields, a violet header row, blank lines waiting to be filled, framed by corner brackets on a dark grid. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 11,
+      "chapter": "פרק 2 — השכפ\"ץ הפיננסי: למה חייבים קופת חירום?",
+      "sections": [
+        "מהי קופת חירום?"
+      ],
+      "archetype": "shield",
+      "caption": "שורה תחתונה: השריון של הארנק: קיים בשביל המכה שלא תכננתם.",
+      "alt": "השריון של הארנק: קיים בשביל המכה שלא תכננתם. — איור 11 מתוך 50",
+      "prompt": "A chunky game shield icon rendered in teal outline on dark navy, an armour value printed across it, a health bar beneath, corner brackets, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 12,
+      "chapter": "פרק 2 — השכפ\"ץ הפיננסי: למה חייבים קופת חירום?",
+      "sections": [
+        "מהי קופת חירום?",
+        "כלל הברזל"
+      ],
+      "archetype": "rules",
+      "caption": "תזכרו את זה: ארבע שאלות שעומדות בין הכסף לבין הכפתור.",
+      "alt": "ארבע שאלות שעומדות בין הכסף לבין הכפתור. — איור 12 מתוך 50",
+      "prompt": "A vertical stack of four numbered rule chips with violet number badges on a dark HUD panel, lime title, corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 13,
+      "chapter": "פרק 2 — השכפ\"ץ הפיננסי: למה חייבים קופת חירום?",
+      "sections": [
+        "Case Study — מאיה והטלפון",
+        "צ'ק-ליסט סוף הפרק"
+      ],
+      "archetype": "scene",
+      "caption": "זהו הטריק: מאיה שילמה 350 ₪ — ואז מילאה את הקופה בחזרה.",
+      "alt": "מאיה שילמה 350 ₪ — ואז מילאה את הקופה בחזרה. — איור 13 מתוך 50",
+      "prompt": "Comic panel: a calm teenager beside a cracked phone, a repair price tag, and a small refill arrow looping back into a coral piggy icon; flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 14,
+      "chapter": "פרק 3 — חופשה בלי להישאר עם שקל בארנק",
+      "sections": [
+        "ארבעת הבוסים של החופשה"
+      ],
+      "archetype": "boss",
+      "caption": "קצר וברור: החופשה היא ארבעה בוסים. האחרון תמיד הכי מסוכן.",
+      "alt": "החופשה היא ארבעה בוסים. האחרון תמיד הכי מסוכן. — איור 14 מתוך 50",
+      "prompt": "Four stacked boss health bars labelled travel, stay, food and extras, the last one nearly full in coral, a bold title above, dark HUD panel with corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 15,
+      "chapter": "פרק 3 — חופשה בלי להישאר עם שקל בארנק",
+      "sections": [
+        "ארבעת הבוסים של החופשה"
+      ],
+      "archetype": "scene",
+      "caption": "בלי דרמות: ארבעת הבוסים של החופשה",
+      "alt": "ארבעת הבוסים של החופשה — איור 15 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"ארבעת הבוסים של החופשה\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 16,
+      "chapter": "פרק 3 — חופשה בלי להישאר עם שקל בארנק",
+      "sections": [
+        "שיטת שלושת המספרים",
+        "טיפ"
+      ],
+      "archetype": "boss",
+      "caption": "שורה תחתונה: אידיאלי, מקסימלי, קו אדום — ובקו האדום עוצרים.",
+      "alt": "אידיאלי, מקסימלי, קו אדום — ובקו האדום עוצרים. — איור 16 מתוך 50",
+      "prompt": "Three horizontal gauges stacked, the third one glowing coral and marked as a red line, a stop marker at its end, dark HUD, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 17,
+      "chapter": "פרק 3 — חופשה בלי להישאר עם שקל בארנק",
+      "sections": [
+        "Case Study — רועי והאקסטרות"
+      ],
+      "archetype": "receipt",
+      "caption": "תזכרו את זה: נשארו 100 ₪, האטרקציה עלתה 180. רועי אמר לא.",
+      "alt": "נשארו 100 ₪, האטרקציה עלתה 180. רועי אמר לא. — איור 17 מתוך 50",
+      "prompt": "A torn paper receipt on a dark panel listing a planned budget, the remaining balance and an over-budget line in coral, stamped with a tilted decision badge. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 18,
+      "chapter": "פרק 4 — רוצה מול צריך: המוח שלנו עובד עלינו",
+      "sections": [
+        "למה כל כך קל לקנות?"
+      ],
+      "archetype": "scene",
+      "caption": "זהו הטריק: תכירו את אויב העל: האימפולס.",
+      "alt": "תכירו את אויב העל: האימפולס. — איור 18 מתוך 50",
+      "prompt": "Comic panel: a hooded impulse character shoving a glowing shopping cart towards a startled teenager, coral energy streaks, flat vector villain staging. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 19,
+      "chapter": "פרק 4 — רוצה מול צריך: המוח שלנו עובד עלינו",
+      "sections": [
+        "חוק 48 השעות"
+      ],
+      "archetype": "timer",
+      "caption": "קצר וברור: חוק 48 השעות: הרצון האמיתי שורד, השאר מתאדה.",
+      "alt": "חוק 48 השעות: הרצון האמיתי שורד, השאר מתאדה. — איור 19 מתוך 50",
+      "prompt": "A large circular countdown dial reading 48 hours, gold ring progress, dashed orbit, a small locked buy-button icon beside it, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 20,
+      "chapter": "פרק 4 — רוצה מול צריך: המוח שלנו עובד עלינו",
+      "sections": [
+        "רוצה או צריך?"
+      ],
+      "archetype": "versus",
+      "caption": "\"רוצה\" זה לגיטימי. הבעיה היא כשהוא מתחפש ל\"צריך\".",
+      "alt": "\"רוצה\" זה לגיטימי. הבעיה היא כשהוא מתחפש ל\"צריך\". — איור 20 מתוך 50",
+      "prompt": "A two-column comparison board, teal needs on one side, coral wants on the other, a VS badge dividing them, flat vector HUD styling. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 21,
+      "chapter": "פרק 4 — רוצה מול צריך: המוח שלנו עובד עלינו",
+      "sections": [
+        "Case Study — יובל והנעליים",
+        "טיפ הזהב שחוסך 100 ₪"
+      ],
+      "archetype": "receipt",
+      "caption": "שורה תחתונה: לשלם 450 זה לא לחסוך 193.",
+      "alt": "לשלם 450 זה לא לחסוך 193. — איור 21 מתוך 50",
+      "prompt": "A receipt showing a discount price, a struck-through \"saved\" line, and the real amount spent highlighted in coral, a tilted stamp with the final decision, dark panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 22,
+      "chapter": "פרק 5 — כסף עובד בשבילך: אפקט כדור השלג",
+      "sections": [
+        "ריבית דריבית"
+      ],
+      "archetype": "snowball",
+      "caption": "תזכרו את זה: כדור קטן מתחיל להתגלגל — וגדל עם הזמן.",
+      "alt": "כדור קטן מתחיל להתגלגל — וגדל עם הזמן. — איור 22 מתוך 50",
+      "prompt": "A rising teal curve across a dark HUD chart, snowballs growing at each node, values labelled above, an area fill under the line, corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 23,
+      "chapter": "פרק 5 — כסף עובד בשבילך: אפקט כדור השלג",
+      "sections": [
+        "דוגמה פשוטה"
+      ],
+      "archetype": "ledger",
+      "caption": "זהו הטריק: המספרים הם דוגמה מתמטית — לא הבטחה.",
+      "alt": "המספרים הם דוגמה מתמטית — לא הבטחה. — איור 23 מתוך 50",
+      "prompt": "A four-row data table on a dark HUD panel with a violet header, monospace-feel numbers, a small disclaimer chip in the corner. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 24,
+      "chapter": "פרק 5 — כסף עובד בשבילך: אפקט כדור השלג",
+      "sections": [
+        "למה הגיל חשוב?",
+        "למה הגיל חשוב?"
+      ],
+      "archetype": "timer",
+      "caption": "קצר וברור: יש לכם משאב שמבוגרים לא יכולים לקנות: זמן.",
+      "alt": "יש לכם משאב שמבוגרים לא יכולים לקנות: זמן. — איור 24 מתוך 50",
+      "prompt": "An hourglass reimagined as a HUD dial with years instead of minutes, gold ring, a small coin falling through the neck, dark navy background. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 25,
+      "chapter": "פרק 5 — כסף עובד בשבילך: אפקט כדור השלג",
+      "sections": [
+        "Case Study — תומר והכסף שהוא שכח"
+      ],
+      "archetype": "scene",
+      "caption": "בלי דרמות: תומר לא חיפש מניה. הוא חיפש הבנה.",
+      "alt": "תומר לא חיפש מניה. הוא חיפש הבנה. — איור 25 מתוך 50",
+      "prompt": "Comic panel: a teenager at a laptop reading a rising chart, a parent silhouette beside them, calm teal palette, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 26,
+      "chapter": "פרק 6 — להגדיל את העוגה: איך מייצרים עוד הכנסה?",
+      "sections": [
+        "מה יש לכם שאפשר להפוך לערך?"
+      ],
+      "archetype": "skills",
+      "caption": "הכישרון שלכם הוא Character Skill — עכשיו מחברים אותו לערך.",
+      "alt": "הכישרון שלכם הוא Character Skill — עכשיו מחברים אותו לערך. — איור 26 מתוך 50",
+      "prompt": "A skill-tree graph: a central violet node labelled SKILL with four branches leading to labelled ability cards, glowing connector lines, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 27,
+      "chapter": "פרק 6 — להגדיל את העוגה: איך מייצרים עוד הכנסה?",
+      "sections": [
+        "מה יש לכם שאפשר להפוך לערך?",
+        "מה יש לכם שאפשר להפוך לערך?",
+        "נוסחת שירות פשוטה"
+      ],
+      "archetype": "rules",
+      "caption": "תזכרו את זה: שלושה חלקים שהופכים כישרון לשירות.",
+      "alt": "שלושה חלקים שהופכים כישרון לשירות. — איור 27 מתוך 50",
+      "prompt": "Three chips connected by plus signs leading to an equals chip, a formula laid out horizontally on a dark HUD, lime accent on the result. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 28,
+      "chapter": "פרק 6 — להגדיל את העוגה: איך מייצרים עוד הכנסה?",
+      "sections": [
+        "אל תשכחו חוקי עבודה",
+        "Case Study — נועה והעריכה"
+      ],
+      "archetype": "scene",
+      "caption": "נועה לא קנתה ציוד. היא השתמשה טוב יותר במה שהיה.",
+      "alt": "נועה לא קנתה ציוד. היא השתמשה טוב יותר במה שהיה. — איור 28 מתוך 50",
+      "prompt": "Comic panel: a teenager editing video on an old laptop, a first-client notification popping in, lime accents, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 29,
+      "chapter": "פרק 6 — להגדיל את העוגה: איך מייצרים עוד הכנסה?",
+      "sections": [
+        "משימת היומן"
+      ],
+      "archetype": "ledger",
+      "caption": "קצר וברור: חמש שורות שהופכות \"אני טוב ב...\" לתוכנית.",
+      "alt": "חמש שורות שהופכות \"אני טוב ב...\" לתוכנית. — איור 29 מתוך 50",
+      "prompt": "A blank three-column worksheet table on a dark HUD panel, violet header row, empty fields with underscores, corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 30,
+      "chapter": "פרק 7 — כרטיס אשראי, אפליקציות ומזומן: איפה המלכודות?",
+      "sections": [],
+      "archetype": "tap",
+      "caption": "בלי דרמות: כשמשלמים בלחיצה, המוח כמעט לא מרגיש.",
+      "alt": "כשמשלמים בלחיצה, המוח כמעט לא מרגיש. — איור 30 מתוך 50",
+      "prompt": "A violet contactless card mid-tap with lime signal arcs radiating from it, a gold chip detail, dark HUD panel, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 31,
+      "chapter": "פרק 7 — כרטיס אשראי, אפליקציות ומזומן: איפה המלכודות?",
+      "sections": [
+        "10 שניות ביום",
+        "שלושת המספרים שצריך לדעת"
+      ],
+      "archetype": "phone",
+      "caption": "שורה תחתונה: הרגל של עשר שניות — רק להסתכל על המספר.",
+      "alt": "הרגל של עשר שניות — רק להסתכל על המספר. — איור 31 מתוך 50",
+      "prompt": "A phone screen showing a short daily spend list with a bold total, a ten-second timer chip at the bottom, dark HUD frame. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 32,
+      "chapter": "פרק 7 — כרטיס אשראי, אפליקציות ומזומן: איפה המלכודות?",
+      "sections": [
+        "\"אבל יש לי כסף בחשבון!\""
+      ],
+      "archetype": "wallets",
+      "caption": "תזכרו את זה: 2,000 ₪ בחשבון. 300 ₪ באמת פנויים.",
+      "alt": "2,000 ₪ בחשבון. 300 ₪ באמת פנויים. — איור 32 מתוך 50",
+      "prompt": "Four allocation cards where three are dimmed and locked and the fourth glows lime as the only truly free money, dark HUD, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 33,
+      "chapter": "פרק 7 — כרטיס אשראי, אפליקציות ומזומן: איפה המלכודות?",
+      "sections": [
+        "Case Study — אדם והאשליה"
+      ],
+      "archetype": "stack",
+      "caption": "זהו הטריק: 30 + 45 + 70 + 25. \"לא קניתי שום דבר גדול.\"",
+      "alt": "30 + 45 + 70 + 25. \"לא קניתי שום דבר גדול.\" — איור 33 מתוך 50",
+      "prompt": "Four small violet bars beside one tall coral bar equal to their sum, values labelled, a baseline rule, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 34,
+      "chapter": "פרק 8 — איך אומרים \"לא\" ללחץ חברתי?",
+      "sections": [],
+      "archetype": "chat",
+      "caption": "קצר וברור: הקושי האמיתי הוא לא התקציב. הוא הקבוצה.",
+      "alt": "הקושי האמיתי הוא לא התקציב. הוא הקבוצה. — איור 34 מתוך 50",
+      "prompt": "A group-chat mockup with three message bubbles, one violet outgoing bubble and two grey incoming, social pressure staging, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 35,
+      "chapter": "פרק 8 — איך אומרים \"לא\" ללחץ חברתי?",
+      "sections": [
+        "משפטים שעובדים",
+        "כלל החבר הטוב"
+      ],
+      "archetype": "chat",
+      "caption": "בלי דרמות: ארבעה משפטים. בלי הרצאה של 40 דקות.",
+      "alt": "ארבעה משפטים. בלי הרצאה של 40 דקות. — איור 35 מתוך 50",
+      "prompt": "Three confident outgoing chat bubbles in violet stacked on a dark panel, short assertive lines, no incoming bubbles, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 36,
+      "chapter": "פרק 8 — איך אומרים \"לא\" ללחץ חברתי?",
+      "sections": [
+        "Case Study — איתן והמסעדה"
+      ],
+      "archetype": "scene",
+      "caption": "שורה תחתונה: איתן הצטרף — בתנאים שלו.",
+      "alt": "איתן הצטרף — בתנאים שלו. — איור 36 מתוך 50",
+      "prompt": "Comic panel: a teenager at a restaurant table with friends, holding a modest order, a calm speech bubble, warm violet lighting, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 37,
+      "chapter": "פרק 9 — טעויות של מתחילים",
+      "sections": [
+        "טעות 1: הלוואות לחברים"
+      ],
+      "archetype": "rules",
+      "caption": "תזכרו את זה: ארבע טעויות שאפשר ללמוד בזול — מכאן.",
+      "alt": "ארבע טעויות שאפשר ללמוד בזול — מכאן. — איור 37 מתוך 50",
+      "prompt": "Four numbered warning chips stacked on a dark HUD panel with a coral title, small hazard marks, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 38,
+      "chapter": "פרק 9 — טעויות של מתחילים",
+      "sections": [
+        "טעות 2: טרנדים",
+        "טעות 3: קופסאות הפתעה",
+        "טעות 4: לקנות כדי להרגיש עשירים"
+      ],
+      "archetype": "scene",
+      "caption": "זהו הטריק: המשפט שנאמר — והתשובה שאתם בוחרים.",
+      "alt": "המשפט שנאמר — והתשובה שאתם בוחרים. — איור 38 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"טעות 2: טרנדים\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 39,
+      "chapter": "פרק 9 — טעויות של מתחילים",
+      "sections": [
+        "Case Study — עומר והטרנד"
+      ],
+      "archetype": "stack",
+      "caption": "600 ₪ על ויראלי. שבועיים אחר כך — כמעט לא בשימוש.",
+      "alt": "600 ₪ על ויראלי. שבועיים אחר כך — כמעט לא בשימוש. — איור 39 מתוך 50",
+      "prompt": "Four violet purchase bars summing into one coral total bar, a dust layer over the items, dark HUD panel, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 40,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "שלב 1 — הגדירו מטרה"
+      ],
+      "archetype": "target",
+      "caption": "בלי דרמות: מטרה טובה: ספציפית + מדידה + עם תאריך.",
+      "alt": "מטרה טובה: ספציפית + מדידה + עם תאריך. — איור 40 מתוך 50",
+      "prompt": "A target with a centred arrow beside three labelled progress meters, lime teal and gold, dark HUD panel with corner brackets. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 41,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "שלב 2 — תנו לכל שקל תפקיד",
+        "שלב 3 — הכירו את המספר החודשי שלכם"
+      ],
+      "archetype": "ledger",
+      "caption": "שורה תחתונה: חודש אחד של מעקב שווה יותר משנה של ניחושים.",
+      "alt": "חודש אחד של מעקב שווה יותר משנה של ניחושים. — איור 41 מתוך 50",
+      "prompt": "A blank spending-log table with a violet header row and three empty rows on a dark HUD panel, pen-ready underscores. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 42,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "צ'ק-ליסט: לפני קנייה",
+        "צ'ק-ליסט: פעם בשבוע"
+      ],
+      "archetype": "scene",
+      "caption": "תזכרו את זה: צ׳ק-ליסט לסימון — לא לקריאה.",
+      "alt": "צ׳ק-ליסט לסימון — לא לקריאה. — איור 42 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"צ'ק-ליסט: לפני קנייה\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 43,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "האתגר: 30 ימים של שליטה בכסף"
+      ],
+      "archetype": "scene",
+      "caption": "זהו הטריק: האתגר: 30 ימים של שליטה בכסף",
+      "alt": "האתגר: 30 ימים של שליטה בכסף — איור 43 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"האתגר: 30 ימים של שליטה בכסף\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 44,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "האתגר: 30 ימים של שליטה בכסף",
+        "פרויקט הסיום: \"5,000 ₪ שלי\""
+      ],
+      "archetype": "scene",
+      "caption": "קצר וברור: הרשימה שמסדרת את הראש.",
+      "alt": "הרשימה שמסדרת את הראש. — איור 44 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"האתגר: 30 ימים של שליטה בכסף\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 45,
+      "chapter": "פרק 10 — התוכנית האסטרטגית שלך לעתיד",
+      "sections": [
+        "פרויקט הסיום: \"5,000 ₪ שלי\""
+      ],
+      "archetype": "scene",
+      "caption": "בלי דרמות: הרשימה שמסדרת את הראש.",
+      "alt": "הרשימה שמסדרת את הראש. — איור 45 מתוך 50",
+      "prompt": "Comic panel: a teenager reacting to the idea of \"פרויקט הסיום: \"5,000 ₪ שלי\"\", one short speech bubble, a single prop in frame, expressive but simple face marks. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 46,
+      "chapter": "סיכום — המשחק האמיתי",
+      "sections": [],
+      "archetype": "wallets",
+      "caption": "שורה תחתונה: אפשר לחיות עכשיו וגם להתכונן לאחר כך.",
+      "alt": "אפשר לחיות עכשיו וגם להתכונן לאחר כך. — איור 46 מתוך 50",
+      "prompt": "The four wallet cards from the opening, now all filled and glowing, a subtle completion tick above the row, dark HUD panel. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 47,
+      "chapter": "סיכום — המשחק האמיתי",
+      "sections": [],
+      "archetype": "chat",
+      "caption": "תזכרו את זה: המשפט שנאמר — והתשובה שאתם בוחרים.",
+      "alt": "המשפט שנאמר — והתשובה שאתם בוחרים. — איור 47 מתוך 50",
+      "prompt": "Two chat bubbles on a dark panel, one incoming grey and one outgoing violet, short assertive text, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 48,
+      "chapter": "סיכום — המשחק האמיתי",
+      "sections": [],
+      "archetype": "shield",
+      "caption": "זהו הטריק: סיכום — המשחק האמיתי",
+      "alt": "סיכום — המשחק האמיתי — איור 48 מתוך 50",
+      "prompt": "A flat vector HUD panel illustrating the idea of \"סיכום — המשחק האמיתי\", geometric shapes only, no literal text. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 49,
+      "chapter": "דף אחד לשמור בטלפון",
+      "sections": [
+        "חוקי הכסף שלי",
+        "חוקי הכסף שלי"
+      ],
+      "archetype": "rules",
+      "caption": "קצר וברור: הדף היחיד שכדאי לשמור בטלפון.",
+      "alt": "הדף היחיד שכדאי לשמור בטלפון. — איור 49 מתוך 50",
+      "prompt": "A phone lock-screen card listing short numbered money rules with violet badges, lime title, dark HUD panel, poster-clean. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    },
+    {
+      "page": 50,
+      "chapter": "דף אחד לשמור בטלפון",
+      "sections": [
+        "המבחן האחרון"
+      ],
+      "archetype": "trophy",
+      "caption": "המבחן האחרון: לדעת בדיוק לאן הולכים ה-1,000 הבאים.",
+      "alt": "המבחן האחרון: לדעת בדיוק לאן הולכים ה-1,000 הבאים. — איור 50 מתוך 50",
+      "prompt": "A gold trophy on a dark panel with a lime glow disc behind it, a completion caption beneath, corner brackets, flat vector. flat vector illustration, bold geometric shapes, thick 4px strokes, rounded joins, gaming HUD language (brackets, progress bars, chips), deep navy #0E1424 panel with a subtle 40px grid, palette limited to lime #B8FF3C, violet #6A4BFF, coral #FF5A5F, teal #19C4B2, gold #FFB020 on warm off-white #FAF6EE, no photorealism, no drop shadows, no lens flare, no text artifacts, poster-clean composition, 16:9, dynamic diagonal composition, motion streaks, comic-panel energy, slight tilt, high contrast, near-black background, accent colour at full saturation"
+    }
+  ]
+}

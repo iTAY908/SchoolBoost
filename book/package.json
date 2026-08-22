@@ -1,0 +1,14 @@
+{
+  "name": "schoolboost-money-game-book",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Three autonomous agents that build an illustrated 50-page financial-literacy book for teens, looping until the teen reviewer signs off.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/orchestrator.mjs",
+    "build": "node src/orchestrator.mjs",
+    "test": "node src/verify.mjs"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
