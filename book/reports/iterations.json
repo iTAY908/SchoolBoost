@@ -1,0 +1,387 @@
+[
+  {
+    "iteration": 1,
+    "layout": {
+      "scale": 1,
+      "measure": 62,
+      "density": "comfortable",
+      "hooks": false,
+      "pageBadges": false,
+      "pullQuotes": false,
+      "chapterHud": false,
+      "tocCards": false,
+      "runningFooter": false,
+      "accentRotation": false,
+      "microCopy": false,
+      "endMarkers": false,
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
+    },
+    "artDirection": {
+      "energy": "medium",
+      "humanPresence": 0.3,
+      "captionVoice": "plain",
+      "contrast": "standard"
+    },
+    "scores": {
+      "overall": 65,
+      "interesting": 57,
+      "looks": 63,
+      "value": 74
+    },
+    "verdict": "התוכן טוב, העטיפה עוד לא מוכרת אותו.",
+    "directives": [
+      {
+        "id": "hooks",
+        "kind": "framing",
+        "ask": "תוסיפו שורת פתיחה קצרה בראש כל פרק — משהו שגורם לי להתחיל לקרוא."
+      },
+      {
+        "id": "type-scale",
+        "kind": "style",
+        "ask": "תגדילו קצת את הטקסט — אני קורא/ת את זה בטלפון."
+      },
+      {
+        "id": "density",
+        "kind": "layout",
+        "ask": "תנו אוויר בין הפסקאות, זה דחוס מדי."
+      },
+      {
+        "id": "accent-rotation",
+        "kind": "style",
+        "ask": "תנו לכל פרק צבע משלו כדי שלא יתמזגו."
+      }
+    ],
+    "dimensions": {
+      "מעניין?": {
+        "score": 57,
+        "notes": [
+          "פרק נפתח ישר בטקסט — אין שורת פתיחה שמושכת.",
+          "יש רצף של 10 פסקאות בלי שום הפסקה ויזואלית. זה המקום שבו אני גולל/ת.",
+          "המשפטים הכי חזקים בספר נראים בדיוק כמו כל השאר.",
+          "פרק נגמר ופשוט... נגמר. אין סיבה להמשיך לעמוד הבא."
+        ]
+      },
+      "נראה טוב?": {
+        "score": 63,
+        "notes": [
+          "כל הפרקים באותו צבע — אחרי פרק שלישי הכול נראה אותו דבר.",
+          "הפונט קטן לקריאה בטלפון.",
+          "הכול דחוס. צריך אוויר בין הבלוקים.",
+          "תוכן העניינים נראה כמו רשימת מטלות.",
+          "אני לא יודע/ת איפה אני בתוך הפרק."
+        ]
+      },
+      "שווה 20 ₪?": {
+        "score": 74,
+        "notes": [
+          "בעמוד הראשון אני לא רואה מה אני מקבל/ת תמורת 20 ₪.",
+          "אין לי מושג כמה זמן פרק לוקח לפני שאני מתחיל/ה.",
+          "אין מספרי עמודים אמיתיים — לא מרגיש כמו ספר."
+        ]
+      }
+    },
+    "integrity": {
+      "checked": 525,
+      "ok": true
+    },
+    "elapsedMs": 65
+  },
+  {
+    "iteration": 2,
+    "layout": {
+      "scale": 1.06,
+      "measure": 62,
+      "density": "airy",
+      "hooks": true,
+      "pageBadges": false,
+      "pullQuotes": false,
+      "chapterHud": false,
+      "tocCards": false,
+      "runningFooter": false,
+      "accentRotation": true,
+      "microCopy": false,
+      "endMarkers": false,
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
+    },
+    "artDirection": {
+      "energy": "medium",
+      "humanPresence": 0.3,
+      "captionVoice": "plain",
+      "contrast": "standard"
+    },
+    "scores": {
+      "overall": 78,
+      "interesting": 71,
+      "looks": 89,
+      "value": 74
+    },
+    "verdict": "התוכן טוב, העטיפה עוד לא מוכרת אותו.",
+    "directives": [
+      {
+        "id": "micro-copy",
+        "kind": "framing",
+        "ask": "תכתבו בכריכה מה בדיוק מקבלים — עמודים, איורים, זמן קריאה."
+      },
+      {
+        "id": "toc-cards",
+        "kind": "layout",
+        "ask": "תהפכו את תוכן העניינים לכרטיסים."
+      },
+      {
+        "id": "page-badges",
+        "kind": "layout",
+        "ask": "תוסיפו סימון \"איפה אני בפרק\"."
+      },
+      {
+        "id": "pull-quotes",
+        "kind": "style",
+        "ask": "תבליטו משפט אחד חזק בכל פרק בגדול."
+      }
+    ],
+    "dimensions": {
+      "מעניין?": {
+        "score": 71,
+        "notes": [
+          "יש רצף של 10 פסקאות בלי שום הפסקה ויזואלית. זה המקום שבו אני גולל/ת.",
+          "המשפטים הכי חזקים בספר נראים בדיוק כמו כל השאר.",
+          "פרק נגמר ופשוט... נגמר. אין סיבה להמשיך לעמוד הבא."
+        ]
+      },
+      "נראה טוב?": {
+        "score": 89,
+        "notes": [
+          "תוכן העניינים נראה כמו רשימת מטלות.",
+          "אני לא יודע/ת איפה אני בתוך הפרק."
+        ]
+      },
+      "שווה 20 ₪?": {
+        "score": 74,
+        "notes": [
+          "בעמוד הראשון אני לא רואה מה אני מקבל/ת תמורת 20 ₪.",
+          "אין לי מושג כמה זמן פרק לוקח לפני שאני מתחיל/ה.",
+          "אין מספרי עמודים אמיתיים — לא מרגיש כמו ספר."
+        ]
+      }
+    },
+    "integrity": {
+      "checked": 525,
+      "ok": true
+    },
+    "elapsedMs": 86
+  },
+  {
+    "iteration": 3,
+    "layout": {
+      "scale": 1.06,
+      "measure": 62,
+      "density": "airy",
+      "hooks": true,
+      "pageBadges": true,
+      "pullQuotes": true,
+      "chapterHud": false,
+      "tocCards": true,
+      "runningFooter": false,
+      "accentRotation": true,
+      "microCopy": true,
+      "endMarkers": false,
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
+    },
+    "artDirection": {
+      "energy": "medium",
+      "humanPresence": 0.3,
+      "captionVoice": "plain",
+      "contrast": "standard"
+    },
+    "scores": {
+      "overall": 89,
+      "interesting": 80,
+      "looks": 100,
+      "value": 86
+    },
+    "verdict": "כמעט. עוד סיבוב אחד ואני קונה את זה.",
+    "directives": [
+      {
+        "id": "chapter-hud",
+        "kind": "layout",
+        "ask": "תראו לי בתחילת פרק כמה עמודים וכמה דקות."
+      },
+      {
+        "id": "end-markers",
+        "kind": "framing",
+        "ask": "בסוף פרק תנו לי טיזר לפרק הבא."
+      },
+      {
+        "id": "running-footer",
+        "kind": "layout",
+        "ask": "תוסיפו מספור עמודים אמיתי בתחתית."
+      },
+      {
+        "id": "paragraph-beats",
+        "kind": "layout",
+        "ask": "יש רצף ארוך מדי של פסקאות בלי הפסקה. תשברו את זה ויזואלית."
+      }
+    ],
+    "dimensions": {
+      "מעניין?": {
+        "score": 80,
+        "notes": [
+          "יש רצף של 10 פסקאות בלי שום הפסקה ויזואלית. זה המקום שבו אני גולל/ת.",
+          "פרק נגמר ופשוט... נגמר. אין סיבה להמשיך לעמוד הבא."
+        ]
+      },
+      "נראה טוב?": {
+        "score": 100,
+        "notes": []
+      },
+      "שווה 20 ₪?": {
+        "score": 86,
+        "notes": [
+          "אין לי מושג כמה זמן פרק לוקח לפני שאני מתחיל/ה.",
+          "אין מספרי עמודים אמיתיים — לא מרגיש כמו ספר."
+        ]
+      }
+    },
+    "integrity": {
+      "checked": 525,
+      "ok": true
+    },
+    "elapsedMs": 105
+  },
+  {
+    "iteration": 4,
+    "layout": {
+      "scale": 1.06,
+      "measure": 62,
+      "density": "airy",
+      "hooks": true,
+      "pageBadges": true,
+      "pullQuotes": true,
+      "chapterHud": true,
+      "tocCards": true,
+      "runningFooter": true,
+      "accentRotation": true,
+      "microCopy": true,
+      "endMarkers": true,
+      "paragraphBeats": true,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
+    },
+    "artDirection": {
+      "energy": "medium",
+      "humanPresence": 0.3,
+      "captionVoice": "plain",
+      "contrast": "standard"
+    },
+    "scores": {
+      "overall": 96,
+      "interesting": 88,
+      "looks": 100,
+      "value": 100
+    },
+    "verdict": "כמעט. עוד סיבוב אחד ואני קונה את זה.",
+    "directives": [
+      {
+        "id": "art-energy",
+        "kind": "visual",
+        "ask": "האיורים מסודרים מדי. תנו להם יותר תנועה, יותר קומיקס."
+      },
+      {
+        "id": "art-contrast",
+        "kind": "visual",
+        "ask": "תחזקו את הניגודיות של האיורים, בטלפון בשמש זה נמרח."
+      },
+      {
+        "id": "caption-voice",
+        "kind": "visual",
+        "ask": "הכתוביות מנומסות מדי. תדברו אליי."
+      }
+    ],
+    "dimensions": {
+      "מעניין?": {
+        "score": 88,
+        "notes": [
+          "יש רצף של 10 פסקאות בלי שום הפסקה ויזואלית. זה המקום שבו אני גולל/ת."
+        ]
+      },
+      "נראה טוב?": {
+        "score": 100,
+        "notes": []
+      },
+      "שווה 20 ₪?": {
+        "score": 100,
+        "notes": []
+      }
+    },
+    "integrity": {
+      "checked": 525,
+      "ok": true
+    },
+    "elapsedMs": 125
+  },
+  {
+    "iteration": 5,
+    "layout": {
+      "scale": 1.06,
+      "measure": 62,
+      "density": "airy",
+      "hooks": true,
+      "pageBadges": true,
+      "pullQuotes": true,
+      "chapterHud": true,
+      "tocCards": true,
+      "runningFooter": true,
+      "accentRotation": true,
+      "microCopy": true,
+      "endMarkers": true,
+      "paragraphBeats": true,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
+    },
+    "artDirection": {
+      "energy": "high",
+      "humanPresence": 0.3,
+      "captionVoice": "punchy",
+      "contrast": "boosted"
+    },
+    "scores": {
+      "overall": 96,
+      "interesting": 88,
+      "looks": 100,
+      "value": 100
+    },
+    "verdict": "100% מוכן לקריאה",
+    "directives": [],
+    "dimensions": {
+      "מעניין?": {
+        "score": 88,
+        "notes": [
+          "יש רצף של 10 פסקאות בלי שום הפסקה ויזואלית. זה המקום שבו אני גולל/ת."
+        ]
+      },
+      "נראה טוב?": {
+        "score": 100,
+        "notes": []
+      },
+      "שווה 20 ₪?": {
+        "score": 100,
+        "notes": []
+      }
+    },
+    "integrity": {
+      "checked": 525,
+      "ok": true
+    },
+    "elapsedMs": 146
+  }
+]
