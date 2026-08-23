@@ -17,9 +17,17 @@
     --fs:18.02px;
     --gap:1.34rem;
     --measure:62ch;
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    --gold:linear-gradient(180deg,#FFE9A8 0%,#FFC94A 42%,#E39412 100%);
   }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--ink);color:var(--ink);
+  body{margin:0;color:var(--ink);
+    background:
+      radial-gradient(1100px 620px at 82% -8%, rgba(106,75,255,.24), transparent 62%),
+      radial-gradient(880px 520px at 6% 2%, rgba(25,196,178,.14), transparent 64%),
+      radial-gradient(700px 700px at 50% 108%, rgba(255,90,95,.12), transparent 60%),
+      var(--ink);
+    background-attachment:fixed;
     font-family:'Heebo','Assistant','Arial Hebrew',system-ui,sans-serif;
     direction:rtl;text-align:right;-webkit-font-smoothing:antialiased}
   h1,h2,h3,.card-label,.toc h2,.level-tag,blockquote.pull span{
@@ -29,12 +37,64 @@
 
   .page{background:var(--paper);border-radius:20px;scroll-margin-top:64px;padding:clamp(18px,3.4vw,34px);
     margin-bottom:clamp(14px,2.4vw,22px);position:relative;overflow:hidden;
-    box-shadow:0 1px 0 rgba(255,255,255,.06)}
+    box-shadow:0 1px 0 rgba(255,255,255,.07), 0 26px 60px -34px rgba(0,0,0,.85)}
+  .page::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:var(--grain);opacity:.34;mix-blend-mode:multiply;border-radius:inherit}
+  .page-opener{background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--paper)) 0,
+                            color-mix(in srgb, var(--accent) 3%, var(--paper)) 34%,
+                            var(--paper) 62%)}
   .page-opener::before{content:"";position:absolute;inset-inline:0;top:0;height:8px;background:var(--accent)}
   .page-opener{padding-top:clamp(26px,4vw,42px)}
 
   .page-cover{background:#0E1424;color:var(--paper);padding:0;text-align:center}
   .art-cover svg{display:block;width:100%}
+  .cover-stage{position:relative;isolation:isolate}
+
+  .fx{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .fx .coin{position:absolute;top:-12%;inset-inline-start:var(--x);width:var(--sz);height:var(--sz);
+    border-radius:50%;opacity:0;
+    background:radial-gradient(circle at 34% 28%, #FFE49A 0 34%, #FFB020 35% 66%, #C8801A 67% 100%);
+    box-shadow:inset 0 -2px 3px rgba(120,70,0,.45), 0 0 10px rgba(255,176,32,.35);
+    animation:coinfall var(--dur) cubic-bezier(.42,0,.72,1) var(--dl) infinite}
+  .fx .coin::after{content:"₪";position:absolute;inset:0;display:grid;place-items:center;
+    font-size:calc(var(--sz) * .54);font-weight:900;color:#B4720F;direction:ltr}
+  @keyframes coinfall{
+    0%{top:-12%;opacity:0;transform:rotate(0) scale(.86)}
+    9%{opacity:1}
+    74%{opacity:1}
+    90%{top:var(--land);opacity:0;transform:rotate(var(--rot)) scale(1.02)}
+    100%{top:var(--land);opacity:0}
+  }
+
+  .fx-shine{position:absolute;inset-inline:-30%;top:48%;height:30%;mix-blend-mode:screen;
+    background:linear-gradient(100deg,transparent 22%,rgba(255,240,190,.5) 48%,transparent 74%);
+    transform:translateX(-130%);animation:shine 7s ease-in-out 1.4s infinite}
+  @keyframes shine{0%,52%{transform:translateX(-130%)}84%,100%{transform:translateX(130%)}}
+
+  .fx .spark{position:absolute;inset-inline-start:var(--x);top:var(--y);
+    width:var(--sz);height:var(--sz);opacity:0;background:#B8FF3C;
+    clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);
+    animation:twinkle 3.6s ease-in-out var(--dl) infinite}
+  @keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}12%{opacity:.95;transform:scale(1)}34%{opacity:0;transform:scale(.5)}}
+
+  .fx-hud{position:absolute;inset-inline:0;top:11%;display:flex;flex-direction:column;
+    align-items:center;gap:9px;pointer-events:none}
+  .fx-label{font-size:clamp(.62rem,1.6vw,.8rem);font-weight:800;letter-spacing:.34em;
+    color:var(--violet-soft);direction:ltr}
+  .fx-track{width:min(52%,340px);height:14px;border-radius:999px;background:rgba(255,255,255,.13);
+    overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  .fx-fill{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--violet),var(--lime));
+    box-shadow:0 0 14px rgba(184,255,60,.55)}
+  .fx-hud.run .fx-fill{animation:fill 2.4s cubic-bezier(.2,.75,.25,1) forwards}
+  @keyframes fill{to{width:100%}}
+  .fx-amount{display:flex;align-items:baseline;gap:.28em;direction:ltr;
+    font-family:'Secular One','Heebo',sans-serif;
+    font-size:clamp(1.5rem,4.6vw,2.4rem);line-height:1;font-variant-numeric:tabular-nums}
+  .fx-amount b{font-weight:400;background:var(--gold);-webkit-background-clip:text;
+    background-clip:text;color:transparent;filter:drop-shadow(0 2px 6px rgba(255,176,32,.4))}
+  .fx-cur{color:var(--gold-flat,#FFB020);font-size:.72em}
   .cover-copy{padding:clamp(20px,4vw,38px)}
   .cover-kicker{margin:0 0 10px;font-size:.78rem;letter-spacing:.14em;color:var(--lime);font-weight:800}
   .page-cover h1{margin:0;font-size:clamp(2rem,6.2vw,3rem);line-height:1.1;letter-spacing:-.01em;color:var(--paper)}
@@ -46,7 +106,8 @@
 
   .chapter-open{margin:0 0 1.1rem}
   .level-tag{display:inline-block;background:var(--accent);color:#FAF6EE;
-    font-size:.76rem;letter-spacing:.12em;padding:5px 13px;border-radius:999px}
+    font-size:.76rem;letter-spacing:.12em;padding:5px 13px;border-radius:999px;
+    box-shadow:0 6px 18px -8px var(--accent)}
   .page-opener h2{margin:.7rem 0 0;font-size:clamp(1.45rem,4.4vw,2.05rem);line-height:1.18}
   .hook{margin:.55rem 0 0;font-size:1.02rem;font-weight:700;color:var(--accent)}
   .chapter-hud{display:flex;gap:16px;margin-top:.9rem;padding-top:.8rem;border-top:2px dashed rgba(20,22,31,.14);
@@ -59,7 +120,11 @@
   .page-badge{font-size:.72rem;font-weight:900;color:var(--paper);background:var(--accent);
     border-radius:999px;padding:3px 10px}
 
-  .art{margin:0 0 1.15rem;border-radius:16px;overflow:hidden;background:#161E33}
+  .art{margin:0 0 1.15rem;border-radius:16px;overflow:hidden;background:#161E33;
+    box-shadow:0 0 0 1px rgba(20,22,31,.07), 0 20px 44px -28px rgba(14,20,36,.9)}
+  html.js .prose ~ * .art,html.js .art{opacity:0;transform:translateY(16px) scale(.995);
+    transition:opacity .55s ease,transform .55s cubic-bezier(.22,.8,.3,1)}
+  html.js .art.in{opacity:1;transform:none}
   .art svg{display:block;width:100%;height:auto}
   .art figcaption{padding:12px 16px;background:#0E1424;color:#D8DDEC;
     font-size:.9rem;font-weight:700;line-height:1.5;border-top:2px solid var(--accent)}
@@ -68,8 +133,14 @@
   .prose p{margin:0 0 var(--gap);font-size:var(--fs);line-height:1.75}
   .cont{font-size:.75rem!important;font-weight:800;color:#5A6480;letter-spacing:.04em;
     margin-bottom:.7rem!important}
-  h3{margin:1.5rem 0 .7rem;font-size:clamp(1.14rem,3vw,1.34rem);line-height:1.28}
-  h3::after{content:"";display:block;width:42px;height:4px;border-radius:2px;background:var(--accent);margin-top:.5rem}
+  h3{margin:1.6rem 0 .7rem;font-size:clamp(1.14rem,3vw,1.34rem);line-height:1.28}
+  h3::after{content:"";display:block;width:56px;height:4px;border-radius:2px;margin-top:.55rem;
+    background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 12%,transparent))}
+  .page-opener .prose > p:first-of-type{
+    font-size:calc(var(--fs) * 1.16);line-height:1.6;font-weight:500;
+    color:color-mix(in srgb, var(--ink) 88%, var(--accent))}
+  .page-opener .prose > p:first-of-type::before{content:"";display:block;width:34px;height:5px;
+    border-radius:3px;background:var(--accent);margin-bottom:.7rem}
   .prose > h3:first-child{margin-top:0}
 
   ul,ol{margin:0 0 var(--gap);padding-inline-start:0;padding-inline-end:1.15rem}
@@ -80,7 +151,12 @@
   blockquote{margin:0 0 var(--gap);padding:.7rem 1rem;border-inline-start:4px solid var(--accent);
     background:rgba(106,75,255,.06);border-radius:0 12px 12px 0;
     font-size:calc(var(--fs) * 1.02);font-weight:700;line-height:1.6}
-  blockquote.pull{border:0;background:none;padding:1.1rem 0;text-align:center}
+  blockquote.pull{border:0;background:none;padding:1.4rem 1.5rem;text-align:center;position:relative;
+    width:fit-content;max-width:100%;margin-inline:auto}
+  blockquote.pull::before,blockquote.pull::after{content:"";position:absolute;width:20px;height:20px;
+    border:3px solid var(--accent);opacity:.5}
+  blockquote.pull::before{top:0;inset-inline-start:0;border-inline-end:0;border-bottom:0}
+  blockquote.pull::after{bottom:0;inset-inline-end:0;border-inline-start:0;border-top:0}
   blockquote.pull span{font-size:calc(var(--fs) * 1.55);line-height:1.28;
     background:linear-gradient(transparent 62%, color-mix(in srgb, var(--accent) 34%, transparent) 0);
     box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -91,7 +167,9 @@
     padding:3px 9px;border-radius:999px;margin-bottom:.5rem}
   .callout.note{background:rgba(255,176,32,.13);border:2px solid rgba(255,176,32,.5)}
   .callout.note .callout-tag{background:#FFB020;color:#14161F}
-  .callout.rule{background:#0E1424;color:var(--paper)}
+  .callout.rule{background:#0E1424;color:var(--paper);overflow:hidden}
+  .callout.rule::after{content:"";position:absolute;inset-inline:0;top:0;height:3px;
+    background:linear-gradient(90deg,#B8FF3C,transparent 72%)}
   .callout.rule .callout-tag{background:#B8FF3C;color:#14161F}
 
   .checklist{list-style:none;padding:0;margin:0 0 var(--gap)}
@@ -117,7 +195,9 @@
   .card-boss{border-inline-start:6px solid var(--coral)}
   .card-day{border-inline-start:6px solid var(--gold)}
 
-  .num{font-weight:900;color:var(--accent);font-feature-settings:"tnum"}
+  .num{font-weight:900;color:var(--accent);font-feature-settings:"tnum";
+    background:color-mix(in srgb,var(--accent) 13%,transparent);
+    border-radius:6px;padding:.04em .26em;margin-inline:.04em}
   .callout.rule .num{color:#B8FF3C}
 
   .beat{display:flex;gap:7px;justify-content:center;align-items:center;
@@ -158,13 +238,16 @@
     overflow:hidden;text-overflow:ellipsis}
   .hud-bar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.13);overflow:hidden}
   .hud-fill{height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--lime));
-    border-radius:999px;transition:width .12s linear}
+    border-radius:999px;transition:width .12s linear;box-shadow:0 0 10px rgba(184,255,60,.5)}
   .hud-pct{font-size:.76rem;font-weight:900;color:var(--lime);min-width:4ch;text-align:left}
 
   a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--lime);outline-offset:3px;border-radius:8px}
 
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    html.js .art{opacity:1!important;transform:none!important}
+    .fx .coin,.fx-shine,.fx .spark{display:none}
+    .fx-fill{width:100%}
   }
   @media (max-width:560px){
     .page{border-radius:16px}
@@ -172,7 +255,10 @@
   }
   @media print{
     body{background:#fff}
-    .hud{display:none}
+    .hud,.fx-shine,.fx .coin,.fx .spark{display:none}
+    html.js .art{opacity:1;transform:none}
+    .fx-fill{width:100%}
+    .page::after{display:none}
     .book{max-width:none;padding:0}
     .page{break-after:page;box-shadow:none;border-radius:0;margin:0}
     .art{break-inside:avoid}
@@ -187,17 +273,14 @@
 </div>
 <main class="book">
 <section class="page page-cover" id="page-1" style="--accent:#B8FF3C">
-      <figure class="art art-cover"><svg viewBox="0 0 900 880" width="100%" role="img" aria-label="הכסף נכנס. עכשיו מתחיל המשחק האמיתי. — איור 1 מתוך 50"
+      <figure class="art art-cover">
+        <div class="cover-stage"><svg viewBox="0 0 900 880" width="100%" role="img" aria-label="הכסף נכנס. עכשיו מתחיל המשחק האמיתי. — איור 1 מתוך 50"
     xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
     <title>הכסף נכנס. עכשיו מתחיל המשחק האמיתי. — איור 1 מתוך 50</title><rect width="900" height="880" rx="0" fill="#0E1424"/><path d="M40 0V880M80 0V880M120 0V880M160 0V880M200 0V880M240 0V880M280 0V880M320 0V880M360 0V880M400 0V880M440 0V880M480 0V880M520 0V880M560 0V880M600 0V880M640 0V880M680 0V880M720 0V880M760 0V880M800 0V880M840 0V880M880 0V880M0 40H900M0 80H900M0 120H900M0 160H900M0 200H900M0 240H900M0 280H900M0 320H900M0 360H900M0 400H900M0 440H900M0 480H900M0 520H900M0 560H900M0 600H900M0 640H900M0 680H900M0 720H900M0 760H900M0 800H900M0 840H900" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="1"/>
       <circle cx="450" cy="440" r="316.8" fill="#6A4BFF" opacity="0.2"/>
       <circle cx="450" cy="440" r="316.8" fill="none" stroke="#9C86FF"
         stroke-width="2" stroke-opacity="0.3" stroke-dasharray="3 13"/>
-      <text x="450" y="176" text-anchor="middle" fill="#9C86FF" opacity="1"
-    font-family="'Heebo','Arial Hebrew',sans-serif" font-size="21" font-weight="800"
-    letter-spacing="4" direction="ltr">PLAYER FUNDS</text>
-      <g><rect x="216" y="202.4" width="468" height="18" rx="9" fill="#FFFFFF18"/>
-    <rect x="337.68" y="202.4" width="346.32" height="18" rx="9" fill="#B8FF3C"/></g>
+      <!-- the funds readout is drawn by the page as a live layer over this art -->
       <path d="M180 614.4000000000001H720" stroke="#9C86FF"
         stroke-width="3" stroke-opacity="0.35" stroke-linecap="round"/>
       <g><ellipse cx="279" cy="598.4000000000001" rx="44" ry="15.84" fill="#C8801A"/>
@@ -246,7 +329,17 @@
     <text x="450" y="777.48" text-anchor="middle" fill="#FAF6EE" opacity="1"
     font-family="'Heebo','Arial Hebrew',sans-serif" font-size="18" font-weight="800"
     letter-spacing="0" direction="rtl">START GAME</text></g>
-      <path d="M22 68V22H68" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M832 22H878V68" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M878 812V858H832" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M68 858H22V812" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/></svg></figure>
+      <path d="M22 68V22H68" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M832 22H878V68" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M878 812V858H832" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/><path d="M68 858H22V812" fill="none" stroke="#B8FF3C" stroke-width="5" stroke-linecap="square"/></svg><div class="fx" aria-hidden="true">
+    <div class="fx-coins"><i class="coin" style="--x:82.87%;--sz:20.5px;--dl:3.62s;--dur:3.96s;--rot:-97deg;--land:71.5%"></i><i class="coin" style="--x:9.05%;--sz:23.4px;--dl:4.42s;--dur:5.25s;--rot:9deg;--land:70.2%"></i><i class="coin" style="--x:80.12%;--sz:29.2px;--dl:2.72s;--dur:5.53s;--rot:19deg;--land:63.7%"></i><i class="coin" style="--x:53.04%;--sz:28.8px;--dl:4.20s;--dur:3.47s;--rot:-90deg;--land:70.1%"></i><i class="coin" style="--x:28.65%;--sz:20.7px;--dl:1.80s;--dur:5.00s;--rot:-37deg;--land:66.2%"></i><i class="coin" style="--x:75.66%;--sz:23.9px;--dl:5.52s;--dur:4.15s;--rot:168deg;--land:65.4%"></i><i class="coin" style="--x:53.30%;--sz:24.6px;--dl:3.75s;--dur:4.12s;--rot:181deg;--land:66.0%"></i><i class="coin" style="--x:69.22%;--sz:28.3px;--dl:3.86s;--dur:5.02s;--rot:-37deg;--land:75.6%"></i><i class="coin" style="--x:18.95%;--sz:24.7px;--dl:1.36s;--dur:5.38s;--rot:97deg;--land:67.0%"></i><i class="coin" style="--x:68.73%;--sz:27.4px;--dl:0.15s;--dur:4.46s;--rot:-219deg;--land:75.2%"></i><i class="coin" style="--x:11.33%;--sz:29.3px;--dl:0.86s;--dur:3.41s;--rot:-74deg;--land:66.2%"></i><i class="coin" style="--x:69.40%;--sz:17.9px;--dl:0.24s;--dur:4.65s;--rot:-63deg;--land:68.7%"></i><i class="coin" style="--x:79.78%;--sz:17.8px;--dl:1.34s;--dur:5.17s;--rot:-205deg;--land:65.7%"></i><i class="coin" style="--x:51.94%;--sz:20.4px;--dl:2.60s;--dur:3.80s;--rot:38deg;--land:70.2%"></i><i class="coin" style="--x:8.14%;--sz:23.3px;--dl:1.79s;--dur:5.17s;--rot:175deg;--land:70.2%"></i><i class="coin" style="--x:16.17%;--sz:20.0px;--dl:4.09s;--dur:4.65s;--rot:-30deg;--land:69.4%"></i><i class="coin" style="--x:33.73%;--sz:16.8px;--dl:4.43s;--dur:3.85s;--rot:-51deg;--land:71.5%"></i><i class="coin" style="--x:49.31%;--sz:29.9px;--dl:0.68s;--dur:4.78s;--rot:143deg;--land:71.7%"></i><i class="coin" style="--x:75.94%;--sz:28.9px;--dl:4.86s;--dur:4.13s;--rot:33deg;--land:70.4%"></i><i class="coin" style="--x:6.57%;--sz:21.6px;--dl:4.93s;--dur:3.88s;--rot:151deg;--land:70.2%"></i><i class="coin" style="--x:17.61%;--sz:29.8px;--dl:3.36s;--dur:4.45s;--rot:104deg;--land:73.1%"></i><i class="coin" style="--x:17.86%;--sz:17.4px;--dl:5.57s;--dur:4.38s;--rot:-107deg;--land:68.7%"></i><i class="coin" style="--x:56.43%;--sz:17.5px;--dl:4.06s;--dur:4.30s;--rot:-139deg;--land:66.2%"></i><i class="coin" style="--x:57.46%;--sz:24.9px;--dl:3.69s;--dur:4.93s;--rot:-168deg;--land:74.4%"></i><i class="coin" style="--x:78.87%;--sz:33.6px;--dl:0.43s;--dur:4.73s;--rot:146deg;--land:64.2%"></i><i class="coin" style="--x:12.59%;--sz:18.7px;--dl:2.85s;--dur:5.55s;--rot:-175deg;--land:75.5%"></i></div>
+    <div class="fx-shine"></div>
+    <div class="fx-sparks"><i class="spark" style="--x:80.94%;--y:34.00%;--dl:0.87s;--sz:5.0px"></i><i class="spark" style="--x:25.26%;--y:26.14%;--dl:0.61s;--sz:9.1px"></i><i class="spark" style="--x:32.61%;--y:49.57%;--dl:0.78s;--sz:5.9px"></i><i class="spark" style="--x:15.59%;--y:29.62%;--dl:3.97s;--sz:8.2px"></i><i class="spark" style="--x:54.75%;--y:42.97%;--dl:0.96s;--sz:8.5px"></i><i class="spark" style="--x:60.52%;--y:47.74%;--dl:1.04s;--sz:8.9px"></i><i class="spark" style="--x:81.12%;--y:44.08%;--dl:3.41s;--sz:7.1px"></i><i class="spark" style="--x:78.31%;--y:53.69%;--dl:3.42s;--sz:5.4px"></i><i class="spark" style="--x:61.97%;--y:41.70%;--dl:0.97s;--sz:6.2px"></i><i class="spark" style="--x:68.09%;--y:57.05%;--dl:0.29s;--sz:8.5px"></i><i class="spark" style="--x:34.66%;--y:43.55%;--dl:1.32s;--sz:5.5px"></i><i class="spark" style="--x:60.68%;--y:69.76%;--dl:3.54s;--sz:8.9px"></i></div>
+  </div>
+  <div class="fx-hud" role="img" aria-label="קופת השחקן: 5,000 ₪">
+    <span class="fx-label">PLAYER FUNDS</span>
+    <span class="fx-track"><i class="fx-fill"></i></span>
+    <span class="fx-amount"><b data-money-count>0</b><span class="fx-cur">₪</span></span>
+  </div></div>
+      </figure>
       <div class="cover-copy">
         <p class="cover-kicker">INTRO · ספר דיגיטלי אינטראקטיבי</p>
         <h1>5,000 ₪: המשחק הפיננסי שלך</h1>
@@ -2492,7 +2585,11 @@
   </section>
 </main>
 <script>
+document.documentElement.className+=' js';
 (function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* reading progress */
   var fill=document.getElementById('hudFill'),pct=document.getElementById('hudPct');
   function up(){
     var h=document.documentElement,max=h.scrollHeight-h.clientHeight;
@@ -2500,6 +2597,41 @@
     fill.style.width=v+'%';pct.textContent=v+'%';
   }
   addEventListener('scroll',up,{passive:true});addEventListener('resize',up);up();
+
+  /* the cover funds readout counts up once, the first time it is seen */
+  var hud=document.querySelector('.fx-hud'),num=document.querySelector('[data-money-count]');
+  if(num){
+    var TARGET=5000,fmt=function(n){return n.toLocaleString('en-US');};
+    var run=function(){
+      if(hud)hud.className+=' run';
+      if(reduce){num.textContent=fmt(TARGET);return;}
+      var DUR=2400,t0=0;
+      function step(ts){
+        if(!t0)t0=ts;
+        var p=Math.min(1,(ts-t0)/DUR),e=1-Math.pow(1-p,3);
+        num.textContent=fmt(Math.round(TARGET*e));
+        if(p<1)requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    };
+    if('IntersectionObserver'in window){
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){if(e.isIntersecting){run();io.disconnect();}});
+      },{threshold:.35});
+      io.observe(num);
+    } else run();
+  }
+
+  /* illustrations settle in as they arrive */
+  var arts=[].slice.call(document.querySelectorAll('.art'));
+  if(reduce||!('IntersectionObserver'in window)){
+    arts.forEach(function(a){a.className+=' in';});
+  } else {
+    var ao=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.className+=' in';ao.unobserve(e.target);}});
+    },{rootMargin:'80px 0px',threshold:.06});
+    arts.forEach(function(a){ao.observe(a);});
+  }
 })();
 </script>
 </body>

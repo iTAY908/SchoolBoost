@@ -24,6 +24,9 @@ export const baseLayout = {
   microCopy: false,      // reading-time + "what you get" chips
   endMarkers: false,     // end-of-chapter marker with a next-up teaser
   paragraphBeats: false, // breathing mark that breaks long runs of plain text
+  motion: true,          // the live money layer on the cover + art reveals
+  texture: true,         // paper grain and the tinted chapter wash
+  dropCaps: true,        // drop cap opening each chapter
 };
 
 const ACCENTS = [P.lime, P.violet, P.coral, P.teal, P.gold, P.violetSoft];
@@ -135,6 +138,48 @@ function renderBlock(block, ctx) {
   }
 }
 
+/* The cover's money layer.
+   Coins fall onto the printed stacks, a shine crosses the pile and the funds
+   readout counts up to the book's number. All of it is CSS + one counter —
+   there is no video file, so it stays sharp at any size and prints as art. */
+const COINS = 26;
+const SPARKS = 12;
+
+function moneyLayer() {
+  const rnd = (i, a, b, k) => {
+    const n = Math.abs(Math.sin((i + 1) * k) * 10000) % 1;
+    return a + n * (b - a);
+  };
+  const coins = Array.from({ length: COINS }, (_, i) => {
+    const x = rnd(i, 6, 92, 12.9898).toFixed(2);
+    const size = rnd(i, 16, 34, 78.233).toFixed(1);
+    const delay = rnd(i, 0, 5.6, 43.111).toFixed(2);
+    const dur = rnd(i, 3.4, 5.6, 91.7).toFixed(2);
+    const rot = Math.round(rnd(i, -220, 220, 27.3));
+    const land = rnd(i, 62, 78, 55.5).toFixed(1);
+    return `<i class="coin" style="--x:${x}%;--sz:${size}px;--dl:${delay}s;--dur:${dur}s;--rot:${rot}deg;--land:${land}%"></i>`;
+  }).join('');
+
+  const sparks = Array.from({ length: SPARKS }, (_, i) => {
+    const x = rnd(i, 10, 90, 5.11).toFixed(2);
+    const y = rnd(i, 24, 76, 71.9).toFixed(2);
+    const delay = rnd(i, 0, 4, 33.7).toFixed(2);
+    const size = rnd(i, 5, 11, 17.2).toFixed(1);
+    return `<i class="spark" style="--x:${x}%;--y:${y}%;--dl:${delay}s;--sz:${size}px"></i>`;
+  }).join('');
+
+  return `<div class="fx" aria-hidden="true">
+    <div class="fx-coins">${coins}</div>
+    <div class="fx-shine"></div>
+    <div class="fx-sparks">${sparks}</div>
+  </div>
+  <div class="fx-hud" role="img" aria-label="קופת השחקן: 5,000 ₪">
+    <span class="fx-label">PLAYER FUNDS</span>
+    <span class="fx-track"><i class="fx-fill"></i></span>
+    <span class="fx-amount"><b data-money-count>0</b><span class="fx-cur">₪</span></span>
+  </div>`;
+}
+
 /* ── page rendering ──────────────────────────────────────────────────── */
 
 function renderPage(page, ctx, index, total) {
@@ -145,7 +190,9 @@ function renderPage(page, ctx, index, total) {
 
   if (page.kind === 'cover') {
     return `<section class="page page-cover" id="page-1" style="--accent:${P.lime}">
-      <figure class="art art-cover">${page.svg}</figure>
+      <figure class="art art-cover">
+        <div class="cover-stage">${page.svg}${layout.motion ? moneyLayer() : ''}</div>
+      </figure>
       <div class="cover-copy">
         <p class="cover-kicker">${esc(CHAPTER_TAGS['ch-01'])} · ספר דיגיטלי אינטראקטיבי</p>
         <h1>${esc(ctx.doc.title)}</h1>
@@ -239,9 +286,17 @@ function styles(layout) {
     --fs:${(17 * s).toFixed(2)}px;
     --gap:${(1.05 * gap).toFixed(2)}rem;
     --measure:${layout.measure}ch;
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    --gold:linear-gradient(180deg,#FFE9A8 0%,#FFC94A 42%,#E39412 100%);
   }
   *,*::before,*::after{box-sizing:border-box}
-  body{margin:0;background:var(--ink);color:var(--ink);
+  body{margin:0;color:var(--ink);
+    background:
+      radial-gradient(1100px 620px at 82% -8%, rgba(106,75,255,.24), transparent 62%),
+      radial-gradient(880px 520px at 6% 2%, rgba(25,196,178,.14), transparent 64%),
+      radial-gradient(700px 700px at 50% 108%, rgba(255,90,95,.12), transparent 60%),
+      var(--ink);
+    background-attachment:fixed;
     font-family:'Heebo','Assistant','Arial Hebrew',system-ui,sans-serif;
     direction:rtl;text-align:right;-webkit-font-smoothing:antialiased}
   h1,h2,h3,.card-label,.toc h2,.level-tag,blockquote.pull span{
@@ -251,12 +306,64 @@ function styles(layout) {
 
   .page{background:var(--paper);border-radius:20px;scroll-margin-top:64px;padding:clamp(18px,3.4vw,34px);
     margin-bottom:clamp(14px,2.4vw,22px);position:relative;overflow:hidden;
-    box-shadow:0 1px 0 rgba(255,255,255,.06)}
+    box-shadow:0 1px 0 rgba(255,255,255,.07), 0 26px 60px -34px rgba(0,0,0,.85)}
+  ${layout.texture ? `.page::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:var(--grain);opacity:.34;mix-blend-mode:multiply;border-radius:inherit}` : ''}
+  ${layout.texture ? `.page-opener{background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--paper)) 0,
+                            color-mix(in srgb, var(--accent) 3%, var(--paper)) 34%,
+                            var(--paper) 62%)}` : ''}
   .page-opener::before{content:"";position:absolute;inset-inline:0;top:0;height:8px;background:var(--accent)}
   .page-opener{padding-top:clamp(26px,4vw,42px)}
 
   .page-cover{background:${P.panelDeep};color:var(--paper);padding:0;text-align:center}
   .art-cover svg{display:block;width:100%}
+  .cover-stage{position:relative;isolation:isolate}
+
+  .fx{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .fx .coin{position:absolute;top:-12%;inset-inline-start:var(--x);width:var(--sz);height:var(--sz);
+    border-radius:50%;opacity:0;
+    background:radial-gradient(circle at 34% 28%, #FFE49A 0 34%, #FFB020 35% 66%, #C8801A 67% 100%);
+    box-shadow:inset 0 -2px 3px rgba(120,70,0,.45), 0 0 10px rgba(255,176,32,.35);
+    animation:coinfall var(--dur) cubic-bezier(.42,0,.72,1) var(--dl) infinite}
+  .fx .coin::after{content:"₪";position:absolute;inset:0;display:grid;place-items:center;
+    font-size:calc(var(--sz) * .54);font-weight:900;color:#B4720F;direction:ltr}
+  @keyframes coinfall{
+    0%{top:-12%;opacity:0;transform:rotate(0) scale(.86)}
+    9%{opacity:1}
+    74%{opacity:1}
+    90%{top:var(--land);opacity:0;transform:rotate(var(--rot)) scale(1.02)}
+    100%{top:var(--land);opacity:0}
+  }
+
+  .fx-shine{position:absolute;inset-inline:-30%;top:48%;height:30%;mix-blend-mode:screen;
+    background:linear-gradient(100deg,transparent 22%,rgba(255,240,190,.5) 48%,transparent 74%);
+    transform:translateX(-130%);animation:shine 7s ease-in-out 1.4s infinite}
+  @keyframes shine{0%,52%{transform:translateX(-130%)}84%,100%{transform:translateX(130%)}}
+
+  .fx .spark{position:absolute;inset-inline-start:var(--x);top:var(--y);
+    width:var(--sz);height:var(--sz);opacity:0;background:${P.lime};
+    clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);
+    animation:twinkle 3.6s ease-in-out var(--dl) infinite}
+  @keyframes twinkle{0%,100%{opacity:0;transform:scale(.4)}12%{opacity:.95;transform:scale(1)}34%{opacity:0;transform:scale(.5)}}
+
+  .fx-hud{position:absolute;inset-inline:0;top:11%;display:flex;flex-direction:column;
+    align-items:center;gap:9px;pointer-events:none}
+  .fx-label{font-size:clamp(.62rem,1.6vw,.8rem);font-weight:800;letter-spacing:.34em;
+    color:var(--violet-soft);direction:ltr}
+  .fx-track{width:min(52%,340px);height:14px;border-radius:999px;background:rgba(255,255,255,.13);
+    overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  .fx-fill{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--violet),var(--lime));
+    box-shadow:0 0 14px rgba(184,255,60,.55)}
+  .fx-hud.run .fx-fill{animation:fill 2.4s cubic-bezier(.2,.75,.25,1) forwards}
+  @keyframes fill{to{width:100%}}
+  .fx-amount{display:flex;align-items:baseline;gap:.28em;direction:ltr;
+    font-family:'Secular One','Heebo',sans-serif;
+    font-size:clamp(1.5rem,4.6vw,2.4rem);line-height:1;font-variant-numeric:tabular-nums}
+  .fx-amount b{font-weight:400;background:var(--gold);-webkit-background-clip:text;
+    background-clip:text;color:transparent;filter:drop-shadow(0 2px 6px rgba(255,176,32,.4))}
+  .fx-cur{color:var(--gold-flat,${P.gold});font-size:.72em}
   .cover-copy{padding:clamp(20px,4vw,38px)}
   .cover-kicker{margin:0 0 10px;font-size:.78rem;letter-spacing:.14em;color:var(--lime);font-weight:800}
   .page-cover h1{margin:0;font-size:clamp(2rem,6.2vw,3rem);line-height:1.1;letter-spacing:-.01em;color:var(--paper)}
@@ -268,7 +375,8 @@ function styles(layout) {
 
   .chapter-open{margin:0 0 1.1rem}
   .level-tag{display:inline-block;background:var(--accent);color:${P.paper};
-    font-size:.76rem;letter-spacing:.12em;padding:5px 13px;border-radius:999px}
+    font-size:.76rem;letter-spacing:.12em;padding:5px 13px;border-radius:999px;
+    box-shadow:0 6px 18px -8px var(--accent)}
   .page-opener h2{margin:.7rem 0 0;font-size:clamp(1.45rem,4.4vw,2.05rem);line-height:1.18}
   .hook{margin:.55rem 0 0;font-size:1.02rem;font-weight:700;color:var(--accent)}
   .chapter-hud{display:flex;gap:16px;margin-top:.9rem;padding-top:.8rem;border-top:2px dashed rgba(20,22,31,.14);
@@ -281,7 +389,11 @@ function styles(layout) {
   .page-badge{font-size:.72rem;font-weight:900;color:var(--paper);background:var(--accent);
     border-radius:999px;padding:3px 10px}
 
-  .art{margin:0 0 1.15rem;border-radius:16px;overflow:hidden;background:${P.panel}}
+  .art{margin:0 0 1.15rem;border-radius:16px;overflow:hidden;background:${P.panel};
+    box-shadow:0 0 0 1px rgba(20,22,31,.07), 0 20px 44px -28px rgba(14,20,36,.9)}
+  html.js .prose ~ * .art,html.js .art{opacity:0;transform:translateY(16px) scale(.995);
+    transition:opacity .55s ease,transform .55s cubic-bezier(.22,.8,.3,1)}
+  html.js .art.in{opacity:1;transform:none}
   .art svg{display:block;width:100%;height:auto}
   .art figcaption{padding:12px 16px;background:${P.panelDeep};color:#D8DDEC;
     font-size:.9rem;font-weight:700;line-height:1.5;border-top:2px solid var(--accent)}
@@ -290,8 +402,14 @@ function styles(layout) {
   .prose p{margin:0 0 var(--gap);font-size:var(--fs);line-height:1.75}
   .cont{font-size:.75rem!important;font-weight:800;color:${P.slate};letter-spacing:.04em;
     margin-bottom:.7rem!important}
-  h3{margin:1.5rem 0 .7rem;font-size:clamp(1.14rem,3vw,1.34rem);line-height:1.28}
-  h3::after{content:"";display:block;width:42px;height:4px;border-radius:2px;background:var(--accent);margin-top:.5rem}
+  h3{margin:1.6rem 0 .7rem;font-size:clamp(1.14rem,3vw,1.34rem);line-height:1.28}
+  h3::after{content:"";display:block;width:56px;height:4px;border-radius:2px;margin-top:.55rem;
+    background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 12%,transparent))}
+  ${layout.dropCaps ? `.page-opener .prose > p:first-of-type{
+    font-size:calc(var(--fs) * 1.16);line-height:1.6;font-weight:500;
+    color:color-mix(in srgb, var(--ink) 88%, var(--accent))}
+  .page-opener .prose > p:first-of-type::before{content:"";display:block;width:34px;height:5px;
+    border-radius:3px;background:var(--accent);margin-bottom:.7rem}` : ''}
   .prose > h3:first-child{margin-top:0}
 
   ul,ol{margin:0 0 var(--gap);padding-inline-start:0;padding-inline-end:1.15rem}
@@ -302,7 +420,12 @@ function styles(layout) {
   blockquote{margin:0 0 var(--gap);padding:.7rem 1rem;border-inline-start:4px solid var(--accent);
     background:rgba(106,75,255,.06);border-radius:0 12px 12px 0;
     font-size:calc(var(--fs) * 1.02);font-weight:700;line-height:1.6}
-  blockquote.pull{border:0;background:none;padding:1.1rem 0;text-align:center}
+  blockquote.pull{border:0;background:none;padding:1.4rem 1.5rem;text-align:center;position:relative;
+    width:fit-content;max-width:100%;margin-inline:auto}
+  blockquote.pull::before,blockquote.pull::after{content:"";position:absolute;width:20px;height:20px;
+    border:3px solid var(--accent);opacity:.5}
+  blockquote.pull::before{top:0;inset-inline-start:0;border-inline-end:0;border-bottom:0}
+  blockquote.pull::after{bottom:0;inset-inline-end:0;border-inline-start:0;border-top:0}
   blockquote.pull span{font-size:calc(var(--fs) * 1.55);line-height:1.28;
     background:linear-gradient(transparent 62%, color-mix(in srgb, var(--accent) 34%, transparent) 0);
     box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -313,7 +436,9 @@ function styles(layout) {
     padding:3px 9px;border-radius:999px;margin-bottom:.5rem}
   .callout.note{background:rgba(255,176,32,.13);border:2px solid rgba(255,176,32,.5)}
   .callout.note .callout-tag{background:${P.gold};color:${P.ink}}
-  .callout.rule{background:${P.panelDeep};color:var(--paper)}
+  .callout.rule{background:${P.panelDeep};color:var(--paper);overflow:hidden}
+  .callout.rule::after{content:"";position:absolute;inset-inline:0;top:0;height:3px;
+    background:linear-gradient(90deg,${P.lime},transparent 72%)}
   .callout.rule .callout-tag{background:${P.lime};color:${P.ink}}
 
   .checklist{list-style:none;padding:0;margin:0 0 var(--gap)}
@@ -339,7 +464,9 @@ function styles(layout) {
   .card-boss{border-inline-start:6px solid var(--coral)}
   .card-day{border-inline-start:6px solid var(--gold)}
 
-  .num{font-weight:900;color:var(--accent);font-feature-settings:"tnum"}
+  .num{font-weight:900;color:var(--accent);font-feature-settings:"tnum";
+    background:color-mix(in srgb,var(--accent) 13%,transparent);
+    border-radius:6px;padding:.04em .26em;margin-inline:.04em}
   .callout.rule .num{color:${P.lime}}
 
   .beat{display:flex;gap:7px;justify-content:center;align-items:center;
@@ -380,13 +507,16 @@ function styles(layout) {
     overflow:hidden;text-overflow:ellipsis}
   .hud-bar{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.13);overflow:hidden}
   .hud-fill{height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--lime));
-    border-radius:999px;transition:width .12s linear}
+    border-radius:999px;transition:width .12s linear;box-shadow:0 0 10px rgba(184,255,60,.5)}
   .hud-pct{font-size:.76rem;font-weight:900;color:var(--lime);min-width:4ch;text-align:left}
 
   a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--lime);outline-offset:3px;border-radius:8px}
 
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+    html.js .art{opacity:1!important;transform:none!important}
+    .fx .coin,.fx-shine,.fx .spark{display:none}
+    .fx-fill{width:100%}
   }
   @media (max-width:560px){
     .page{border-radius:16px}
@@ -394,7 +524,10 @@ function styles(layout) {
   }
   @media print{
     body{background:#fff}
-    .hud{display:none}
+    .hud,.fx-shine,.fx .coin,.fx .spark{display:none}
+    html.js .art{opacity:1;transform:none}
+    .fx-fill{width:100%}
+    .page::after{display:none}
     .book{max-width:none;padding:0}
     .page{break-after:page;box-shadow:none;border-radius:0;margin:0}
     .art{break-inside:avoid}
@@ -459,7 +592,11 @@ ${toc}
 ${pages.slice(1).map((p, i) => { if (p.isChapterOpener) ctx.pullUsed = false; return renderPage(p, ctx, i + 1, total); }).join('\n')}
 </main>
 <script>
+document.documentElement.className+=' js';
 (function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* reading progress */
   var fill=document.getElementById('hudFill'),pct=document.getElementById('hudPct');
   function up(){
     var h=document.documentElement,max=h.scrollHeight-h.clientHeight;
@@ -467,6 +604,41 @@ ${pages.slice(1).map((p, i) => { if (p.isChapterOpener) ctx.pullUsed = false; re
     fill.style.width=v+'%';pct.textContent=v+'%';
   }
   addEventListener('scroll',up,{passive:true});addEventListener('resize',up);up();
+
+  /* the cover funds readout counts up once, the first time it is seen */
+  var hud=document.querySelector('.fx-hud'),num=document.querySelector('[data-money-count]');
+  if(num){
+    var TARGET=5000,fmt=function(n){return n.toLocaleString('en-US');};
+    var run=function(){
+      if(hud)hud.className+=' run';
+      if(reduce){num.textContent=fmt(TARGET);return;}
+      var DUR=2400,t0=0;
+      function step(ts){
+        if(!t0)t0=ts;
+        var p=Math.min(1,(ts-t0)/DUR),e=1-Math.pow(1-p,3);
+        num.textContent=fmt(Math.round(TARGET*e));
+        if(p<1)requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    };
+    if('IntersectionObserver'in window){
+      var io=new IntersectionObserver(function(es){
+        es.forEach(function(e){if(e.isIntersecting){run();io.disconnect();}});
+      },{threshold:.35});
+      io.observe(num);
+    } else run();
+  }
+
+  /* illustrations settle in as they arrive */
+  var arts=[].slice.call(document.querySelectorAll('.art'));
+  if(reduce||!('IntersectionObserver'in window)){
+    arts.forEach(function(a){a.className+=' in';});
+  } else {
+    var ao=new IntersectionObserver(function(es){
+      es.forEach(function(e){if(e.isIntersecting){e.target.className+=' in';ao.unobserve(e.target);}});
+    },{rootMargin:'80px 0px',threshold:.06});
+    arts.forEach(function(a){ao.observe(a);});
+  }
 })();
 </script>`;
 

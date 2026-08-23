@@ -192,8 +192,7 @@ const SCENES = {
       <circle cx="${cx}" cy="${h * 0.5}" r="${disc}" fill="${P.violet}" opacity="0.2"/>
       <circle cx="${cx}" cy="${h * 0.5}" r="${disc}" fill="none" stroke="${P.violetSoft}"
         stroke-width="2" stroke-opacity="0.3" stroke-dasharray="3 13"/>
-      ${t(cx, h * 0.2, 'PLAYER FUNDS', { size: 21, fill: P.violetSoft, weight: 800, letter: 4, rtl: false })}
-      ${bar(cx - w * 0.26, h * 0.23, w * 0.52, 18, 0.74, { fill: P.lime })}
+      <!-- the funds readout is drawn by the page as a live layer over this art -->
       <path d="M${cx - w * 0.3} ${ground + 16}H${cx + w * 0.3}" stroke="${P.violetSoft}"
         stroke-width="3" stroke-opacity="0.35" stroke-linecap="round"/>
       ${stacks.map((st) => coinStack(cx + st.dx, ground, st.n, st.r, { mark: st.n > 5 })).join('')}

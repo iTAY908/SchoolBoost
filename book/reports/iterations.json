@@ -14,7 +14,10 @@
       "accentRotation": false,
       "microCopy": false,
       "endMarkers": false,
-      "paragraphBeats": false
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
     },
     "artDirection": {
       "energy": "medium",
@@ -84,7 +87,7 @@
       "checked": 525,
       "ok": true
     },
-    "elapsedMs": 49
+    "elapsedMs": 65
   },
   {
     "iteration": 2,
@@ -101,7 +104,10 @@
       "accentRotation": true,
       "microCopy": false,
       "endMarkers": false,
-      "paragraphBeats": false
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
     },
     "artDirection": {
       "energy": "medium",
@@ -167,7 +173,7 @@
       "checked": 525,
       "ok": true
     },
-    "elapsedMs": 65
+    "elapsedMs": 86
   },
   {
     "iteration": 3,
@@ -184,7 +190,10 @@
       "accentRotation": true,
       "microCopy": true,
       "endMarkers": false,
-      "paragraphBeats": false
+      "paragraphBeats": false,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
     },
     "artDirection": {
       "energy": "medium",
@@ -245,7 +254,7 @@
       "checked": 525,
       "ok": true
     },
-    "elapsedMs": 82
+    "elapsedMs": 105
   },
   {
     "iteration": 4,
@@ -262,7 +271,10 @@
       "accentRotation": true,
       "microCopy": true,
       "endMarkers": true,
-      "paragraphBeats": true
+      "paragraphBeats": true,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
     },
     "artDirection": {
       "energy": "medium",
@@ -314,7 +326,7 @@
       "checked": 525,
       "ok": true
     },
-    "elapsedMs": 99
+    "elapsedMs": 125
   },
   {
     "iteration": 5,
@@ -331,7 +343,10 @@
       "accentRotation": true,
       "microCopy": true,
       "endMarkers": true,
-      "paragraphBeats": true
+      "paragraphBeats": true,
+      "motion": true,
+      "texture": true,
+      "dropCaps": true
     },
     "artDirection": {
       "energy": "high",
@@ -367,6 +382,6 @@
       "checked": 525,
       "ok": true
     },
-    "elapsedMs": 115
+    "elapsedMs": 146
   }
 ]
