@@ -170,6 +170,7 @@
       border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 900; }
     .bkpricenote { margin-top: 10px; color: var(--dim); font-size: 13px; line-height: 1.6; }
     .bkpricenote b { color: var(--text); }
+    .bkweb { margin-top: 8px; color: var(--dim); font-size: 12.5px; font-weight: 700; line-height: 1.55; }
     .bkcta { width: 100%; margin-top: 14px; background: var(--primary); border: none; color: #fff;
       border-radius: var(--radius); padding: 15px; font-family: var(--font); font-size: 16px;
       font-weight: 900; cursor: pointer; transition: filter .15s; }
@@ -4332,9 +4333,10 @@
     // chapters (streaming-service shelf), wrapped around a classic bookshop
     // buy-box: cover, blurb, list price struck through, sale price, CTA.
     //
-    // The book itself ships beside the app as its own self-contained page
-    // (web/books/*.html, mirrored into the Android assets), so the main file
-    // stays small and the reader opens at full size.
+    // The book itself is published on the web and opened there, so the app file
+    // stays small, the reader works from any install, and the content can be
+    // corrected without shipping a new build. Reading needs a connection —
+    // that is stated on the store page rather than discovered at the tap.
     // =====================================================================
     const BOOK_LIB = [{
       id: "book_5000_guide",
@@ -4344,7 +4346,7 @@
       hook: "הכסף נכנס. עכשיו מתחיל המשחק האמיתי.",
       price: 19,
       listPrice: 35,
-      file: "books/5000-shekel.html",
+      url: "https://exquisite-croquembouche-9e222f.netlify.app",  // the published reader
       year: "2026",
       age: "14+",
       badge: "הכי נמכר",
@@ -4424,18 +4426,24 @@
     }
 
     function openBook(b) {
-      // The reader is a separate page shipped next to the app.
+      // The reader lives on the web, so opening it means leaving the app.
       //
       // Inside the Android wrapper window.open() is a dead end: the WebView is
-      // created without setSupportMultipleWindows and has no WebChromeClient, so
-      // it returns null. There we navigate in place instead — shouldOverrideUrlLoading
-      // lets file:// URLs through, and the hardware Back button returns to the app.
-      if (nativeApp) { window.location.href = b.file; return; }
-      const w = window.open(b.file, "_blank");
+      // built without setSupportMultipleWindows and has no WebChromeClient, so it
+      // returns null. Assigning location.href there is the right move anyway —
+      // MainActivity's shouldOverrideUrlLoading catches https and hands it to the
+      // system browser with an ACTION_VIEW intent, so the book opens in Chrome and
+      // the app is left exactly where it was.
+      if (nativeApp) {
+        showToast("📖 פותח את הספר בדפדפן…");
+        window.location.href = b.url;
+        return;
+      }
+      const w = window.open(b.url, "_blank", "noopener");
       if (w) { showToast("📖 הספר נפתח בלשונית חדשה — קריאה נעימה!"); return; }
-      // Popup blocked in a browser — go there in this tab rather than doing nothing.
+      // Popup blocked — go there in this tab rather than doing nothing at all.
       showToast("📖 פותח את הספר…");
-      window.location.href = b.file;
+      window.location.href = b.url;
     }
 
     function renderBooksPage() {
@@ -4474,9 +4482,10 @@
           '<span class="bkoff">' + bookDiscount(b) + '%- הנחה</span>' +
         '</div>' +
         '<div class="bkpricenote">מחיר מלא ₪' + b.listPrice + ' — <b>עכשיו ₪' + b.price + '</b>. תשלום חד-פעמי, הספר נשאר שלך לתמיד.</div>' +
+        '<div class="bkweb">🌐 הספר נפתח באתר הקריאה — נדרש חיבור לאינטרנט.</div>' +
         '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦₪" + b.price + "⁩") + '</button>' +
         (owned
-          ? '<div class="bkowned">✅ הספר בספרייה שלך</div>'
+          ? '<div class="bkowned">✅ הספר בספרייה שלך — נפתח באתר הקריאה</div>'
           : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
       wrap.appendChild(buy);
       buy.querySelector("#bkBuy").onclick = () => { if (owned) openBook(b); else openBookSheet(b.id); };
