@@ -61,4 +61,16 @@ public final class NativeBridge {
     public void restorePurchases() {
         activity.restorePurchases();
     }
+
+    // ---- printing -----------------------------------------------------------
+
+    /**
+     * window.print() does nothing in a WebView, so the worksheet's
+     * "save as PDF" button calls this and the activity drives PrintManager
+     * (which offers "Save as PDF" alongside real printers).
+     */
+    @JavascriptInterface
+    public void printPage(String jobName) {
+        activity.printWebView(jobName);
+    }
 }

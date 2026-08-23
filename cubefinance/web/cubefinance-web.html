@@ -215,6 +215,97 @@
       border-radius: var(--radius-lg); padding: 18px; }
     .bkquote p { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.7; }
     .bkquote cite { display: block; margin-top: 10px; color: var(--dim); font-size: 12.5px; font-style: normal; font-weight: 700; }
+    /* ===== free worksheet: 40/30/20/10 calculator + homework + tracker ===== */
+    .wscard { background: var(--card); border: 1.5px solid var(--primary-dim); border-radius: var(--radius-lg); padding: 18px; }
+    .wshead { margin-bottom: 4px; }
+    .wsfree { display: inline-block; background: rgba(0,184,148,.14); color: #00b894; border: 1px solid rgba(0,184,148,.4);
+      border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 900; }
+    .wshead h3 { margin: 10px 0 0; font-size: 18px; font-weight: 900; line-height: 1.35; }
+    .wshead p { margin: 8px 0 0; color: var(--dim); font-size: 13px; line-height: 1.65; }
+    .wsbar { display: flex; gap: 3px; height: 10px; margin-top: 14px; border-radius: 999px; overflow: hidden; background: var(--bg); }
+    .wsbar i { display: block; transition: flex-grow .25s; }
+    .wstable { margin-top: 12px; }
+    .wsrow { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .wsrow:last-child { border-bottom: none; padding-bottom: 0; }
+    .wsic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 17px; }
+    .wsnm { flex: 1; min-width: 0; }
+    .wsnm b { display: block; font-size: 14px; font-weight: 800; }
+    .wsnm span { display: block; color: var(--dim); font-size: 11.5px; line-height: 1.45; margin-top: 2px; }
+    .wspc { flex: none; display: flex; align-items: center; gap: 3px; background: var(--bg); border: 1.5px solid var(--border);
+      border-radius: 9px; padding: 4px 7px; }
+    .wspc:focus-within { border-color: var(--primary); }
+    .wspc input { width: 38px; background: none; border: none; outline: none; color: var(--text); text-align: center;
+      font-family: var(--font); font-size: 14px; font-weight: 800; }
+    .wspc b { color: var(--dim); font-size: 12px; }
+    .wsamt { flex: none; min-width: 74px; text-align: left; font-size: 16px; font-weight: 900;
+      font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+    .wsfoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .wsok { color: var(--dim); font-size: 12.5px; font-weight: 700; }
+    .wsbad { color: var(--warning); font-size: 12.5px; font-weight: 700; }
+    .wsreset { background: none; border: 1.5px solid var(--border); color: var(--dim); border-radius: 999px;
+      padding: 7px 13px; font-family: var(--font); font-size: 12.5px; font-weight: 800; cursor: pointer; }
+    .wsreset:hover { border-color: var(--primary); color: var(--text); }
+    .section-t.wsst { margin-top: 22px; }
+    .wstasks { display: flex; flex-direction: column; gap: 8px; }
+    .wstask { display: flex; align-items: flex-start; gap: 11px; text-align: right; background: var(--bg);
+      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 13px; cursor: pointer;
+      font-family: var(--font); color: var(--text); transition: border-color .15s, background .15s; }
+    .wstask:hover { border-color: var(--primary-dim); }
+    .wstask.on { border-color: #00b894; background: rgba(0,184,148,.07); }
+    .wsbox { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border);
+      display: grid; place-items: center; font-size: 13px; font-weight: 900; color: #fff; margin-top: 1px; }
+    .wstask.on .wsbox { background: #00b894; border-color: #00b894; }
+    .wstxt b { display: block; font-size: 14px; font-weight: 800; }
+    .wstxt span { display: block; color: var(--dim); font-size: 12px; line-height: 1.6; margin-top: 4px; }
+    .wstrack { border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--bg); }
+    .wstrow { display: grid; grid-template-columns: 58px 1fr 66px 82px; gap: 1px; background: var(--border); }
+    .wstrow.head { background: var(--card-2); }
+    .wstrow.head span { padding: 8px 7px; color: var(--dim); font-size: 11px; font-weight: 800; text-align: center; }
+    .wstrow input { background: var(--card); border: none; outline: none; color: var(--text); padding: 10px 7px;
+      font-family: var(--font); font-size: 12.5px; min-width: 0; text-align: center; }
+    .wstrow input:focus { background: var(--card-2); box-shadow: inset 0 0 0 1.5px var(--primary); }
+    .wstrow input::placeholder { color: #55556a; }
+    .wstsum { margin-top: 9px; color: var(--dim); font-size: 12.5px; font-weight: 700; line-height: 1.6; }
+    .wsprintbtn { width: 100%; margin-top: 18px; background: var(--primary); border: none; color: #fff;
+      border-radius: var(--radius); padding: 14px; font-family: var(--font); font-size: 15px; font-weight: 900;
+      cursor: pointer; transition: filter .15s; }
+    .wsprintbtn:hover { filter: brightness(1.1); }
+    .wsnote { margin-top: 9px; color: var(--dim); font-size: 11.5px; line-height: 1.6; text-align: center; }
+
+    /* the printout host is invisible on screen and is all that prints */
+    #wsprint { display: none; }
+    @media print {
+      html, body { background: #fff !important; }
+      body > *:not(#wsprint) { display: none !important; }
+      #wsprint { display: block; }
+      .wp { direction: rtl; color: #101223; font-family: var(--font); padding: 0 4mm; }
+      .wphead { display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 12px; border-bottom: 2.5px solid #101223; padding-bottom: 10px; }
+      .wp h1 { margin: 0; font-size: 22pt; font-weight: 900; letter-spacing: -.5px; }
+      .wphead p { margin: 4px 0 0; font-size: 10pt; color: #4a4a63; }
+      .wpstamp { font-size: 10pt; font-weight: 800; color: #4a4a63; white-space: nowrap; }
+      .wpamount { margin: 14px 0 10px; font-size: 13pt; font-weight: 700; }
+      .wpamount b { font-size: 17pt; font-weight: 900; }
+      .wp h2 { margin: 20px 0 8px; font-size: 13pt; font-weight: 900;
+        border-bottom: 1.5px solid #c9cade; padding-bottom: 5px; page-break-after: avoid; }
+      .wpt { width: 100%; border-collapse: collapse; font-size: 11pt; }
+      .wpt th { text-align: right; font-size: 9.5pt; font-weight: 800; color: #4a4a63;
+        border-bottom: 1.5px solid #101223; padding: 6px 8px; }
+      .wpt td { border-bottom: 1px solid #d8d9e6; padding: 9px 8px; vertical-align: top; }
+      .wpt td i { display: block; font-style: normal; font-size: 9pt; color: #4a4a63; margin-top: 2px; }
+      .wpt .wptot td { font-weight: 900; border-top: 2px solid #101223; border-bottom: none; }
+      .wptrack td { height: 26px; }
+      .wpl { margin: 0; padding: 0; list-style: none; }
+      .wpl li { font-size: 10.5pt; line-height: 1.6; padding: 7px 0; border-bottom: 1px solid #d8d9e6;
+        display: flex; align-items: flex-start; gap: 9px; }
+      .wpbox { flex: none; width: 15px; height: 15px; border: 1.5px solid #101223; border-radius: 3px;
+        display: inline-grid; place-items: center; font-size: 11px; font-weight: 900; margin-top: 2px; }
+      .wptxt { flex: 1; min-width: 0; }
+      .wptxt b { font-weight: 900; }
+      .wpfoot { margin-top: 22px; padding-top: 9px; border-top: 1px solid #c9cade;
+        font-size: 8.5pt; color: #6a6a85; text-align: center; }
+      @page { margin: 12mm; }
+    }
     /* ===== prepaid card panel ===== */
     /* deliberately dark in BOTH themes — it is meant to read as a physical card */
     .ppcard { position: relative; overflow: hidden; border-radius: var(--radius-lg); padding: 18px;
@@ -1082,6 +1173,9 @@
       <div class="introwrap" id="introwrap"></div>
     </div>
   </div>
+  <!-- Built on demand by printWorksheet(); screen-hidden, the only thing @media
+       print shows. Outside .device so the phone frame's clipping can't crop it. -->
+  <div id="wsprint" aria-hidden="true"></div>
 
   <script>
     "use strict";
@@ -1127,6 +1221,7 @@
       salary: { auto: true, lastApplied: "", history: [] }, // fixed monthly income → buckets
       expenses: [],                                 // expense journal (what left, and why)
       books: { owned: {} },                         // guide-book library (id -> purchase record)
+      worksheet: null,                              // free 40/30/20/10 worksheet (see WS_DEFAULT)
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -1548,6 +1643,7 @@
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
           incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
           calmLog: state.calmLog, salary: state.salary, expenses: state.expenses, books: state.books,
+          worksheet: state.worksheet,
         }));
       } catch (e) {}
     }
@@ -1569,6 +1665,7 @@
       state.salary = { auto: sal.auto !== false, lastApplied: sal.lastApplied || "", history: Array.isArray(sal.history) ? sal.history : [] };
       state.expenses = s && Array.isArray(s.expenses) ? s.expenses : [];
       state.books = { owned: (s && s.books && s.books.owned) || {} };
+      state.worksheet = wsNormalize(s && s.worksheet);
       notifyNativePremium(); // keep the Android wrapper's ad state in sync
     }
 
@@ -1625,6 +1722,7 @@
       state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
       state.calmLog = [];
       state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = []; state.books = { owned: {} };
+      state.worksheet = wsNormalize(null);
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
       render();
     }
@@ -4457,9 +4555,226 @@
       window.location.href = b.url;
     }
 
+
+    // =====================================================================
+    // FREE WORKSHEET — the book's 40/30/20/10 model as a working tool.
+    // Open to everyone: no premium gate, no purchase needed. Everything the
+    // user types is kept on their own device with the rest of their account,
+    // and the print view turns it into a PDF through the browser.
+    // =====================================================================
+    const WS_BUCKETS = [
+      { key: "goal",  emoji: "🎯", name: "ארנק החופש", sub: "יעד קרוב — חופשה, ציוד, אירוע", pct: 40, color: "#6c63ff" },
+      { key: "emg",   emoji: "🛟", name: "השכפ״ץ",     sub: "קופת חירום — נוגעים רק כשמשהו נשבר", pct: 30, color: "#00b894" },
+      { key: "fut",   emoji: "📈", name: "העתיד",      sub: "חיסכון לטווח ארוך", pct: 20, color: "#f5b544" },
+      { key: "fun",   emoji: "🎉", name: "כסף חופשי",  sub: "לבזבוזים, בלי רגשות אשם", pct: 10, color: "#ff7aa2" },
+    ];
+    const WS_TASKS = [
+      { id: "t10", title: "מעקב 10 שניות ביום", desc: "כל ערב לפתוח את האפליקציה של אמצעי התשלום ורק להסתכל על המספר. בלי לחשב, בלי להתבייש — רק לראות." },
+      { id: "redline", title: "קו אדום לחופשה", desc: "לקבוע מראש סכום שלא עוברים אותו, ולכתוב אותו לפני שיוצאים. אחרת האקסטרות מחליטות במקומכם." },
+      { id: "r48", title: "חוק 48 השעות", desc: "משהו לא חיוני שבא לכם? מחכים יומיים בלי לפתוח שוב את העמוד. הרצון האמיתי שורד, השאר מתאדה." },
+      { id: "skills", title: "מיפוי 5 כישורים להכנסה", desc: "לרשום חמישה דברים שאתם יודעים לעשות שמישהו היה משלם עליהם. גם קטנים." },
+    ];
+    const WS_ROWS = 7; // one week of tracking
+
+    // Every read goes through here, so an old or hand-edited record can never
+    // break the page: shape is rebuilt, numbers clamped, text length capped.
+    function wsNormalize(w) {
+      w = w && typeof w === "object" ? w : {};
+      const pct = {}, saved = w.pct && typeof w.pct === "object" ? w.pct : {};
+      WS_BUCKETS.forEach((b) => {
+        const v = Number(saved[b.key]);
+        pct[b.key] = isFinite(v) && v >= 0 && v <= 100 ? Math.round(v * 10) / 10 : b.pct;
+      });
+      const tasks = {}, st = w.tasks && typeof w.tasks === "object" ? w.tasks : {};
+      WS_TASKS.forEach((t) => { tasks[t.id] = !!st[t.id]; });
+      const clip = (v) => String(v == null ? "" : v).slice(0, 60);
+      const rows = [];
+      for (let i = 0; i < WS_ROWS; i++) {
+        const r = (Array.isArray(w.rows) && w.rows[i]) || {};
+        rows.push({ date: clip(r.date), what: clip(r.what), amount: String(r.amount || "").replace(/[^0-9]/g, "").slice(0, 7), cat: clip(r.cat) });
+      }
+      const amt = Number(w.amount);
+      return { amount: isFinite(amt) && amt > 0 ? Math.round(amt) : 5000, pct: pct, tasks: tasks, rows: rows };
+    }
+    const wsTotalPct = (w) => Math.round(WS_BUCKETS.reduce((s, b) => s + (Number(w.pct[b.key]) || 0), 0) * 10) / 10;
+    // Split the amount by the percentages; the last non-zero bucket absorbs the
+    // rounding remainder so the four rows always add back up to the input.
+    function wsSplit(w) {
+      const rows = WS_BUCKETS.map((b) => ({ b: b, pct: Number(w.pct[b.key]) || 0, amount: Math.round(w.amount * ((Number(w.pct[b.key]) || 0) / 100)) }));
+      const assigned = rows.reduce((s, r) => s + r.amount, 0);
+      const drift = Math.round(w.amount * (wsTotalPct(w) / 100)) - assigned;
+      for (let i = rows.length - 1; i >= 0 && drift !== 0; i--) { if (rows[i].amount > 0) { rows[i].amount += drift; break; } }
+      return rows;
+    }
+    function wsSave() { saveState(); }
+
+    function renderWorksheet() {
+      const w = state.worksheet;
+      const card = el("div", "wscard");
+      const split = wsSplit(w);
+      const total = wsTotalPct(w);
+      const off = Math.abs(total - 100) > 0.05;
+
+      card.innerHTML =
+        '<div class="wshead"><span class="wsfree">חינם לכולם</span>' +
+          '<h3>🎁 בונוס חינם: מחשבון ודף עבודה אישי למעקב</h3>' +
+          '<p>מודל ה-\u206640/30/20/10\u2069 מהספר, כמספרים שלכם. אפשר לשנות אחוזים, לסמן משימות ולמלא מעקב שבועי — ואז להוריד את הכול כ-PDF.</p></div>' +
+
+        '<label class="flbl" style="margin-top:0">כמה כסף יש לך כרגע?</label>' +
+        '<div class="fld"><span class="cur">₪</span><input id="wsAmt" inputmode="numeric" placeholder="5000" value="' + w.amount + '"></div>' +
+
+        '<div class="wsbar" id="wsBar"></div>' +
+
+        '<div class="wstable" id="wsTable"></div>' +
+
+        '<div class="wsfoot"><span id="wsTot"></span>' +
+          '<button class="wsreset" id="wsReset">↺ חזרה ל-\u206640/30/20/10\u2069</button></div>' +
+
+        '<div class="section-t wsst">שיעורי הבית — ארבעה צעדים ראשונים</div>' +
+        '<div class="wstasks">' + WS_TASKS.map((t) =>
+          '<button class="wstask' + (w.tasks[t.id] ? " on" : "") + '" data-t="' + t.id + '">' +
+            '<span class="wsbox">' + (w.tasks[t.id] ? "✓" : "") + '</span>' +
+            '<span class="wstxt"><b>' + esc(t.title) + '</b><span>' + esc(t.desc) + '</span></span></button>').join("") +
+        '</div>' +
+
+        '<div class="section-t wsst">מעקב הוצאות שבועי</div>' +
+        '<div class="wstrack"><div class="wstrow head"><span>תאריך</span><span>מה קניתי?</span><span>סכום</span><span>קטגוריה</span></div>' +
+          w.rows.map((r, i) =>
+            '<div class="wstrow">' +
+              '<input data-r="' + i + '" data-f="date" placeholder="__/__" value="' + esc(r.date) + '">' +
+              '<input data-r="' + i + '" data-f="what" placeholder="על מה" value="' + esc(r.what) + '">' +
+              '<input data-r="' + i + '" data-f="amount" inputmode="numeric" placeholder="₪" value="' + esc(r.amount) + '">' +
+              '<input data-r="' + i + '" data-f="cat" placeholder="קובייה" value="' + esc(r.cat) + '">' +
+            '</div>').join("") +
+        '</div>' +
+        '<div class="wstsum" id="wsSum"></div>' +
+
+        '<button class="wsprintbtn" id="wsPrint">🖨️ הורד כ-PDF / הדפס דף עבודה</button>' +
+        '<div class="wsnote">הכול נשמר במכשיר שלך בלבד. הדף נפתח בחלון ההדפסה — משם „שמירה כ-PDF”.</div>';
+
+      // ---- live pieces repainted without touching the inputs (focus survives)
+      function paint() {
+        const sp = wsSplit(w), tp = wsTotalPct(w), bad = Math.abs(tp - 100) > 0.05;
+        card.querySelector("#wsBar").innerHTML = sp.map((r) =>
+          r.pct > 0 ? '<i style="flex:' + r.pct + ';background:' + r.b.color + '" title="' + esc(r.b.name) + ' ' + r.pct + '%"></i>' : "").join("");
+        card.querySelector("#wsTable").innerHTML = sp.map((r) =>
+          '<div class="wsrow">' +
+            '<span class="wsic" style="background:' + r.b.color + '22;color:' + r.b.color + '">' + r.b.emoji + '</span>' +
+            '<span class="wsnm"><b>' + esc(r.b.name) + '</b><span>' + esc(r.b.sub) + '</span></span>' +
+            '<span class="wspc"><input inputmode="numeric" data-p="' + r.b.key + '" value="' + r.pct + '"><b>%</b></span>' +
+            '<span class="wsamt" style="color:' + r.b.color + '">₪' + fmt(r.amount) + '</span>' +
+          '</div>').join("");
+        const tot = card.querySelector("#wsTot");
+        tot.textContent = bad
+          ? "סך האחוזים: " + tp + "% — לא 100%. אפשר, רק שתדעו שזה לא מחלק את כל הסכום."
+          : "סך האחוזים: 100% ✓ · מחלק את כל ה-₪" + fmt(w.amount);
+        tot.className = bad ? "wsbad" : "wsok";
+        // rebind the percentage inputs this paint just created
+        card.querySelectorAll("input[data-p]").forEach((inp) => {
+          inp.oninput = () => {
+            inp.value = inp.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1");
+            const v = Math.max(0, Math.min(100, Number(inp.value) || 0));
+            w.pct[inp.dataset.p] = Math.round(v * 10) / 10;
+            wsSave();
+            const keep = inp.dataset.p, pos = inp.selectionStart;
+            paint();
+            const again = card.querySelector('input[data-p="' + keep + '"]');
+            if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {} }
+          };
+        });
+        paintSum();
+      }
+      function paintSum() {
+        const spent = w.rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+        const n = w.rows.filter((r) => Number(r.amount) > 0).length;
+        card.querySelector("#wsSum").textContent = n
+          ? "רשמת " + (n === 1 ? "הוצאה אחת" : n + " הוצאות") + " השבוע — סך הכול ₪" + fmt(spent) + "."
+          : "מלאו שורה בכל פעם שיוצא כסף. חודש אחד של מעקב שווה יותר משנה של ניחושים.";
+      }
+
+      card.querySelector("#wsAmt").oninput = (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 9);
+        w.amount = Number(e.target.value) || 0;
+        wsSave(); paint();
+      };
+      card.querySelector("#wsReset").onclick = () => {
+        WS_BUCKETS.forEach((b) => { w.pct[b.key] = b.pct; });
+        wsSave(); paint();
+        showToast("↺ חזרנו לחלוקה של הספר — \u206640/30/20/10\u2069");
+      };
+      card.querySelectorAll(".wstask").forEach((btn) => {
+        btn.onclick = () => {
+          const id = btn.dataset.t;
+          w.tasks[id] = !w.tasks[id];
+          btn.classList.toggle("on", w.tasks[id]);
+          btn.querySelector(".wsbox").textContent = w.tasks[id] ? "✓" : "";
+          wsSave();
+          const done = WS_TASKS.filter((t) => w.tasks[t.id]).length;
+          if (done === WS_TASKS.length) { burstCoins("✅"); showToast("🏅 סימנת את כל ארבעת הצעדים — זה כל מה שצריך כדי להתחיל"); }
+        };
+      });
+      card.querySelectorAll(".wstrow input").forEach((inp) => {
+        inp.oninput = () => {
+          const f = inp.dataset.f;
+          if (f === "amount") inp.value = inp.value.replace(/[^0-9]/g, "").slice(0, 7);
+          w.rows[Number(inp.dataset.r)][f] = inp.value.slice(0, 60);
+          wsSave(); paintSum();
+        };
+      });
+      card.querySelector("#wsPrint").onclick = printWorksheet;
+
+      paint();
+      return card;
+    }
+
+    // ---- print / save as PDF ----------------------------------------------
+    // The app's own chrome is dark and full of controls that print badly, so the
+    // printout is BUILT rather than screenshotted: a clean light sheet with the
+    // typed values as text, and @media print hides everything else.
+    function printWorksheet() {
+      const w = state.worksheet;
+      const sp = wsSplit(w);
+      const spent = w.rows.reduce((s, r) => s + (Number(r.amount) || 0), 0);
+      const d = new Date();
+      const stamp = String(d.getDate()).padStart(2, "0") + "/" + String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear();
+      const host = $("wsprint");
+      host.innerHTML =
+        '<div class="wp">' +
+          '<div class="wphead"><div><h1>דף העבודה שלי</h1>' +
+            '<p>מודל \u206640/30/20/10\u2069 — מתוך „5,000 ₪: המשחק הפיננסי שלך”</p></div>' +
+            '<div class="wpstamp">' + stamp + '</div></div>' +
+          '<div class="wpamount">הסכום שיש לי כרגע: <b>₪' + fmt(w.amount) + '</b></div>' +
+          '<table class="wpt"><thead><tr><th>קופה</th><th>אחוז</th><th>סכום</th></tr></thead><tbody>' +
+            sp.map((r) => '<tr><td>' + r.b.emoji + " " + esc(r.b.name) + ' <i>' + esc(r.b.sub) + '</i></td>' +
+              '<td>' + r.pct + '%</td><td><b>₪' + fmt(r.amount) + '</b></td></tr>').join("") +
+            '<tr class="wptot"><td>סה״כ</td><td>' + wsTotalPct(w) + '%</td><td>₪' + fmt(sp.reduce((s, r) => s + r.amount, 0)) + '</td></tr>' +
+          '</tbody></table>' +
+          '<h2>שיעורי הבית</h2><ul class="wpl">' +
+            WS_TASKS.map((t) => '<li><span class="wpbox">' + (w.tasks[t.id] ? "✔" : "") + '</span>' +
+              '<span class="wptxt"><b>' + esc(t.title) + '</b> — ' + esc(t.desc) + '</span></li>').join("") +
+          '</ul>' +
+          '<h2>מעקב הוצאות שבועי</h2>' +
+          '<table class="wpt wptrack"><thead><tr><th>תאריך</th><th>מה קניתי?</th><th>סכום</th><th>קטגוריה</th></tr></thead><tbody>' +
+            w.rows.map((r) => '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.what) + '</td>' +
+              '<td>' + (r.amount ? "₪" + fmt(Number(r.amount)) : "") + '</td><td>' + esc(r.cat) + '</td></tr>').join("") +
+            (spent > 0 ? '<tr class="wptot"><td colspan="2">סה״כ השבוע</td><td>₪' + fmt(spent) + '</td><td></td></tr>' : "") +
+          '</tbody></table>' +
+          '<p class="wpfoot">התוכן נועד ללימוד והעשרה בלבד ואינו ייעוץ פיננסי. CubeFinance · קיובפייננס</p>' +
+        '</div>';
+      // Inside the Android app window.print() is a no-op — the WebView has no
+      // print path of its own, so the wrapper does it through PrintManager.
+      try {
+        if (nativeApp && nativeApp.printPage) { nativeApp.printPage("דף עבודה — CubeFinance"); return; }
+      } catch (e) {}
+      if (typeof window.print !== "function") { showToast("הדפדפן הזה לא תומך בהדפסה 😕 נסו מדפדפן אחר."); return; }
+      showToast("🖨️ נפתח חלון ההדפסה — בחרו „שמירה כ-PDF”");
+      setTimeout(() => window.print(), 60);
+    }
+
     function renderBooksPage() {
       const body = pageShell("ספרי הדרכה 📚", () => { state.screen = "app"; render(); });
       BOOK_LIB.forEach((b) => body.appendChild(bookBillboard(b)));
+      body.appendChild(renderWorksheet()); // free for everyone — never behind the paywall
       const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
     }
 

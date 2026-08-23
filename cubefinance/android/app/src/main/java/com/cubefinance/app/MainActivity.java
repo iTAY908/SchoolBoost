@@ -17,6 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 
 import android.content.Intent;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 
 /**
  * CubeFinance runs as a single self-contained web app bundled in assets/.
@@ -117,6 +120,29 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
     /** Called from the JS bridge while a sheet/keyboard is open. */
     void setAdsBlocked(boolean blocked) {
         if (ads != null) runOnUiThread(() -> ads.setBlocked(blocked));
+    }
+
+    /**
+     * Called from the JS bridge for the worksheet's "save as PDF" button.
+     * A WebView has no window.print(), so printing goes through the system
+     * print dialog — which offers "Save as PDF" next to any real printer.
+     * The page's @media print rules decide what actually lands on the page.
+     */
+    void printWebView(String jobName) {
+        if (webView == null) return;
+        runOnUiThread(() -> {
+            try {
+                PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                if (pm == null) return;
+                String name = (jobName == null || jobName.trim().isEmpty())
+                        ? getString(R.string.app_name) : jobName.trim();
+                PrintDocumentAdapter adapter = webView.createPrintDocumentAdapter(name);
+                pm.print(name, adapter, new PrintAttributes.Builder()
+                        .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                        .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                        .build());
+            } catch (Exception ignored) { }
+        });
     }
 
     // ---- billing, called from the JS bridge --------------------------------
