@@ -7,8 +7,11 @@
   "scripts": {
     "start": "node src/orchestrator.mjs",
     "build": "node src/orchestrator.mjs",
-    "test": "node src/verify.mjs"
+    "test": "node src/verify.mjs",
+    "bundle": "node src/bundle.mjs"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "UNLICENSED"
 }

@@ -6,6 +6,7 @@
 
 ```
 npm start      # מריץ את הלולאה ובונה את הספר
+npm run bundle # אורז קובץ אחד עצמאי לגמרי, עם הגופנים בפנים
 npm test       # בדיקות קבלה על התוצר
 ```
 
@@ -50,7 +51,8 @@ npm test       # בדיקות קבלה על התוצר
 
 | נתיב | מה יש בו |
 | --- | --- |
-| `dist/book.html` | **הספר** — קובץ עצמאי, RTL, 50 עמודים, 50 איורים |
+| `dist/book-standalone.html` | **הספר להעברה** — קובץ אחד, אפס בקשות רשת, הגופנים בפנים |
+| `dist/book.html` | הספר — אותו דבר, אבל הגופנים נטענים מ-Google Fonts |
 | `dist/book.artifact.html` | אותו ספר, כ-fragment לפרסום כ-Artifact |
 | `content/visual/visual-brief.md` | 50 הפרומפטים + הכתוביות, קריא לאדם |
 | `content/visual/visual-brief.json` | אותו בריף, לצריכה תוכנתית |
@@ -70,7 +72,8 @@ book/
 │  ├─ lib/source.mjs     פענוח המקור לעץ בלוקים
 │  ├─ lib/integrity.mjs  אכיפת חוק הברזל
 │  ├─ lib/art.mjs        מנוע האיור — 22 ארכיטיפים גרפיים
-│  └─ verify.mjs         בדיקות קבלה
+│  ├─ verify.mjs         בדיקות קבלה
+│  └─ bundle.mjs         אריזת קובץ עצמאי עם גופנים מוטמעים
 ├─ dist/                 הספר הבנוי
 └─ reports/              דוחות הלולאה
 ```
