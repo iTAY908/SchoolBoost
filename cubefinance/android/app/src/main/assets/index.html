@@ -144,8 +144,6 @@
       box-shadow: 0 14px 30px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.06); }
     .bkcover { display: block; width: 100%; height: auto; }
     .bkherotxt { flex: 1; min-width: 0; }
-    .bkbadge { display: inline-block; background: var(--danger); color: #fff; font-size: 11px;
-      font-weight: 900; letter-spacing: .4px; border-radius: 6px; padding: 4px 9px; margin-bottom: 10px; }
     .bktitle { margin: 0; font-size: 21px; font-weight: 900; letter-spacing: -.5px; color: #fff; line-height: 1.25; }
     .bkhook { margin: 8px 0 0; color: #d7d5ee; font-size: 13.5px; font-weight: 700; line-height: 1.5; }
     .bkmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 11px;
@@ -180,6 +178,15 @@
       font-size: 14px; font-weight: 800; cursor: pointer; }
     .bkghost:hover { border-color: var(--primary); color: var(--text); }
     .bkowned { margin-top: 10px; text-align: center; color: var(--success); font-size: 13.5px; font-weight: 800; }
+    /* terms sit inside the buy box: readable BEFORE paying, not after */
+    .bkterms { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .bkterms h4 { margin: 0 0 8px; font-size: 13.5px; font-weight: 900; }
+    .bkterms ol { margin: 0; padding-inline-start: 20px; }
+    .bkterms li { color: var(--dim); font-size: 12.5px; line-height: 1.7; margin-bottom: 7px; }
+    .bkterms li::marker { color: var(--primary-2); font-weight: 800; }
+    .bkagree { margin: 8px 0 0; color: var(--dim); font-size: 12px; font-weight: 700; }
+    .gpterms { margin-top: 10px; color: var(--dim); font-size: 11.5px; line-height: 1.6; }
+    .gpterms b { color: var(--text); }
     /* fact strip */
     .bkfacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .bkfact { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
@@ -4349,7 +4356,6 @@
       url: "https://exquisite-croquembouche-9e222f.netlify.app",  // the published reader
       year: "2026",
       age: "14+",
-      badge: "הכי נמכר",
       facts: [["50", "עמודים"], ["10", "פרקים"], ["14", "דק׳ קריאה"], ["50", "איורים"], ["9", "סיפורי מקרה"], ["4", "צ׳ק-ליסטים"]],
       summary: [
         "קיבלת 5,000 ₪. המוח אומר „חופשה”, החברים אומרים „יאללה, יוצאים”, האינטרנט אומר „מבצע אחרון” — והעתיד לוחש „היי... אולי תשאירו לי משהו?”. הספר הזה עוסק בדיוק ברגע הזה.",
@@ -4371,6 +4377,11 @@
         ["LEVEL 10", "התוכנית שלך לעתיד", "כאן הכול מתחבר לתוכנית אחת."],
         ["BOSS", "סיכום — המשחק האמיתי", "המשחק לא נגמר. פשוט למדת לשחק."],
         ["CHEAT SHEET", "דף אחד לטלפון", "דף אחד. צילום מסך. סיימנו."],
+      ],
+      terms: [
+        "המידע, ההדרכה והתכנים בספר מיועדים למטרות לימודיות והעשרה בלבד, ואינם מהווים ייעוץ פיננסי, משפטי או השקעתי מוסמך.",
+        "מדיניות מדיה: רכישת הספר הינה סופית ואין החזר כספי לאחר הרכישה.",
+        "הספר מספק ידע, זוויות ראייה וכלים מעשיים על עולם הכסף שרוב האנשים לא מספרים עליהם — אך האחריות על כל החלטה פיננסית היא של הקורא/ת והוריו בלבד.",
       ],
       quote: "לפני שאתם מוציאים את הכסף, תחליטו מה אתם רוצים שהכסף יעשה. כי ברגע שהכסף מקבל תפקיד, אתם מפסיקים להיות שחקן שמגיב למה שקורה — ומתחילים להיות השחקן שמנהל את המשחק.",
     }];
@@ -4463,7 +4474,6 @@
         '<div class="bkheroin">' +
           '<div class="bkcovershell">' + bookCover(b) + '</div>' +
           '<div class="bkherotxt">' +
-            (b.badge ? '<span class="bkbadge">' + esc(b.badge) + '</span>' : "") +
             '<h2 class="bktitle">' + esc(b.title) + '</h2>' +
             '<p class="bkhook">' + esc(b.hook) + '</p>' +
             '<div class="bkmeta"><span class="bkage">' + esc(b.age) + '</span><span>' + esc(b.year) + '</span>' +
@@ -4486,7 +4496,10 @@
         '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦₪" + b.price + "⁩") + '</button>' +
         (owned
           ? '<div class="bkowned">✅ הספר בספרייה שלך — נפתח באתר הקריאה</div>'
-          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
+          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>') +
+        '<div class="bkterms"><h4>תקנון ותנאי שימוש</h4><ol>' +
+          b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
+        '</ol><p class="bkagree">' + (owned ? 'אישרת את התנאים בעת הרכישה.' : 'ביצוע הרכישה מהווה אישור לתנאים שלמעלה.') + '</p></div>';
       wrap.appendChild(buy);
       buy.querySelector("#bkBuy").onclick = () => { if (owned) openBook(b); else openBookSheet(b.id); };
       const peek = buy.querySelector("#bkPeek");
@@ -4533,9 +4546,6 @@
         '<div class="privline">⏳ <b>חוק 48 השעות.</b> לפני שקונים משהו לא חיוני — שאלו את Cubey בצ׳אט, ותנו לזה יומיים.</div>';
       wrap.appendChild(fit);
 
-      const disc = el("p", "termupd");
-      disc.textContent = "התוכן נועד למידע והדרכה בלבד ואינו מהווה ייעוץ פיננסי, ייעוץ השקעות או ייעוץ מס.";
-      wrap.appendChild(disc);
       return wrap;
     }
 
@@ -4555,6 +4565,8 @@
           '<b class="gpprice"><span class="bkwas sm">₪' + b.listPrice + '</span> ₪' + b.price + '</b></div>' +
         '<div class="gpmethod">💳 ויזה •••• 4281 · <span dir="ltr">' + esc(acctEmail) + '</span></div>' +
         '<div class="gpsim">🧪 סימולציה להדגמה — לא מתבצע חיוב אמיתי ולא נשמרים פרטי תשלום.</div>' +
+        '<div class="gpterms">ברכישה אני מאשר/ת את <b>תנאי השימוש</b>: התוכן נועד ללימוד והעשרה ואינו ייעוץ פיננסי, ' +
+          'הרכישה סופית וללא החזר כספי, והאחריות על כל החלטה פיננסית היא של הקורא/ת והוריו בלבד.</div>' +
         '<button class="distbtn wide" id="bkPay">אישור רכישה</button>' +
         '<button class="obback" id="bkCancel">ביטול</button></div>';
       w.querySelector("#bkCancel").onclick = closeBillingSheet;
