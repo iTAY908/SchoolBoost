@@ -128,6 +128,85 @@
       border-radius: 12px; padding: 10px 13px; font-size: 12.5px; font-weight: 700; line-height: 1.55;
       color: var(--dim); text-align: center; }
     .emgline.done { color: #00b894; }
+    /* ===== guide bookstore: cinematic billboard + chapter rail + buy box ===== */
+    .bkwrap { display: flex; flex-direction: column; gap: 12px; }
+    .bkhero { position: relative; border-radius: var(--radius-lg); overflow: hidden;
+      border: 1.5px solid var(--border); background: #0b0f1c; min-height: 290px;
+      display: flex; flex-direction: column; justify-content: flex-end; }
+    .bkheroart { position: absolute; inset: 0; }
+    .bkheroart .bkart { width: 100%; height: 100%; display: block; }
+    /* the scrim keeps the title readable over the art — dark in BOTH themes,
+       because the billboard is deliberately cinematic like a streaming header */
+    .bkscrim { position: absolute; inset: 0;
+      background: linear-gradient(0deg, #05070ef2 4%, #05070ec4 34%, transparent 74%); }
+    .bkheroin { position: relative; padding: 18px 18px 14px; width: 100%; display: flex; align-items: flex-end; gap: 14px; }
+    .bkcovershell { flex: 0 0 108px; border-radius: 6px; overflow: hidden;
+      box-shadow: 0 14px 30px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.06); }
+    .bkcover { display: block; width: 100%; height: auto; }
+    .bkherotxt { flex: 1; min-width: 0; }
+    .bkbadge { display: inline-block; background: var(--danger); color: #fff; font-size: 11px;
+      font-weight: 900; letter-spacing: .4px; border-radius: 6px; padding: 4px 9px; margin-bottom: 10px; }
+    .bktitle { margin: 0; font-size: 21px; font-weight: 900; letter-spacing: -.5px; color: #fff; line-height: 1.25; }
+    .bkhook { margin: 8px 0 0; color: #d7d5ee; font-size: 13.5px; font-weight: 700; line-height: 1.5; }
+    .bkmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 11px;
+      color: #a7a4c8; font-size: 12.5px; font-weight: 700; }
+    .bkmeta .bkage { border: 1px solid #ffffff40; border-radius: 4px; padding: 1px 7px; color: #fff; }
+    .bksub { position: relative; margin: 0; padding: 0 18px 16px; color: #a7a4c8; font-size: 13px; line-height: 1.55; }
+    /* buy box */
+    .bkbuy { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+    .bkprices { display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px; }
+    .bknow { font-size: 34px; font-weight: 900; letter-spacing: -1.2px; color: var(--success);
+      direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+    /* The old price is struck with a deliberate RED bar — the point is that a
+       reader must not mistake 35 for what they pay. text-decoration alone
+       renders in the text colour, so the bar is drawn explicitly. */
+    .bkwas { position: relative; display: inline-block; color: var(--dim); font-size: 20px; font-weight: 800;
+      direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; padding: 0 3px; }
+    .bkwas::after { content: ""; position: absolute; inset-inline: -2px; top: 50%; height: 3px;
+      background: #ff3b30; border-radius: 2px; transform: translateY(-50%) rotate(-8deg); pointer-events: none; }
+    .bkwas.sm { font-size: 14px; margin-inline-end: 4px; }
+    .bkwas.sm::after { height: 2px; }
+    .bkoff { background: rgba(255,59,48,.14); color: #ff5b52; border: 1px solid rgba(255,59,48,.4);
+      border-radius: 999px; padding: 4px 11px; font-size: 12.5px; font-weight: 900; }
+    .bkpricenote { margin-top: 10px; color: var(--dim); font-size: 13px; line-height: 1.6; }
+    .bkpricenote b { color: var(--text); }
+    .bkcta { width: 100%; margin-top: 14px; background: var(--primary); border: none; color: #fff;
+      border-radius: var(--radius); padding: 15px; font-family: var(--font); font-size: 16px;
+      font-weight: 900; cursor: pointer; transition: filter .15s; }
+    .bkcta:hover { filter: brightness(1.1); }
+    .bkghost { width: 100%; margin-top: 8px; background: none; border: 1.5px solid var(--border);
+      color: var(--dim); border-radius: var(--radius); padding: 12px; font-family: var(--font);
+      font-size: 14px; font-weight: 800; cursor: pointer; }
+    .bkghost:hover { border-color: var(--primary); color: var(--text); }
+    .bkowned { margin-top: 10px; text-align: center; color: var(--success); font-size: 13.5px; font-weight: 800; }
+    /* fact strip */
+    .bkfacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .bkfact { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+      padding: 11px 8px; text-align: center; }
+    .bkfact b { display: block; font-size: 19px; font-weight: 900; color: var(--primary-2);
+      font-variant-numeric: tabular-nums; }
+    .bkfact span { color: var(--dim); font-size: 11.5px; font-weight: 700; }
+    .bkblurb p { margin: 0 0 11px; color: var(--dim); font-size: 14px; line-height: 1.75; }
+    .bkblurb p:last-child { margin-bottom: 0; color: var(--text); font-weight: 700; }
+    /* chapter rail — horizontal shelf */
+    .bkrail { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 8px;
+      scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+    .bkcard { position: relative; flex: 0 0 168px; scroll-snap-align: start; background: var(--card);
+      border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 13px 13px;
+      transition: transform .18s, border-color .18s; }
+    .bkcard:hover { transform: translateY(-3px); border-color: var(--primary); }
+    .bknum { position: absolute; inset-inline-end: 8px; bottom: 2px; font-size: 40px; font-weight: 900;
+      color: var(--text); opacity: .07; line-height: 1; pointer-events: none; }
+    .bklevel { display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .6px;
+      color: var(--primary-2); background: rgba(108,99,255,.14); border-radius: 5px; padding: 3px 7px;
+      direction: ltr; unicode-bidi: isolate; }
+    .bkcard b { display: block; margin-top: 9px; font-size: 14px; font-weight: 800; line-height: 1.35; }
+    .bkline { display: block; margin-top: 6px; color: var(--dim); font-size: 11.5px; line-height: 1.55; }
+    .bkhint { color: var(--dim); font-size: 12px; font-weight: 700; text-align: center; margin-top: -4px; }
+    .bkquote { margin: 0; background: var(--card-2); border: 1px solid var(--primary-dim);
+      border-radius: var(--radius-lg); padding: 18px; }
+    .bkquote p { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.7; }
+    .bkquote cite { display: block; margin-top: 10px; color: var(--dim); font-size: 12.5px; font-style: normal; font-weight: 700; }
     /* ===== prepaid card panel ===== */
     /* deliberately dark in BOTH themes — it is meant to read as a physical card */
     .ppcard { position: relative; overflow: hidden; border-radius: var(--radius-lg); padding: 18px;
@@ -1039,6 +1118,7 @@
       // budgeting core
       salary: { auto: true, lastApplied: "", history: [] }, // fixed monthly income → buckets
       expenses: [],                                 // expense journal (what left, and why)
+      books: { owned: {} },                         // guide-book library (id -> purchase record)
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -1459,7 +1539,7 @@
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
           incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
-          calmLog: state.calmLog, salary: state.salary, expenses: state.expenses,
+          calmLog: state.calmLog, salary: state.salary, expenses: state.expenses, books: state.books,
         }));
       } catch (e) {}
     }
@@ -1480,6 +1560,7 @@
       const sal = (s && s.salary) || {};
       state.salary = { auto: sal.auto !== false, lastApplied: sal.lastApplied || "", history: Array.isArray(sal.history) ? sal.history : [] };
       state.expenses = s && Array.isArray(s.expenses) ? s.expenses : [];
+      state.books = { owned: (s && s.books && s.books.owned) || {} };
       notifyNativePremium(); // keep the Android wrapper's ad state in sync
     }
 
@@ -1535,7 +1616,7 @@
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
       state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
       state.calmLog = [];
-      state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = [];
+      state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = []; state.books = { owned: {} };
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
       render();
     }
@@ -1970,6 +2051,7 @@
       if (state.screen === "income") return renderIncomePage();
       if (state.screen === "expenses") return renderExpensesPage();
       if (state.screen === "upgrade") return renderUpgradePage();
+      if (state.screen === "books") return renderBooksPage();
       if (state.screen === "calm") return renderCalmPage();
       if (state.screen === "guide") return renderGuidePage();
       if (state.screen === "challenges") return renderChallengesPage();
@@ -2665,10 +2747,11 @@
       const nav = el("div", "modnav");
       const modules = kid
         ? [["💸", "כסף חודשי", "income"], ["🧾", "הוצאות", "expenses"], ["🔮", "סימולטור", "whatif"],
-           ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
+           ["📚", "ספרים", "books"], ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"],
+           ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"]]
         : [["💸", "הכנסה", "income"], ["🧾", "הוצאות", "expenses"], ["🔮", "סימולטור", "whatif"],
-           ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"], ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"],
-           ["💳", "חובות", "debt"]];
+           ["📚", "ספרים", "books"], ["🌿", "רוגע", "calm"], ["🧭", "מדריך", "guide"],
+           ["🏆", "אתגרים", "challenges"], ["🤝", "משותפות", "shared"], ["💳", "חובות", "debt"]];
       modules.forEach((m) => {
         const b = el("button", "modbtn");
         const isPrem = m[2] === "debt" && !state.premium;
@@ -4206,7 +4289,7 @@
 
     // Strict validation — simulates the cryptographic handshake against the
     // Google Play Developer API. Returns {ok, reason}. Sets premium ONLY here.
-    function verifyGooglePlayPurchase(purchaseToken, userId) {
+    function verifyGooglePlayPurchase(purchaseToken, userId, product) {
       secLog("INFO", "התקבלה בקשת אימות רכישה — פונה ל-Google Play Developer API (מדומה)");
       const parts = String(purchaseToken || "").split(".");
       if (parts.length !== 3) {
@@ -4228,11 +4311,266 @@
         return { ok: false, reason: "אסימון כבר נוצל" };
       }
       usedPurchaseTokens[purchaseToken] = true;
+      // Entitlements are granted HERE and nowhere else, whatever was bought.
+      if (product && product.kind === "book") {
+        state.books.owned[product.id] = { at: new Date().toISOString(), price: product.price };
+        saveState();
+        secLog("INFO", "האימות הצליח מול Google Play — נפתחה גישה לספר " + product.id);
+        return { ok: true };
+      }
       state.premium = true; // the ONLY place premium is granted
       saveState();
       notifyNativePremium(); // Android wrapper: remove ads for good
       secLog("INFO", "האימות הצליח מול Google Play — נפתחה גישת AI Premium למשתמש " + userId);
       return { ok: true };
+    }
+
+
+    // =====================================================================
+    // GUIDE BOOKS — a small in-app bookstore.
+    // Presentation is a cinematic billboard + a horizontally scrolling rail of
+    // chapters (streaming-service shelf), wrapped around a classic bookshop
+    // buy-box: cover, blurb, list price struck through, sale price, CTA.
+    //
+    // The book itself ships beside the app as its own self-contained page
+    // (web/books/*.html, mirrored into the Android assets), so the main file
+    // stays small and the reader opens at full size.
+    // =====================================================================
+    const BOOK_LIB = [{
+      id: "book_5000_guide",
+      productId: "book_5000_guide",          // PLACE YOUR PLAY CONSOLE PRODUCT ID HERE
+      title: "5,000 ₪ — המשחק הפיננסי שלך",
+      tagline: "המדריך המעשי לניהול כסף לבני ובנות נוער",
+      hook: "הכסף נכנס. עכשיו מתחיל המשחק האמיתי.",
+      price: 19,
+      listPrice: 35,
+      file: "books/5000-shekel.html",
+      year: "2026",
+      age: "14+",
+      badge: "הכי נמכר",
+      facts: [["50", "עמודים"], ["10", "פרקים"], ["14", "דק׳ קריאה"], ["50", "איורים"], ["9", "סיפורי מקרה"], ["4", "צ׳ק-ליסטים"]],
+      summary: [
+        "קיבלת 5,000 ₪. המוח אומר „חופשה”, החברים אומרים „יאללה, יוצאים”, האינטרנט אומר „מבצע אחרון” — והעתיד לוחש „היי... אולי תשאירו לי משהו?”. הספר הזה עוסק בדיוק ברגע הזה.",
+        "בעשרה שלבים בסגנון משחק הוא מפרק את הכסף לארבעה ארנקים — מטרה קרובה, קופת חירום, עתיד, וכיף בלי רגשות אשם — ומראה איך נותנים לכל שקל תפקיד, לפני שהוא בוחר לעצמו תפקיד ונעלם. בדרך: חוק 48 השעות שעוצר קניות אימפולסיביות, ההבדל בין „רוצה” ל„צריך” כשהמוח מתחפש, אפקט כדור השלג של ריבית דריבית (עם אזהרה כנה שהשקעות אינן מכונת כסף), המלכודות של תשלום דיגיטלי, ואיך אומרים „לא” ללחץ חברתי בלי לריב.",
+        "תשעה סיפורי מקרה מהחיים — דניאל שתכנן 2,000 ₪ לחופשה והוציא הרבה יותר, מאיה שהטלפון שלה נשבר ביום רגיל, יובל שהבין ש„הנחה של 30%” היא עדיין 450 ₪ שיוצאים מהכיס — לצד ארבעה צ׳ק-ליסטים, אתגר של 30 יום ודף סיכום אחד לצילום מסך.",
+        "המטרה היא לא להפוך אתכם לאנשים שלא קונים כלום. המטרה היא שתדעו בדיוק לאן הולכים ה-1,000 הבאים.",
+      ],
+      chapters: [
+        ["INTRO", "הקדמה", "קיבלת כסף. עכשיו מתחילה ההחלטה."],
+        ["LEVEL 1", "תעשי לי סדר", "ארבע קופות, מספר אחד, ואפס בלגן."],
+        ["LEVEL 2", "השכפ״ץ הפיננסי", "הכסף שנועד ליום שבו משהו נשבר."],
+        ["LEVEL 3", "חופשה בלי להישאר בלי שקל", "איך נשארים עם כסף גם ביום האחרון."],
+        ["LEVEL 4", "רוצה מול צריך", "המוח שלך רוצה לקנות. הנה איך עוצרים אותו."],
+        ["LEVEL 5", "כסף עובד בשבילך", "הזמן הוא המשאב שאי אפשר לקנות."],
+        ["LEVEL 6", "להגדיל את העוגה", "הכישרון שלך שווה כסף. בוא נבדוק כמה."],
+        ["LEVEL 7", "אשראי, אפליקציות ומזומן", "לחיצה אחת לא מרגישה כמו שטר. זו הבעיה."],
+        ["LEVEL 8", "לחץ חברתי", "לומר „לא” בלי לאבד חברים."],
+        ["LEVEL 9", "טעויות של מתחילים", "ארבע טעויות שאפשר ללמוד בלי לשלם עליהן."],
+        ["LEVEL 10", "התוכנית שלך לעתיד", "כאן הכול מתחבר לתוכנית אחת."],
+        ["BOSS", "סיכום — המשחק האמיתי", "המשחק לא נגמר. פשוט למדת לשחק."],
+        ["CHEAT SHEET", "דף אחד לטלפון", "דף אחד. צילום מסך. סיימנו."],
+      ],
+      quote: "לפני שאתם מוציאים את הכסף, תחליטו מה אתם רוצים שהכסף יעשה. כי ברגע שהכסף מקבל תפקיד, אתם מפסיקים להיות שחקן שמגיב למה שקורה — ומתחילים להיות השחקן שמנהל את המשחק.",
+    }];
+    const bookById = (id) => BOOK_LIB.find((b) => b.id === id) || null;
+    const ownsBook = (id) => !!(state.books && state.books.owned && state.books.owned[id]);
+    const bookDiscount = (b) => Math.round((1 - b.price / b.listPrice) * 100);
+
+    // Two separate pieces of art, drawn inline so the store needs no image files.
+    // The billboard backdrop is deliberately TEXT-FREE — the hero has its own
+    // <h2>, and an enlarged cover behind it would collide with it. The cover
+    // itself is rendered small, as a physical-looking book with a spine.
+    function bookBackdrop() {
+      return '<svg class="bkart" viewBox="0 0 420 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">' +
+        '<defs><linearGradient id="bkbg" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0" stop-color="#182042"/><stop offset="1" stop-color="#0a0d1a"/></linearGradient></defs>' +
+        '<rect width="420" height="300" fill="url(#bkbg)"/>' +
+        '<g stroke="#ffffff" stroke-opacity=".055">' +
+          [30,60,90,120,150,180,210,240,270,300,330,360,390].map(function (x) { return '<path d="M' + x + ' 0V300"/>'; }).join("") +
+          [30,60,90,120,150,180,210,240,270].map(function (y) { return '<path d="M0 ' + y + 'H420"/>'; }).join("") +
+        '</g>' +
+        '<circle cx="352" cy="52" r="96" fill="#6c63ff" opacity=".22"/>' +
+        '<circle cx="58" cy="240" r="78" fill="#26b980" opacity=".16"/>' +
+      '</svg>';
+    }
+
+    function bookCover(b) {
+      return '<svg class="bkcover" viewBox="0 0 200 290" role="img" aria-label="עטיפת הספר ' + esc(b.title) + '">' +
+        '<defs><linearGradient id="cvbg" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0" stop-color="#1b2340"/><stop offset="1" stop-color="#0b0f1c"/></linearGradient>' +
+          '<linearGradient id="cvgold" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#8dedc4"/><stop offset="1" stop-color="#26b980"/></linearGradient></defs>' +
+        '<rect x="6" width="194" height="290" rx="5" fill="url(#cvbg)"/>' +
+        '<g stroke="#ffffff" stroke-opacity=".05">' +
+          [40,80,120,160].map(function (x) { return '<path d="M' + x + ' 0V290"/>'; }).join("") +
+          [40,80,120,160,200,240].map(function (y) { return '<path d="M6 ' + y + 'H200"/>'; }).join("") +
+        '</g>' +
+        '<circle cx="168" cy="44" r="40" fill="#6c63ff" opacity=".22"/>' +
+        '<text x="103" y="104" text-anchor="middle" font-family="system-ui,sans-serif" font-size="40" font-weight="900" fill="url(#cvgold)">5,000 ₪</text>' +
+        '<text x="103" y="130" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" font-weight="800" fill="#ffffff">המשחק הפיננסי שלך</text>' +
+        '<g transform="translate(103 178)">' +
+          [-54,-18,18,54].map(function (x, i) {
+            return '<g transform="translate(' + x + ' 0)"><rect x="-15" y="-15" width="30" height="30" rx="8" fill="#ffffff" fill-opacity=".08" stroke="' +
+              ["#26b980","#6c63ff","#f5b544","#ff7aa2"][i] + '" stroke-width="1.5"/>' +
+              '<text y="6" text-anchor="middle" font-size="14">' + ["🎯","🛟","📈","🎉"][i] + '</text></g>';
+          }).join("") +
+        '</g>' +
+        '<text x="103" y="238" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" font-weight="700" fill="#8e8bb8">מדריך מעשי · 50 עמודים</text>' +
+        '<text x="103" y="258" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" font-weight="700" fill="#8e8bb8">לבני ובנות נוער</text>' +
+        // the spine: a darker strip plus a highlight, so it reads as an object
+        '<rect x="6" width="13" height="290" fill="#000000" opacity=".35"/>' +
+        '<rect x="6" width="2.5" height="290" fill="#ffffff" opacity=".16"/>' +
+      '</svg>';
+    }
+
+    function openBook(b) {
+      // The reader is a separate page shipped next to the app.
+      //
+      // Inside the Android wrapper window.open() is a dead end: the WebView is
+      // created without setSupportMultipleWindows and has no WebChromeClient, so
+      // it returns null. There we navigate in place instead — shouldOverrideUrlLoading
+      // lets file:// URLs through, and the hardware Back button returns to the app.
+      if (nativeApp) { window.location.href = b.file; return; }
+      const w = window.open(b.file, "_blank");
+      if (w) { showToast("📖 הספר נפתח בלשונית חדשה — קריאה נעימה!"); return; }
+      // Popup blocked in a browser — go there in this tab rather than doing nothing.
+      showToast("📖 פותח את הספר…");
+      window.location.href = b.file;
+    }
+
+    function renderBooksPage() {
+      const body = pageShell("ספרי הדרכה 📚", () => { state.screen = "app"; render(); });
+      BOOK_LIB.forEach((b) => body.appendChild(bookBillboard(b)));
+      const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
+    }
+
+    function bookBillboard(b) {
+      const owned = ownsBook(b.id);
+      const wrap = el("div", "bkwrap");
+
+      // ---- billboard hero
+      const hero = el("div", "bkhero");
+      hero.innerHTML =
+        '<div class="bkheroart">' + bookBackdrop() + '<div class="bkscrim"></div></div>' +
+        '<div class="bkheroin">' +
+          '<div class="bkcovershell">' + bookCover(b) + '</div>' +
+          '<div class="bkherotxt">' +
+            (b.badge ? '<span class="bkbadge">' + esc(b.badge) + '</span>' : "") +
+            '<h2 class="bktitle">' + esc(b.title) + '</h2>' +
+            '<p class="bkhook">' + esc(b.hook) + '</p>' +
+            '<div class="bkmeta"><span class="bkage">' + esc(b.age) + '</span><span>' + esc(b.year) + '</span>' +
+              '<span>' + b.facts[0][0] + ' ' + b.facts[0][1] + '</span><span>' + b.facts[2][0] + ' ' + b.facts[2][1] + '</span></div>' +
+          '</div>' +
+        '</div>' +
+        '<p class="bksub">' + esc(b.tagline) + '</p>';
+      wrap.appendChild(hero);
+
+      // ---- buy box
+      const buy = el("div", "bkbuy");
+      buy.innerHTML =
+        '<div class="bkprices">' +
+          '<span class="bkwas" aria-label="מחיר קודם ' + b.listPrice + ' שקלים — כבר לא בתוקף">₪' + b.listPrice + '</span>' +
+          '<span class="bknow">₪' + b.price + '</span>' +
+          '<span class="bkoff">' + bookDiscount(b) + '%- הנחה</span>' +
+        '</div>' +
+        '<div class="bkpricenote">מחיר מלא ₪' + b.listPrice + ' — <b>עכשיו ₪' + b.price + '</b>. תשלום חד-פעמי, הספר נשאר שלך לתמיד.</div>' +
+        '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦₪" + b.price + "⁩") + '</button>' +
+        (owned
+          ? '<div class="bkowned">✅ הספר בספרייה שלך</div>'
+          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
+      wrap.appendChild(buy);
+      buy.querySelector("#bkBuy").onclick = () => { if (owned) openBook(b); else openBookSheet(b.id); };
+      const peek = buy.querySelector("#bkPeek");
+      if (peek) peek.onclick = () => {
+        const rail = wrap.querySelector(".bkrail");
+        if (rail) rail.scrollIntoView({ behavior: "smooth", block: "center" });
+        showToast("👇 כל 13 הפרקים למטה — גללו ימינה ושמאלה");
+      };
+
+      // ---- what you get
+      const facts = el("div", "bkfacts");
+      facts.innerHTML = b.facts.map((f) => '<div class="bkfact"><b>' + f[0] + '</b><span>' + f[1] + '</span></div>').join("");
+      wrap.appendChild(facts);
+
+      // ---- blurb
+      const st1 = el("div", "section-t"); st1.textContent = "על הספר"; wrap.appendChild(st1);
+      const blurb = el("div", "setcard bkblurb");
+      blurb.innerHTML = b.summary.map((p) => "<p>" + esc(p) + "</p>").join("");
+      wrap.appendChild(blurb);
+
+      // ---- chapter rail
+      const st2 = el("div", "section-t"); st2.textContent = "הפרקים"; wrap.appendChild(st2);
+      const rail = el("div", "bkrail");
+      rail.innerHTML = b.chapters.map((c, i) =>
+        '<div class="bkcard"><span class="bknum">' + (i + 1) + '</span>' +
+          '<span class="bklevel">' + esc(c[0]) + '</span>' +
+          '<b>' + esc(c[1]) + '</b><span class="bkline">' + esc(c[2]) + '</span></div>').join("");
+      wrap.appendChild(rail);
+      const hint = el("div", "bkhint"); hint.textContent = "← אפשר לגלול את הפרקים הצידה";
+      wrap.appendChild(hint);
+
+      // ---- pull quote
+      const q = el("blockquote", "bkquote");
+      q.innerHTML = '<p>' + esc(b.quote) + '</p><cite>מתוך הסיכום</cite>';
+      wrap.appendChild(q);
+
+      // ---- why it fits this app
+      const st3 = el("div", "section-t"); st3.textContent = "למה זה מתחבר לקוביות שלך"; wrap.appendChild(st3);
+      const fit = el("div", "setcard");
+      fit.innerHTML =
+        '<div class="privline">🧊 <b>ארבעת הארנקים שבספר הם הקוביות שלך.</b> מטרה קרובה, קופת חירום, עתיד וכיף — בדיוק החלוקה שהאפליקציה בונה לך.</div>' +
+        '<div class="privline">🛟 <b>פרק 2 הוא קרן החירום.</b> הספר מסביר מתי מותר לגעת בה ואיך ממלאים אותה בחזרה.</div>' +
+        '<div class="privline">🧾 <b>„תנו לכל שקל תפקיד” הוא יומן ההוצאות.</b> חודש אחד של מעקב שווה יותר משנה של ניחושים.</div>' +
+        '<div class="privline">⏳ <b>חוק 48 השעות.</b> לפני שקונים משהו לא חיוני — שאלו את Cubey בצ׳אט, ותנו לזה יומיים.</div>';
+      wrap.appendChild(fit);
+
+      const disc = el("p", "termupd");
+      disc.textContent = "התוכן נועד למידע והדרכה בלבד ואינו מהווה ייעוץ פיננסי, ייעוץ השקעות או ייעוץ מס.";
+      wrap.appendChild(disc);
+      return wrap;
+    }
+
+    // Purchase sheet for a book — same simulated Google Play handshake the
+    // premium upgrade uses, with the book as the product.
+    function openBookSheet(bookId) {
+      const b = bookById(bookId);
+      if (!b) return;
+      clearToasts(); notifyNativeBusy(true);
+      const w = $("paywrap"); w.className = "ccwrap on";
+      w.onclick = (e) => { if (e.target === w) closeBillingSheet(); };
+      const acctEmail = (state.authUser && state.authUser.email) || "you@example.com";
+      w.innerHTML = '<div class="ccsheet gpsheet">' +
+        '<div class="handle"></div>' +
+        '<div class="gphead"><span class="gplogo">▷</span> Google Play</div>' +
+        '<div class="gpitem"><div><b>' + esc(b.title) + '</b><span>ספר דיגיטלי · תשלום חד-פעמי</span></div>' +
+          '<b class="gpprice"><span class="bkwas sm">₪' + b.listPrice + '</span> ₪' + b.price + '</b></div>' +
+        '<div class="gpmethod">💳 ויזה •••• 4281 · <span dir="ltr">' + esc(acctEmail) + '</span></div>' +
+        '<div class="gpsim">🧪 סימולציה להדגמה — לא מתבצע חיוב אמיתי ולא נשמרים פרטי תשלום.</div>' +
+        '<button class="distbtn wide" id="bkPay">אישור רכישה</button>' +
+        '<button class="obback" id="bkCancel">ביטול</button></div>';
+      w.querySelector("#bkCancel").onclick = closeBillingSheet;
+      w.querySelector("#bkPay").onclick = () => {
+        const btn = w.querySelector("#bkPay");
+        btn.disabled = true; btn.textContent = "מאמת רכישה מול Google Play…";
+        const userId = state.authUser ? state.authUser.id : "anon";
+        const product = { kind: "book", id: b.id, price: b.price, productId: b.productId };
+        if (IS_MOCK_ENV) {
+          const token = issuePlayPurchaseToken(userId);
+          setTimeout(() => finish(verifyGooglePlayPurchase(token, userId, product)), 1400);
+        } else {
+          runRealPurchase(userId).then(finish);
+        }
+        function finish(res) {
+          closeBillingSheet();
+          if (res && res.ok) {
+            burstCoins("📚");
+            render();
+            showToast("📚 הספר נוסף לספרייה שלך — אפשר לקרוא עכשיו!");
+          } else {
+            showToast("❌ האימות נכשל: " + ((res && res.reason) || "שגיאה"));
+          }
+        }
+      };
     }
 
     function renderUpgradePage() {
