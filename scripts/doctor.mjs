@@ -172,6 +172,57 @@ if (times.length) {
   problems.push('החיבור לטלגרם לא עובד כרגע');
 }
 
+// ── 7. מוח ה-AI והחיבור לשירותים חיצוניים ─────────────────
+if (!config.anthropicKey) {
+  line('ℹ️', 'סוכן ה-AI כבוי (אין ANTHROPIC_API_KEY) — הבוט יעבוד עם התפריטים בלבד');
+  if (config.mcpUrl) {
+    problems.push('הגדרת MCP_SERVER_URL אבל אין ANTHROPIC_API_KEY. בלי מוח AI, החיבור לשירותים לא עושה כלום');
+  }
+} else {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  const anthropic = new Anthropic({ apiKey: config.anthropicKey });
+
+  const request = {
+    model: config.aiModel,
+    max_tokens: 1024,
+    output_config: { effort: 'low' },
+    messages: [{ role: 'user', content: 'ענה במילה אחת: אישור' }],
+  };
+
+  if (config.mcpUrl) {
+    request.betas = ['mcp-client-2025-11-20'];
+    request.tools = [{ type: 'mcp_toolset', mcp_server_name: config.mcpName }];
+    request.mcp_servers = [{
+      type: 'url',
+      name: config.mcpName,
+      url: config.mcpUrl,
+      ...(config.mcpToken ? { authorization_token: config.mcpToken } : {}),
+    }];
+  }
+
+  try {
+    await anthropic.beta.messages.create(request);
+    line('✅', `סוכן ה-AI עונה (${config.aiModel})`);
+    if (config.mcpUrl) {
+      line('✅', `שרת ה-MCP "${config.mcpName}" נענה — היומן והמייל המחוברים זמינים לבוט`);
+    } else {
+      line('ℹ️', 'אין MCP_SERVER_URL — הבוט לא רואה יומן, מייל או שירותים חיצוניים');
+    }
+  } catch (err) {
+    const detail = err?.message || String(err);
+    if (err?.status === 401) {
+      line('❌', 'מפתח ה-AI נדחה (401) — בדוק את ANTHROPIC_API_KEY');
+      problems.push('ANTHROPIC_API_KEY לא תקף');
+    } else if (config.mcpUrl && /mcp/i.test(detail)) {
+      line('❌', `שרת ה-MCP נדחה: ${detail.slice(0, 160)}`);
+      problems.push('כתובת ה-MCP או הטוקן שגויים. העתק אותם מחדש מדף ההגדרות של Zapier MCP');
+    } else {
+      line('❌', `קריאת ה-AI נכשלה: ${detail.slice(0, 160)}`);
+      problems.push('הקריאה למודל נכשלה — ראה את השגיאה למעלה');
+    }
+  }
+}
+
 // ── סיכום ─────────────────────────────────────────────────
 console.log('─'.repeat(46));
 if (!problems.length) {
