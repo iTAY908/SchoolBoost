@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "test": "node test/run-tests.js"
+    "test": "node test/run-tests.js",
+    "doctor": "node scripts/doctor.mjs"
   },
   "license": "MIT",
   "private": true
