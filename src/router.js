@@ -25,14 +25,16 @@ export const BOT_COMMANDS = [
   { command: 'remind', description: 'תזכורת חדשה' },
   { command: 'settings', description: 'הגדרות' },
   { command: 'cancel', description: 'ביטול הפעולה הנוכחית' },
+  { command: 'reset', description: 'איפוס זיכרון השיחה עם ה-AI' },
   { command: 'help', description: 'עזרה' },
 ];
 
 export class Router {
-  constructor({ tg, store, tz }) {
+  constructor({ tg, store, tz, agent = null }) {
     this.tg = tg;
     this.store = store;
     this.tz = tz;
+    this.agent = agent;
     this.sessions = new Map(); // "chatId:userId" -> {name, data}
 
     this.commands = {};
@@ -128,7 +130,7 @@ export class Router {
     }
 
     // כתיבה חופשית
-    return this.handleFreeText(ctx);
+    return this.handleFreeText(ctx, message);
   }
 
   async handleCommand(ctx, text, message) {
@@ -158,6 +160,11 @@ export class Router {
       case '/today':
         return ctx.reply(renderToday(ctx.chat, this.tz, { greeting: false }));
 
+      case '/reset':
+        if (!this.agent) return ctx.reply('אין שיחת AI פעילה.', MAIN_MENU);
+        this.agent.resetHistory(ctx.chatId);
+        return ctx.reply('🧠 שכחתי את השיחה שלנו. מתחילים מחדש.', MAIN_MENU);
+
       case '/cancel':
         if (!ctx.state) return ctx.reply('אין פעולה פעילה לביטול.', MAIN_MENU);
         ctx.clearState();
@@ -177,7 +184,47 @@ export class Router {
     }
   }
 
-  async handleFreeText(ctx) {
+  /** מעביר את ההודעה לסוכן ה-AI, שולח את התשובה ואת הקבצים שנוצרו. */
+  async askAgent(ctx, message) {
+    await this.tg.sendChatAction(ctx.chatId, 'typing');
+
+    let result;
+    try {
+      result = await this.agent.reply({
+        store: this.store,
+        chatId: ctx.chatId,
+        text: ctx.text,
+        userName: message?.from?.first_name || ctx.chat.settings.name,
+        onProgress: () => this.tg.sendChatAction(ctx.chatId, 'typing'),
+      });
+    } catch (err) {
+      log.error('הסוכן נכשל:', err?.stack || err);
+      return ctx.reply(agentErrorText(err), MAIN_MENU);
+    }
+
+    if (result.text) {
+      // תשובת AI נשלחת כטקסט גולמי - היא לא מובטחת להיות HTML תקין
+      await this.tg.sendMessage(ctx.chatId, result.text, { parse_mode: undefined });
+    }
+
+    for (const file of result.files) {
+      try {
+        await this.tg.sendChatAction(ctx.chatId, 'upload_document');
+        const { buffer, filename } = await this.agent.downloadFile(file.fileId);
+        await this.tg.sendDocument(ctx.chatId, buffer, filename);
+      } catch (err) {
+        log.error('שליחת הקובץ נכשלה:', err?.message || err);
+        await this.tg.sendMessage(ctx.chatId, 'הכנתי את הקובץ אבל השליחה נכשלה 😕 נסה לבקש שוב.');
+      }
+    }
+
+    if (!result.text && !result.files.length) {
+      await this.tg.sendMessage(ctx.chatId, 'לא הצלחתי לנסח תשובה. תנסה לנסח אחרת?');
+    }
+    return null;
+  }
+
+  async handleFreeText(ctx, message) {
     const intent = quick.detect(ctx.text, this.tz);
 
     if (intent?.kind === 'reminder-partial') {
@@ -189,6 +236,7 @@ export class Router {
 
     const result = quick.apply(intent, ctx);
     if (!result) {
+      if (this.agent) return this.askAgent(ctx, message);
       return ctx.reply(
         [
           'לא בטוח מה לעשות עם זה 🤔',
@@ -277,4 +325,13 @@ function mainMenuText(chat) {
 function normalize(payload, extra) {
   if (typeof payload === 'string') return { text: payload, ...extra };
   return { ...payload, ...extra };
+}
+
+
+function agentErrorText(err) {
+  const status = err?.status;
+  if (status === 401) return 'מפתח ה-AI לא תקף. בדוק את ANTHROPIC_API_KEY בקובץ .env.';
+  if (status === 429) return 'הגעתי למגבלת הקצב של ה-AI 😅 נסה שוב עוד רגע.';
+  if (status === 400) return `ה-AI דחה את הבקשה: ${err?.message || 'שגיאה לא ידועה'}`;
+  return 'משהו השתבש מול ה-AI. נסה שוב, ואם זה חוזר תבדוק את הלוג.';
 }

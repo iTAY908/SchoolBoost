@@ -4,6 +4,7 @@ import { Telegram } from './telegram.js';
 import { Store } from './storage.js';
 import { Router, BOT_COMMANDS } from './router.js';
 import { Scheduler } from './scheduler.js';
+import { Agent } from './ai/agent.js';
 
 async function main() {
   if (!config.token) {
@@ -15,7 +16,8 @@ async function main() {
 
   const tg = new Telegram(config.token, { apiBase: config.apiBase });
   const store = new Store(config.dataFile, config.tz);
-  const router = new Router({ tg, store, tz: config.tz });
+  const agent = await buildAgent();
+  const router = new Router({ tg, store, tz: config.tz, agent });
   const scheduler = new Scheduler({ tg, store, tz: config.tz });
 
   const me = await tg.getMe();
@@ -48,6 +50,31 @@ async function main() {
 
   store.close();
   log.info('להתראות 👋');
+}
+
+/** מרכיב את סוכן ה-AI אם הוגדר מפתח. בלעדיו הבוט עובד עם התפריטים בלבד. */
+async function buildAgent() {
+  if (!config.anthropicKey) {
+    log.info('אין ANTHROPIC_API_KEY — הבוט ירוץ עם התפריטים והקיצורים בלבד');
+    return null;
+  }
+
+  const mcp = config.mcpUrl
+    ? { url: config.mcpUrl, name: config.mcpName, token: config.mcpToken || undefined }
+    : null;
+
+  const agent = new Agent({
+    apiKey: config.anthropicKey,
+    model: config.aiModel,
+    effort: config.aiEffort,
+    tz: config.tz,
+    files: config.aiFiles,
+    mcp,
+  });
+
+  await agent.discoverSkills();
+  log.info(`סוכן AI פעיל (${config.aiModel}, effort=${config.aiEffort})${mcp ? ` + שרת MCP "${mcp.name}"` : ''}`);
+  return agent;
 }
 
 main().catch((err) => {

@@ -110,6 +110,40 @@ export class Telegram {
     });
   }
 
+  /** מודיע למשתמש ש"הבוט מקליד" — חשוב כשתשובת ה-AI לוקחת כמה שניות. */
+  sendChatAction(chatId, action = 'typing') {
+    return this.call('sendChatAction', { chat_id: chatId, action }, { retries: 0 }).catch(() => null);
+  }
+
+  /** שולח קובץ (מצגת, אקסל, PDF) כמסמך. */
+  async sendDocument(chatId, buffer, filename, caption) {
+    const form = new FormData();
+    form.append('chat_id', String(chatId));
+    form.append('document', new Blob([buffer]), filename);
+    if (caption) form.append('caption', caption.slice(0, 1024));
+
+    const url = `${this.apiBase}/bot${this.token}/sendDocument`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 120000);
+    try {
+      // בלי content-type ידני - fetch מוסיף את ה-boundary של multipart בעצמו
+      const res = await this.fetch(url, { method: 'POST', body: form, signal: controller.signal });
+      const raw = await res.text();
+      let body;
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        throw new TelegramError('sendDocument', res.status, `תשובה שאינה JSON: ${raw.slice(0, 120)}`);
+      }
+      if (!body.ok) {
+        throw new TelegramError('sendDocument', body.error_code, body.description, body.parameters);
+      }
+      return body.result;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   setMyCommands(commands) {
     return this.call('setMyCommands', { commands });
   }

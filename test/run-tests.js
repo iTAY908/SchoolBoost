@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { writeFileSync } from 'node:fs';
-import { makeHarness, fakeTelegram } from './helpers.js';
+import { makeHarness, fakeTelegram, fakeAnthropic, textResponse, toolCallResponse } from './helpers.js';
+import { Agent } from '../src/ai/agent.js';
+import { makeExecutors } from '../src/ai/tools.js';
 import {
   parseDate, parseTime, addDays, daysBetween, weekdayOf, todayKey,
   zonedToEpoch, humanDate, isoKey,
@@ -499,6 +501,235 @@ test('getUpdates לא מנסה שוב בעצמו - הלולאה אחראית ל�
   tg.callOnce = (method, payload, opts) => { seen += 1; return original(method, payload, opts); };
   await tg.call('getUpdates', {}, { retries: 0 }).catch(() => {});
   assert.equal(seen, 1);
+});
+
+// ── סוכן ה-AI ──────────────────────────────────────────────
+function makeAgent(script, opts = {}) {
+  return new Agent({
+    model: 'claude-opus-5', effort: 'medium', tz: TZ,
+    client: fakeAnthropic(script, opts),
+    ...opts.agent,
+  });
+}
+
+test('הכלים המקומיים קוראים וכותבים לנתוני הצ׳אט', () => {
+  const h = makeHarness();
+  const ex = makeExecutors({ store: h.store, chatId: h.chatId, tz: TZ });
+
+  const added = ex.add_homework({ subject: 'פיזיקה', title: 'תרגילים', due: addDays(todayKey(TZ), 1) });
+  assert.equal(added.created.subject, 'פיזיקה');
+
+  const listed = ex.list_homework({});
+  assert.equal(listed.count, 1);
+
+  const done = ex.complete_homework({ id: added.created.id });
+  assert.equal(done.completed.done, true);
+  assert.equal(ex.list_homework({}).count, 0);
+  h.cleanup();
+});
+
+test('get_agenda מחזיר שיעורים, מטלות ומבחנים ליום המבוקש', () => {
+  const h = makeHarness();
+  const today = todayKey(TZ);
+  const chat = h.chat();
+  chat.schedule[String(weekdayOf(today))] = [{ time: '08:00', subject: 'מתמטיקה' }];
+  chat.homework.push({ id: 1, subject: 'אנגלית', title: 'עבודה', due: today, done: false });
+  chat.exams.push({ id: 1, subject: 'כימיה', date: today });
+
+  const agenda = makeExecutors({ store: h.store, chatId: h.chatId, tz: TZ }).get_agenda({ days: 1 });
+  assert.equal(agenda.days[0].lessons[0].subject, 'מתמטיקה');
+  assert.equal(agenda.days[0].homework_due[0].subject, 'אנגלית');
+  assert.equal(agenda.days[0].exams[0].subject, 'כימיה');
+  h.cleanup();
+});
+
+test('כלי שקיבל קלט שגוי מחזיר error ולא זורק', () => {
+  const h = makeHarness();
+  const ex = makeExecutors({ store: h.store, chatId: h.chatId, tz: TZ });
+  assert.ok(ex.add_grade({ subject: 'מתמטיקה', value: 500 }).error);
+  assert.ok(ex.complete_homework({ id: 999 }).error);
+  assert.ok(ex.set_schedule_day({ day: 9, lessons: [] }).error);
+  h.cleanup();
+});
+
+test('הסוכן מפעיל כלי ואז מחזיר תשובה', async () => {
+  const h = makeHarness();
+  const agent = makeAgent([
+    toolCallResponse('add_homework', { subject: 'ביולוגיה', title: 'לסכם פרק 5' }),
+    textResponse('רשמתי לך: ביולוגיה, לסכם פרק 5'),
+  ]);
+
+  const result = await agent.reply({ store: h.store, chatId: h.chatId, text: 'תרשום לי לסכם פרק 5 בביולוגיה' });
+  assert.match(result.text, /רשמתי/);
+  assert.deepEqual(result.toolsUsed, ['add_homework']);
+  assert.equal(h.chat().homework.length, 1);
+  assert.equal(h.chat().homework[0].subject, 'ביולוגיה');
+  h.cleanup();
+});
+
+test('תוצאות כלים חוזרות בהודעת user אחת', async () => {
+  const h = makeHarness();
+  const client = fakeAnthropic([
+    { stop_reason: 'tool_use', content: [
+      { type: 'tool_use', id: 'a', name: 'list_exams', input: {} },
+      { type: 'tool_use', id: 'b', name: 'list_grades', input: {} },
+    ] },
+    textResponse('הכול נקי'),
+  ]);
+  const agent = new Agent({ model: 'claude-opus-5', effort: 'medium', tz: TZ, client });
+  await agent.reply({ store: h.store, chatId: h.chatId, text: 'מה המצב' });
+
+  const second = client.requests[1].messages;
+  const toolResults = second.filter((m) => Array.isArray(m.content) && m.content.some((b) => b.type === 'tool_result'));
+  assert.equal(toolResults.length, 1, 'שתי התוצאות חייבות לחזור בהודעה אחת');
+  assert.equal(toolResults[0].content.length, 2);
+  h.cleanup();
+});
+
+test('כלי לא מוכר מוחזר כשגיאה ולא מפיל את הסוכן', async () => {
+  const h = makeHarness();
+  const client = fakeAnthropic([
+    toolCallResponse('שלח_טילים', {}),
+    textResponse('אין לי כלי כזה'),
+  ]);
+  const agent = new Agent({ model: 'claude-opus-5', effort: 'medium', tz: TZ, client });
+  const result = await agent.reply({ store: h.store, chatId: h.chatId, text: 'תעשה משהו' });
+  assert.match(result.text, /אין לי כלי כזה/);
+  const sent = client.requests[1].messages.at(-1).content[0];
+  assert.equal(sent.is_error, true);
+  h.cleanup();
+});
+
+test('הסוכן אוסף קבצים שנוצרו בהרצת קוד', async () => {
+  const h = makeHarness();
+  const agent = makeAgent([{
+    stop_reason: 'end_turn',
+    content: [
+      { type: 'bash_code_execution_tool_result', content: {
+        type: 'bash_code_execution_result', stdout: '', stderr: '', return_code: 0,
+        content: [{ type: 'bash_code_execution_output', file_id: 'file_abc' }],
+      } },
+      { type: 'text', text: 'הנה המצגת' },
+    ],
+  }]);
+
+  const result = await agent.reply({ store: h.store, chatId: h.chatId, text: 'תכין מצגת' });
+  assert.deepEqual(result.files, [{ fileId: 'file_abc' }]);
+  const downloaded = await agent.downloadFile('file_abc');
+  assert.equal(downloaded.filename, 'file_abc.pptx');
+  assert.equal(downloaded.buffer.toString(), 'FAKE-FILE');
+  h.cleanup();
+});
+
+test('הסוכן ממשיך אחרי pause_turn', async () => {
+  const h = makeHarness();
+  const agent = makeAgent([
+    { stop_reason: 'pause_turn', content: [{ type: 'text', text: 'רגע…' }] },
+    textResponse('סיימתי'),
+  ]);
+  const result = await agent.reply({ store: h.store, chatId: h.chatId, text: 'חפש לי משהו' });
+  assert.match(result.text, /סיימתי/);
+  h.cleanup();
+});
+
+test('סירוב של המודל מוחזר כהודעה ולא כקריסה', async () => {
+  const h = makeHarness();
+  const agent = makeAgent([{ stop_reason: 'refusal', content: [] }]);
+  const result = await agent.reply({ store: h.store, chatId: h.chatId, text: '...' });
+  assert.match(result.text, /לא אוכל לעזור/);
+  h.cleanup();
+});
+
+test('שרת MCP וסקילים נכנסים לבקשה רק כשהם מוגדרים', async () => {
+  const h = makeHarness();
+
+  const plain = fakeAnthropic([textResponse('שלום')]);
+  await new Agent({ model: 'claude-opus-5', effort: 'medium', tz: TZ, client: plain })
+    .reply({ store: h.store, chatId: h.chatId, text: 'היי' });
+  assert.equal(plain.requests[0].mcp_servers, undefined);
+  assert.equal(plain.requests[0].container, undefined);
+  assert.equal(plain.requests[0].betas, undefined);
+
+  const wired = fakeAnthropic([textResponse('שלום')], {
+    skills: [{ id: 'pptx', type: 'anthropic' }],
+  });
+  const agent = new Agent({
+    model: 'claude-opus-5', effort: 'medium', tz: TZ, client: wired,
+    mcp: { url: 'https://mcp.example/api', name: 'connectors', token: 'secret' },
+  });
+  await agent.discoverSkills();
+  await agent.reply({ store: h.store, chatId: h.chatId, text: 'היי' });
+
+  const req = wired.requests[0];
+  assert.equal(req.mcp_servers[0].url, 'https://mcp.example/api');
+  assert.equal(req.mcp_servers[0].authorization_token, 'secret');
+  assert.deepEqual(req.container.skills, [{ skill_id: 'pptx', type: 'anthropic', version: 'latest' }]);
+  assert.ok(req.betas.includes('mcp-client-2025-11-20'));
+  assert.ok(req.betas.includes('skills-2025-10-02'));
+  assert.ok(req.tools.some((t) => t.type === 'mcp_toolset'));
+  assert.ok(req.tools.some((t) => t.type === 'code_execution_20260521'));
+  h.cleanup();
+});
+
+test('קיצוץ ההיסטוריה לא משאיר tool_result בלי הקריאה שלו', async () => {
+  const h = makeHarness();
+  const agent = makeAgent([textResponse('טוב')]);
+  for (let i = 0; i < 20; i++) {
+    await agent.reply({ store: h.store, chatId: h.chatId, text: `שאלה ${i}` });
+  }
+  const history = agent.history(h.chatId);
+  assert.equal(history[0].role, 'user');
+  assert.ok(history.length <= 24);
+  h.cleanup();
+});
+
+test('הראוטר מעביר טקסט חופשי לסוכן ושולח קובץ שנוצר', async () => {
+  const agent = makeAgent([{
+    stop_reason: 'end_turn',
+    content: [
+      { type: 'bash_code_execution_tool_result', content: {
+        type: 'bash_code_execution_result', stdout: '', stderr: '', return_code: 0,
+        content: [{ type: 'bash_code_execution_output', file_id: 'file_deck' }],
+      } },
+      { type: 'text', text: 'הכנתי לך מצגת' },
+    ],
+  }]);
+  const h = makeHarness({ agent });
+
+  await h.send('תכין לי מצגת על פוטוסינתזה');
+  assert.match(h.tg.last(), /הכנתי לך מצגת/);
+  const doc = h.tg.calls.find((c) => c.method === 'sendDocument');
+  assert.ok(doc, 'הקובץ אמור להישלח כמסמך');
+  h.cleanup();
+});
+
+test('כשל של הסוכן מוחזר כהודעה ידידותית', async () => {
+  const client = fakeAnthropic([() => { const e = new Error('bad key'); e.status = 401; throw e; }]);
+  const agent = new Agent({ model: 'claude-opus-5', effort: 'medium', tz: TZ, client });
+  const h = makeHarness({ agent });
+  await h.send('מה שלומך');
+  assert.match(h.tg.last(), /ANTHROPIC_API_KEY/);
+  h.cleanup();
+});
+
+test('/reset מנקה את זיכרון השיחה', async () => {
+  const agent = makeAgent([textResponse('היי')]);
+  const h = makeHarness({ agent });
+  await h.send('שלום');
+  assert.ok(agent.history(h.chatId).length > 0);
+  await h.send('/reset');
+  assert.equal(agent.history(h.chatId).length, 0);
+  h.cleanup();
+});
+
+test('קיצורי הכתיבה החופשית עדיין קודמים לסוכן', async () => {
+  const client = fakeAnthropic([textResponse('לא אמור להיקרא')]);
+  const agent = new Agent({ model: 'claude-opus-5', effort: 'medium', tz: TZ, client });
+  const h = makeHarness({ agent });
+  await h.send('ציון 91 בפיזיקה');
+  assert.equal(client.requests.length, 0, 'קיצור מזוהה לא אמור לעלות כסף על AI');
+  assert.equal(h.chat().grades[0].value, 91);
+  h.cleanup();
 });
 
 // ── הרצה ───────────────────────────────────────────────────

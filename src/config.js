@@ -54,6 +54,20 @@ export const config = {
   logLevel: process.env.LOG_LEVEL || 'info',
   // IPv6 שבור הוא הסיבה הנפוצה ל-UND_ERR_CONNECT_TIMEOUT. אפשר לכבות ב-PREFER_IPV4=0
   preferIPv4: process.env.PREFER_IPV4 !== '0',
+
+  // ── מוח ה-AI ────────────────────────────────────────────
+  // בלי מפתח, הבוט עובד כרגיל עם התפריטים והקיצורים בלבד.
+  anthropicKey: process.env.ANTHROPIC_API_KEY || '',
+  aiModel: process.env.AI_MODEL || 'claude-opus-5',
+  // medium נותן תשובות מהירות בצ'אט. high לתשובות עמוקות יותר, low לזול ומהיר.
+  aiEffort: process.env.AI_EFFORT || 'medium',
+  aiFiles: process.env.AI_FILES !== '0',
+
+  // ── חיבור לשירותים חיצוניים דרך שרת MCP ─────────────────
+  // כתובת אחת שמביאה איתה את כל החשבונות המחוברים (מייל, יומן, זום...).
+  mcpUrl: process.env.MCP_SERVER_URL || '',
+  mcpName: process.env.MCP_SERVER_NAME || 'connectors',
+  mcpToken: process.env.MCP_SERVER_TOKEN || '',
 };
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };

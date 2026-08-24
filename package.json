@@ -13,5 +13,8 @@
     "doctor": "node scripts/doctor.mjs"
   },
   "license": "MIT",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0"
+  }
 }

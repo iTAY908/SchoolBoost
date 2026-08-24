@@ -12,7 +12,10 @@ export function fakeTelegram() {
 
   const fetchImpl = async (url, init) => {
     const method = url.split('/').pop();
-    const payload = JSON.parse(init.body);
+    // sendDocument שולח multipart, כל השאר JSON
+    const payload = init.body instanceof FormData
+      ? Object.fromEntries([...init.body.entries()].map(([k, v]) => [k, typeof v === 'string' ? v : '<binary>']))
+      : JSON.parse(init.body);
     calls.push({ method, payload });
 
     let result = true;
@@ -22,6 +25,8 @@ export function fakeTelegram() {
       result = { message_id: payload.message_id, chat: { id: payload.chat_id }, text: payload.text };
     } else if (method === 'getMe') {
       result = { id: 1, is_bot: true, username: 'SchoolBoostTestBot', first_name: 'SchoolBoost' };
+    } else if (method === 'sendDocument') {
+      result = { message_id: ++messageId, document: { file_name: payload.document } };
     }
     // מחקה Response אמיתי: הלקוח קורא text() ומפרש בעצמו
     return { status: 200, text: async () => JSON.stringify({ ok: true, result }) };
@@ -39,19 +44,63 @@ export function fakeTelegram() {
   return tg;
 }
 
-export function makeHarness({ tz = 'Asia/Jerusalem' } = {}) {
+/**
+ * לקוח Anthropic מזויף. `script` הוא מערך תשובות שיוחזרו לפי הסדר,
+ * והקריאות שנשלחו נאספות ל-`requests` לבדיקה.
+ */
+export function fakeAnthropic(script, { skills = [], fileBody = 'FAKE-FILE' } = {}) {
+  const requests = [];
+  let i = 0;
+
+  return {
+    requests,
+    beta: {
+      messages: {
+        create: async (req) => {
+          // צילום מצב: מערך ההודעות ממשיך להשתנות אחרי הקריאה
+          requests.push({ ...req, messages: structuredClone(req.messages) });
+          const res = script[Math.min(i, script.length - 1)];
+          i += 1;
+          if (typeof res === 'function') return res(req);
+          return res;
+        },
+      },
+      skills: {
+        list: () => ({
+          async *[Symbol.asyncIterator]() {
+            for (const s of skills) yield s;
+          },
+        }),
+      },
+      files: {
+        retrieveMetadata: async (id) => ({ filename: `${id}.pptx` }),
+        download: async () => ({ arrayBuffer: async () => new TextEncoder().encode(fileBody).buffer }),
+      },
+    },
+  };
+}
+
+export function textResponse(text, stop = 'end_turn') {
+  return { stop_reason: stop, content: [{ type: 'text', text }] };
+}
+
+export function toolCallResponse(name, input, id = 'tu_1') {
+  return { stop_reason: 'tool_use', content: [{ type: 'tool_use', id, name, input }] };
+}
+
+export function makeHarness({ tz = 'Asia/Jerusalem', agent = null } = {}) {
   const dir = mkdtempSync(path.join(tmpdir(), 'schoolboost-'));
   const file = path.join(dir, 'data.json');
   const tg = fakeTelegram();
   const store = new Store(file, tz);
-  const router = new Router({ tg, store, tz });
+  const router = new Router({ tg, store, tz, agent });
 
   const chatId = 555;
   const userId = 777;
   let msgId = 1;
 
   return {
-    tg, store, router, tz, chatId, userId, file, dir,
+    tg, store, router, tz, chatId, userId, file, dir, agent,
     chat: () => store.chat(chatId),
 
     send(text) {
