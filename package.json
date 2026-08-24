@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node src/index.js",
     "test": "node test/run-tests.js",
-    "doctor": "node scripts/doctor.mjs"
+    "doctor": "node scripts/doctor.mjs",
+    "setup": "node scripts/setup.mjs"
   },
   "license": "MIT",
   "private": true,

@@ -57,10 +57,16 @@
 דרוש Node.js 18.17 ומעלה (נבדק על Node 22).
 
 ```bash
-npm install          # תלות אחת: ה-SDK של Anthropic
-cp .env.example .env # ערוך את .env והדבק את הטוקן מ-@BotFather
+npm install    # תלות אחת: ה-SDK של Anthropic
+npm run setup  # אשף שמגדיר הכול ומריץ אבחון
 npm start
 ```
+
+`npm run setup` שואל על כל מפתח, אומר מאיפה להביא אותו, בודק שהערך נראה תקין,
+כותב `.env` תקין (UTF-8 בלי BOM, שומר על מפתחות קיימים) ומריץ `doctor` בסוף.
+Enter על שאלה = לדלג או להשאיר את הערך הקיים.
+
+להגדרה ידנית: `cp .env.example .env` ועריכה בעורך טקסט.
 
 בדיקות (רצות אופליין, בלי רשת):
 
