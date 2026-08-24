@@ -1,22 +1,44 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
-// טעינת .env בלי תלויות חיצוניות
-function loadDotEnv(file = '.env') {
-  const full = path.resolve(process.cwd(), file);
-  if (!existsSync(full)) return;
-  const raw = readFileSync(full, 'utf8');
-  for (const line of raw.split(/\r?\n/)) {
+/**
+ * מפרש תוכן של קובץ .env.
+ * סובלני למה שקורה בפועל: BOM שנוצר ב-PowerShell, סופי שורה של Windows,
+ * רווחים סביב ה-=, מרכאות עוטפות ותווי RTL נסתרים שנדבקים בהעתקה.
+ */
+export function parseEnv(raw) {
+  const out = {};
+  const text = String(raw).replace(/^\uFEFF/, ''); // BOM מתחילת הקובץ
+
+  for (const line of text.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
+
     const eq = trimmed.indexOf('=');
     if (eq === -1) continue;
-    const key = trimmed.slice(0, eq).trim();
+
+    const key = trimmed.slice(0, eq).trim().replace(/[\u200e\u200f\u202a-\u202e]/g, '');
+    if (!key) continue;
+
     let value = trimmed.slice(eq + 1).trim();
     if ((value.startsWith('"') && value.endsWith('"')) ||
         (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1);
     }
+    // סימני כיווניות נדבקים כשמעתיקים טוקן מצ'אט בעברית
+    value = value.replace(/[\u200e\u200f\u202a-\u202e]/g, '').trim();
+
+    out[key] = value;
+  }
+  return out;
+}
+
+// טעינת .env בלי תלויות חיצוניות
+function loadDotEnv(file = '.env') {
+  const full = path.resolve(process.cwd(), file);
+  if (!existsSync(full)) return;
+  const parsed = parseEnv(readFileSync(full, 'utf8'));
+  for (const [key, value] of Object.entries(parsed)) {
     if (process.env[key] === undefined) process.env[key] = value;
   }
 }

@@ -6,6 +6,7 @@ import {
   zonedToEpoch, humanDate, isoKey,
 } from '../src/time.js';
 import { detect, splitTrailingDate } from '../src/quick.js';
+import { parseEnv } from '../src/config.js';
 import { parseLessons } from '../src/features/schedule.js';
 import { summarize } from '../src/features/grades.js';
 import { parseWhen } from '../src/features/reminders.js';
@@ -74,6 +75,30 @@ test('humanDate מציג "היום" ו"מחר"', () => {
   const today = todayKey(TZ);
   assert.match(humanDate(today, TZ), /^היום/);
   assert.match(humanDate(addDays(today, 1), TZ), /^מחר/);
+});
+
+// ── קובץ .env ───────────────────────────────────────────────
+test('parseEnv קורא קובץ תקין', () => {
+  const env = parseEnv('TELEGRAM_BOT_TOKEN=123:ABC\nTZ_NAME=Asia/Jerusalem\n');
+  assert.equal(env.TELEGRAM_BOT_TOKEN, '123:ABC');
+  assert.equal(env.TZ_NAME, 'Asia/Jerusalem');
+});
+
+test('parseEnv מתעלם מ-BOM של PowerShell ומסופי שורה של Windows', () => {
+  const env = parseEnv('\uFEFFTELEGRAM_BOT_TOKEN=123:ABC\r\nLOG_LEVEL=debug\r\n');
+  assert.equal(env.TELEGRAM_BOT_TOKEN, '123:ABC', 'BOM לא אמור להידבק לשם המשתנה');
+  assert.equal(env.LOG_LEVEL, 'debug');
+});
+
+test('parseEnv מנקה מרכאות, רווחים והערות', () => {
+  const env = parseEnv('# הערה\n\nTELEGRAM_BOT_TOKEN = "123:ABC"  \nTZ_NAME=\'Asia/Jerusalem\'');
+  assert.equal(env.TELEGRAM_BOT_TOKEN, '123:ABC');
+  assert.equal(env.TZ_NAME, 'Asia/Jerusalem');
+});
+
+test('parseEnv מסיר סימני כיווניות שנדבקים בהעתקה מצ׳אט בעברית', () => {
+  const env = parseEnv('TELEGRAM_BOT_TOKEN=\u200f123:ABC\u200e');
+  assert.equal(env.TELEGRAM_BOT_TOKEN, '123:ABC');
 });
 
 // ── פענוח כתיבה חופשית ──────────────────────────────────────
