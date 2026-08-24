@@ -1,0 +1,16 @@
+{
+  "name": "schoolboost-bot",
+  "version": "1.0.0",
+  "description": "SchoolBoost - בוט טלגרם לניהול לימודים: מערכת שעות, שיעורי בית, מבחנים, ציונים ותזכורות",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node test/run-tests.js"
+  },
+  "license": "MIT",
+  "private": true
+}
