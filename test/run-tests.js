@@ -12,6 +12,8 @@ import { summarize } from '../src/features/grades.js';
 import { parseWhen } from '../src/features/reminders.js';
 import { Scheduler } from '../src/scheduler.js';
 import { Store } from '../src/storage.js';
+import { isTransient } from '../src/net.js';
+import { Telegram, TelegramError } from '../src/telegram.js';
 import { buildDigest } from '../src/digest.js';
 
 const TZ = 'Asia/Jerusalem';
@@ -423,6 +425,80 @@ test('polling ממשיך אחרי שגיאת רשת חולפת', async () => {
   await tg.startPolling((u) => received.push(u));
   assert.equal(received.length, 1);
   assert.equal(tg.offset, 6);
+});
+
+// ── עמידות רשת ─────────────────────────────────────────────
+function flakyBot(plan) {
+  // plan: מערך של 'fail' (תקלת רשת), 'apierr' (שגיאת טלגרם) או 'ok'
+  const attempts = [];
+  let i = 0;
+  const fetchImpl = async () => {
+    const step = plan[Math.min(i, plan.length - 1)];
+    attempts.push(step);
+    i += 1;
+    if (step === 'fail') {
+      const err = new TypeError('fetch failed');
+      err.cause = { code: 'UND_ERR_CONNECT_TIMEOUT' };
+      throw err;
+    }
+    if (step === 'apierr') {
+      return { status: 200, text: async () => JSON.stringify({ ok: false, error_code: 400, description: 'Bad Request' }) };
+    }
+    if (step === 'html') {
+      return { status: 502, text: async () => '<html>Gateway Timeout</html>' };
+    }
+    return { status: 200, text: async () => JSON.stringify({ ok: true, result: { message_id: 7 } }) };
+  };
+  const tg = new Telegram('T:T', { fetchImpl });
+  tg.attempts = attempts;
+  return tg;
+}
+
+test('isTransient מזהה תקלת חיבור גם כשהיא עטופה ב-cause', () => {
+  const err = new TypeError('fetch failed');
+  err.cause = { code: 'UND_ERR_CONNECT_TIMEOUT' };
+  assert.equal(isTransient(err), true);
+  assert.equal(isTransient(new Error('משהו אחר')), false);
+  assert.equal(isTransient(new TelegramError('sendMessage', 400, 'Bad Request')), false);
+});
+
+test('קריאה מצליחה בניסיון חוזר אחרי תקלת רשת חולפת', async () => {
+  const tg = flakyBot(['fail', 'fail', 'ok']);
+  const result = await tg.call('sendMessage', { chat_id: 1, text: 'שלום' }, { retryDelayMs: 1 });
+  assert.equal(result.message_id, 7);
+  assert.equal(tg.attempts.length, 3, 'אמורים להיות שני ניסיונות כושלים ואחד מוצלח');
+});
+
+test('שגיאה שטלגרם עצמו החזיר לא נשנית בניסיון חוזר', async () => {
+  const tg = flakyBot(['apierr']);
+  await assert.rejects(
+    () => tg.call('sendMessage', { chat_id: 1, text: 'שלום' }, { retryDelayMs: 1 }),
+    (err) => err instanceof TelegramError && err.code === 400,
+  );
+  assert.equal(tg.attempts.length, 1, 'ניסיון חוזר על 400 רק יחזיר את אותה שגיאה');
+});
+
+test('אחרי מיצוי הניסיונות החוזרים השגיאה עולה החוצה', async () => {
+  const tg = flakyBot(['fail']);
+  await assert.rejects(() => tg.call('getMe', {}, { retries: 2, retryDelayMs: 1 }));
+  assert.equal(tg.attempts.length, 3, 'ניסיון ראשון ועוד שניים חוזרים');
+});
+
+test('תשובה שאינה JSON מדווחת כשגיאה ברורה ולא כקריסת פענוח', async () => {
+  const tg = flakyBot(['html']);
+  await assert.rejects(
+    () => tg.call('getMe', {}, { retries: 0 }),
+    (err) => err instanceof TelegramError && /JSON/.test(err.description),
+  );
+});
+
+test('getUpdates לא מנסה שוב בעצמו - הלולאה אחראית להשהיה', async () => {
+  const tg = flakyBot(['fail', 'ok']);
+  let seen = 0;
+  const original = tg.callOnce.bind(tg);
+  tg.callOnce = (method, payload, opts) => { seen += 1; return original(method, payload, opts); };
+  await tg.call('getUpdates', {}, { retries: 0 }).catch(() => {});
+  assert.equal(seen, 1);
 });
 
 // ── הרצה ───────────────────────────────────────────────────

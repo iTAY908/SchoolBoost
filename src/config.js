@@ -52,6 +52,8 @@ export const config = {
   // ניתן להפניה לשרת מדומה בבדיקות, או ל-Bot API server עצמאי
   apiBase: process.env.TELEGRAM_API_BASE || 'https://api.telegram.org',
   logLevel: process.env.LOG_LEVEL || 'info',
+  // IPv6 שבור הוא הסיבה הנפוצה ל-UND_ERR_CONNECT_TIMEOUT. אפשר לכבות ב-PREFER_IPV4=0
+  preferIPv4: process.env.PREFER_IPV4 !== '0',
 };
 
 const LEVELS = { debug: 10, info: 20, warn: 30, error: 40 };

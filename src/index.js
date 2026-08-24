@@ -1,4 +1,5 @@
 import { config, log } from './config.js';
+import { tuneNetwork } from './net.js';
 import { Telegram } from './telegram.js';
 import { Store } from './storage.js';
 import { Router, BOT_COMMANDS } from './router.js';
@@ -9,6 +10,8 @@ async function main() {
     log.error('חסר TELEGRAM_BOT_TOKEN. העתק את .env.example ל-.env ומלא את הטוקן מ-@BotFather.');
     process.exit(1);
   }
+
+  tuneNetwork({ preferIPv4: config.preferIPv4 });
 
   const tg = new Telegram(config.token, { apiBase: config.apiBase });
   const store = new Store(config.dataFile, config.tz);

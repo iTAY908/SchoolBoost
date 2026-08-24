@@ -1,4 +1,7 @@
 import { log } from './config.js';
+import { isTransient } from './net.js';
+
+const MAX_BACKOFF_MS = 8000;
 
 export class TelegramError extends Error {
   constructor(method, code, description, parameters) {
@@ -24,7 +27,10 @@ export class Telegram {
     this.me = null;
   }
 
-  async call(method, payload = {}, { timeoutMs = 20000 } = {}) {
+  /**
+   * קריאה בודדת ל-API, בלי ניסיונות חוזרים.
+   */
+  async callOnce(method, payload = {}, { timeoutMs = 20000 } = {}) {
     const url = `${this.apiBase}/bot${this.token}/${method}`;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -35,13 +41,42 @@ export class Telegram {
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
-      const body = await res.json();
+      const raw = await res.text();
+      let body;
+      try {
+        body = JSON.parse(raw);
+      } catch {
+        // פרוקסי, חומת אש או רשת אורחים מחזירים HTML במקום JSON
+        throw new TelegramError(method, res.status,
+          `תשובה שאינה JSON מהשרת: ${raw.slice(0, 120)}`);
+      }
       if (!body.ok) {
         throw new TelegramError(method, body.error_code, body.description, body.parameters);
       }
       return body.result;
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  /**
+   * קריאה ל-API עם ניסיונות חוזרים על תקלות רשת חולפות.
+   * בלי זה, ניתוק רגעי אחד גורם לתשובה למשתמש פשוט להיעלם.
+   * שגיאות שטלגרם עצמו החזיר (400/403/409...) לא נשנות בניסיון חוזר, אז הן עולות מיד.
+   */
+  async call(method, payload = {}, opts = {}) {
+    const { retries = 3, retryDelayMs = 400 } = opts;
+
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this.callOnce(method, payload, opts);
+      } catch (err) {
+        const canRetry = attempt < retries && isTransient(err);
+        if (!canRetry) throw err;
+        const wait = retryDelayMs * 2 ** attempt;
+        log.debug(`${method}: תקלת רשת חולפת (${err.cause?.code || err.code}), ניסיון ${attempt + 2} בעוד ${wait}ms`);
+        await sleep(wait);
+      }
     }
   }
 
@@ -101,7 +136,7 @@ export class Telegram {
           offset: this.offset,
           timeout: 30,
           allowed_updates: ['message', 'callback_query'],
-        }, { timeoutMs: 45000 });
+        }, { timeoutMs: 45000, retries: 0 });
 
         backoff = 1000;
 
@@ -133,9 +168,11 @@ export class Telegram {
           }
         }
 
-        log.warn(`שגיאת polling (${err?.message || err}) - ניסיון חוזר בעוד ${backoff}ms`);
+        const detail = err?.cause?.code || err?.code || err?.message || err;
+        log.warn(`שגיאת polling (${detail}) - ניסיון חוזר בעוד ${backoff}ms`);
         await sleep(backoff);
-        backoff = Math.min(backoff * 2, 30000);
+        // תקרה נמוכה בכוונה: כל עוד אנחנו ממתינים, הודעות נכנסות לא נאספות
+        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
       }
     }
   }

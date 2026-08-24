@@ -23,7 +23,8 @@ export function fakeTelegram() {
     } else if (method === 'getMe') {
       result = { id: 1, is_bot: true, username: 'SchoolBoostTestBot', first_name: 'SchoolBoost' };
     }
-    return { json: async () => ({ ok: true, result }) };
+    // מחקה Response אמיתי: הלקוח קורא text() ומפרש בעצמו
+    return { status: 200, text: async () => JSON.stringify({ ok: true, result }) };
   };
 
   const tg = new Telegram('TEST:TOKEN', { fetchImpl });
