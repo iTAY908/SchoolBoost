@@ -1466,6 +1466,70 @@
       .modbtn:hover .mi { transform: none; }
       .cube .track > i { transition: none; }
     }
+
+    /* ---- Book purchase: binding terms acknowledgement ------------------
+       Sits between the clauses and the button: read, tick, then buy. */
+    .bkterms { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .bkcheck {
+      display: flex; align-items: flex-start; gap: 11px; margin-top: 14px;
+      padding: 12px 13px; border-radius: var(--radius);
+      background: var(--card-2); border: 1.5px solid var(--border);
+      cursor: pointer; user-select: none;
+      transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+    }
+    .bkcheck:hover { border-color: var(--primary-dim); }
+    .bkcheck input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .bkbox {
+      flex: none; width: 22px; height: 22px; border-radius: 7px; margin-top: 1px;
+      border: 2px solid var(--dim); background: transparent;
+      display: grid; place-items: center;
+      transition: background-color var(--dur-press) var(--ease-out),
+                  border-color var(--dur-press) var(--ease-out),
+                  transform var(--dur-press) var(--ease-out);
+    }
+    .bkbox::after {
+      content: ""; width: 10px; height: 6px; margin-top: -2px;
+      /* physical sides on purpose: a tick is a glyph shape, not a direction —
+         border-inline-start flips under RTL and turns the check into a chevron */
+      border-left: 2.5px solid #fff; border-bottom: 2.5px solid #fff;
+      transform: rotate(-45deg) scale(.4); opacity: 0;
+      transition: opacity var(--dur-press) var(--ease-out), transform var(--dur-press) var(--spring-bounce);
+    }
+    .bkcheck input:checked ~ .bkbox { background: var(--success); border-color: var(--success); }
+    .bkcheck input:checked ~ .bkbox::after { opacity: 1; transform: rotate(-45deg) scale(1); }
+    .bkcheck:active .bkbox { transform: scale(.9); }
+    .bkcheck input:focus-visible ~ .bkbox { outline: 2px solid var(--primary-2); outline-offset: 3px; }
+    .bkchecktxt { font-size: 13.5px; font-weight: 700; line-height: 1.5; }
+    .bkcheck input:checked ~ .bkchecktxt { color: var(--text); }
+
+    /* Unanswered: a red border plus one shake, so the objection is impossible
+       to miss without being loud about it. */
+    .bkcheck.bad { border-color: var(--danger); background: rgba(240,85,90,.07); }
+    .bkcheck.bad .bkbox { border-color: var(--danger); }
+    .bkcheck.shake { animation: bkShake .42s cubic-bezier(.36,.07,.19,.97); }
+    @keyframes bkShake {
+      10%, 90% { transform: translateX(-2px); }
+      20%, 80% { transform: translateX(4px); }
+      30%, 50%, 70% { transform: translateX(-6px); }
+      40%, 60% { transform: translateX(6px); }
+    }
+    .bkerr { color: var(--danger); font-size: 13px; font-weight: 800; line-height: 1.5;
+      min-height: 0; margin: 0 2px; }
+    .bkerr:not(:empty) { min-height: 20px; margin: 9px 2px 0; }
+    .bkagree.owned { display: flex; align-items: center; gap: 7px; margin: 14px 0 0;
+      color: var(--success); font-size: 13px; font-weight: 800; }
+
+    @media (prefers-color-scheme: light) {
+      .bkcheck { background: #f7f8fd; border-color: #e2e5f2; }
+      .bkcheck.bad { background: rgba(240,85,90,.06); border-color: var(--danger); }
+      .bkbox { border-color: #9aa0bd; }
+    }
+    /* Reduced motion: keep the red border and the message, drop the shake —
+       the objection still lands, without the vestibular jolt. */
+    @media (prefers-reduced-motion: reduce) {
+      .bkcheck.shake { animation: none !important; }
+      .bkbox, .bkbox::after { transition: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -2042,6 +2106,7 @@
     function resetModuleGlobals() {
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
       shForm = null; guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
+      bkTermsOk = false;
       try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
       gs = { target: "__all", extra: "", months: 12 };
@@ -4753,7 +4818,11 @@
       usedPurchaseTokens[purchaseToken] = true;
       // Entitlements are granted HERE and nowhere else, whatever was bought.
       if (product && product.kind === "book") {
-        state.books.owned[product.id] = { at: new Date().toISOString(), price: product.price };
+        state.books.owned[product.id] = {
+          at: new Date().toISOString(), price: product.price,
+          terms_accepted: product.terms_accepted === true,
+          terms_version: product.terms_version || null,
+        };
         saveState();
         secLog("INFO", "האימות הצליח מול Google Play — נפתחה גישה לספר " + product.id);
         return { ok: true };
@@ -4810,6 +4879,7 @@
         ["BOSS", "סיכום — המשחק האמיתי", "המשחק לא נגמר. פשוט למדת לשחק."],
         ["CHEAT SHEET", "דף אחד לטלפון", "דף אחד. צילום מסך. סיימנו."],
       ],
+      termsVersion: "2026-08-1",
       terms: [
         "המידע, ההדרכה והתכנים בספר מיועדים למטרות לימודיות והעשרה בלבד, ואינם מהווים ייעוץ פיננסי, משפטי או השקעתי מוסמך.",
         "מדיניות מדיה: רכישת הספר הינה סופית ואין החזר כספי לאחר הרכישה.",
@@ -4817,6 +4887,9 @@
       ],
       quote: "לפני שאתם מוציאים את הכסף, תחליטו מה אתם רוצים שהכסף יעשה. כי ברגע שהכסף מקבל תפקיד, אתם מפסיקים להיות שחקן שמגיב למה שקורה — ומתחילים להיות השחקן שמנהל את המשחק.",
     }];
+    // Ticked per purchase decision and never persisted — consent carried over
+    // from an earlier session is not consent for this one.
+    let bkTermsOk = false;
     const bookById = (id) => BOOK_LIB.find((b) => b.id === id) || null;
     const ownsBook = (id) => !!(state.books && state.books.owned && state.books.owned[id]);
     const bookDiscount = (b) => Math.round((1 - b.price / b.listPrice) * 100);
@@ -5114,6 +5187,11 @@
 
     function bookBillboard(b) {
       const owned = ownsBook(b.id);
+      const rec = (state.books && state.books.owned && state.books.owned[b.id]) || null;
+      const acceptedOn = rec && rec.at
+        ? (function (d) { return isNaN(d) ? "" : String(d.getDate()).padStart(2, "0") + "/" +
+            String(d.getMonth() + 1).padStart(2, "0") + "/" + d.getFullYear(); })(new Date(rec.at))
+        : "";
       const wrap = el("div", "bkwrap");
 
       // ---- billboard hero
@@ -5142,15 +5220,54 @@
         '</div>' +
         '<div class="bkpricenote">מחיר מלא ₪' + b.listPrice + ' — <b>עכשיו ₪' + b.price + '</b>. תשלום חד-פעמי, הספר נשאר שלך לתמיד.</div>' +
         '<div class="bkweb">🌐 הספר נפתח באתר הקריאה — נדרש חיבור לאינטרנט.</div>' +
+        // Read, then tick, then buy — the terms sit above the acknowledgement,
+        // which sits above the button. Asking someone to confirm text printed
+        // below the button they already pressed is not consent.
+        '<div class="bkterms"><h4>תקנון ותנאי שימוש</h4><ol>' +
+          b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
+        '</ol></div>' +
+        (owned
+          ? '<div class="bkagree owned">✅ אישרת את התקנון בעת הרכישה' +
+              (acceptedOn ? ' · ' + acceptedOn : "") + '</div>'
+          : '<label class="bkcheck" id="bkCheckRow">' +
+              '<input type="checkbox" id="bkTerms"' + (bkTermsOk ? " checked" : "") + '>' +
+              '<span class="bkbox" aria-hidden="true"></span>' +
+              '<span class="bkchecktxt">קראתי ואישרתי את התקנון ותנאי השימוש</span>' +
+            '</label>' +
+            '<div class="bkerr" id="bkErr" role="alert" aria-live="assertive"></div>') +
         '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦₪" + b.price + "⁩") + '</button>' +
         (owned
           ? '<div class="bkowned">✅ הספר בספרייה שלך — נפתח באתר הקריאה</div>'
-          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>') +
-        '<div class="bkterms"><h4>תקנון ותנאי שימוש</h4><ol>' +
-          b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
-        '</ol><p class="bkagree">' + (owned ? 'אישרת את התנאים בעת הרכישה.' : 'ביצוע הרכישה מהווה אישור לתנאים שלמעלה.') + '</p></div>';
+          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
       wrap.appendChild(buy);
-      buy.querySelector("#bkBuy").onclick = () => { if (owned) openBook(b); else openBookSheet(b.id); };
+      // ---- terms gate -------------------------------------------------
+      const errBox = buy.querySelector("#bkErr");
+      const checkRow = buy.querySelector("#bkCheckRow");
+      const checkInput = buy.querySelector("#bkTerms");
+      if (checkInput) {
+        checkInput.onchange = () => {
+          bkTermsOk = checkInput.checked;
+          if (bkTermsOk) { // clearing the objection the moment it is answered
+            errBox.textContent = "";
+            checkRow.classList.remove("bad", "shake");
+          }
+        };
+      }
+      buy.querySelector("#bkBuy").onclick = () => {
+        if (owned) { openBook(b); return; }
+        if (!bkTermsOk) {
+          // Block the purchase and say exactly what is missing.
+          errBox.textContent = "יש לסמן V שקראת את התנאים ואישרת כדי להמשיך ברכישה";
+          checkRow.classList.add("bad");
+          checkRow.classList.remove("shake");
+          void checkRow.offsetWidth;      // restart the animation on a repeat press
+          checkRow.classList.add("shake");
+          checkRow.scrollIntoView({ block: "center", behavior: "smooth" });
+          if (checkInput) checkInput.focus();
+          return;
+        }
+        openBookSheet(b.id);
+      };
       const peek = buy.querySelector("#bkPeek");
       if (peek) peek.onclick = () => {
         const rail = wrap.querySelector(".bkrail");
@@ -5203,6 +5320,9 @@
     function openBookSheet(bookId) {
       const b = bookById(bookId);
       if (!b) return;
+      // Belt and braces: the button already blocks this, but the payment sheet
+      // must not be openable without consent by any other path either.
+      if (!bkTermsOk) { showToast("יש לאשר את התקנון ותנאי השימוש לפני הרכישה"); return; }
       clearToasts(); notifyNativeBusy(true);
       const w = $("paywrap"); w.className = "ccwrap on";
       w.onclick = (e) => { if (e.target === w) closeBillingSheet(); };
@@ -5223,7 +5343,8 @@
         const btn = w.querySelector("#bkPay");
         btn.disabled = true; btn.textContent = "מאמת רכישה מול Google Play…";
         const userId = state.authUser ? state.authUser.id : "anon";
-        const product = { kind: "book", id: b.id, price: b.price, productId: b.productId };
+        const product = { kind: "book", id: b.id, price: b.price, productId: b.productId,
+                          terms_accepted: true, terms_version: b.termsVersion };
         if (IS_MOCK_ENV) {
           const token = issuePlayPurchaseToken(userId);
           setTimeout(() => finish(verifyGooglePlayPurchase(token, userId, product)), 1400);
