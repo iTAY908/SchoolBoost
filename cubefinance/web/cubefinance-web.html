@@ -1153,8 +1153,210 @@
     .iv-sndhint.on { display: flex; }
     @keyframes ivPulse { 0%,100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
 
+
+    /* ==================================================================
+       APPLE-DESIGN PASS
+       A presentation layer only — appended last so it wins by cascade
+       order. It adds material, depth, response and considered motion.
+       It removes no rule above it and no feature: everything here is
+       background, shadow, blur, easing, tracking and press feedback.
+
+       Vocabulary follows Apple's two spring parameters rather than the
+       physics triplet: response (how fast it reaches target) and damping
+       (whether it overshoots). Critically damped is the house default;
+       bounce is reserved for motion a gesture actually threw.
+       ================================================================== */
+    :root {
+      /* response ~0.35s, damping 1.0 — the iOS sheet curve, no overshoot */
+      --spring: cubic-bezier(.32, .72, 0, 1);
+      /* damping ~0.8 — only for motion that followed real momentum */
+      --spring-bounce: cubic-bezier(.34, 1.46, .64, 1);
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --dur-press: 120ms;   /* pointer-down feedback must feel instant */
+      --dur: 260ms;
+      --dur-sheet: 420ms;
+      /* material weight: bigger surfaces read as thicker glass */
+      --glass-sm: blur(14px) saturate(160%);
+      --glass-lg: blur(28px) saturate(150%);
+      --edge: inset 0 1px 0 rgba(255,255,255,.10); /* light catching the top edge */
+    }
+
+    /* ---- 1. Ambient depth ------------------------------------------
+       The screen was a flat fill. Three static, wide radial pools give
+       the surface somewhere to sit. Deliberately motionless: a moving
+       full-viewport background is exactly what reduced-motion users and
+       long sessions suffer from. */
+    .screen {
+      background:
+        radial-gradient(760px 420px at 10% -8%, rgba(100,114,255,.20), transparent 62%),
+        radial-gradient(640px 460px at 110% 10%, rgba(16,192,136,.11), transparent 58%),
+        radial-gradient(560px 340px at 50% 112%, rgba(143,154,255,.09), transparent 64%),
+        var(--bg);
+    }
+    /* Content dissolves under the top chrome instead of hard-cutting at it. */
+    .view {
+      -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 34px);
+      mask-image: linear-gradient(180deg, transparent 0, #000 34px);
+      scroll-behavior: smooth;
+    }
+    body { font-optical-sizing: auto; }
+
+    /* ---- 2. Typography: tracking is size-specific -------------------
+       Large text reads too loose at default tracking and needs negative
+       values; body copy sits near zero. One fixed letter-spacing would be
+       wrong at one end or the other. */
+    .hv, .ppval, .bknow, .aiAmt, .ptsval, .gsbig b, .wsamt, .payprice {
+      letter-spacing: -.03em; }
+    .pagetitle, .authtitle, .bktitle, .wshead h3, .hero .hl { letter-spacing: -.02em; }
+    .cube .nm, .section-t, .setmail { letter-spacing: -.01em; }
+    .dzs, .setlbl, .privline, .bkline, .wstxt span { letter-spacing: .005em; } /* small text opens up slightly */
+
+    /* ---- 3. Response: feedback on pointer-down, never on release ----
+       Every pressable surface now answers the finger instantly. */
+    .distbtn, .modbtn, .fab, .calmfab, .setitem, .bkcta, .bkghost, .wsprintbtn,
+    .ppbtn, .backbtn, .fchip, .ob-opt, .wstask, .addcube, .depbtn, .gpaybtn,
+    .obback, .dangerbtn, .wsreset, .bankfile, .moodbtn, .claimbtn, .settbtn {
+      transition: transform var(--dur-press) var(--ease-out),
+                  filter var(--dur-press) var(--ease-out),
+                  border-color var(--dur) var(--ease-out),
+                  background-color var(--dur) var(--ease-out),
+                  box-shadow var(--dur) var(--ease-out);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .distbtn:not(:disabled):active, .bkcta:active, .wsprintbtn:active,
+    .ppbtn:active, .gpaybtn:active, .dangerbtn:active { transform: scale(.972); }
+    .modbtn:active, .setitem:active, .fchip:active, .ob-opt:active, .wstask:active,
+    .addcube:active, .bkghost:active, .backbtn:active, .obback:active,
+    .wsreset:active, .bankfile:active, .moodbtn:active, .settbtn:active { transform: scale(.965); }
+    .fab:active, .calmfab:active { transform: scale(.92); }
+    .depbtn:active { transform: scale(.88); }
+    /* a hover lift and a press must compose, not fight */
+    .modbtn:hover:active { transform: translateY(-2px) scale(.965); }
+
+    /* ---- 4. Materials: chrome as translucent layers -----------------
+       Scrims blur and push the background back rather than just dimming
+       it, which is what makes a sheet read as a layer above the app. */
+    .ccwrap, .chatwrap, .depwrap, .paywrap {
+      background: rgba(6, 8, 18, .46);
+      -webkit-backdrop-filter: var(--glass-sm);
+      backdrop-filter: var(--glass-sm);
+      animation: scrimIn var(--dur) var(--ease-out);
+    }
+    @keyframes scrimIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .ccsheet, .chat {
+      background: linear-gradient(180deg, rgba(30,38,60,.94), rgba(19,25,40,.97));
+      -webkit-backdrop-filter: var(--glass-lg);
+      backdrop-filter: var(--glass-lg);
+      box-shadow: 0 -24px 60px -20px rgba(0,0,0,.65), var(--edge);
+      border-top: 1px solid rgba(255,255,255,.08);
+      /* Materialize: the surface arrives with scale, not a bare slide. */
+      animation: sheetIn var(--dur-sheet) var(--spring);
+    }
+    @keyframes sheetIn {
+      from { transform: translateY(100%) scale(.98); opacity: .4; }
+      to   { transform: none; scale: 1; opacity: 1; }
+    }
+    .handle { background: rgba(255,255,255,.22); width: 44px; height: 5px; }
+
+    /* ---- 5. Surfaces: weight and a lit top edge ---------------------- */
+    .cube {
+      background:
+        linear-gradient(168deg, rgba(38,47,74,.92), rgba(21,27,41,.96) 58%);
+      box-shadow: 0 22px 44px -30px rgba(0,0,0,.95), var(--edge);
+      transition: transform var(--dur) var(--spring),
+                  box-shadow var(--dur) var(--ease-out),
+                  border-color var(--dur) var(--ease-out);
+    }
+    .cube:hover { border-color: rgba(143,154,255,.34);
+      box-shadow: 0 26px 52px -28px rgba(0,0,0,.95), var(--edge); }
+    .cube:active { transform: scale(.995); }
+    /* the pop follows a deposit — a gesture with momentum, so it may overshoot */
+    .cube.pop { animation: pop .52s var(--spring-bounce); }
+
+    .hero { box-shadow: 0 30px 68px -34px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.13); }
+    .hero::after { content: ""; position: absolute; inset-inline: 18%; top: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent); }
+    .setcard, .wscard, .bkbuy, .gshead, .bkhero, .wstrack, .ledger, .witable {
+      box-shadow: 0 16px 36px -30px rgba(0,0,0,.9), var(--edge); }
+
+    .modbtn { background: linear-gradient(170deg, rgba(32,40,63,.85), rgba(21,27,41,.9)); }
+    .modbtn:hover { border-color: rgba(143,154,255,.5); }
+
+    .fab, .calmfab { box-shadow: 0 16px 34px -8px rgba(100,114,255,.55), var(--edge); }
+    .fab:hover, .calmfab:hover { filter: brightness(1.08); }
+
+    /* ---- 6. Focus: a visible, consistent ring ------------------------ */
+    :focus-visible { outline: 2px solid var(--primary-2); outline-offset: 3px; border-radius: 8px; }
+    .fld:focus-within { box-shadow: 0 0 0 4px rgba(100,114,255,.16); }
+
+    /* ---- 7. Light theme: the same ideas, inverted -------------------- */
+    @media (prefers-color-scheme: light) {
+      :root { --edge: inset 0 1px 0 rgba(255,255,255,.9); }
+      .screen {
+        background:
+          radial-gradient(760px 420px at 10% -8%, rgba(100,114,255,.13), transparent 62%),
+          radial-gradient(640px 460px at 110% 10%, rgba(16,192,136,.08), transparent 58%),
+          radial-gradient(560px 340px at 50% 112%, rgba(143,154,255,.10), transparent 64%),
+          var(--bg);
+      }
+      .ccwrap, .chatwrap, .depwrap, .paywrap { background: rgba(28, 32, 54, .30); }
+      .ccsheet, .chat {
+        background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,249,255,.98));
+        border-top: 1px solid rgba(255,255,255,.9);
+        box-shadow: 0 -24px 60px -24px rgba(60,64,100,.35), var(--edge); }
+      .handle { background: rgba(20,24,48,.18); }
+      .cube {
+        background: linear-gradient(168deg, #fbfbff, #ffffff 60%);
+        box-shadow: 0 12px 28px -22px rgba(70,74,110,.55), var(--edge); }
+      .cube:hover { border-color: rgba(100,114,255,.42);
+        box-shadow: 0 18px 34px -20px rgba(70,74,110,.5), var(--edge); }
+      .hero::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent); }
+      .setcard, .wscard, .bkbuy, .gshead, .wstrack, .ledger, .witable {
+        box-shadow: 0 10px 26px -22px rgba(70,74,110,.45), var(--edge); }
+      .modbtn { background: linear-gradient(170deg, #ffffff, #f6f7fd); }
+      .fab, .calmfab { box-shadow: 0 16px 32px -10px rgba(100,114,255,.45), var(--edge); }
+    }
+
+    /* ---- 8. Accessibility preferences -------------------------------
+       Reduced motion is not "no feedback" — it is a gentler, non-vestibular
+       equivalent. Travel and overshoot go; opacity and colour stay, so the
+       interface still confirms what happened. */
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+      .view { scroll-behavior: auto; }
+      /* keep press feedback — it is instant and carries no travel */
+      .distbtn, .modbtn, .fab, .calmfab, .setitem, .bkcta, .wsprintbtn, .ppbtn,
+      .backbtn, .fchip, .ob-opt, .wstask, .addcube, .depbtn {
+        transition: filter var(--dur-press) linear, background-color var(--dur-press) linear,
+                    border-color var(--dur-press) linear !important; }
+      .distbtn:active, .modbtn:active, .fab:active, .calmfab:active, .setitem:active,
+      .bkcta:active, .fchip:active, .ob-opt:active, .wstask:active, .addcube:active,
+      .depbtn:active { transform: none !important; filter: brightness(1.18); }
+      .ccsheet, .chat { animation: fadeInStill 160ms linear !important; }
+      @keyframes fadeInStill { from { opacity: 0; } to { opacity: 1; } }
+      .cube.pop { animation: none !important; }
+    }
+    /* Frosted surfaces become solid rather than merely less blurred. */
+    @media (prefers-reduced-transparency: reduce) {
+      .ccwrap, .chatwrap, .depwrap, .paywrap {
+        background: rgba(4, 6, 14, .82);
+        -webkit-backdrop-filter: none; backdrop-filter: none; }
+      .ccsheet, .chat {
+        background: var(--elevated);
+        -webkit-backdrop-filter: none; backdrop-filter: none; }
+      .screen { background: var(--bg); }
+    }
+    /* High contrast: near-solid grounds with defined borders. */
+    @media (prefers-contrast: more) {
+      .screen { background: var(--bg); }
+      .cube, .setcard, .wscard, .modbtn, .bkbuy { border-color: var(--primary-2); }
+      .setlbl, .privline, .cube .nt, .bkline { color: var(--text); }
+      :focus-visible { outline-width: 3px; }
     }
   </style>
 </head>
