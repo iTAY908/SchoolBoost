@@ -213,6 +213,10 @@ if (!config.anthropicKey) {
     if (err?.status === 401) {
       line('❌', 'מפתח ה-AI נדחה (401) — בדוק את ANTHROPIC_API_KEY');
       problems.push('ANTHROPIC_API_KEY לא תקף');
+    } else if (/credit balance|insufficient.{0,20}credit|billing/i.test(detail)) {
+      // התקלה הנפוצה ביותר בפעם הראשונה: מפתח תקין, חשבון בלי יתרה
+      line('❌', 'המפתח תקין אבל אין יתרה בחשבון Anthropic');
+      problems.push('הוסף אשראי ב-https://console.anthropic.com → Billing. בלי יתרה המפתח לא יעבוד');
     } else if (config.mcpUrl && /mcp/i.test(detail)) {
       line('❌', `שרת ה-MCP נדחה: ${detail.slice(0, 160)}`);
       problems.push('כתובת ה-MCP או הטוקן שגויים. העתק אותם מחדש מדף ההגדרות של Zapier MCP');
