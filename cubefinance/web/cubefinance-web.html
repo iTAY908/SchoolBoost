@@ -25,6 +25,7 @@
     html, body { height: 100%; margin: 0; }
     body {
       direction: rtl; /* robust RTL even if a host strips the html dir attribute */
+      text-align: start;
       font-family: var(--font); color: var(--text);
       background:
         radial-gradient(1000px 520px at 18% -12%, #182247 0%, transparent 56%),
@@ -69,7 +70,7 @@
     .poolbox .field span { color: var(--dim); font-weight: 700; font-size: 15px; }
     .poolbox input { flex: 1; background: none; border: none; outline: none; color: var(--text);
       font-size: 18px; font-weight: 800; padding: 12px 6px; font-family: var(--font);
-      font-variant-numeric: tabular-nums; text-align: right; width: 100%; }
+      font-variant-numeric: tabular-nums; text-align: start; width: 100%; }
     .distbtn { border: none; cursor: pointer; font-family: var(--font); white-space: nowrap;
       background: linear-gradient(135deg, var(--primary-2), var(--primary)); color: #fff;
       font-size: 15px; font-weight: 800; padding: 14px 18px; border-radius: 14px;
@@ -247,7 +248,7 @@
     .wsreset:hover { border-color: var(--primary); color: var(--text); }
     .section-t.wsst { margin-top: 22px; }
     .wstasks { display: flex; flex-direction: column; gap: 8px; }
-    .wstask { display: flex; align-items: flex-start; gap: 11px; text-align: right; background: var(--bg);
+    .wstask { display: flex; align-items: flex-start; gap: 11px; text-align: start; background: var(--bg);
       border: 1.5px solid var(--border); border-radius: var(--radius); padding: 12px 13px; cursor: pointer;
       font-family: var(--font); color: var(--text); transition: border-color .15s, background .15s; }
     .wstask:hover { border-color: var(--primary-dim); }
@@ -289,7 +290,7 @@
       .wp h2 { margin: 20px 0 8px; font-size: 13pt; font-weight: 900;
         border-bottom: 1.5px solid #c9cade; padding-bottom: 5px; page-break-after: avoid; }
       .wpt { width: 100%; border-collapse: collapse; font-size: 11pt; }
-      .wpt th { text-align: right; font-size: 9.5pt; font-weight: 800; color: #4a4a63;
+      .wpt th { text-align: start; font-size: 9.5pt; font-weight: 800; color: #4a4a63;
         border-bottom: 1.5px solid #101223; padding: 6px 8px; }
       .wpt td { border-bottom: 1px solid #d8d9e6; padding: 9px 8px; vertical-align: top; }
       .wpt td i { display: block; font-style: normal; font-size: 9pt; color: #4a4a63; margin-top: 2px; }
@@ -407,6 +408,22 @@
     .backbtn:hover { color: var(--text); border-color: var(--primary); }
     .pgspacer { width: 76px; flex: none; } /* balances the back button so the title stays centered */
     .pagebody { display: flex; flex-direction: column; gap: 12px; padding-bottom: 40px; }
+    /* English: undo the two places the layout is pinned to RTL in CSS, which
+       would otherwise beat the html[dir] attribute and leave the interface
+       mirrored while the words read left-to-right. */
+    html.lang-en body { direction: ltr; }
+    html.lang-en .wp { direction: ltr; }
+
+    /* Language switch: a segmented control, each half labelled in its own
+       language so it stays findable whichever one is active. */
+    .langsw { display: flex; gap: 6px; margin-top: 12px; background: var(--bg);
+      border: 1.5px solid var(--border); border-radius: 999px; padding: 4px; }
+    .langsw button { flex: 1; border: none; background: none; cursor: pointer;
+      font-family: inherit; font-size: 13.5px; font-weight: 800; color: var(--dim);
+      padding: 9px 10px; border-radius: 999px; transition: background .18s, color .18s; }
+    .langsw button.on { background: var(--primary); color: #fff; }
+    .langsw button:not(.on):hover { color: var(--text); }
+    .langnote { margin: 12px 0 0; color: var(--dim); font-size: 13px; line-height: 1.6; }
     .setcard { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
     .setcard.warn h3 { margin: 0 0 8px; font-size: 19px; }
     .setcard.warn p { margin: 0; color: var(--dim); line-height: 1.6; font-size: 14px; }
@@ -446,7 +463,7 @@
     .excube { font-style: normal; font-size: 11px; font-weight: 700; color: var(--dim);
       border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; }
     .setlist { display: flex; flex-direction: column; gap: 10px; }
-    .setitem { text-align: right; background: var(--card); border: 1.5px solid var(--border); color: var(--text);
+    .setitem { text-align: start; background: var(--card); border: 1.5px solid var(--border); color: var(--text);
       border-radius: var(--radius); padding: 15px 16px; font-weight: 800; font-size: 15px; cursor: pointer;
       font-family: var(--font); transition: border-color .15s; }
     .setitem:hover { border-color: var(--primary); }
@@ -524,7 +541,7 @@
       font-weight: 800; font-size: 13px; padding: 8px 14px; cursor: pointer; font-family: var(--font);
       transition: border-color .15s, color .15s; }
     .fchip.on { border-color: var(--fc, var(--primary)); color: var(--text); }
-    .fchip.wide { width: 100%; text-align: right; border-radius: var(--radius); }
+    .fchip.wide { width: 100%; text-align: start; border-radius: var(--radius); }
     .shtop { display: flex; align-items: center; justify-content: space-between; }
     .shtop b { font-size: 16px; }
     .shpct { color: var(--primary); font-weight: 900; font-variant-numeric: tabular-nums; }
@@ -607,7 +624,7 @@
     .est { color: var(--primary-2); font-style: normal; font-weight: 700; }
     .unkrate { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: none;
       color: var(--dim); font-family: var(--font); font-size: 13px; font-weight: 700; cursor: pointer;
-      padding: 10px 2px 2px; text-align: right; }
+      padding: 10px 2px 2px; text-align: start; }
     .unkrate .unkbox { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--border);
       display: grid; place-items: center; font-size: 12px; color: #fff; flex: none; transition: background .15s, border-color .15s; }
     .unkrate.on { color: var(--text); }
@@ -662,7 +679,7 @@
     .calmintro { color: var(--dim); font-size: 14.5px; line-height: 1.65; }
     .calmintro b { color: var(--text); }
     .moodgrid { display: flex; flex-direction: column; gap: 10px; }
-    .moodbtn { display: flex; align-items: center; gap: 14px; text-align: right; cursor: pointer;
+    .moodbtn { display: flex; align-items: center; gap: 14px; text-align: start; cursor: pointer;
       background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
       padding: 16px; font-family: var(--font); color: var(--text); transition: .16s; }
     .moodbtn:hover { border-color: var(--primary); transform: translateY(-2px); }
@@ -728,7 +745,7 @@
     .gcardw { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .gcardw.open { border-color: var(--primary); }
     .gcardhead { width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; background: none;
-      border: none; cursor: pointer; text-align: right; font-family: inherit; color: var(--text); }
+      border: none; cursor: pointer; text-align: start; font-family: inherit; color: var(--text); }
     .gemoji { font-size: 24px; width: 40px; height: 40px; display: grid; place-items: center; flex: none;
       background: rgba(108,99,255,.12); border-radius: 12px; }
     .gtxt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
@@ -811,7 +828,7 @@
     .payprice { font-size: 30px; font-weight: 900; color: #ffd166; font-variant-numeric: tabular-nums; }
     .payprice span { display: block; font-size: 12.5px; color: var(--dim); font-weight: 600; margin-top: 2px; }
     .payfeat { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 8px;
-      text-align: right; color: var(--dim); font-size: 13.5px; line-height: 1.5; }
+      text-align: start; color: var(--dim); font-size: 13.5px; line-height: 1.5; }
     .gpaybtn { width: 100%; border: none; cursor: pointer; font-family: var(--font); margin-top: 4px;
       background: #fff; color: #1a1a2e; font-size: 15.5px; font-weight: 800; padding: 14px; border-radius: 999px;
       box-shadow: 0 12px 28px -12px #fff8; transition: transform .12s; }
@@ -871,7 +888,7 @@
     .track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
     .track > i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width .3s cubic-bezier(.2,.8,.2,1); }
     .stepcount { color: var(--dim); font-size: 12px; font-weight: 600; margin-bottom: 10px; }
-    .ob-opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: right; color: var(--text);
+    .ob-opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; color: var(--text);
       background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 15px;
       margin-bottom: 10px; cursor: pointer; font-family: var(--font); transition: border-color .15s, background .15s; }
     .ob-opt:hover { border-color: var(--primary-dim); } /* token, so light mode doesn't get a dark ring */
@@ -1573,6 +1590,722 @@
       lifestyle:   { name: "בילויים ופנאי",  emoji: "🎉", color: "var(--c-lifestyle)",   note: "כיף, מסעדות, חברים" },
     };
 
+    const DICT = {};  // HE -> EN
+    // Hebrew -> English. Generated from a walk of every screen plus the
+    // stems the app splices numbers into. See docs/LOCALIZATION.md.
+    Object.assign(DICT, {
+      "בעשרה שלבים בסגנון משחק הוא מפרק את הכסף לארבעה ארנקים — מטרה קרובה, קופת חירום, עתיד, וכיף בלי רגשות אשם — ומראה איך נותנים לכל שקל תפקיד, לפני שהוא בוחר לעצמו תפקיד ונעלם. בדרך: חוק 48 השעות שעוצר קניות אימפולסיביות, ההבדל בין „רוצה” ל„צריך” כשהמוח מתחפש, אפקט כדור השלג של ריבית דריבית (עם אזהרה כנה שהשקעות אינן מכונת כסף), המלכודות של תשלום דיגיטלי, ואיך אומרים „לא” ללחץ חברתי בלי לריב.": "In ten game-style steps it breaks the money into four wallets — a near-term goal, an emergency fund, the future, and guilt-free fun — and shows how to give every shekel a job, before it picks one for itself and disappears. Along the way: the 48-hour rule that stops impulse buys, the difference between „want” and „need” when your brain is in disguise, the snowball effect of compound interest (with an honest warning that investing is not a money machine), the traps of digital payment, and how to say „no” to peer pressure without a fight.",
+      "תשעה סיפורי מקרה מהחיים — דניאל שתכנן 2,000 ₪ לחופשה והוציא הרבה יותר, מאיה שהטלפון שלה נשבר ביום רגיל, יובל שהבין ש„הנחה של 30%” היא עדיין 450 ₪ שיוצאים מהכיס — לצד ארבעה צ׳ק-ליסטים, אתגר של 30 יום ודף סיכום אחד לצילום מסך.": "Nine real-life case studies — Daniel who budgeted ₪2,000 for a holiday and spent far more, Maya whose phone broke on an ordinary day, Yuval who realised that „30% off” is still ₪450 leaving his pocket — alongside four checklists, a 30-day challenge and a one-page summary to screenshot.",
+      "המידע והכלים באפליקציה נועדו למטרות מידע והדרכה בלבד ואינם מהווים ייעוץ פיננסי, ייעוץ השקעות, ייעוץ מס או ייעוץ משפטי. כל הנתונים מדומים או מוזנים ידנית — אין חיבור אמיתי לבנק או לחשבון.": "The information and tools in the app are for information and guidance purposes only and do not constitute financial, investment, tax or legal advice. All data is simulated or entered manually — there is no real connection to a bank or an account.",
+      "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה. ילדים מתחת לגיל 13 מוזמנים להשתמש במצב הילדים — בליווי, בהסכמה ובאחריות הורה או אפוטרופוס. כל הנתונים נשמרים במכשיר בלבד ואינם נשלחים לשום שרת.": "The app is intended for users aged 13 and over. Children under 13 are welcome to use kids mode — accompanied by, with the consent of, and under the responsibility of a parent or guardian. All data is stored on the device only and is not sent to any server.",
+      "קיבלת 5,000 ₪. המוח אומר „חופשה”, החברים אומרים „יאללה, יוצאים”, האינטרנט אומר „מבצע אחרון” — והעתיד לוחש „היי... אולי תשאירו לי משהו?”. הספר הזה עוסק בדיוק ברגע הזה.": "You got ₪5,000. Your brain says „vacation”, your friends say „let's go out”, the internet says „last chance sale” — and your future whispers „hey... maybe leave me something?”. This book is about exactly that moment.",
+      "לפני שאתם מוציאים את הכסף, תחליטו מה אתם רוצים שהכסף יעשה. כי ברגע שהכסף מקבל תפקיד, אתם מפסיקים להיות שחקן שמגיב למה שקורה — ומתחילים להיות השחקן שמנהל את המשחק.": "Before you spend the money, decide what you want the money to do. Because the moment money gets a job, you stop being the player who reacts to what happens — and start being the player who runs the game.",
+      "כדי שאוכל לעזור באמת, תן לי את המספרים: \"כדאי לי לקנות X ב-800?\", \"X ב-500 או Y ב-900?\", \"מתי אגיע ליעד?\" — או פשוט תגיד לי מה עובר לך בראש ואני אשאל את השאלות.": "To really help, give me the numbers: \"Should I buy X for 800?\", \"X for 500 or Y for 900?\", \"When will I reach my goal?\" — or just tell me what's on your mind and I'll ask the questions.",
+      "אפשר להתייעץ איתי בחופשיות — למשל \"כדאי לי אוזניות ב-600 או שעון ב-900?\", \"מה מצב קרן החירום?\", \"בזבזתי 200 על מסעדה\", או \"תכניס 100 ₪ לחיסכון\".": "Ask me anything — for example \"headphones for 600 or a watch for 900?\", \"how is my emergency fund?\", \"I spent 200 at a restaurant\", or \"put ₪100 into savings\".",
+      "הספר מספק ידע, זוויות ראייה וכלים מעשיים על עולם הכסף שרוב האנשים לא מספרים עליהם — אך האחריות על כל החלטה פיננסית היא של הקורא/ת והוריו בלבד.": "The book provides knowledge, perspectives and practical tools about the world of money that most people don't talk about — but responsibility for every financial decision rests with the reader and their parents alone.",
+      "התרגיל הזה עוזר לרגע קשה — הוא לא תחליף לאדם אמיתי. אם קשה לך באמת, או שהמחשבות מפחידות אותך, מותר ואפשר לדבר עכשיו עם מישהו:": "This exercise helps with a hard moment — it is not a substitute for a real person. If things are genuinely hard, or your thoughts frighten you, you can and may talk to someone right now:",
+      "האפליקציה לא מציגה ולא שומרת רישום פנימי של פעולות התחברות — רישום כזה עלול לחשוף את כתובת המייל שלך למי שמחזיק במכשיר.": "The app does not display or store an internal log of sign-in activity — such a log could expose your email address to whoever holds the device.",
+      "מודל ה-⁦40/30/20/10⁩ מהספר, כמספרים שלכם. אפשר לשנות אחוזים, לסמן משימות ולמלא מעקב שבועי — ואז להוריד את הכול כ-PDF.": "The ⁦40/30/20/10⁩ model from the book, with your numbers. You can change the percentages, tick off tasks and fill in a weekly tracker — then download it all as a PDF.",
+      "הזינו את החובות שלכם והסכום החודשי הפנוי — ה-AI יחשב את סדר ההחזר האופטימלי (שיטת מפולת/כדור שלג) וכמה ריבית תחסכו.": "Enter your debts and the monthly amount you have free — the AI will work out the optimal repayment order (avalanche/snowball method) and how much interest you'll save.",
+      "המידע, ההדרכה והתכנים בספר מיועדים למטרות לימודיות והעשרה בלבד, ואינם מהווים ייעוץ פיננסי, משפטי או השקעתי מוסמך.": "The information, guidance and content in the book are intended for educational and enrichment purposes only, and do not constitute qualified financial, legal or investment advice.",
+      "היי! אני Cubey, היועץ הפיננסי שלך. אני רואה את הקוביות, את ההכנסה ואת קרן החירום — אז אפשר להתייעץ איתי באמת:": "Hi! I'm Cubey, your financial adviser. I can see your cubes, your income and your emergency fund — so you can genuinely ask me things:",
+      "כל הזכויות על האפליקציה, העיצוב, הקוד והתוכן שמורות לאיתי לייס. אין להעתיק, להפיץ או להשתמש בתוכן ללא אישור.": "All rights to the app, its design, code and content belong to Itay Leiss. Do not copy, distribute or use the content without permission.",
+      "האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת קבצים מהמכשיר. פיצ׳ר קריאת העו״ש הוסר מהמערכת לגמרי.": "The app does not connect to a bank, does not pull transactions and does not read files from the device. The bank-statement feature has been removed from the system entirely.",
+      "כל ערב לפתוח את האפליקציה של אמצעי התשלום ורק להסתכל על המספר. בלי לחשב, בלי להתבייש — רק לראות.": "Every evening open your payment app and just look at the number. No calculating, no shame — just look.",
+      "בפעם הראשונה שתפתח/י את האפליקציה בחודש חדש, ההכנסה נכנסת לקוביות לפי האחוזים — בלי ללחוץ כלום": "The first time you open the app in a new month, your income flows into the cubes by percentage — without pressing anything",
+      "המטרה היא לא להפוך אתכם לאנשים שלא קונים כלום. המטרה היא שתדעו בדיוק לאן הולכים ה-1,000 הבאים.": "The goal is not to turn you into someone who buys nothing. The goal is that you know exactly where the next ₪1,000 goes.",
+      "בחרו קובייה, הוסיפו סכום חודשי — ותראו בדיוק כמה יהיה לכם בעוד כמה חודשים, מול המסלול הנוכחי.": "Pick a cube, add a monthly amount — and see exactly how much you'll have in a few months, against your current path.",
+      "מאיפה מתחילים? 7 כלים קצרים שכל צעיר צריך לפני הדירה, העבודה והחשבונות הראשונים. בחרו נושא 👇": "Where do you start? 7 short tools every young person needs before their first flat, job and bills. Pick a topic 👇",
+      "משהו לא חיוני שבא לכם? מחכים יומיים בלי לפתוח שוב את העמוד. הרצון האמיתי שורד, השאר מתאדה.": "Want something non-essential? Wait two days without opening the page again. Real desire survives, the rest evaporates.",
+      "הסכום שבכרטיס הוא מספר שאתה מזין ומעדכן בעצמך — אין גישה לכרטיס האמיתי ואין תנועות נסתרות.": "The amount on the card is a number you enter and update yourself — there is no access to the real card and there are no hidden transactions.",
+      "לקבוע מראש סכום שלא עוברים אותו, ולכתוב אותו לפני שיוצאים. אחרת האקסטרות מחליטות במקומכם.": "Decide in advance on an amount you won't go past, and write it down before you leave. Otherwise the extras decide for you.",
+      "₪3,850 הולכים להוצאות קבועות ונעולות (32.1%), ונשארים 67.9% לחלוקה. האחוזים שהגדרת: 68%": "₪3,850 goes to fixed and locked expenses (32.1%), leaving 67.9% to split. The percentages you set: 68%",
+      "האפליקציה תיטען מחדש והכיוון יתהפך בהתאם (עברית — מימין לשמאל, אנגלית — משמאל לימין).": "The app reloads and the layout direction flips to match (Hebrew — right to left, English — left to right).",
+      "עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על \"חלק לתקציב\" ואז נוכל לדבר במספרים אמיתיים.": "You haven't split your money into cubes yet 🙂 Tap \"Split into budget\" and then we can talk in real numbers.",
+      ", \"מתי אגיע ליעד?\", \"בזבזתי 200 על מסעדה\", או פשוט \"תכניס 200 ₪ לקוביית טיול\".": ", \"When will I reach my goal?\", \"I spent 200 on a restaurant\", or simply \"put ₪200 into the trip cube\".",
+      "בחרו תרחיש — ה-AI יקרין את המצב הכספי שלכם 6 חודשים קדימה, מול המסלול הנוכחי.": "Pick a scenario — the AI projects your finances 6 months ahead, against your current path.",
+      "הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.": "Your profile, cubes and balances are saved in the browser's localStorage and are not sent to any server.",
+      "רק שאלה אחת, והיא זו שבאמת משנה: זה היה משהו שהיית חייב, או משהו שנסחפת אליו?": "One question, and it's the one that matters: was this something you had to do, or something you got carried away with?",
+      "יש פעולה שממתינה לאישור — אפשר ללחוץ על הכפתור או לכתוב \"לאשר\" / \"ביטול\" 🙂": "There's an action waiting for confirmation — press the button, or type \"confirm\" / \"cancel\" 🙂",
+      "מלאו שורה בכל פעם שיוצא כסף. חודש אחד של מעקב שווה יותר משנה של ניחושים.": "Fill in a row every time money goes out. One month of tracking is worth more than a year of guessing.",
+      "תודה על הכנות 🙏 דווקא ההוצאות האלה הן אלה ששווה להסתכל עליהן בסוף החודש.": "Thanks for being honest 🙏 These are exactly the expenses worth looking at at the end of the month.",
+      " מתוכו עוד לא הובטחו לאף קובייה — זה הסכום שאפשר להפנות היום ליעד חדש.": " of it isn't promised to any cube yet — that's what you can put toward a new goal today.",
+      "הכול נשמר במכשיר שלך בלבד. הדף נפתח בחלון ההדפסה — משם „שמירה כ-PDF”.": "Everything is stored on your device only. The page opens in the print dialog — from there choose „Save as PDF”.",
+      "מטרה קרובה, קופת חירום, עתיד וכיף — בדיוק החלוקה שהאפליקציה בונה לך.": "A near-term goal, an emergency fund, the future and fun — exactly the split the app builds for you.",
+      "לרשום חמישה דברים שאתם יודעים לעשות שמישהו היה משלם עליהם. גם קטנים.": "Write down five things you know how to do that someone would pay for. Small ones count.",
+      "מעולה, סימנתי ✅ הוצאה מודעת היא לא בעיה — זו בדיוק המטרה של הקוביות.": "Great, noted ✅ A deliberate expense isn't a problem — that's precisely what the cubes are for.",
+      "🛟 ₪0 מתוך ₪15,750 (3 חודשי הוצאות) · מכסה כרגע כ-0 ימים בלי הכנסה": "🛟 ₪0 of ₪15,750 (3 months of expenses) · currently covers about 0 days with no income",
+      "לפני שקונים משהו לא חיוני — שאלו את Cubey בצ׳אט, ותנו לזה יומיים.": "Before buying something non-essential — ask Cubey in the chat, and give it two days.",
+      " — הכסף הזה כבר מיועד בדיוק לדברים כאלה. אחרי הקנייה יישארו שם ₪": " — that money is earmarked for exactly this kind of thing. After the purchase ₪",
+      "מדיניות מדיה: רכישת הספר הינה סופית ואין החזר כספי לאחר הרכישה.": "Media policy: the purchase of the book is final and there is no refund after purchase.",
+      ". הדיווח מוריד את הסכום מהקובייה כדי שהיתרות יישארו אמיתיות.": ". Logging it subtracts the amount from the cube so the balances stay real.",
+      "האפליקציה שומרת על פרטיות המשתמש בהתאם למדיניות הפרטיות שלה.": "The app protects the user's privacy in accordance with its privacy policy.",
+      "אין להשתמש באפליקציה לרעה, לנסות לפרוץ אליה או לפגוע בשירות.": "Do not misuse the app, attempt to break into it or harm the service.",
+      "עוד לא דיווחת על הוצאות — זה המקום שבו התמונה מתחילה להתחדד.": "You haven't logged any expenses yet — that's where the picture starts to sharpen.",
+      " חודשי חיסכון — אפשר לפתוח על זה קובייה ולראות את זה מתקרב.": " months of saving — you can open a cube for it and watch it get closer.",
+      "דווחו כאן על כסף שיצא: כמה, מאיזו קובייה, על מה — ובעיקר": "Log money that went out here: how much, from which cube, on what — and above all",
+      "🏅 סימנת את כל ארבעת הצעדים — זה כל מה שצריך כדי להתחיל": "🏅 You ticked all four steps — that's all it takes to start",
+      "רוצה שאראה לך כמה זה שווה בעוד שנה? פתח את הסימולטור 🔮": "Want to see what that's worth in a year? Open the simulator 🔮",
+      "🛟 נוספה לך קוביית קרן חירום — רשת הביטחון של כל תקציב": "🛟 An emergency-fund cube was added — every budget's safety net",
+      "הספר מסביר מתי מותר לגעת בה ואיך ממלאים אותה בחזרה.": "The book explains when you're allowed to touch it and how to fill it back up.",
+      "מטשטש את הסכומים בדשבורד — ריחוף עם העכבר חושף אותם": "Blurs the amounts on the dashboard — hover with the mouse to reveal them",
+      "✅ AI Premium פעיל בחשבון שלך — כל הפיצ׳רים פתוחים.": "✅ AI Premium is active on your account — every feature is unlocked.",
+      "אין עדיין קוביות משותפות — צרו אחת והזמינו חברים!": "No shared cubes yet — create one and invite friends!",
+      "🌐 הספר נפתח באתר הקריאה — נדרש חיבור לאינטרנט.": "🌐 The book opens on the reading site — an internet connection is required.",
+      "הנהלת האפליקציה רשאית לעדכן את התקנון מעת לעת.": "The app's management may update these terms from time to time.",
+      "אני לא יודע את גובה הריבית — תנו ל-AI להעריך": "I don't know the interest rate — let the AI estimate it",
+      "\"כדאי לי לקנות אוזניות ב-600 או שעון ב-900?\"": "\"Should I buy headphones for 600 or a watch for 900?\"",
+      "חודש אחד של מעקב שווה יותר משנה של ניחושים.": "One month of tracking is worth more than a year of guessing.",
+      "חשמל · מים · ארנונה · ועד בית — כמה זה באמת": "Electricity · water · municipal tax · building fee — what it really costs",
+      "📚 הספר נוסף לספרייה שלך — אפשר לקרוא עכשיו!": "📚 The book was added to your library — you can read it now!",
+      "הדפדפן הזה לא תומך בהדפסה 😕 נסו מדפדפן אחר.": "This browser does not support printing 😕 Try a different one.",
+      "צריך שם, יתרה וריבית (או לסמן שאינך יודע) 🙂": "A name, balance and interest rate are needed (or tick that you don't know) 🙂",
+      ", בלי לפתור כלום, רק להוריד את עוצמת הרעש.": ", without solving anything, just turning the noise down.",
+      "יש לאשר את התקנון ותנאי השימוש לפני הרכישה": "You must accept the terms and conditions before purchasing",
+      "🛟 קרן החירום היא חובה — הושארה על 5% לפחות": "🛟 The emergency fund is required — kept at 5% minimum",
+      "המוח שלך רוצה לקנות. הנה איך עוצרים אותו.": "Your brain wants to buy. Here's how to stop it.",
+      "🎁 בונוס חינם: מחשבון ודף עבודה אישי למעקב": "🎁 Free bonus: a personal calculator and tracking worksheet",
+      "ארנונה 260 · ועד 120 · חשמל 180 · מים 90": "Municipal tax 260 · Building fee 120 · Electricity 180 · Water 90",
+      "סך האחוזים: 100% ✓ · מחלק את כל ה-₪5,000": "Total percentage: 100% ✓ · splits all ₪5,000",
+      "היועץ הפיננסי החכם שלך · מכיר את הקוביות": "Your smart financial adviser · knows your cubes",
+      "🖨️ נפתח חלון ההדפסה — בחרו „שמירה כ-PDF”": "🖨️ The print dialog is open — choose „Save as PDF”",
+      "המדריך המעשי לניהול כסף לבני ובנות נוער": "The practical money guide for teenagers",
+      "ארבע טעויות שאפשר ללמוד בלי לשלם עליהן.": "Four mistakes you can learn without paying for them.",
+      "📖 הספר נפתח בלשונית חדשה — קריאה נעימה!": "📖 The book opened in a new tab — enjoy!",
+      "👇 כל 13 הפרקים למטה — גללו ימינה ושמאלה": "👇 All 13 chapters below — scroll left and right",
+      "רשת הביטחון — נוגעים בה רק במקרה חירום": "The safety net — touch it only in a real emergency",
+      "לחיצה אחת לא מרגישה כמו שטר. זו הבעיה.": "One tap doesn't feel like a banknote. That's the problem.",
+      "עטיפת הספר 5,000 ₪ — המשחק הפיננסי שלך": "Cover of the book ₪5,000 — Your financial game",
+      ". תשלום חד-פעמי, הספר נשאר שלך לתמיד.": ". One-time payment, the book stays yours forever.",
+      "„תנו לכל שקל תפקיד” הוא יומן ההוצאות.": "„Give every shekel a job” is the expense journal.",
+      "קיובפייננס · הכסף שלך, מסודר בקוביות": "CubeFinance · your money, sorted into cubes",
+      "הכסף נכנס. עכשיו מתחיל המשחק האמיתי.": "The money is in. Now the real game begins.",
+      "קראתי ואישרתי את התקנון ותנאי השימוש": "I have read and accepted the terms and conditions of use",
+      "הכישרון שלך שווה כסף. בוא נבדוק כמה.": "Your talent is worth money. Let's find out how much.",
+      "איך הלוואות ומינוס אוכלים את החיסכון": "How loans and overdrafts eat your savings",
+      "השלם אתגרים כדי לצבור נקודות ומדליות": "Complete challenges to earn points and medals",
+      "לכל שאלה או פנייה ניתן ליצור קשר עם:": "For any question or enquiry you can contact:",
+      "אני כאן בדיוק בשביל התלבטויות כאלה 🧊": "This is exactly what I'm here for 🧊",
+      "כל האחוזים למטה מחושבים מהסכום הזה.": "Every percentage below is calculated from this amount.",
+      "💸 חלק שוב ₪12,000 (אוגוסט כבר חולק)": "💸 Split ₪12,000 again (August has already been split)",
+      "ארבעת הארנקים שבספר הם הקוביות שלך.": "The four wallets in the book are your cubes.",
+      "לפי המשכורת — שותפים מול דירה פרטית": "Based on your salary — flatmates versus a place of your own",
+      "ליצור קובייה אישית ולהכניס אליה כסף": "Create a personal cube and put money into it",
+      "✅ קוביית החוב עודכנה · חיסכון צפוי ": "✅ The debt cube was updated · expected saving ",
+      "נעולה על שכר הדירה שלך, לצד קוביית": "cube locked to your rent, alongside a",
+      "קופת חירום — נוגעים רק כשמשהו נשבר": "Emergency fund — touch it only when something breaks",
+      "5 דברים לבדוק לפני שחותמים על חוזה": "5 things to check before signing a contract",
+      "📈 הוצאה קבועה חדשה של 500 ₪ בחודש": "📈 A new fixed expense of ₪500 a month",
+      "איך נשארים עם כסף גם ביום האחרון.": "How to still have money on the last day.",
+      "שיעורי הבית — ארבעה צעדים ראשונים": "The homework — four first steps",
+      "מחיר קודם 35 שקלים — כבר לא בתוקף": "Previous price 35 shekels — no longer valid",
+      "קורות חיים + ההבדל בין ברוטו לנטו": "A CV, and the difference between gross and net",
+      "למה זה עובד איפה שתקציב רגיל נכשל": "Why it works where an ordinary budget fails",
+      "ארבע קופות, מספר אחד, ואפס בלגן.": "Four pots, one number, and zero mess.",
+      "לא יודע מה אני עושה עם החיים שלי": "I don't know what I'm doing with my life",
+      "לשמור לפחות 60% מקוביית הבילויים": "Keep at least 60% of the fun cube",
+      "קיבלת כסף. עכשיו מתחילה ההחלטה.": "You got money. Now the decision begins.",
+      "שיטת הקוביות — ההסבר ב-30 שניות": "The cube method — explained in 30 seconds",
+      "— כדי ששכירות לעולם לא תתפספס.": "cube — so rent is never missed.",
+      "הכסף שנועד ליום שבו משהו נשבר.": "The money meant for the day something breaks.",
+      "הזמן הוא המשאב שאי אפשר לקנות.": "Time is the one resource you cannot buy.",
+      "המשחק לא נגמר. פשוט למדת לשחק.": "The game isn't over. You've just learned to play.",
+      " הולכים להוצאות קבועות ונעולות": " goes to fixed and locked expenses",
+      " זה יותר מכל מה שיש לך כרגע (₪": " is more than everything you have right now (₪",
+      "התחבר כדי להמשיך לקוביות שלך.": "Log in to get back to your cubes.",
+      "כמה נכנס לחשבון כל חודש, נטו?": "How much lands in your account each month, net?",
+      "להוריד את הסכום מיתרת הקובייה": "Subtract the amount from the cube's balance",
+      "יעד קרוב — חופשה, ציוד, אירוע": "A near-term goal — a holiday, gear, an event",
+      "🖨️ הורד כ-PDF / הדפס דף עבודה": "🖨️ Download as PDF / print the worksheet",
+      "כמה שכר דירה אני יכול להרשות?": "How much rent can I afford?",
+      "העבודה הראשונה: מה חובה לבדוק": "Your first job: what you must check",
+      "כמה זמן ייקח לבנות קופת חירום": "How long it takes to build an emergency fund",
+      "פותח את החנות של Google Play…": "Opening the Google Play store…",
+      "כך ייראה חודש שלם של ₪12,000": "What a full month of ₪12,000 looks like",
+      "🧊 כל הכסף שלך בעוד 12 חודשים": "🧊 All your money in 12 months",
+      "← אפשר לגלול את הפרקים הצידה": "← You can scroll the chapters sideways",
+      "משהו הרתיח אותי ואני מלא בזה": "Something made my blood boil and I'm full of it",
+      "צריך יותר מזה? זה בסדר גמור.": "Need more than this? That's completely okay.",
+      "לצבור ₪1,000 בקוביית החיסכון": "Reach ₪1,000 in the savings cube",
+      "אין מספיק כסף פנוי בקוביות 🙂": "Not enough free money in the cubes 🙂",
+      "5,000 ₪ — המשחק הפיננסי שלך": "₪5,000 — Your financial game",
+      "כאן הכול מתחבר לתוכנית אחת.": "This is where it all comes together into one plan.",
+      "מה הכי קרוב למה שאתה מרגיש?": "What is closest to how you feel?",
+      "בחירת שפה / Choose language": "Choose language / בחירת שפה",
+      "⬇️ ייצוא הנתונים שלי (JSON)": "⬇️ Export my data (JSON)",
+      "🏖️ להפסיק לעבוד ל-3 חודשים": "🏖️ Stop working for 3 months",
+      "דף אחד. צילום מסך. סיימנו.": "One page. A screenshot. Done.",
+      "לצבור ₪500 בקוביית ההשקעות": "Reach ₪500 in the investments cube",
+      "העברת כסף בין קוביות בצ׳אט": "Moving money between cubes in the chat",
+      "אין חיבור לחשבון הבנק שלך.": "There is no connection to your bank account.",
+      "כל שקל יודע לאן הוא הולך.": "Every shekel knows where it goes.",
+      "הפקדה לבעל הדירה (שכירות)": "Deposit to Landlord (rent)",
+      "חלוקה אוטומטית בכל חודש 🔁": "Automatic split every month 🔁",
+      "מה קורה אם משהו משתנה? ⚠️": "What happens if something changes? ⚠️",
+      "לומר „לא” בלי לאבד חברים.": "Saying „no” without losing friends.",
+      "כמה אני יכול לחסוך בחודש?": "How much can I save a month?",
+      "🤖 הוקצתה ריבית משוערת של ": "🤖 An estimated interest rate was assigned: ",
+      " בחודש תסגור את הפער תוך ": " a month you'll close the gap in ",
+      "שוברים את הקופה — ובונים": "Break the piggy bank — and build",
+      "ולמה? (התשובה הכי חשובה)": "And why? (the most important answer)",
+      "חופשה בלי להישאר בלי שקל": "A holiday without ending up broke",
+      "למה זה מתחבר לקוביות שלך": "How this connects to your cubes",
+      "אם עכשיו קשה — עצור רגע.": "If things are hard right now — stop for a moment.",
+      "עודכן לאחרונה: יולי 2026": "Last updated: July 2026",
+      "🧹 ניקוי היסטוריית פעולות": "🧹 Clear action history",
+      "👑 ברוך הבא ל-AI Premium!": "👑 Welcome to AI Premium!",
+      "לא הצלחתי לפתוח את החנות": "I couldn't open the store",
+      "אין מספיק ביתרה הפנויה 🙂": "Not enough in the available balance 🙂",
+      "אחוז מההכנסה לכל קובייה": "Percentage of income for each cube",
+      "במסלול הנוכחי: ₪106,212": "On the current path: ₪106,212",
+      "אשראי, אפליקציות ומזומן": "Credit, apps and cash",
+      "לבזבוזים, בלי רגשות אשם": "For spending, guilt-free",
+      "סכום חודשי פנוי להחזרים": "Monthly amount free for repayments",
+      "⛄ כדור שלג (יתרה נמוכה)": "⛄ Snowball (lowest balance)",
+      "גם כרטיס נטען לא מחובר.": "A prepaid card is not connected either.",
+      "אין רישום אירועים גלוי.": "There is no visible event log.",
+      "עזור לי להחליט מה לקנות": "Help me decide what to buy",
+      "🤝 נוצרה קובייה משותפת: ": "🤝 Shared cube created: ",
+      "⬇️ הנתונים יוצאו בהצלחה": "⬇️ Your data was exported successfully",
+      "אין חברים בקובייה הזו 🙂": "There are no friends in this cube 🙂",
+      "הזינו סכום חודשי פנוי 🙂": "Enter a free monthly amount 🙂",
+      "קודם הזינו סכום חודשי 🙂": "Enter a monthly amount first 🙂",
+      "🔑 בעל הדירה (שכירות) 🔒": "🔑 Landlord (rent) 🔒",
+      "🚗 לקנות רכב ב-30,000 ₪": "🚗 Buy a car for ₪30,000",
+      "מדריך מעשי · 50 עמודים": "Practical guide · 50 pages",
+      "↺ חזרה ל-⁦40/30/20/10⁩": "↺ Back to ⁦40/30/20/10⁩",
+      "מיפוי 5 כישורים להכנסה": "Mapping 5 skills into income",
+      "יותר מדי דברים בבת אחת": "Too many things at once",
+      "🏔️ מפולת (ריבית גבוהה)": "🏔️ Avalanche (highest interest)",
+      "🗑️ מחיקת חשבון לצמיתות": "🗑️ Delete account permanently",
+      "שדרוג ל-⁦AI Premium⁩ 👑": "Upgrade to ⁦AI Premium⁩ 👑",
+      "🗑️ החשבון נמחק לצמיתות": "🗑️ The account has been permanently deleted",
+      "📖 פותח את הספר בדפדפן…": "📖 Opening the book in the browser…",
+      "הוסיפו לפחות חוב אחד 🙂": "Add at least one debt 🙂",
+      "שכר דירה חודשי (נעול)": "Monthly rent (locked)",
+      "פרק 2 הוא קרן החירום.": "Chapter 2 is the emergency fund.",
+      "הכול נשאר במכשיר שלך.": "Everything stays on your device.",
+      "📉 הקובייה הכי נמוכה: ": "📉 Lowest cube: ",
+      "הוצאות קבועות ונעולות": "fixed and locked expenses",
+      "🧊 הקוביות שלך מוכנות!": "🧊 Your cubes are ready!",
+      "בודק מול Google Play…": "Checking with Google Play…",
+      "אי אפשר להיכנס למינוס": "you cannot go into overdraft",
+      "כן — אבל שווה לחכות ⏳": "Yes — but it's worth waiting ⏳",
+      "בניית הון לטווח ארוך": "Building wealth for the long run",
+      "הפקדה לבילויים ופנאי": "Deposit to Fun & leisure",
+      "הכנסה חודשית קבועה 💸": "Fixed monthly income 💸",
+      "🔑 בעל הדירה (שכירות)": "🔑 Landlord (rent)",
+      "כמה הכסף שלי יגדל? 📈": "How much will my money grow? 📈",
+      "👀 הצצה לתוכן — בחינם": "👀 A peek inside — free",
+      "סיכום — המשחק האמיתי": "Summary — the real game",
+      "— תמיכה רגשית בצ׳אט:": "— emotional support by chat:",
+      "ואם יש סכנה מיידית —": "And if there is immediate danger —",
+      "מפת החשבונות הנסתרים": "A map of the hidden bills",
+      "אופטימיזציית חובות 💳": "Debt optimiser 💳",
+      "🤖 הפעל את מייעל ה-AI": "🤖 Run the AI optimiser",
+      "❌ הרכישה לא הושלמה: ": "❌ The purchase did not complete: ",
+      "זה מכסה אותך היום כ-": "That covers you today for about ",
+      " הם התקציב הגמיש שלך": " is your flexible budget",
+      "עדיין אין לך חשבון?": "Don't have an account yet?",
+      "הפקדה לחשבונות הבית": "Deposit to Household bills",
+      "כמה להוסיף כל חודש?": "How much to add each month?",
+      "כמה כסף יש לך כרגע?": "How much money do you have right now?",
+      "צ׳קליסט חוזה שכירות": "Rental contract checklist",
+      "אתגר הקובייה הסודית": "The secret cube challenge",
+      "חלוקת תקציב לקוביות": "Splitting a budget into cubes",
+      "👑 ⁦AI Premium⁩ פעיל": "👑 ⁦AI Premium⁩ active",
+      "תכניס 100 ₪ לחיסכון": "Put ₪100 into savings",
+      "צריך שם וסכום יעד 🙂": "A name and a target amount are needed 🙂",
+      "פתח לי קובייה לזה 🎯": "Open a cube for this 🎯",
+      "בעל הדירה (שכירות)": "Landlord (rent)",
+      "מתוך ₪3,200 (נעול)": "of ₪3,200 (locked)",
+      "כרית ביטחון ויעדים": "A safety cushion and goals",
+      "כיף, מסעדות, חברים": "Fun, restaurants, friends",
+      "מעקב 10 שניות ביום": "A 10-second check every day",
+      "מחשבון חודשים ליעד": "A months-to-goal calculator",
+      "יצירת קובייה אישית": "Creating a personal cube",
+      "מה מצב קרן החירום?": "How is my emergency fund doing?",
+      " חולקה אוטומטית — ": " was split automatically — ",
+      " חודשי הוצאות של ₪": " months of expenses at ₪",
+      " חודשים בלי הכנסה.": " months with no income.",
+      " פנויים בחודש) זה ": " free a month) that's ",
+      "התמונה שלך כרגע: ₪": "Your picture right now: ₪",
+      "הקש להפעלת הסאונד": "Tap to enable sound",
+      "מתוך ₪1,400 לחודש": "of ₪1,400 per month",
+      "מתוך ₪1,013 לחודש": "of ₪1,013 per month",
+      "מתוך ₪2,160 לחודש": "of ₪2,160 per month",
+      "מתוך ₪1,890 לחודש": "of ₪1,890 per month",
+      "מתוך ₪1,688 לחודש": "of ₪1,688 per month",
+      "הפקדה לקובייה הזו": "Deposit to this cube",
+      "סימולטור מה-אם? 🔮": "What-if simulator 🔮",
+      "המשחק הפיננסי שלך": "Your financial game",
+      "תקנון ותנאי שימוש": "Terms and conditions of use",
+      "טעויות של מתחילים": "Beginners' mistakes",
+      "התוכנית שלך לעתיד": "Your plan for the future",
+      "חיסכון לטווח ארוך": "Long-term saving",
+      "מעקב הוצאות שבועי": "Weekly expense tracker",
+      "מדריך דור העתיד 🧭": "Next-generation guide 🧭",
+      "צור קובייה משותפת": "Create a shared cube",
+      "🧹 ההיסטוריה נוקתה": "🧹 History cleared",
+      ", וכל השאר לא זז.": " would be left there, and nothing else moves.",
+      ", וקרן חירום על ₪": ", and an emergency fund at ₪",
+      "מתוך ₪650 (נעול)": "of ₪650 (locked)",
+      "צור קובייה אישית": "Create a personal cube",
+      "הפקדה לקרן חירום": "Deposit to Emergency fund",
+      "⚡ חשבונות הבית 🔒": "⚡ Household bills 🔒",
+      "קוביות משותפות 🤝": "Shared cubes 🤝",
+      "מינוס/אוברדרפט 📉": "Overdraft 📉",
+      "🔒 פרטיות ונתונים": "🔒 Privacy and data",
+      "פרטיות ונתונים 🔒": "Privacy and data 🔒",
+      "🎯 נוצרה קובייה: ": "🎯 Cube created: ",
+      "בקרן החירום יש ₪": "Your emergency fund holds ₪",
+      " נכנסים בחודש, ₪": " coming in per month, ₪",
+      "🎉 בילויים ופנאי": "🎉 Fun & leisure",
+      "😄 התפנקתי ושווה": "😄 A treat, and worth it",
+      "לכמה זמן קדימה?": "How far ahead?",
+      "לבני ובנות נוער": "For teenagers",
+      "כסף עובד בשבילך": "Money working for you",
+      "להגדיל את העוגה": "Growing the pie",
+      "— קו סיוע 24/7:": "— helpline, 24/7:",
+      "יעד אישי בתנועה": "A personal goal in motion",
+      "מחשב מסלול מחדש": "Recalculating the route",
+      "הוסף חוב לרשימה": "Add the debt to the list",
+      "⎋ יציאה מהחשבון": "⎋ Sign out",
+      "✅ האימייל אומת!": "✅ Email verified!",
+      "❌ האימות נכשל: ": "❌ Verification failed: ",
+      "📖 פותח את הספר…": "📖 Opening the book…",
+      "💳 ה-AI פירק את ": "💳 The AI split ",
+      "קרן החירום מלאה": "Your emergency fund is full",
+      "אין מסגרת אשראי": "there is no credit line",
+      "החלוקה לקוביות": "The split into cubes",
+      "⚡ חשבונות הבית": "⚡ Household bills",
+      "חלוקה אוטומטית": "Automatic split",
+      "🗓️ תכננתי מראש": "🗓️ I planned it",
+      "ארוחה עם חברים": "Dinner with friends",
+      "הוצאה חד-פעמית": "One-off expense",
+      "מחיר מלא ₪35 —": "Full price ₪35 —",
+      "השכפ״ץ הפיננסי": "The financial flak jacket",
+      "קו אדום לחופשה": "A red line for the holiday",
+      "ארנק החופש 40%": "The freedom wallet 40%",
+      "מלכודות הריבית": "Interest traps",
+      "מדליות והישגים": "Medals and achievements",
+      "₪2,000 בחיסכון": "₪2,000 in savings",
+      "הפעלת מצב סמוי": "Turning on incognito mode",
+      "האותיות הקטנות": "The small print",
+      "הלוואה רגילה 🏦": "Ordinary loan 🏦",
+      "מה נשמר עליך 📋": "What is stored about you 📋",
+      " עוד לא חולקו)": " not yet split)",
+      "ימים בלי הכנסה": "days with no income",
+      "). בקצב שלך (₪": "). At your rate (₪",
+      " מהיתרה הפנויה": " from the free balance",
+      " זמינים להוצאה": " available to spend",
+      " פנויים להפניה": " free to allocate",
+      "היי! 👋 יש לך ₪": "Hi! 👋 You have ₪",
+      "בילויים ופנאי": "Fun & leisure",
+      "הפקדה לחיסכון": "Deposit to Savings",
+      "הפקדה להשקעות": "Deposit to Investments",
+      "₪3,200 קבוע 🔒": "₪3,200 fixed 🔒",
+      "יומן הוצאות 🧾": "Expense journal 🧾",
+      "מאיזו קובייה?": "From which cube?",
+      "🧊 כל הכסף שלי": "🧊 All of my money",
+      "🛒 קנה ב-⁦₪19⁩": "🛒 Buy for ⁦₪19⁩",
+      "רוצה מול צריך": "Want versus need",
+      "דף אחד לטלפון": "One page for your phone",
+      "חוק 48 השעות.": "The 48-hour rule.",
+      "כסף חופשי 10%": "Free money 10%",
+      "רגע של רוגע 🌿": "A calm moment 🌿",
+      "אתגרים פעילים": "Active challenges",
+      "כרטיס אשראי 💳": "Credit card 💳",
+      "זכויות יוצרים": "Copyright",
+      "כתוב ל-Cubey…": "Write to Cubey…",
+      "🛟 קרן חירום: ": "🛟 Emergency fund: ",
+      "כן, אפשר בשקט": "Yes, comfortably",
+      " חודשי הוצאות": " months of expenses",
+      "דיור וחשבונות": "Housing & bills",
+      "מתוך יעד של ₪": "of a target of ₪",
+      "🧾 דיווחת על ₪": "🧾 You've logged ₪",
+      "התפנקתי ושווה": "A treat, and worth it",
+      "· קיובפייננס": "· money, sorted",
+      "סה״כ בקוביות": "Total in cubes",
+      "נוצרה קוביית": "Created a",
+      "חשבונות הבית": "Household bills",
+      "🧱 הייתי חייב": "🧱 I had to",
+      "הורדה מהיתרה": "Subtracted from balance",
+      "🔁 חודשי קבוע": "🔁 Fixed monthly",
+      "ספרי הדרכה 📚": "Guide books 📚",
+      "14 דק׳ קריאה": "14 min read",
+      "חוק 48 השעות": "The 48-hour rule",
+      "קריאת התקנון": "Reading the terms",
+      "🌐 שפה: עברית": "🌐 Language: English",
+      "מה המצב שלי?": "What's my situation?",
+      "הרכישה בוטלה": "The purchase was cancelled",
+      "מכסה כרגע כ-": "currently covers about ",
+      " תידחה בקופה": " would be declined at the till",
+      "בוא נתחיל 🧊": "Let's start 🧊",
+      "רגע של רוגע": "A calm moment",
+      "הקוביות שלך": "Your cubes",
+      "סכום לחלוקה": "Amount to split",
+      "הפקדה לשוטף": "Deposit to Essentials",
+      "₪650 קבוע 🔒": "₪650 fixed 🔒",
+      "🛟 קרן חירום": "🛟 Emergency fund",
+      "מסלול נוכחי": "Current path",
+      "סיפורי מקרה": "case studies",
+      "תעשי לי סדר": "Sort me out",
+      "מתוך הסיכום": "From the summary",
+      "לחוץ / מוצף": "Stressed / overwhelmed",
+      "הנקודות שלך": "Your points",
+      "האלף הראשון": "The first thousand",
+      "משקיע מתחיל": "Beginner investor",
+      "בנאי קוביות": "Cube builder",
+      "➕ הוספת חוב": "➕ Add a debt",
+      "ריבית שנתית": "Annual interest",
+      "מצב סמוי 🕶️": "Incognito mode 🕶️",
+      "סה״כ אצלך: ": "You have in total: ",
+      "תכננתי מראש": "I planned it",
+      "הקנייה הבאה": "the next purchase",
+      "חלק ₪8,400": "Split ₪8,400",
+      "אוכל וסופר": "Food & groceries",
+      "רשום הוצאה": "Log expense",
+      "סוג ההוצאה": "Type of expense",
+      "צ׳ק-ליסטים": "checklists",
+      "חינם לכולם": "Free for everyone",
+      "ארנק החופש": "The freedom wallet",
+      "השכפ״ץ 30%": "The flak jacket 30%",
+      "הלוואת רכב": "Car loan",
+      "מחובר/ת כ־": "Signed in as",
+      "שימוש הוגן": "Fair use",
+      "בטח! אקח ₪": "Sure! I'll take ₪",
+      "בזהירות ⚖️": "Carefully ⚖️",
+      "הייתי חייב": "I had to",
+      "⚙️ הגדרות": "⚙️ Settings",
+      "קרן חירום": "Emergency fund",
+      "12 חודשים": "12 months",
+      "24 חודשים": "24 months",
+      "36 חודשים": "36 months",
+      "עם התוספת": "With the addition",
+      "💥 חד-פעמי": "💥 One-off",
+      "50 עמודים": "50 pages",
+      "46%- הנחה": "46% off",
+      "עכשיו ₪19": "now ₪19",
+      "דק׳ קריאה": "min read",
+      "לחץ חברתי": "Peer pressure",
+      "כסף חופשי": "Free money",
+      "מה קניתי?": "What did I buy?",
+      "העתיד 20%": "The future 20%",
+      "שלוש דקות": "Three minutes",
+      "צל פיננסי": "Financial shadow",
+      "מחלק אלוף": "Champion splitter",
+      "הגדרות ⚙️": "Settings ⚙️",
+      "גיל מתאים": "Suitable age",
+      "יצירת קשר": "Contact",
+      "איתי לייס": "Itay Leiss",
+      "אין מינוס": "there is no overdraft",
+      "בקצב של ₪": "At ₪",
+      " בקוביית ": " in the cube ",
+      " ואעביר ₪": " and move ₪",
+      " בקוביות.": " in cubes.",
+      "רשמתי ✅ ₪": "Logged ✅ ₪",
+      "\" (נשאר ₪": "\" (₪",
+      "פתח צ׳אט": "Open chat",
+      "סימולטור": "Simulator",
+      "💰 חיסכון": "💰 Savings",
+      "📈 השקעות": "📈 Investments",
+      "כמה יצא?": "How much went out?",
+      "🌀 נסחפתי": "🌀 I got carried away",
+      "3 חודשים": "3 months",
+      "6 חודשים": "6 months",
+      "אתגרים 🏆": "Challenges 🏆",
+      "סוג החוב": "Type of debt",
+      "משכנתא 🏠": "Mortgage 🏠",
+      "מצב סמוי": "Incognito mode",
+      "לא עכשיו": "Not right now",
+      "💸 הכנסת ": "💸 Your income for ",
+      "💸 הפקדת ": "💸 You deposited ",
+      "🪙 חולקו ": "🪙 Split ",
+      " לקוביות": " into the cubes",
+      " כל אחד)": " each)",
+      " חודשים.": " months.",
+      "\". לאשר?": "\". Confirm?",
+      "טעונים ₪": "loaded ₪",
+      " בקוביות": " in cubes",
+      " ירדו מ\"": " came off \"",
+      "התחברות": "Log in",
+      "בילויים": "Fun",
+      "משותפות": "Shared",
+      "😞 מתחרט": "😞 I regret it",
+      "על הספר": "About the book",
+      "קטגוריה": "Category",
+      "(מד״א).": "(Magen David Adom).",
+      "חוסך על": "Saver of",
+      "שם החוב": "Debt name",
+      "📜 תקנון": "📜 Terms",
+      "שינויים": "Changes",
+      "אוקטובר": "October",
+      "(מתוכם ": "(of which ",
+      " חודשים": " months",
+      " בחודש:": " a month:",
+      " הוצאות": " of expenses",
+      "אימייל": "Email",
+      "חיסכון": "Savings",
+      "הוצאות": "Expenses",
+      "אתגרים": "Challenges",
+      "השקעות": "Investments",
+      "→ חזרה": "→ Back",
+      "🛒 שוטף": "🛒 Essentials",
+      "על מה?": "On what?",
+      "עמודים": "pages",
+      "איורים": "illustrations",
+      "הפרקים": "The chapters",
+      "השכפ״ץ": "The flak jacket",
+      "קובייה": "Cube",
+      "אחריות": "Liability",
+      "פרטיות": "Privacy",
+      "פברואר": "February",
+      "אוגוסט": "August",
+      "ספטמבר": "September",
+      "נובמבר": "November",
+      "נקודות": "points",
+      "נסחפתי": "I got carried away",
+      "סיסמה": "Password",
+      "הירשם": "Sign up",
+      "דלג ←": "Skip →",
+      "הכנסה": "Income",
+      "ספרים": "Books",
+      "מדריך": "Guide",
+      "חובות": "Debts",
+      "עכשיו": "Now",
+      "פרקים": "chapters",
+      "הקדמה": "Introduction",
+      "העתיד": "The future",
+      "תאריך": "Date",
+      "על מה": "On what",
+      "שפה 🌐": "Language 🌐",
+      "תקנון": "Terms",
+      "ינואר": "January",
+      "אפריל": "April",
+      "דצמבר": "December",
+      "לחודש": "per month",
+      "בחודש": "a month",
+      "מתוך ": "of ",
+      " עם ₪": " with ₪",
+      "ביטול": "cancel",
+      "מתחרט": "I regret it",
+      "דיור": "Housing",
+      "שוטף": "Essentials",
+      "רוגע": "Calm",
+      "נעול": "Locked",
+      "חובה": "Required",
+      "חודש": "Month",
+      "סכום": "Amount",
+      "כועס": "Angry",
+      "אבוד": "Lost",
+      "ער״ן": "ERAN",
+      "סה״ר": "SAHAR",
+      "נט״ל": "NATAL",
+      "יתרה": "Balance",
+      "שיטה": "Method",
+      "סגור": "Close",
+      "יוני": "June",
+      "יולי": "July",
+      "מלאה": "full",
+      "יש ₪": "There's ₪",
+      " ו־₪": " and ₪",
+      "לאשר": "confirm",
+      "סדר": "order",
+      "למה": "why",
+      "מרץ": "March",
+      "מאי": "May",
+      "🎁 +": "🎁 +",
+    });
+
+    // ====================================================================
+    // Language (Hebrew <-> English) with direction switching.
+    //
+    // Every screen in this app is built by DOM calls that write Hebrew
+    // directly -- there are ~1,300 such literals. Rewriting each call site
+    // into t("key") would touch nearly every function in the file and risk
+    // breaking working screens for a purely presentational feature, so the
+    // translation is applied one layer later instead: after the DOM is built,
+    // a pass walks it and swaps Hebrew text for English using DICT below.
+    //
+    // Consequences worth knowing:
+    //   * A string with no DICT entry stays Hebrew rather than breaking.
+    //   * Sentences assembled at runtime around a number are matched by the
+    //     phrase pass, which substitutes the longest known fragments and
+    //     leaves the digits alone.
+    // ====================================================================
+    const LANG_KEY = "cubefinance_web:lang";
+    const HEB_RE = /[֐-׿]/;
+
+    function readLang() {
+      try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "he"; } catch (e) { return "he"; }
+    }
+    let LANG = readLang();
+    const isEn = () => LANG === "en";
+
+    // Direction is a property of the language, so it moves with it. The whole
+    // document flips: CSS logical properties follow automatically, and the few
+    // deliberately-physical rules are mirrored in the stylesheet.
+    function applyLangDir() {
+      const h = document.documentElement;
+      h.setAttribute("lang", isEn() ? "en" : "he");
+      h.setAttribute("dir", isEn() ? "ltr" : "rtl");
+      h.classList.toggle("lang-en", isEn());
+    }
+
+    // --- the lookup -----------------------------------------------------
+    // Built lazily: DICT is authored Hebrew->English, and PHRASES is the same
+    // set sorted longest-first so substitution never eats a shorter prefix of
+    // a longer phrase.
+    let PHRASES = null;
+    function phraseList() {
+      if (!PHRASES) PHRASES = Object.keys(DICT).sort((a, b) => b.length - a.length);
+      return PHRASES;
+    }
+
+    function translateText(raw) {
+      const t = raw.trim();
+      if (!t || !HEB_RE.test(t)) return null;          // nothing Hebrew to do
+      if (Object.prototype.hasOwnProperty.call(DICT, t)) {
+        // preserve the node's original padding
+        const lead = raw.slice(0, raw.length - raw.trimStart().length);
+        const tail = raw.slice(raw.trimEnd().length);
+        return lead + DICT[t] + tail;
+      }
+      // Composite string -- usually a number or a name spliced into a sentence.
+      // Substitute known fragments longest-first, under two rules learned the
+      // hard way:
+      //
+      //  1. A fragment must not sit inside a longer Hebrew word. Hebrew glues
+      //     prefixes on ("ה", "ב", "ו"), so a plain indexOf turned
+      //     "המספרים" (the numbers) into "המBooks" by matching "ספרים".
+      //     Both neighbours therefore have to be non-letters.
+      //  2. All or nothing. If Hebrew survives the pass the sentence is only
+      //     half-translated, which reads worse than leaving it alone -- so the
+      //     original is returned untouched and the caller shows Hebrew.
+      let out = raw;
+      const list = phraseList();
+      for (let i = 0; i < list.length; i++) {
+        const k = list[i];
+        if (k.length < 2) continue;
+        out = replaceStandalone(out, k, DICT[k]);
+      }
+      if (out === raw || HEB_RE.test(out)) return null;
+      // A sentence that began with a Hebrew word now begins with whichever
+      // fragment replaced it, which may be mid-sentence wording like "of".
+      // Restore the capital so the line still reads as a sentence.
+      if (HEB_RE.test(raw.trimStart()[0] || "")) {
+        out = out.replace(/^(\s*)([a-z])/, (m, sp, ch) => sp + ch.toUpperCase());
+      }
+      return out;
+    }
+
+    // Replace every occurrence of `needle` that is not glued to a Hebrew letter
+    // on either side.
+    function replaceStandalone(hay, needle, rep) {
+      let out = "", from = 0;
+      for (;;) {
+        const at = hay.indexOf(needle, from);
+        if (at === -1) { out += hay.slice(from); return out; }
+        const before = at > 0 ? hay[at - 1] : "";
+        const after = hay[at + needle.length] || "";
+        const glued = (before && HEB_RE.test(before)) || (after && HEB_RE.test(after));
+        out += hay.slice(from, at) + (glued ? needle : rep);
+        from = at + needle.length;
+      }
+    }
+
+    // Attributes that hold user-visible prose.
+    const TR_ATTRS = ["placeholder", "aria-label", "title", "alt"];
+
+    function translateTree(root) {
+      if (!isEn() || !root) return;
+      const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const jobs = [];
+      let n;
+      while ((n = walk.nextNode())) {
+        const parent = n.parentNode;
+        if (parent && (parent.nodeName === "SCRIPT" || parent.nodeName === "STYLE")) continue;
+        const next = translateText(n.nodeValue);
+        if (next !== null && next !== n.nodeValue) jobs.push([n, next]);
+      }
+      jobs.forEach((j) => { j[0].nodeValue = j[1]; });
+
+      const els = root.querySelectorAll ? root.querySelectorAll("*") : [];
+      for (let i = 0; i < els.length; i++) {
+        const e = els[i];
+        for (let a = 0; a < TR_ATTRS.length; a++) {
+          const v = e.getAttribute && e.getAttribute(TR_ATTRS[a]);
+          if (!v) continue;
+          const nv = translateText(v);
+          if (nv !== null && nv !== v) e.setAttribute(TR_ATTRS[a], nv);
+        }
+        // <input type=button|submit> shows its value
+        if (e.nodeName === "INPUT" && /^(button|submit)$/i.test(e.type || "")) {
+          const nv = translateText(e.value || "");
+          if (nv !== null && nv !== e.value) e.value = nv;
+        }
+      }
+    }
+
+    // Anything the app injects later -- toasts, sheets, chat bubbles, the
+    // coin burst -- goes through the same pass without its call site knowing.
+    // Translating produces further mutations, but those carry no Hebrew, so
+    // the second pass is a no-op and the loop settles immediately.
+    let trObserver = null;
+    function startTranslateObserver() {
+      if (trObserver || typeof MutationObserver === "undefined") return;
+      trObserver = new MutationObserver((muts) => {
+        if (!isEn()) return;
+        trObserver.disconnect();
+        try {
+          muts.forEach((m) => {
+            if (m.type === "characterData") {
+              const nv = translateText(m.target.nodeValue);
+              if (nv !== null) m.target.nodeValue = nv;
+            } else {
+              m.addedNodes.forEach((node) => {
+                if (node.nodeType === 3) {
+                  const nv = translateText(node.nodeValue);
+                  if (nv !== null) node.nodeValue = nv;
+                } else if (node.nodeType === 1) {
+                  translateTree(node);
+                }
+              });
+            }
+          });
+        } finally {
+          trObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+        }
+      });
+      trObserver.observe(document.body, { childList: true, subtree: true, characterData: true });
+    }
+
+    function setLang(l) {
+      const next = l === "en" ? "en" : "he";
+      if (next === LANG) return;
+      try { localStorage.setItem(LANG_KEY, next); } catch (e) {}
+      // Switching back to Hebrew has no inverse map -- the original strings
+      // were overwritten in place -- so reload to rebuild the DOM from source.
+      location.reload();
+    }
+
+    // A two-way segmented control. Each label is written in its own language,
+    // so someone who cannot read the current one can still find their way out.
+    function langSwitchHTML() {
+      return '<div class="langsw" role="group" aria-label="Language / שפה">' +
+        '<button type="button" data-lang="he"' + (isEn() ? "" : ' class="on" aria-current="true"') + '>עברית</button>' +
+        '<button type="button" data-lang="en"' + (isEn() ? ' class="on" aria-current="true"' : "") + '>English</button>' +
+      '</div>';
+    }
+    function bindLangSwitch(root) {
+      if (!root) return;
+      root.querySelectorAll(".langsw button[data-lang]").forEach((b) => {
+        b.onclick = () => setLang(b.getAttribute("data-lang"));
+      });
+    }
+
+
     const state = {
       pool: 0,              // money to distribute (bank balance or income)
       cubes: [],            // generated from the profile
@@ -2112,7 +2845,114 @@
       gs = { target: "__all", extra: "", months: 12 };
       try { resetChat(); } catch (e) {}
     }
+    // ====================================================================
+    // Release reset + store-review account.
+    //
+    // Accounts in this app live ONLY in this device's localStorage -- there is
+    // no server-side user table to clear (the backend keeps sessions in a Map
+    // that empties on restart). So "delete every existing user" has to happen
+    // where the users actually are: here, on each device, the first time it
+    // loads a build carrying a new stamp.
+    //
+    // Bumping RESET_STAMP drops the local user table, the saved session, every
+    // per-account state blob and every onboarding draft, then re-seeds the
+    // reviewer account below. That is destructive and irreversible for anyone
+    // holding the device. It is safe right now only because the app has never
+    // shipped, so the sole accounts it can destroy are our own test ones --
+    // do NOT bump it again once real users exist.
+    // ====================================================================
+    const RESET_STAMP_KEY = "cubefinance_web:reset";
+    const RESET_STAMP = "2026-08-26-store-review";
+
+    function purgeAllAccounts() {
+      const drop = [];
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          // The stamp itself and the language choice are not account data:
+          // wiping users must not silently throw the reader back into Hebrew.
+          if (k && k.indexOf("cubefinance_web:") === 0 && k !== RESET_STAMP_KEY && k !== LANG_KEY) drop.push(k);
+        }
+        drop.forEach((k) => localStorage.removeItem(k));
+      } catch (e) {}
+      return drop.length;
+    }
+
+    // --------------------------------------------------------------------
+    // The App Store / Google Play reviewer needs to reach every screen without
+    // paying, so this account is seeded already onboarded and already entitled.
+    //
+    // The password is NOT in this file and never was: REVIEWER.salt/hash are the
+    // salted, key-stretched digest the login path already compares against, and
+    // the plaintext lives only in the Play Console's "App access" form. Anyone
+    // reading the repo therefore cannot recover it.
+    //
+    // Caveat worth knowing: mockHash() folds down to 32 bits, so this digest is
+    // brute-forceable and a collision would open THIS demo account. It holds
+    // nothing but sample data, and every other account in the app has the same
+    // property, but real server-side auth must use bcrypt/argon2 instead.
+    // --------------------------------------------------------------------
+    const REVIEWER = {
+      email: "ytylyys707@gmail.com",
+      salt: "dd718a093462c416",
+      hash: "b776a357",
+    };
+
+    // A finished profile, so the reviewer lands on a working dashboard instead
+    // of an empty questionnaire: employed, renting alone, real bills to show.
+    function reviewerProfile() {
+      return {
+        age: 27, kid: false, accountType: "bank", prepaid: false, prepaidBalance: 0,
+        hasBank: true, balance: 8400, works: true, income: 12000,
+        withParents: false, ownership: "rent",
+        exp: { rent: 3200, arnona: 260, committee: 120, electricity: 180, water: 90, food: 1400 },
+        expEstimated: [],
+      };
+    }
+
+    function seedReviewerAccount() {
+      const users = loadUsers();
+      if (users[REVIEWER.email]) return false;      // never clobber an existing one
+      const id = "acc_reviewer";
+      users[REVIEWER.email] = {
+        id: id, email: REVIEWER.email, salt: REVIEWER.salt, hash: REVIEWER.hash,
+        failCount: 0, lockUntil: 0, createdAt: Date.now(), reviewer: true,
+      };
+      saveUsers(users);
+
+      // Write the account's state blob directly, in the exact shape loadState()
+      // reads, with the entitlement already granted.
+      const profile = reviewerProfile();
+      const cubes = generateCubes(profile);
+      const pool = profile.balance;
+      try {
+        localStorage.setItem("cubefinance_web:state:" + id, JSON.stringify({
+          onboarded: true, pool: pool, profile: profile, cubes: cubes,
+          incognito: false,
+          premium: true,                 // <- reviewer bypasses the paywall
+          game: { points: 0, claimed: {}, flags: {} },
+          shared: [], debts: [], calmLog: [],
+          salary: { auto: true, lastApplied: monthKey(), history: [] },
+          expenses: [], books: { owned: {} }, worksheet: null,
+        }));
+      } catch (e) {}
+      return true;
+    }
+
+    // Runs once per stamp, before any account is read.
+    function applyReleaseReset() {
+      let stamp = null;
+      try { stamp = localStorage.getItem(RESET_STAMP_KEY); } catch (e) {}
+      if (stamp === RESET_STAMP) return;
+      purgeAllAccounts();
+      seedReviewerAccount();
+      try { localStorage.setItem(RESET_STAMP_KEY, RESET_STAMP); } catch (e) {}
+    }
+
     function initAuth() {
+      applyLangDir();
+      startTranslateObserver();
+      applyReleaseReset();
       const email = getSession();
       const users = loadUsers();
       if (email && users[email]) { enterApp({ id: users[email].id, email: users[email].email }); }
@@ -2527,6 +3367,7 @@
       if (state.screen === "verify") return renderVerify();
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
+      if (state.screen === "language") return renderLanguagePage();
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
       if (state.screen === "income") return renderIncomePage();
@@ -2570,8 +3411,10 @@
           '<button class="distbtn wide" id="aSubmit">' + (isSignup ? "הרשמה" : "התחברות") + '</button>' +
           '<div class="aswitch">' + (isSignup ? "כבר יש לך חשבון?" : "עדיין אין לך חשבון?") +
             ' <button id="aToggle">' + (isSignup ? "התחבר" : "הירשם") + '</button></div>' +
+          langSwitchHTML() +
         '</div>';
       v.appendChild(wrap);
+      bindLangSwitch(v);
       const email = v.querySelector("#aEmail"), pass = v.querySelector("#aPass");
 
       // real-time password strength meter (signup only)
@@ -3938,7 +4781,8 @@
       }
 
       // 1. Funding command: "תכניס 200 שקל לקוביית שיעורי נהיגה"
-      const fund = text.match(/(?:תכניס|תעביר|הוסף|תוסיף|העבר|שים)\s+([\d,]+)\s*(?:שקלים|שקל|ש"ח|שח|₪)?\s+ל(.+)/);
+      const fund = text.match(/(?:תכניס|תעביר|הוסף|תוסיף|העבר|שים)\s+([\d,]+)\s*(?:שקלים|שקל|ש"ח|שח|₪)?\s+ל(.+)/)
+        || text.match(/(?:put|move|transfer|add)\s+(?:₪|ils\s*)?([\d,]+)\s*(?:shekels?|ils|₪)?\s+(?:in|into|to)\s+(?:the\s+)?(.+)/i);
       if (fund) {
         const amount = Number(fund[1].replace(/,/g, ""));
         const name = fund[2].trim()
@@ -3963,7 +4807,7 @@
       if (cmp) return adviseComparison(cmp);
 
       // 3. Purchase decision: "כדאי לי לקנות אוזניות ב-600?" / "אפשר להרשות 500 ₪?"
-      if (/(afford|אפשר להרשות|יכול להרשות|אפשר לקנות|כדאי לי|שווה לי|האם לקנות|לקנות|להוציא|שווה לקנות)/.test(q) && num) {
+      if (/(afford|should i buy|can i buy|worth buying|shall i buy|buy|purchase|אפשר להרשות|יכול להרשות|אפשר לקנות|כדאי לי|שווה לי|האם לקנות|לקנות|להוציא|שווה לקנות)/.test(q) && num) {
         const amount = Number(num);
         if (!cubes.length) return { text: 'עדיין לא חילקת את הכסף לקוביות 🙂 לחץ/י על "חלק לתקציב" ואז נוכל לדבר במספרים אמיתיים.' };
         // pull the thing being bought out of the sentence, if it's there
@@ -3988,7 +4832,7 @@
       }
 
       // 4. Expense report → straight into the expense journal, with a reflection.
-      if (/(בזבזתי|הוצאתי|קניתי|שילמתי|spent)/.test(q) && num) {
+      if (/(בזבזתי|הוצאתי|קניתי|שילמתי|spent|i paid|i bought|blew)/.test(q) && num) {
         const amount = Number(num);
         const onM = text.match(/(?:על|ב)\s+([^\d,?!]{2,30}?)\s*$/);
         const what = onM ? onM[1].trim() : "";
@@ -4021,7 +4865,7 @@
       }
 
       // 4b. The prepaid card itself
-      if (/(כרטיס נטען|פריפייד|נטען|כמה טעון|כמה יש בכרטיס|מינוס|אוברדרפט)/.test(q)) {
+      if (/(כרטיס נטען|פריפייד|נטען|כמה טעון|כמה יש בכרטיס|מינוס|אוברדרפט|prepaid|loaded card|on my card|overdraft)/.test(q)) {
         const s = advisorSnapshot();
         if (!s.prepaid) return { text: "החשבון שלך לא מוגדר ככרטיס נטען 🙂 אם עברת לכרטיס נטען אפשר להגדיר את זה מחדש דרך השאלון." };
         const untouchable = s.emgBalance;
@@ -4034,7 +4878,7 @@
       }
 
       // 5. Emergency-fund consultation
-      if (/(חירום|רשת ביטחון|קרן חירום)/.test(q)) {
+      if (/(חירום|רשת ביטחון|קרן חירום|emergency|safety net|rainy day)/.test(q)) {
         const s = advisorSnapshot();
         if (!s.emergency) return { text: "אין לך עדיין קוביית קרן חירום — אפתח לך אותה ברגע שתחלק תקציב 🙂" };
         if (s.emgGoal <= 0) return { text: "כדי לחשב כמה קרן החירום שלך צריכה להכיל אני צריך את ההוצאות החודשיות שלך. הזן הכנסה חודשית במסך „הכנסה” ואחזור עם מספר." };
@@ -4047,7 +4891,7 @@
       }
 
       // 6. Savings capacity
-      if (/(כמה.*(לחסוך|אני יכול)|יכול לחסוך|כמה נשאר לי|תקציב פנוי)/.test(q)) {
+      if (/(כמה.*(לחסוך|אני יכול)|יכול לחסוך|כמה נשאר לי|תקציב פנוי|how much can i save|can i save|save a month|save per month|spare budget|free budget|disposable)/.test(q)) {
         const s = advisorSnapshot();
         if (s.income <= 0) return { text: "עוד לא סיפרת לי כמה נכנס לך כל חודש 🙂 הזן את זה במסך „הכנסה חודשית” ואחשב לך בדיוק כמה אפשר לחסוך." };
         return { text: "מתוך ₪" + fmt(s.income) + " בחודש:\n" +
@@ -4058,7 +4902,7 @@
       }
 
       // 7. Status
-      if (/(מצב|סטטוס|כמה יש|how|status|doing)/.test(q)) {
+      if (/(מצב|סטטוס|כמה יש|how|status|doing|situation|overview|where do i stand|how much do i have)/.test(q)) {
         const s = advisorSnapshot();
         const low = [...cubes].filter((c) => !c.locked).sort((a, b) => a.balance - b.balance)[0];
         const ins = expenseInsights();
@@ -4069,7 +4913,7 @@
       }
 
       // 8. Greeting
-      if (/^(היי|הי|שלום|מה קורה|hi|hey|hello)/.test(q))
+      if (/^(היי|הי|שלום|מה קורה|hi|hey|hello|good morning|good evening)/.test(q))
         return { text: "היי! 👋 יש לך ₪" + fmt(total) + " בקוביות.\nאפשר להתייעץ איתי בחופשיות — למשל \"כדאי לי אוזניות ב-600 או שעון ב-900?\", \"מה מצב קרן החירום?\", \"בזבזתי 200 על מסעדה\", או \"תכניס 100 ₪ לחיסכון\"." };
 
       // 9. Advisor fallback — a real answer with the user's numbers, not a shrug.
@@ -4143,7 +4987,7 @@
       if (settStep === 0) {
         const acc = el("div", "setcard");
         acc.innerHTML = '<div class="setlbl">מחובר/ת כ־</div>' +
-          '<div class="setmail" style="unicode-bidi:plaintext;text-align:right">' + esc(state.authUser ? state.authUser.email : "") + '</div>';
+          '<div class="setmail" style="unicode-bidi:plaintext;text-align:start">' + esc(state.authUser ? state.authUser.email : "") + '</div>';
         body.appendChild(acc);
         const list = el("div", "setlist");
         const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
@@ -4151,6 +4995,7 @@
         // Google Play keeps the entitlement, so a reinstall can restore it.
         if (nativeBilling.available() && !state.premium)
           mk("🔄 שחזור רכישה", "setitem", () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); });
+        mk((isEn() ? "🌐 Language: English" : "🌐 שפה: עברית"), "setitem", () => { state.screen = "language"; render(); });
         mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
         mk("🔒 פרטיות ונתונים", "setitem", () => { state.screen = "privacy"; render(); });
         mk("⎋ יציאה מהחשבון", "setitem", () => { resetChat(); logout(); });
@@ -4175,6 +5020,21 @@
         const bk = el("button", "obback"); bk.textContent = "התחרטתי — חזרה";
         bk.onclick = () => { settStep = 0; render(); }; body.appendChild(bk);
       }
+    }
+
+    // Language picker. Changing it reloads, because the swap is applied to the
+    // rendered DOM in place and there is no map back to the Hebrew original.
+    function renderLanguagePage() {
+      const body = pageShell("שפה 🌐", () => { state.screen = "settings"; render(); });
+      const card = el("div", "setcard");
+      card.innerHTML =
+        '<div class="setlbl">בחירת שפה / Choose language</div>' +
+        langSwitchHTML() +
+        '<p class="langnote">האפליקציה תיטען מחדש והכיוון יתהפך בהתאם (עברית — מימין לשמאל, אנגלית — משמאל לימין).<br>' +
+        'The app reloads and the layout direction flips to match.</p>';
+      body.appendChild(card);
+      bindLangSwitch(body);
+      const sp = el("div"); sp.style.height = "24px"; body.appendChild(sp);
     }
 
     // Terms of use — full-screen, scrollable, back returns to settings.
@@ -6162,7 +7022,7 @@
       if (calm.step === "done") {
         const d = el("div", "calmdone");
         d.innerHTML = '<span class="de">🌿</span>' +
-          '<div class="calmcard" style="text-align:right">' +
+          '<div class="calmcard" style="text-align:start">' +
             'זהו. לא פתרנו את הכול — רק הורדנו קצת את עוצמת הרעש, וזה מספיק לעכשיו.<br><br>' +
             '<b>הצעד שלך לשעה הקרובה:</b><br>' + esc((calm.answer || "").trim()) +
           '</div>';
@@ -6549,6 +7409,9 @@
 
     // ---- boot -------------------------------------------------------------
     initAuth();
+    // The shell outside #view (nav labels, the intro splash) is static markup
+    // that no render() call rebuilds, so it needs one explicit pass.
+    translateTree(document.body);
   </script>
 </body>
 </html>
