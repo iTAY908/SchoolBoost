@@ -75,7 +75,10 @@ visible Hebrew string across the auth screen, dashboard, all nine module pages,
 settings and its sub-pages, the chat and the calm flow — 386 strings — plus the
 runtime stems for toasts and advisor replies. It is ~520 entries.
 
-It is not a guarantee of total coverage. Screens reachable only from states the
+Strings only reachable from a state the walk never entered are the gap this
+leaves: the owned-book labels ("read now", the library note) were missing for
+exactly that reason and had to be added by hand after testing the review
+account. It is not a guarantee of total coverage. Screens reachable only from states the
 walk did not enter (some error paths, the kids-mode onboarding branch, the
 print worksheet) may still show Hebrew strings. To extend it, add entries to
 `DICT`; nothing else has to change.

@@ -11,6 +11,7 @@ the device.
 | Email | `ytylyys707@gmail.com` |
 | Password | **not in this repository** — see below |
 | Entitlement | `premium: true`, granted at seed time |
+| Guide books | all unlocked, via `isReviewerAccount()` |
 | Starting state | onboarded, employed, renting alone, ₪12,000/month income, ₪8,400 on hand, 7 cubes |
 
 The password belongs in the Play Console's **App access** form (and App Store
@@ -71,5 +72,33 @@ the what-if simulator, the books page and its free worksheet, the calm flow,
 the guide, challenges, shared cubes, the debt optimiser, and the Cubey chat —
 all without a purchase, because the entitlement is already granted.
 
-The in-app book purchase (₪19) is the one paid item. Its payment sheet is a
-client-side simulation, not Google Play Billing; see `PLAY_STORE.md`.
+The in-app book purchase (₪19) is the one paid item, and the review account
+does not have to pay it either.
+
+## The guide books
+
+Every purchase gate for the books funnels through one predicate, `ownsBook()`,
+so the account is unlocked in a single place. For the reviewer the buy button
+becomes "read now", the terms tick is skipped, the price and discount are not
+shown, and the payment sheet is never opened — pressing the button opens the
+book itself.
+
+The entitlement is **computed, not written**: nothing fake is put into the
+purchase record, so the account cannot drift into looking like a real sale.
+
+`isReviewerAccount()` decides it from the `reviewer` flag on the stored user
+record and a fixed id, never from a credential — nothing it reads can be used
+to sign in as anyone.
+
+### Why the flag is local
+
+It should live on a server. It cannot: the app has no auth server to hold it.
+The backend keeps no user table at all (`backend/src/data/store.js` is an
+in-memory `Map` for chat sessions), and accounts exist only in each device's
+`localStorage`. A determined user can therefore set the flag themselves — but
+they can equally set `premium` directly in `localStorage`, so this grants
+nothing that was not already reachable. Moving either behind a real entitlement
+check means building the server first.
+
+The book's payment sheet is a client-side simulation, not Google Play Billing;
+see `PLAY_STORE.md`.

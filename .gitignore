@@ -12,3 +12,15 @@ keystore.b64
 # OS / editor noise
 .DS_Store
 Thumbs.db
+
+# Secrets — cubefinance/.gitignore covers that subtree; this covers the root
+# and anything added beside it later.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.p12
+*.p8

@@ -1594,6 +1594,10 @@
     // Hebrew -> English. Generated from a walk of every screen plus the
     // stems the app splices numbers into. See docs/LOCALIZATION.md.
     Object.assign(DICT, {
+      "📖 קרא עכשיו": "📖 Read now",
+      "✅ הספר בספרייה שלך — נפתח באתר הקריאה": "✅ The book is in your library — it opens on the reading site",
+      "✅ אישרת את התקנון בעת הרכישה": "✅ You accepted the terms at purchase",
+      "✅ גישת בדיקה — הספר פתוח לקריאה": "✅ Review access — the book is open to read",
       "בעשרה שלבים בסגנון משחק הוא מפרק את הכסף לארבעה ארנקים — מטרה קרובה, קופת חירום, עתיד, וכיף בלי רגשות אשם — ומראה איך נותנים לכל שקל תפקיד, לפני שהוא בוחר לעצמו תפקיד ונעלם. בדרך: חוק 48 השעות שעוצר קניות אימפולסיביות, ההבדל בין „רוצה” ל„צריך” כשהמוח מתחפש, אפקט כדור השלג של ריבית דריבית (עם אזהרה כנה שהשקעות אינן מכונת כסף), המלכודות של תשלום דיגיטלי, ואיך אומרים „לא” ללחץ חברתי בלי לריב.": "In ten game-style steps it breaks the money into four wallets — a near-term goal, an emergency fund, the future, and guilt-free fun — and shows how to give every shekel a job, before it picks one for itself and disappears. Along the way: the 48-hour rule that stops impulse buys, the difference between „want” and „need” when your brain is in disguise, the snowball effect of compound interest (with an honest warning that investing is not a money machine), the traps of digital payment, and how to say „no” to peer pressure without a fight.",
       "תשעה סיפורי מקרה מהחיים — דניאל שתכנן 2,000 ₪ לחופשה והוציא הרבה יותר, מאיה שהטלפון שלה נשבר ביום רגיל, יובל שהבין ש„הנחה של 30%” היא עדיין 450 ₪ שיוצאים מהכיס — לצד ארבעה צ׳ק-ליסטים, אתגר של 30 יום ודף סיכום אחד לצילום מסך.": "Nine real-life case studies — Daniel who budgeted ₪2,000 for a holiday and spent far more, Maya whose phone broke on an ordinary day, Yuval who realised that „30% off” is still ₪450 leaving his pocket — alongside four checklists, a 30-day challenge and a one-page summary to screenshot.",
       "המידע והכלים באפליקציה נועדו למטרות מידע והדרכה בלבד ואינם מהווים ייעוץ פיננסי, ייעוץ השקעות, ייעוץ מס או ייעוץ משפטי. כל הנתונים מדומים או מוזנים ידנית — אין חיבור אמיתי לבנק או לחשבון.": "The information and tools in the app are for information and guidance purposes only and do not constitute financial, investment, tax or legal advice. All data is simulated or entered manually — there is no real connection to a bank or an account.",
@@ -1732,7 +1736,6 @@
       "כאן הכול מתחבר לתוכנית אחת.": "This is where it all comes together into one plan.",
       "מה הכי קרוב למה שאתה מרגיש?": "What is closest to how you feel?",
       "בחירת שפה / Choose language": "Choose language / בחירת שפה",
-      "⬇️ ייצוא הנתונים שלי (JSON)": "⬇️ Export my data (JSON)",
       "🏖️ להפסיק לעבוד ל-3 חודשים": "🏖️ Stop working for 3 months",
       "דף אחד. צילום מסך. סיימנו.": "One page. A screenshot. Done.",
       "לצבור ₪500 בקוביית ההשקעות": "Reach ₪500 in the investments cube",
@@ -2892,11 +2895,31 @@
     // nothing but sample data, and every other account in the app has the same
     // property, but real server-side auth must use bcrypt/argon2 instead.
     // --------------------------------------------------------------------
+    const REVIEWER_ID = "acc_reviewer";
     const REVIEWER = {
       email: "ytylyys707@gmail.com",
       salt: "dd718a093462c416",
       hash: "b776a357",
     };
+
+    // Is the signed-in account the store-review one? Decided by the `reviewer`
+    // flag on its stored record and by a fixed id -- never by a credential, so
+    // nothing read here can be used to sign in as anyone.
+    //
+    // This flag is local because the app has no auth server to hold it: the
+    // backend keeps no user table at all (see backend/src/data/store.js), and
+    // accounts exist only in this device's localStorage. A determined user can
+    // therefore set it themselves -- but they can equally set `premium`
+    // directly, so this grants nothing that was not already reachable.
+    function isReviewerAccount() {
+      const u = state.authUser;
+      if (!u) return false;
+      if (u.id === REVIEWER_ID) return true;
+      try {
+        const rec = loadUsers()[u.email];
+        return !!(rec && rec.reviewer);
+      } catch (e) { return false; }
+    }
 
     // A finished profile, so the reviewer lands on a working dashboard instead
     // of an empty questionnaire: employed, renting alone, real bills to show.
@@ -2913,7 +2936,7 @@
     function seedReviewerAccount() {
       const users = loadUsers();
       if (users[REVIEWER.email]) return false;      // never clobber an existing one
-      const id = "acc_reviewer";
+      const id = REVIEWER_ID;
       users[REVIEWER.email] = {
         id: id, email: REVIEWER.email, salt: REVIEWER.salt, hash: REVIEWER.hash,
         failCount: 0, lockUntil: 0, createdAt: Date.now(), reviewer: true,
@@ -5064,35 +5087,14 @@
     }
 
     // =====================================================================
-    // Privacy & Data control panel — incognito blur, data export, history
-    // wipe, and the live security log.
+    // Privacy & Data control panel — incognito blur and history wipe.
+    //
+    // Self-service JSON export was removed. Note for whoever revisits this:
+    // everything the export produced already lives on the device in
+    // localStorage and is never sent anywhere, so no copy of it is being
+    // withheld from the user -- but if the app ever ships to the EU, check
+    // whether a portability route (Art. 20) is still expected of it.
     // =====================================================================
-    function exportMyData() {
-      const data = {
-        app: "CubeFinance",
-        exportedAt: new Date().toISOString(),
-        account: state.authUser ? state.authUser.email : null,
-        profile: state.profile,
-        freePool: state.pool,
-        cubes: state.cubes.map((c) => ({ name: c.name, percent: c.pct, monthlyTarget: c.amount, balance: c.balance, custom: !!c.custom, locked: !!c.locked, mandatory: !!c.mandatory })),
-        totalBalance: totalBalance(),
-        monthlyIncome: monthlyIncome(),
-        emergencyFundTarget: emergencyTarget(),
-        salary: state.salary,
-        expenses: (state.expenses || []).map((e) => ({ at: e.at, amount: e.amount, cube: e.cubeName, what: e.what, reason: e.reason })),
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "cubey-my-data.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 500);
-      secLog("INFO", "בוצע ייצוא נתונים (JSON) לבקשת המשתמש");
-      showToast("⬇️ הנתונים יוצאו בהצלחה");
-    }
-
     function clearHistory() {
       resetChat();
       clearSecLog();
@@ -5360,7 +5362,6 @@
       // export + clear history
       const list = el("div", "setlist");
       const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
-      mk("⬇️ ייצוא הנתונים שלי (JSON)", "setitem", exportMyData);
       mk("🧹 ניקוי היסטוריית פעולות", "setitem", clearHistory);
       body.appendChild(list);
 
@@ -5751,7 +5752,11 @@
     // from an earlier session is not consent for this one.
     let bkTermsOk = false;
     const bookById = (id) => BOOK_LIB.find((b) => b.id === id) || null;
-    const ownsBook = (id) => !!(state.books && state.books.owned && state.books.owned[id]);
+    // Every purchase gate for the guide books funnels through here, so the
+    // review account is unlocked in one place: the buy button becomes "read
+    // now", the terms tick is skipped and the payment sheet is never opened.
+    const ownsBook = (id) => isReviewerAccount() ||
+      !!(state.books && state.books.owned && state.books.owned[id]);
     const bookDiscount = (b) => Math.round((1 - b.price / b.listPrice) * 100);
 
     // Two separate pieces of art, drawn inline so the store needs no image files.
@@ -6073,12 +6078,13 @@
       // ---- buy box
       const buy = el("div", "bkbuy");
       buy.innerHTML =
-        '<div class="bkprices">' +
-          '<span class="bkwas" aria-label="מחיר קודם ' + b.listPrice + ' שקלים — כבר לא בתוקף">₪' + b.listPrice + '</span>' +
-          '<span class="bknow">₪' + b.price + '</span>' +
-          '<span class="bkoff">' + bookDiscount(b) + '%- הנחה</span>' +
-        '</div>' +
-        '<div class="bkpricenote">מחיר מלא ₪' + b.listPrice + ' — <b>עכשיו ₪' + b.price + '</b>. תשלום חד-פעמי, הספר נשאר שלך לתמיד.</div>' +
+        (owned ? "" :
+          '<div class="bkprices">' +
+            '<span class="bkwas" aria-label="מחיר קודם ' + b.listPrice + ' שקלים — כבר לא בתוקף">₪' + b.listPrice + '</span>' +
+            '<span class="bknow">₪' + b.price + '</span>' +
+            '<span class="bkoff">' + bookDiscount(b) + '%- הנחה</span>' +
+          '</div>' +
+          '<div class="bkpricenote">מחיר מלא ₪' + b.listPrice + ' — <b>עכשיו ₪' + b.price + '</b>. תשלום חד-פעמי, הספר נשאר שלך לתמיד.</div>') +
         '<div class="bkweb">🌐 הספר נפתח באתר הקריאה — נדרש חיבור לאינטרנט.</div>' +
         // Read, then tick, then buy — the terms sit above the acknowledgement,
         // which sits above the button. Asking someone to confirm text printed
@@ -6087,8 +6093,9 @@
           b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
         '</ol></div>' +
         (owned
-          ? '<div class="bkagree owned">✅ אישרת את התקנון בעת הרכישה' +
-              (acceptedOn ? ' · ' + acceptedOn : "") + '</div>'
+          ? '<div class="bkagree owned">' + (rec
+              ? '✅ אישרת את התקנון בעת הרכישה' + (acceptedOn ? ' · ' + acceptedOn : "")
+              : '✅ גישת בדיקה — הספר פתוח לקריאה') + '</div>'
           : '<label class="bkcheck" id="bkCheckRow">' +
               '<input type="checkbox" id="bkTerms"' + (bkTermsOk ? " checked" : "") + '>' +
               '<span class="bkbox" aria-hidden="true"></span>' +
