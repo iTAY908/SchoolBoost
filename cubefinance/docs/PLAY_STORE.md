@@ -23,13 +23,31 @@ as an asset and runs offline — the WebView is just the canvas.
 
 ## Build it
 
-### Option A — GitHub Actions (no installs)
+### Option A — GitHub Actions ✅ recommended, nothing to install
 
-1. Create the upload key **once** (see below) and add these repository secrets
-   (*Settings → Secrets and variables → Actions*):
+This is the supported path. A GitHub runner ships the Android SDK and can reach
+Google's Maven repo, which a sandboxed or locked-down dev machine often cannot.
+
+1. Create the upload key **once**:
+   ```bash
+   bash cubefinance/android/tools/make-keystore.sh
+   ```
+   It prints the exact `KEYSTORE_BASE64` line to copy.
+2. Add four repository secrets (*Settings → Secrets and variables → Actions*):
    `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
-2. Go to the **Actions** tab → *Build Android App Bundle* → **Run workflow**.
-3. Download the `cubefinance-aab` artifact. That file goes to Play.
+3. **Actions** tab → *Build Android App Bundle* → **Run workflow**. Optionally
+   set `versionCode` / `versionName` there — no file edit needed. Pushing a
+   `v1.0.1` tag works too and takes the name from the tag.
+4. Download the **`cubefinance-aab`** artifact. That file goes to Play.
+
+The workflow refuses to finish quietly if signing didn't work: it inspects the
+bundle for a signature block and fails the run when a keystore was supplied but
+no signature came out, rather than letting you find out at upload time. With no
+keystore configured at all it still builds, but marks the run with a warning
+that the bundle is unsigned.
+
+Artifacts produced: the `.aab` for Play, an `.apk` for sideloading, and
+`mapping.txt` for de-obfuscating crash reports.
 
 ### Option B — Android Studio
 
@@ -41,6 +59,29 @@ as an asset and runs offline — the WebView is just the canvas.
 4. The bundle lands in `app/build/outputs/bundle/release/app-release.aab`.
 
 ### Option C — command line
+
+Needs a JDK 17+ **and** the Android SDK, and the machine must be able to reach
+`dl.google.com` (both the SDK downloads and Google's Maven repo live there). On
+a machine without them:
+
+```bash
+# JDK 17
+sudo apt-get update && sudo apt-get install -y openjdk-17-jdk unzip
+
+# Android SDK command-line tools
+export ANDROID_SDK_ROOT="$HOME/android-sdk"
+mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+curl -o /tmp/cmdline-tools.zip \
+  https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
+
+yes | sdkmanager --licenses
+sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+```
+
+Then:
 
 ```bash
 cd cubefinance/android
@@ -54,6 +95,14 @@ export CUBEY_KEY_PASSWORD=...
 ---
 
 ## Create your upload key (once — never lose it)
+
+```bash
+bash cubefinance/android/tools/make-keystore.sh
+```
+
+The script wraps `keytool`, refuses to overwrite an existing keystore, and
+prints the base64 line for the CI secret. Only a JDK is needed — no Android SDK.
+By hand it is:
 
 ```bash
 keytool -genkeypair -v \
@@ -86,14 +135,25 @@ cp cubefinance/web/cubefinance-web.html \
 
 (The GitHub Actions workflow does this automatically on every run.)
 
-Then bump **both** values in `cubefinance/android/app/build.gradle`:
+Then set the new version. Play rejects an upload that reuses a `versionCode`,
+so it must increase every single time.
+
+Easiest — pass it to the workflow, no file edit:
+
+*Actions → Run workflow →* `versionCode: 2`, `versionName: 1.0.1`.
+
+Or edit the defaults in `cubefinance/android/app/build.gradle`:
 
 ```gradle
 versionCode 2          // must increase by at least 1 for EVERY Play upload
 versionName "1.0.1"    // what users see
 ```
 
-Play rejects an upload that reuses a `versionCode`.
+Locally the same overrides work as environment variables:
+
+```bash
+CUBEY_VERSION_CODE=2 CUBEY_VERSION_NAME=1.0.1 ./gradlew bundleRelease
+```
 
 ---
 

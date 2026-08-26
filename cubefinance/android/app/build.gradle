@@ -10,8 +10,10 @@ android {
         applicationId "com.cubefinance.app"
         minSdk 24                 // Android 7.0 — covers ~98% of active devices
         targetSdk 34              // required level for new Play submissions
-        versionCode 1             // bump by 1 for EVERY upload to Play
-        versionName "1.0.0"       // the version users see
+        // Play refuses an upload whose versionCode was used before, so CI can
+        // override these without editing the file. Defaults are the 1.0.0 release.
+        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "1") as int)
+        versionName (System.getenv("CUBEY_VERSION_NAME") ?: project.findProperty("CUBEY_VERSION_NAME") ?: "1.0.0")
         resValue "string", "admob_app_id", "ca-app-pub-8901066122989701~1639827795"
     }
 
