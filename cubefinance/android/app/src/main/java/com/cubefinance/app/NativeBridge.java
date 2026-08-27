@@ -62,6 +62,30 @@ public final class NativeBridge {
         activity.restorePurchases();
     }
 
+    // ---- the guide book -----------------------------------------------------
+    //
+    // Deliberately named methods rather than one buyProduct(String): the web
+    // layer never gets to name a Play product, so a tampered page cannot try to
+    // launch a purchase flow for something we did not intend to sell.
+
+    /** Open Google's purchase sheet for the guide book. */
+    @JavascriptInterface
+    public void buyBook() {
+        activity.startPurchase(BillingManager.PRODUCT_BOOK);
+    }
+
+    /** The real localized price from Play for the book (null until loaded). */
+    @JavascriptInterface
+    public String getBookPrice() {
+        return activity.bookPrice();
+    }
+
+    /** True when this Google account owns the book. */
+    @JavascriptInterface
+    public boolean isBookOwned() {
+        return activity.ownsBook();
+    }
+
     // ---- printing -----------------------------------------------------------
 
     /**

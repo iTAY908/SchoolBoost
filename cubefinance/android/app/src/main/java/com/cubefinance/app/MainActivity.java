@@ -149,16 +149,35 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
 
     /** Start Google's purchase sheet for the Premium product. */
     void startPurchase() {
-        if (billing != null) runOnUiThread(() -> billing.launchPurchase());
+        startPurchase(BillingManager.PRODUCT_PREMIUM);
+    }
+
+    /**
+     * Start Google's purchase sheet for one product. The id comes from
+     * NativeBridge, which only ever passes our own constants -- the web layer
+     * cannot name an arbitrary product, and BillingManager rejects anything
+     * outside its list regardless.
+     */
+    void startPurchase(String productId) {
+        if (billing != null) runOnUiThread(() -> billing.launchPurchase(productId));
     }
 
     /** Formatted price straight from Play (e.g. "₪10.00"), or null if not loaded. */
     String premiumPrice() {
-        return billing == null ? null : billing.getFormattedPrice();
+        return billing == null ? null : billing.getFormattedPrice(BillingManager.PRODUCT_PREMIUM);
     }
 
     boolean ownsPremium() {
-        return billing != null && billing.isPremium();
+        return billing != null && billing.isOwned(BillingManager.PRODUCT_PREMIUM);
+    }
+
+    /** Formatted price of the guide book, or null if not loaded. */
+    String bookPrice() {
+        return billing == null ? null : billing.getFormattedPrice(BillingManager.PRODUCT_BOOK);
+    }
+
+    boolean ownsBook() {
+        return billing != null && billing.isOwned(BillingManager.PRODUCT_BOOK);
     }
 
     /** Re-check what the account owns (restore purchases). */
@@ -179,19 +198,25 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
     // ---- BillingManager.Listener ------------------------------------------
 
     @Override
-    public void onPremiumChanged(boolean premium) {
-        if (ads != null) ads.setEnabled(!premium);   // owning Premium removes ads
-        callJs("window.CubeyBilling && CubeyBilling.onPremiumChanged(" + premium + ");");
+    public void onOwnershipChanged(String productId, boolean owned) {
+        // Only Premium controls ads; the book has nothing to do with them.
+        if (BillingManager.PRODUCT_PREMIUM.equals(productId) && ads != null) {
+            ads.setEnabled(!owned);
+        }
+        callJs("window.CubeyBilling && CubeyBilling.onOwnershipChanged("
+                + jsString(productId) + "," + owned + ");");
     }
 
     @Override
-    public void onPurchaseResult(boolean ok, String reason) {
-        callJs("window.CubeyBilling && CubeyBilling.onPurchaseResult(" + ok + "," + jsString(reason) + ");");
+    public void onPurchaseResult(String productId, boolean ok, String reason) {
+        callJs("window.CubeyBilling && CubeyBilling.onPurchaseResult("
+                + jsString(productId) + "," + ok + "," + jsString(reason) + ");");
     }
 
     @Override
-    public void onPriceReady(String formattedPrice) {
-        callJs("window.CubeyBilling && CubeyBilling.onPriceReady(" + jsString(formattedPrice) + ");");
+    public void onPriceReady(String productId, String formattedPrice) {
+        callJs("window.CubeyBilling && CubeyBilling.onPriceReady("
+                + jsString(productId) + "," + jsString(formattedPrice) + ");");
     }
 
     @Override

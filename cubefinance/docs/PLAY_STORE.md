@@ -233,33 +233,45 @@ cubefinance/android/
 
 ---
 
-## In-app purchase — ₪10 Premium (real Google Play Billing)
+## In-app purchases (real Google Play Billing)
 
-The paywall is no longer a simulation inside the Android app: Google's own
-purchase sheet takes the payment.
+Nothing inside the Android app is a simulation any more: Google's own purchase
+sheet takes the payment for both products.
 
-### Create the product (required — nothing works until you do)
+### Create the products (required — nothing works until you do)
 
-Play Console → your app → **Monetise with Play → In-app products → Create**:
+Play Console → your app → **Monetise with Play → In-app products → Create**,
+once per row. Both are **one-time (non-consumable)** products.
 
-| Field | Value |
-|---|---|
-| Product ID | `premium_upgrade_10` *(must match exactly — it can never be changed)* |
-| Name | AI Premium |
-| Price | **₪10** |
-| Status | **Active** |
+| Product ID | Sells | Price | Status |
+|---|---|---|---|
+| `premium_upgrade_10` | AI Premium — removes ads, opens the adviser and the AI tools | ₪10 | **Active** |
+| `premium_access` | The ₪19 guide book | ₪19 | **Active** |
 
-The price lives in Play Console, not in the code. The app asks Google for the
-price and displays whatever it returns, so you can change it later without
-shipping a new build.
+> A product ID can **never** be changed after creation, and these two strings
+> must match `BillingManager.java` and `cubefinance-web.html` exactly.
+>
+> `premium_access` is the ID for the **book**, not for Premium. The name is
+> confusing and was chosen upstream; if you would rather it read
+> `guide_book_5000`, change it in both files *before* creating it in the
+> console — afterwards it is fixed for the life of the app.
+
+The prices live in Play Console, not in the code. The app asks Google for each
+price and displays whatever it returns, so you can change them later without
+shipping a new build. The ₪19 in the source is only the browser fallback and
+the struck-through "was ₪35" is marketing copy, not a Play price.
 
 ### How it behaves
 
 | | |
 |---|---|
-| Buy | `CubeyNative.buyPremium()` → Google's sheet → payment |
-| Unlock | Only after Google confirms `PURCHASED` — the client never self-grants |
-| Acknowledge | Automatic. **Purchases must be acknowledged within 3 days or Google auto-refunds them** — `BillingManager` does this immediately |
+| Buy Premium | `CubeyNative.buyPremium()` → Google's sheet → payment |
+| Buy the book | `CubeyNative.buyBook()` → Google's sheet → payment |
+| Consent | The book's purchase button refuses to launch the flow until the terms tick is given; the tick is also re-checked inside the sheet path |
+| Unlock | Only after Google confirms `PURCHASED` — the client never self-grants. On success the book is recorded and the reading site opens |
+| Restore | On every launch and resume. A restore re-grants silently; it does **not** throw the user into the reader |
+| Refund | Play dropping the entitlement revokes it locally too |
+| Acknowledge | Automatic, for both products. **Purchases must be acknowledged within 3 days or Google auto-refunds them** — `BillingManager` does this immediately, and never consumes (consuming would let a non-consumable be bought twice) |
 | Restore | Ownership is re-queried on every launch and resume, so reinstalls and new devices keep Premium. Settings also has a manual **🔄 שחזור רכישה** |
 | Pending payments | Handled (e.g. cash payments) — access opens when the payment completes |
 | Already owned | Detected and restored instead of erroring |

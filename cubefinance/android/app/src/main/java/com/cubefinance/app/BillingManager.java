@@ -19,48 +19,72 @@ import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Real Google Play Billing for the one-time "AI Premium" unlock.
+ * Real Google Play Billing for every one-time product the app sells.
  *
- * Product: {@link #PRODUCT_ID} — a non-consumable in-app product. Create it in
- * Play Console → Monetise → In-app products with exactly this ID and set the
- * price there (₪10). The price shown in the UI is whatever Google reports, so
- * changing it in the console never requires a new build.
+ *   {@link #PRODUCT_PREMIUM} — the "AI Premium" unlock (removes ads, opens the
+ *                              adviser and the AI allocation tools).
+ *   {@link #PRODUCT_BOOK}    — the ₪19 guide book.
  *
- * Two rules this class exists to get right:
+ * Both are **non-consumable** in-app products: bought once, owned forever.
+ * Create each in Play Console → Monetise → In-app products with exactly these
+ * IDs and set the price there. The UI shows whatever Google reports, so a price
+ * change in the console never needs a new build.
+ *
+ * Three rules this class exists to get right:
  *  1. A purchase MUST be acknowledged within 3 days or Google automatically
  *     refunds it and revokes the entitlement.
  *  2. Entitlement must be restored from Play on every launch — reinstalls and
- *     new devices have no local state.
+ *     new devices have no local state, and refunds have to be picked up too.
+ *  3. Never consume a non-consumable. Consuming would let it be bought again.
  */
 final class BillingManager implements PurchasesUpdatedListener {
 
     private static final String TAG = "BillingManager";
 
-    /** Must match the product ID created in Play Console. */
-    static final String PRODUCT_ID = "premium_upgrade_10";
+    /** Must match the product IDs created in Play Console. */
+    static final String PRODUCT_PREMIUM = "premium_upgrade_10";
+    static final String PRODUCT_BOOK = "premium_access";
+
+    private static final List<String> PRODUCTS =
+            Collections.unmodifiableList(Arrays.asList(PRODUCT_PREMIUM, PRODUCT_BOOK));
 
     interface Listener {
-        /** Entitlement resolved: true = the user owns Premium. */
-        void onPremiumChanged(boolean premium);
+        /** Entitlement resolved for one product. Fires only when it changes. */
+        void onOwnershipChanged(@NonNull String productId, boolean owned);
         /** A purchase attempt finished. ok=false carries a human-readable reason. */
-        void onPurchaseResult(boolean ok, @Nullable String reason);
-        /** The localized price string from Google, e.g. "₪10.00". */
-        void onPriceReady(@NonNull String formattedPrice);
+        void onPurchaseResult(@NonNull String productId, boolean ok, @Nullable String reason);
+        /** The localized price string from Google, e.g. "₪19.00". */
+        void onPriceReady(@NonNull String productId, @NonNull String formattedPrice);
     }
 
     private final Activity activity;
     private final Listener listener;
     private final Handler main = new Handler(Looper.getMainLooper());
 
+    private final Map<String, ProductDetails> details = new HashMap<>();
+    private final Set<String> owned = new HashSet<>();
+
     private BillingClient client;
-    private ProductDetails productDetails;
     private boolean connected;
     private int retries;
-    private boolean premium;
+
+    /**
+     * Which product the user is currently buying. Google's error callbacks do
+     * not name the product, so without this a failed book purchase would be
+     * reported against Premium.
+     */
+    @Nullable
+    private volatile String pendingProductId;
 
     BillingManager(Activity activity, Listener listener) {
         this.activity = activity;
@@ -87,7 +111,7 @@ final class BillingManager implements PurchasesUpdatedListener {
                 if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     connected = true;
                     retries = 0;
-                    queryProduct();
+                    queryProducts();
                     restorePurchases();   // reinstall / new device / refund sync
                 } else {
                     Log.w(TAG, "setup failed: " + result.getDebugMessage());
@@ -121,72 +145,98 @@ final class BillingManager implements PurchasesUpdatedListener {
     // Product details (price)
     // ------------------------------------------------------------------
 
-    private void queryProduct() {
-        QueryProductDetailsParams params = QueryProductDetailsParams.newBuilder()
-                .setProductList(Collections.singletonList(
-                        QueryProductDetailsParams.Product.newBuilder()
-                                .setProductId(PRODUCT_ID)
-                                .setProductType(BillingClient.ProductType.INAPP)
-                                .build()))
-                .build();
+    private void queryProducts() {
+        List<QueryProductDetailsParams.Product> list = new ArrayList<>();
+        for (String id : PRODUCTS) {
+            list.add(QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(id)
+                    .setProductType(BillingClient.ProductType.INAPP)
+                    .build());
+        }
+        QueryProductDetailsParams params =
+                QueryProductDetailsParams.newBuilder().setProductList(list).build();
 
-        client.queryProductDetailsAsync(params, (result, list) -> {
-            if (result.getResponseCode() != BillingClient.BillingResponseCode.OK || list.isEmpty()) {
-                Log.w(TAG, "product lookup failed: " + result.getDebugMessage()
-                        + " — is " + PRODUCT_ID + " created and ACTIVE in Play Console?");
+        client.queryProductDetailsAsync(params, (result, found) -> {
+            if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                Log.w(TAG, "product lookup failed: " + result.getDebugMessage());
                 return;
             }
-            productDetails = list.get(0);
-            ProductDetails.OneTimePurchaseOfferDetails offer =
-                    productDetails.getOneTimePurchaseOfferDetails();
-            if (offer != null) {
+            if (found.isEmpty()) {
+                Log.w(TAG, "no products returned — are " + PRODUCTS
+                        + " created and ACTIVE in Play Console?");
+                return;
+            }
+            for (ProductDetails pd : found) {
+                details.put(pd.getProductId(), pd);
+                ProductDetails.OneTimePurchaseOfferDetails offer = pd.getOneTimePurchaseOfferDetails();
+                if (offer == null) continue;
+                final String id = pd.getProductId();
                 final String price = offer.getFormattedPrice();
-                main.post(() -> listener.onPriceReady(price));
+                main.post(() -> listener.onPriceReady(id, price));
+            }
+            // Say so loudly when one of ours is missing: the usual cause is a
+            // product that was never created, or is still a draft.
+            for (String id : PRODUCTS) {
+                if (!details.containsKey(id)) {
+                    Log.w(TAG, "product " + id + " not found in Play Console");
+                }
             }
         });
     }
 
     /** Formatted price from Google, or null before it loads. */
     @Nullable
-    String getFormattedPrice() {
-        if (productDetails == null) return null;
-        ProductDetails.OneTimePurchaseOfferDetails offer = productDetails.getOneTimePurchaseOfferDetails();
+    String getFormattedPrice(@NonNull String productId) {
+        ProductDetails pd = details.get(productId);
+        if (pd == null) return null;
+        ProductDetails.OneTimePurchaseOfferDetails offer = pd.getOneTimePurchaseOfferDetails();
         return offer == null ? null : offer.getFormattedPrice();
     }
 
-    boolean isPremium() {
-        return premium;
+    boolean isOwned(@NonNull String productId) {
+        return owned.contains(productId);
     }
 
     // ------------------------------------------------------------------
     // Buying
     // ------------------------------------------------------------------
 
-    /** Launch Google's purchase sheet. Safe to call at any time. */
-    void launchPurchase() {
-        if (premium) {
-            main.post(() -> listener.onPurchaseResult(true, null));
+    /** Launch Google's purchase sheet for one product. Safe to call any time. */
+    void launchPurchase(@NonNull final String productId) {
+        if (!PRODUCTS.contains(productId)) {
+            main.post(() -> listener.onPurchaseResult(productId, false, "מוצר לא מוכר"));
+            return;
+        }
+        if (owned.contains(productId)) {
+            // Already bought on this account — treat as success so the caller
+            // unlocks rather than sending the user to pay twice.
+            main.post(() -> listener.onPurchaseResult(productId, true, null));
             return;
         }
         if (client == null || !client.isReady()) {
             connect();
-            main.post(() -> listener.onPurchaseResult(false, "החנות עדיין מתחברת — נסו שוב עוד רגע"));
+            main.post(() -> listener.onPurchaseResult(productId, false,
+                    "החנות עדיין מתחברת — נסו שוב עוד רגע"));
             return;
         }
-        if (productDetails == null) {
-            queryProduct();
-            main.post(() -> listener.onPurchaseResult(false, "פרטי המוצר לא נטענו מהחנות"));
+        ProductDetails pd = details.get(productId);
+        if (pd == null) {
+            queryProducts();
+            main.post(() -> listener.onPurchaseResult(productId, false,
+                    "פרטי המוצר לא נטענו מהחנות"));
             return;
         }
+        pendingProductId = productId;
         BillingFlowParams params = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(Collections.singletonList(
                         BillingFlowParams.ProductDetailsParams.newBuilder()
-                                .setProductDetails(productDetails)
+                                .setProductDetails(pd)
                                 .build()))
                 .build();
         BillingResult result = client.launchBillingFlow(activity, params);
         if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-            main.post(() -> listener.onPurchaseResult(false, result.getDebugMessage()));
+            pendingProductId = null;
+            main.post(() -> listener.onPurchaseResult(productId, false, result.getDebugMessage()));
         }
     }
 
@@ -199,59 +249,81 @@ final class BillingManager implements PurchasesUpdatedListener {
         int code = result.getResponseCode();
         if (code == BillingClient.BillingResponseCode.OK && purchases != null) {
             for (Purchase p : purchases) handlePurchase(p);
+            pendingProductId = null;
             return;
         }
-        final String reason;
-        if (code == BillingClient.BillingResponseCode.USER_CANCELED) {
-            reason = null;                                   // a normal cancel, not an error
-        } else if (code == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+
+        // Everything below is a failure, and Google does not tell us which
+        // product it was for — hence pendingProductId.
+        final String product = pendingProductId != null ? pendingProductId : PRODUCT_PREMIUM;
+        pendingProductId = null;
+
+        if (code == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            // Bought on another device, or a stale local state. Re-read the
+            // truth from Play; that path unlocks and reports.
             restorePurchases();
+            main.post(() -> listener.onPurchaseResult(product, true, null));
             return;
-        } else {
-            reason = result.getDebugMessage();
         }
-        main.post(() -> listener.onPurchaseResult(false, reason));
+        final String reason =
+                code == BillingClient.BillingResponseCode.USER_CANCELED
+                        ? null                        // a normal cancel, not an error
+                        : result.getDebugMessage();
+        main.post(() -> listener.onPurchaseResult(product, false, reason));
     }
 
     /** Re-read what the account actually owns — the source of truth. */
     void restorePurchases() {
         if (client == null || !client.isReady()) return;
         client.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
+                QueryPurchasesParams.newBuilder()
+                        .setProductType(BillingClient.ProductType.INAPP).build(),
                 (result, purchases) -> {
-                    boolean owned = false;
-                    if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        for (Purchase p : purchases) {
-                            if (p.getProducts().contains(PRODUCT_ID)
-                                    && p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                                owned = true;
-                                acknowledgeIfNeeded(p);
+                    if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) return;
+                    Set<String> nowOwned = new HashSet<>();
+                    for (Purchase p : purchases) {
+                        if (p.getPurchaseState() != Purchase.PurchaseState.PURCHASED) continue;
+                        boolean ours = false;
+                        for (String id : PRODUCTS) {
+                            if (p.getProducts().contains(id)) {
+                                nowOwned.add(id);
+                                ours = true;
                             }
                         }
+                        if (ours) acknowledgeIfNeeded(p);
                     }
-                    setPremium(owned);
+                    // Diff both ways: a refund revokes the entitlement, and that
+                    // has to reach the UI as well as a new purchase does.
+                    for (String id : PRODUCTS) setOwned(id, nowOwned.contains(id));
                 });
     }
 
     private void handlePurchase(Purchase p) {
-        if (!p.getProducts().contains(PRODUCT_ID)) return;
+        List<String> ids = new ArrayList<>();
+        for (String id : PRODUCTS) if (p.getProducts().contains(id)) ids.add(id);
+        if (ids.isEmpty()) return;
 
         if (p.getPurchaseState() == Purchase.PurchaseState.PENDING) {
-            // e.g. cash payment at a store — entitlement comes later.
-            main.post(() -> listener.onPurchaseResult(false, "התשלום ממתין לאישור — הגישה תיפתח לאחר השלמתו"));
+            // e.g. cash payment at a shop — the entitlement arrives later, and
+            // restorePurchases() on the next resume picks it up.
+            for (String id : ids) {
+                main.post(() -> listener.onPurchaseResult(id, false,
+                        "התשלום ממתין לאישור — הגישה תיפתח לאחר השלמתו"));
+            }
             return;
         }
         if (p.getPurchaseState() != Purchase.PurchaseState.PURCHASED) return;
 
         acknowledgeIfNeeded(p);
-        setPremium(true);
-        main.post(() -> listener.onPurchaseResult(true, null));
+        for (String id : ids) {
+            setOwned(id, true);
+            main.post(() -> listener.onPurchaseResult(id, true, null));
+        }
     }
 
     /**
      * Acknowledge within 3 days or Google auto-refunds the purchase. For a
-     * non-consumable we acknowledge (never consume — consuming would let the
-     * user buy it again).
+     * non-consumable we acknowledge and never consume.
      */
     private void acknowledgeIfNeeded(Purchase p) {
         if (p.isAcknowledged()) return;
@@ -260,14 +332,16 @@ final class BillingManager implements PurchasesUpdatedListener {
                 .build();
         client.acknowledgePurchase(params, r -> {
             if (r.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                Log.w(TAG, "acknowledge failed: " + r.getDebugMessage());
+                Log.w(TAG, "acknowledge failed for " + p.getProducts()
+                        + ": " + r.getDebugMessage());
             }
         });
     }
 
-    private void setPremium(boolean value) {
-        if (premium == value) return;
-        premium = value;
-        main.post(() -> listener.onPremiumChanged(value));
+    private void setOwned(@NonNull String productId, boolean value) {
+        boolean had = owned.contains(productId);
+        if (had == value) return;
+        if (value) owned.add(productId); else owned.remove(productId);
+        main.post(() -> listener.onOwnershipChanged(productId, value));
     }
 }

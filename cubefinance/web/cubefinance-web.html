@@ -5583,39 +5583,114 @@
     //  reports ownership back here. In a plain browser none of this exists and
     //  the app falls back to the clearly-labelled local simulation.
     // ─────────────────────────────────────────────────────────────────────
-    let nativePrice = null;
+    let nativePrice = null;      // Premium, as Google reports it
+    let nativeBookPrice = null;  // the guide book, as Google reports it
     const nativeBilling = {
       available() { return !!(nativeApp && nativeApp.buyPremium); },
+      // An older APK may not carry the book methods, so this is checked apart
+      // from available() -- otherwise the page would call into nothing.
+      bookAvailable() { return !!(nativeApp && nativeApp.buyBook); },
       buy() {
         try {
           showToast("פותח את החנות של Google Play…");
           nativeApp.buyPremium();
         } catch (e) { showToast("לא הצלחתי לפתוח את החנות"); }
       },
+      buyBook() {
+        try {
+          showToast("פותח את החנות של Google Play…");
+          nativeApp.buyBook();
+          return true;
+        } catch (e) { showToast("לא הצלחתי לפתוח את החנות"); return false; }
+      },
       restore() { try { if (nativeApp && nativeApp.restorePurchases) nativeApp.restorePurchases(); } catch (e) {} },
     };
-    // Callbacks invoked from Java (see MainActivity#callJs).
+
+    // Set while the user is inside Google's sheet for the book. It is what
+    // separates "they just bought it" (open the reader) from "Play told us at
+    // launch that they already own it" (unlock quietly, do not hijack the app).
+    let bkAwaitingPlay = null;   // the book id being bought, or null
+    // Callbacks invoked from Java (see MainActivity#callJs). Google is the only
+    // authority on what this account owns: no UI path grants an entitlement in
+    // the Android build, it is always Play reporting back through here.
     window.CubeyBilling = {
-      // Google confirmed what this account owns — the only thing that unlocks
-      // Premium in the Android build.
-      onPremiumChanged(owned) {
+      onOwnershipChanged(productId, owned) {
+        if (productId === BOOK_PRODUCT_ID) { applyBookOwnership(!!owned); return; }
+        // anything else is the Premium unlock
         if (!!state.premium === !!owned) return;
         state.premium = !!owned;
         saveState();
         if (owned) { burstCoins("👑"); showToast("👑 ברוך הבא ל-AI Premium!"); }
         render();
       },
-      onPurchaseResult(ok, reason) {
+      onPurchaseResult(productId, ok, reason) {
         closeBillingSheet();
-        if (ok) return;                    // onPremiumChanged does the unlocking
+        if (productId === BOOK_PRODUCT_ID) {
+          if (ok) { applyBookOwnership(true); return; }  // grants, then opens the reader
+          bkAwaitingPlay = null;
+          if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
+          else showToast("הרכישה בוטלה");
+          return;
+        }
+        if (ok) return;                    // onOwnershipChanged does the unlocking
         if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
         else showToast("הרכישה בוטלה");
       },
-      onPriceReady(p) {
+      onPriceReady(productId, p) {
+        if (productId === BOOK_PRODUCT_ID) {
+          nativeBookPrice = p || null;
+          if (state.screen === "books") render();
+          return;
+        }
         nativePrice = p || null;
         if (state.screen === "upgrade") render();
       },
     };
+
+    // Google says the account owns the book (a fresh purchase, a restore on a
+    // new device, or a refund revoking it). Record it, and open the reader only
+    // when this is the purchase the user is standing in front of.
+    function applyBookOwnership(owned) {
+      // On a fresh purchase we know which book; on a restore at launch we do
+      // not, so resolve it from the Play product id rather than assuming the
+      // catalogue only ever holds one title.
+      const byProduct = BOOK_LIB.filter((x) => x.productId === BOOK_PRODUCT_ID)[0];
+      const bookId = bkAwaitingPlay || (byProduct && byProduct.id);
+      if (!bookId) return;
+      const b = bookById(bookId);
+      const had = !!(state.books && state.books.owned && state.books.owned[bookId]);
+
+      if (!owned) {
+        // Refunded or revoked — Play is the source of truth, so drop it.
+        if (had) { delete state.books.owned[bookId]; saveState(); render(); }
+        bkAwaitingPlay = null;
+        return;
+      }
+
+      if (!had) {
+        state.books.owned[bookId] = {
+          at: new Date().toISOString(),
+          price: b ? b.price : null,
+          productId: BOOK_PRODUCT_ID,
+          source: "google_play",
+          // The tick is enforced before the flow is ever launched, so reaching
+          // here means it was given.
+          terms_accepted: true,
+          terms_version: b ? b.termsVersion : null,
+        };
+        saveState();
+      }
+
+      const justBought = !!bkAwaitingPlay;
+      bkAwaitingPlay = null;
+      render();
+      if (justBought) {
+        burstCoins("📚");
+        showToast("📚 הספר נוסף לספרייה שלך — אפשר לקרוא עכשיו!");
+        // Requirement: a completed purchase opens the content.
+        if (b) setTimeout(() => openBook(b), 900);
+      }
+    }
 
     const PREMIUM_PRICE = 10; // ₪, one-time (the authoritative price lives in Play Console)
     // Inside the Android app we show the REAL localized price Google reports for
@@ -5631,6 +5706,20 @@
       } catch (e) {}
       return "₪" + PREMIUM_PRICE;
     }
+    // The book's price, preferring whatever Google actually charges. Changing
+    // it in Play Console then changes it in the app without a new build; the
+    // hard-coded ₪19 is the browser fallback and the marketing "was" price.
+    function bookPriceLabel(b) {
+      if (nativeBookPrice) return nativeBookPrice;
+      try {
+        if (nativeApp && nativeApp.getBookPrice) {
+          const p = nativeApp.getBookPrice();
+          if (p) { nativeBookPrice = p; return p; }
+        }
+      } catch (e) {}
+      return "₪" + b.price;
+    }
+
     // ───────────────────────────────────────────────────────────────────────
     //  IS_MOCK_ENV — master switch between the local billing SIMULATION and a
     //  real Google Play Billing integration in production.
@@ -5638,8 +5727,10 @@
     //    false → hand off to the real Google Play Billing API (see runRealPurchase)
     // ───────────────────────────────────────────────────────────────────────
     const IS_MOCK_ENV = true;
-    // PLACE YOUR PRODUCT ID HERE:
+    // Play Console product ids. Both are one-time, non-consumable in-app
+    // products; these strings must match BillingManager.java exactly.
     const PREMIUM_PRODUCT_ID = "premium_upgrade_10";
+    const BOOK_PRODUCT_ID = "premium_access";
     // mock Google Play Developer API: a private signing secret that only the
     // "server side" knows. Tokens are signed on issue and cross-checked here.
     const PLAY_API_SECRET = "cubey-play-dev-api-7f3a91";
@@ -5709,7 +5800,7 @@
     // =====================================================================
     const BOOK_LIB = [{
       id: "book_5000_guide",
-      productId: "book_5000_guide",          // PLACE YOUR PLAY CONSOLE PRODUCT ID HERE
+      productId: BOOK_PRODUCT_ID,            // the in-app product sold through Play
       title: "5,000 ₪ — המשחק הפיננסי שלך",
       tagline: "המדריך המעשי לניהול כסף לבני ובנות נוער",
       hook: "הכסף נכנס. עכשיו מתחיל המשחק האמיתי.",
@@ -6102,7 +6193,7 @@
               '<span class="bkchecktxt">קראתי ואישרתי את התקנון ותנאי השימוש</span>' +
             '</label>' +
             '<div class="bkerr" id="bkErr" role="alert" aria-live="assertive"></div>') +
-        '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦₪" + b.price + "⁩") + '</button>' +
+        '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦" + bookPriceLabel(b) + "⁩") + '</button>' +
         (owned
           ? '<div class="bkowned">✅ הספר בספרייה שלך — נפתח באתר הקריאה</div>'
           : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
@@ -6133,6 +6224,15 @@
           if (checkInput) checkInput.focus();
           return;
         }
+        // Inside the Android app this is a real Google Play purchase. Google
+        // owns the sheet, the payment and the acknowledgement; the entitlement
+        // comes back through CubeyBilling, never from this click.
+        if (nativeBilling.bookAvailable()) {
+          bkAwaitingPlay = b.id;
+          if (!nativeBilling.buyBook()) bkAwaitingPlay = null;
+          return;
+        }
+        // Plain browser: the clearly-labelled local simulation.
         openBookSheet(b.id);
       };
       const peek = buy.querySelector("#bkPeek");
