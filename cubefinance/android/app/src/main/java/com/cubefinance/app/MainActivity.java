@@ -3,11 +3,13 @@ package com.cubefinance.app;
 import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
+import android.widget.Toast;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
@@ -31,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
     private WebView webView;
     private AdController ads;
     private BillingManager billing;
+
+    /** Same tag BillingManager uses: `adb logcat -s CubeyBilling`. */
+    private static final String BILL_TAG = "CubeyBilling";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -73,6 +78,36 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
         }
 
         webView.setWebViewClient(new WebViewClient() {
+            /**
+             * Prove the JS bridge actually survived the build.
+             *
+             * A release build strips anything R8 is not told to keep, and a
+             * bridge method without its @JavascriptInterface annotation is
+             * silently invisible to the page — window.CubeyNative exists, but
+             * every method on it is undefined, so the app quietly behaves as
+             * though it were running in a browser and never reaches Google.
+             * That failure is invisible from the Java side, so ask the page.
+             */
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                view.evaluateJavascript(
+                        "(function(){var n=window.CubeyNative;if(!n)return 'MISSING';"
+                      + "return ['buyPremium','buyBook','getPremiumPrice','isPremiumOwned',"
+                      + "'restorePurchases','setPremium','printPage']"
+                      + ".map(function(k){return k+'='+(typeof n[k]);}).join(' ');})()",
+                        value -> {
+                            Log.i(BILL_TAG, "JS bridge check: " + value);
+                            if (value == null || value.contains("MISSING")
+                                    || value.contains("buyPremium=undefined")) {
+                                Log.e(BILL_TAG, "JS BRIDGE IS NOT REACHABLE — purchases cannot "
+                                        + "work. In a release build this means R8 stripped the "
+                                        + "@JavascriptInterface annotations; check "
+                                        + "app/proguard-rules.pro.");
+                                toast("גשר ה-JS אינו זמין — רכישות לא יעבדו");
+                            }
+                        });
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri url = request.getUrl();
@@ -209,8 +244,30 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
 
     @Override
     public void onPurchaseResult(String productId, boolean ok, String reason) {
+        Log.i(BILL_TAG, "purchase result " + productId + " ok=" + ok + " reason=" + reason);
+        // A native toast as well as the in-page one: when a purchase fails the
+        // page may not even be able to hear about it.
+        if (!ok && reason != null) toast("רכישה נכשלה · " + reason);
         callJs("window.CubeyBilling && CubeyBilling.onPurchaseResult("
                 + jsString(productId) + "," + ok + "," + jsString(reason) + ");");
+    }
+
+    /**
+     * Billing is not usable at all — setup failed, or Play will not return the
+     * products. Surfaced natively as well as through the page, because if the
+     * JS bridge is the thing that is broken the page cannot tell anyone.
+     */
+    @Override
+    public void onBillingUnavailable(String detail) {
+        Log.e(BILL_TAG, "billing unavailable: " + detail);
+        toast("החיוב אינו זמין: " + detail);
+        callJs("window.CubeyBilling && CubeyBilling.onBillingUnavailable("
+                + jsString(detail) + ");");
+    }
+
+    /** Short native toast — survives a broken JS bridge. */
+    void toast(String msg) {
+        runOnUiThread(() -> Toast.makeText(this, msg, Toast.LENGTH_LONG).show());
     }
 
     @Override

@@ -5648,6 +5648,11 @@
         if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
         else showToast("הרכישה בוטלה");
       },
+      // Billing could not be set up, or Play will not return the products.
+      onBillingUnavailable(detail) {
+        closeBillingSheetIfOpen();
+        showToast("⚠️ החיוב אינו זמין: " + (detail || "שגיאה לא ידועה"));
+      },
       onPriceReady(productId, p) {
         if (productId === BOOK_PRODUCT_ID) {
           nativeBookPrice = p || null;
@@ -6244,6 +6249,10 @@
           if (!nativeBilling.buyBook()) bkAwaitingPlay = null;
           return;
         }
+        if (nativeApp) {
+          showToast("החיוב אינו זמין בגרסה הזו — גשר Google Play לא נטען");
+          return;
+        }
         // Plain browser: the clearly-labelled local simulation.
         openBookSheet(b.id);
       };
@@ -6393,6 +6402,14 @@
       // Inside the Android app the REAL Google Play purchase sheet is used —
       // no mock sheet, no simulated token. Google itself takes the payment.
       if (nativeBilling.available()) { nativeBilling.buy(); return; }
+      // Running inside the Android app but the billing bridge is not callable:
+      // that is a broken build, not a browser. Offering the demo sheet here
+      // would look like a purchase and charge nobody, so say so instead.
+      if (nativeApp) {
+        closeBillingSheet();
+        showToast("החיוב אינו זמין בגרסה הזו — גשר Google Play לא נטען");
+        return;
+      }
 
       const acctEmail = (state.authUser && state.authUser.email) || "you@example.com";
       w.innerHTML = '<div class="ccsheet gpsheet">' +
