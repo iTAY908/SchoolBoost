@@ -1,0 +1,26 @@
+# Generated delivery artifacts — rebuilt from the committed sources, so there is
+# no reason to version them (and no reason to carry binaries in the repo).
+CubeFinance-android-project.zip
+*.aab
+*.apk
+
+# Signing material must never be committed
+*.jks
+*.keystore
+keystore.b64
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# Secrets — cubefinance/.gitignore covers that subtree; this covers the root
+# and anything added beside it later.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.p12
+*.p8
