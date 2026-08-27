@@ -52,7 +52,7 @@ final class BillingManager implements PurchasesUpdatedListener {
     private static final String TAG = "BillingManager";
 
     /** Must match the product IDs created in Play Console. */
-    static final String PRODUCT_PREMIUM = "premium_upgrade_10";
+    static final String PRODUCT_PREMIUM = "coins_100";
     static final String PRODUCT_BOOK = "premium_access";
 
     private static final List<String> PRODUCTS =

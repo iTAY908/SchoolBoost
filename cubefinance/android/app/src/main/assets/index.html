@@ -4511,7 +4511,10 @@
       w.classList.add("on");
       w.onclick = (e) => { if (e.target === w) closeChat(); };
       $("chx").onclick = closeChat;
-      $("chUp").onclick = () => { closeChat(); state.screen = "upgrade"; render(); };
+      // Straight into the purchase rather than a detour through the upgrade
+      // page: what Premium unlocks is spelled out immediately above this
+      // button, and Google's own sheet names the product and the price.
+      $("chUp").onclick = () => { closeChat(); startPremiumPurchase(); };
       chatOpen = true; chatBuilt = false;
     }
     function closeChat() { chatOpen = false; $("chatwrap").classList.remove("on"); }
@@ -5014,7 +5017,11 @@
         body.appendChild(acc);
         const list = el("div", "setlist");
         const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
-        mk(state.premium ? "👑 \u2066AI Premium\u2069 פעיל" : "👑 שדרוג ל-\u2066AI Premium (" + priceLabel() + ")\u2069", "setitem" + (state.premium ? "" : " gold"), () => { state.screen = "upgrade"; render(); });
+        // Already premium -> the page that confirms it. Not yet -> the same
+        // purchase flow every other entry point uses.
+        mk(state.premium ? "👑 \u2066AI Premium\u2069 פעיל" : "👑 שדרוג ל-\u2066AI Premium (" + priceLabel() + ")\u2069",
+           "setitem" + (state.premium ? "" : " gold"),
+           () => { if (state.premium) { state.screen = "upgrade"; render(); } else startPremiumPurchase(); });
         // Google Play keeps the entitlement, so a reinstall can restore it.
         if (nativeBilling.available() && !state.premium)
           mk("🔄 שחזור רכישה", "setitem", () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); });
@@ -5615,6 +5622,11 @@
     // the Android build, it is always Play reporting back through here.
     window.CubeyBilling = {
       onOwnershipChanged(productId, owned) {
+        // Normally onPurchaseResult takes the sheet down, but ownership can
+        // also land on its own — a purchase that was PENDING at the till, or a
+        // restore arriving while the scrim is up. Without this the user is left
+        // staring at a full-screen invisible blocker with no way out.
+        if (owned) closeBillingSheetIfOpen();
         if (productId === BOOK_PRODUCT_ID) { applyBookOwnership(!!owned); return; }
         // anything else is the Premium unlock
         if (!!state.premium === !!owned) return;
@@ -5729,7 +5741,7 @@
     const IS_MOCK_ENV = true;
     // Play Console product ids. Both are one-time, non-consumable in-app
     // products; these strings must match BillingManager.java exactly.
-    const PREMIUM_PRODUCT_ID = "premium_upgrade_10";
+    const PREMIUM_PRODUCT_ID = "coins_100";
     const BOOK_PRODUCT_ID = "premium_access";
     // mock Google Play Developer API: a private signing secret that only the
     // "server side" knows. Tokens are signed on issue and cross-checked here.
@@ -6351,7 +6363,7 @@
       body.appendChild(hero);
       const pay = el("button", "gpaybtn");
       pay.innerHTML = '▷ שלם באמצעות Google Play';
-      pay.onclick = openBillingSheet;
+      pay.onclick = startPremiumPurchase;
       body.appendChild(pay);
       const note = el("p", "termupd");
       note.textContent = "סימולציית חיוב — האימות מתבצע מול שרת (מדומה) למניעת רכישות מזויפות.";
@@ -6359,6 +6371,21 @@
     }
 
     // native-style Google Play billing bottom sheet (simulation)
+    /**
+     * The single way Premium is ever bought. Every entry point — the locked
+     * chat popup, the Settings row, the blur-lock overlay and the upgrade
+     * page — goes through here, so they cannot drift apart or end up pointing
+     * at different products.
+     *
+     * On Android this hands straight over to Google's purchase sheet; in a
+     * browser it opens the clearly-labelled simulation. Either way the
+     * entitlement is granted by the billing result, never by the click.
+     */
+    function startPremiumPurchase() {
+      if (state.premium) { showToast("👑 AI Premium כבר פעיל בחשבון שלך"); return; }
+      openBillingSheet();
+    }
+
     function openBillingSheet() {
       clearToasts(); notifyNativeBusy(true);
       const w = $("paywrap"); w.className = "ccwrap on";
@@ -6427,7 +6454,7 @@
       // TO CONNECT TO GOOGLE PLAY STORE IN PRODUCTION:
       // 1. Trigger the native Google Play purchase flow with react-native-iap:
       //
-      //    // PLACE YOUR PRODUCT ID HERE: 'premium_upgrade_10'
+      //    // the Play product id lives in PREMIUM_PRODUCT_ID
       //    const purchase = await requestPurchase({ skus: [PREMIUM_PRODUCT_ID] });
       //
       // 2. Send purchase.purchaseToken to YOUR backend.
@@ -6441,6 +6468,12 @@
       return { ok: false, reason: "Google Play Billing not wired up (production build)" };
     }
     function closeBillingSheet() { notifyNativeBusy(false); const w = $("paywrap"); w.classList.remove("on"); w.innerHTML = ""; }
+    // Same, but only when something is actually up — so a routine ownership
+    // callback at launch does not keep telling the native layer it is idle.
+    function closeBillingSheetIfOpen() {
+      const w = $("paywrap");
+      if (w && w.classList.contains("on")) closeBillingSheet();
+    }
 
     // =====================================================================
     // AGENT 2 — UI/UX Guardian: blur-lock overlay for premium modules.
@@ -6457,7 +6490,7 @@
         '<button class="distbtn wide" id="lockUp">👑 שדרוג ל-\u2066AI Premium · ' + priceLabel() + '\u2069</button>' +
         '<span class="lockman">בינתיים אפשר להמשיך לנהל הכול ידנית 🙂</span></div>';
       $("view").appendChild(ov);
-      ov.querySelector("#lockUp").onclick = () => { state.screen = "upgrade"; render(); };
+      ov.querySelector("#lockUp").onclick = startPremiumPurchase;
       return true;
     }
 

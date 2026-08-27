@@ -245,16 +245,23 @@ once per row. Both are **one-time (non-consumable)** products.
 
 | Product ID | Sells | Price | Status |
 |---|---|---|---|
-| `premium_upgrade_10` | AI Premium — removes ads, opens the adviser and the AI tools | ₪10 | **Active** |
+| `coins_100` | AI Premium — removes ads, opens the adviser and the AI tools | ₪10 | **Active** |
 | `premium_access` | The ₪19 guide book | ₪19 | **Active** |
 
 > A product ID can **never** be changed after creation, and these two strings
 > must match `BillingManager.java` and `cubefinance-web.html` exactly.
 >
-> `premium_access` is the ID for the **book**, not for Premium. The name is
-> confusing and was chosen upstream; if you would rather it read
-> `guide_book_5000`, change it in both files *before* creating it in the
-> console — afterwards it is fixed for the life of the app.
+> **Both names read backwards, and that is deliberate on request, not a
+> mistake.** `coins_100` sells **AI Premium**; `premium_access` sells the
+> **book**. Neither is a coin pack and neither is consumable — both are
+> one-time, permanent unlocks. If you would rather they read
+> `premium_upgrade_10` and `guide_book_5000`, change them in both files
+> *before* creating them in the console; afterwards they are fixed for the life
+> of the app.
+>
+> A related trap: because `coins_100` sounds like a consumable currency pack,
+> do not let anyone "fix" it later by consuming it. Consuming a non-consumable
+> lets the same user buy it again and silently loses their entitlement.
 
 The prices live in Play Console, not in the code. The app asks Google for each
 price and displays whatever it returns, so you can change them later without
@@ -265,10 +272,10 @@ the struck-through "was ₪35" is marketing copy, not a Play price.
 
 | | |
 |---|---|
-| Buy Premium | `CubeyNative.buyPremium()` → Google's sheet → payment |
+| Buy Premium | `CubeyNative.buyPremium()` → Google's sheet → payment. Reached from four places — the locked Cubey chat popup, the Settings row, the blur-lock overlay on premium modules, and the upgrade page — all through one `startPremiumPurchase()` so they cannot drift apart |
 | Buy the book | `CubeyNative.buyBook()` → Google's sheet → payment |
 | Consent | The book's purchase button refuses to launch the flow until the terms tick is given; the tick is also re-checked inside the sheet path |
-| Unlock | Only after Google confirms `PURCHASED` — the client never self-grants. On success the book is recorded and the reading site opens |
+| Unlock | Only after Google confirms `PURCHASED` — the client never self-grants. Premium unlocks the chat, hides the lock badge and persists; the book is recorded and the reading site opens |
 | Restore | On every launch and resume. A restore re-grants silently; it does **not** throw the user into the reader |
 | Refund | Play dropping the entitlement revokes it locally too |
 | Acknowledge | Automatic, for both products. **Purchases must be acknowledged within 3 days or Google auto-refunds them** — `BillingManager` does this immediately, and never consumes (consuming would let a non-consumable be bought twice) |
