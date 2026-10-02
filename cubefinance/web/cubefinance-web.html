@@ -2321,7 +2321,7 @@
       authError: "",
       onboarded: false,
       incognito: false, // privacy: blur sensitive figures on the dashboard
-      premium: false,   // isPremiumUser — set ONLY by verifyGooglePlayPurchase
+      premium: true,    // web version: the Cubey chat and every AI feature are free for everyone
       // engagement modules
       game: { points: 0, claimed: {}, flags: {} }, // challenges + badges
       shared: [],                                   // shared cubes with friends
@@ -2765,7 +2765,7 @@
       state.pool = s && s.pool != null ? s.pool : 0;
       state.cubes = s && Array.isArray(s.cubes) ? s.cubes : [];
       state.incognito = !!(s && s.incognito);
-      state.premium = !!(s && s.premium);
+      state.premium = true; // free web version — no paywall, whatever an old save says
       const g = (s && s.game) || {};
       state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
@@ -2787,6 +2787,8 @@
     //  email delivery ALWAYS requires the server — a browser cannot send mail,
     //  and shipping mail credentials to the client would expose them.
     // ─────────────────────────────────────────────────────────────────────
+    // Free web version: the Cubey chat, the AI features and the guide books need no purchase.
+    const FREE_ACCESS = true;
     const API_BASE = "";                       // e.g. "http://192.168.1.20:4000"
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
     const RESEND_COOLDOWN_MS = 30 * 1000;
@@ -2829,7 +2831,7 @@
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
-      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = false;
+      state.game = { points: 0, claimed: {}, flags: {} }; state.shared = []; state.debts = []; state.premium = true;
       state.calmLog = [];
       state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = []; state.books = { owned: {} };
       state.worksheet = wsNormalize(null);
@@ -5017,14 +5019,6 @@
         body.appendChild(acc);
         const list = el("div", "setlist");
         const mk = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = fn; list.appendChild(b); };
-        // Already premium -> the page that confirms it. Not yet -> the same
-        // purchase flow every other entry point uses.
-        mk(state.premium ? "👑 \u2066AI Premium\u2069 פעיל" : "👑 שדרוג ל-\u2066AI Premium (" + priceLabel() + ")\u2069",
-           "setitem" + (state.premium ? "" : " gold"),
-           () => { if (state.premium) { state.screen = "upgrade"; render(); } else startPremiumPurchase(); });
-        // Google Play keeps the entitlement, so a reinstall can restore it.
-        if (nativeBilling.available() && !state.premium)
-          mk("🔄 שחזור רכישה", "setitem", () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); });
         mk((isEn() ? "🌐 Language: English" : "🌐 שפה: עברית"), "setitem", () => { state.screen = "language"; render(); });
         mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
         mk("🔒 פרטיות ונתונים", "setitem", () => { state.screen = "privacy"; render(); });
@@ -5627,6 +5621,9 @@
         // restore arriving while the scrim is up. Without this the user is left
         // staring at a full-screen invisible blocker with no way out.
         if (owned) closeBillingSheetIfOpen();
+        // Free version: chat and books are open to everyone, so a "not owned"
+        // report from Play must never take anything away.
+        if (FREE_ACCESS) return;
         if (productId === BOOK_PRODUCT_ID) { applyBookOwnership(!!owned); return; }
         // anything else is the Premium unlock
         if (!!state.premium === !!owned) return;
@@ -5863,8 +5860,8 @@
     // Every purchase gate for the guide books funnels through here, so the
     // review account is unlocked in one place: the buy button becomes "read
     // now", the terms tick is skipped and the payment sheet is never opened.
-    const ownsBook = (id) => isReviewerAccount() ||
-      !!(state.books && state.books.owned && state.books.owned[id]);
+    // Web version: the guide books are free for everyone — no purchase, no terms gate.
+    const ownsBook = () => true;
     const bookDiscount = (b) => Math.round((1 - b.price / b.listPrice) * 100);
 
     // Two separate pieces of art, drawn inline so the store needs no image files.
@@ -6197,23 +6194,19 @@
         // Read, then tick, then buy — the terms sit above the acknowledgement,
         // which sits above the button. Asking someone to confirm text printed
         // below the button they already pressed is not consent.
-        '<div class="bkterms"><h4>תקנון ותנאי שימוש</h4><ol>' +
-          b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
-        '</ol></div>' +
         (owned
-          ? '<div class="bkagree owned">' + (rec
-              ? '✅ אישרת את התקנון בעת הרכישה' + (acceptedOn ? ' · ' + acceptedOn : "")
-              : '✅ גישת בדיקה — הספר פתוח לקריאה') + '</div>'
-          : '<label class="bkcheck" id="bkCheckRow">' +
+          ? '<div class="bkagree owned">🎁 הספר חינם לכולם — בלי תשלום ובלי הרשמה נוספת</div>'
+          : '<div class="bkterms"><h4>תקנון ותנאי שימוש</h4><ol>' +
+              b.terms.map((t) => '<li>' + esc(t) + '</li>').join("") +
+            '</ol></div>' +
+            '<label class="bkcheck" id="bkCheckRow">' +
               '<input type="checkbox" id="bkTerms"' + (bkTermsOk ? " checked" : "") + '>' +
               '<span class="bkbox" aria-hidden="true"></span>' +
               '<span class="bkchecktxt">קראתי ואישרתי את התקנון ותנאי השימוש</span>' +
             '</label>' +
             '<div class="bkerr" id="bkErr" role="alert" aria-live="assertive"></div>') +
         '<button class="bkcta" id="bkBuy">' + (owned ? "📖 קרא עכשיו" : "🛒 קנה ב-⁦" + bookPriceLabel(b) + "⁩") + '</button>' +
-        (owned
-          ? '<div class="bkowned">✅ הספר בספרייה שלך — נפתח באתר הקריאה</div>'
-          : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
+        (owned ? "" : '<button class="bkghost" id="bkPeek">👀 הצצה לתוכן — בחינם</button>');
       wrap.appendChild(buy);
       // ---- terms gate -------------------------------------------------
       const errBox = buy.querySelector("#bkErr");
