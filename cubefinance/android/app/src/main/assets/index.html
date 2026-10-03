@@ -2806,6 +2806,12 @@
     const API_BASE = /^https?:$/.test(location.protocol) && /\.vercel\.app$/.test(location.hostname)
       ? location.origin : AUTH_HOST;
     const CODE_LEN = 6;                        // must match web/api/_lib.js
+    // EmailJS (emailjs.com) mails the code straight from the app through the
+    // owner's connected Gmail — no server of our own. These three values are
+    // PUBLIC by design (EmailJS calls it a public key), so they may live here.
+    // Leave publicKey empty to use the Vercel functions in web/api instead.
+    const EMAILJS = { serviceId: "", templateId: "", publicKey: "" };
+    const useEmailJS = () => !!(EMAILJS.serviceId && EMAILJS.templateId && EMAILJS.publicKey);
     const blankDigits = () => Array(CODE_LEN).fill("");
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
     const RESEND_COOLDOWN_MS = 30 * 1000;
@@ -3510,13 +3516,28 @@
     // Email verification screen — 6 one-time digits, mailed by web/api/auth.
     // Flow: register → a code is mailed → this screen → survey (onboarding).
     // =====================================================================
-    function randomCode4() {
+    function randomCode(len) {
       // CSPRNG in the browser; falls back only if crypto is unavailable.
+      const max = Math.pow(10, len);
       try {
         const a = new Uint32Array(1);
         crypto.getRandomValues(a);
-        return String(a[0] % 10000).padStart(4, "0");
-      } catch (e) { return String(Math.floor(Math.random() * 10000)).padStart(4, "0"); }
+        return String(a[0] % max).padStart(len, "0");
+      } catch (e) { return String(Math.floor(Math.random() * max)).padStart(len, "0"); }
+    }
+
+    // One email through EmailJS's REST endpoint. The template on emailjs.com
+    // uses {{to_email}} as the recipient and {{code}} in the subject/body.
+    async function sendViaEmailJS(email, code) {
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: EMAILJS.serviceId, template_id: EMAILJS.templateId, user_id: EMAILJS.publicKey,
+          template_params: { to_email: email, code: code },
+        }),
+      });
+      if (!res.ok) throw new Error("emailjs " + res.status + " " + (await res.text()).slice(0, 160));
     }
 
     async function apiPost(path, body) {
@@ -3534,7 +3555,17 @@
     async function requestCode(email, isResend) {
       vf.busy = true; vf.error = ""; renderVerify();
       try {
-        if (API_BASE) {
+        if (useEmailJS()) {
+          const code = randomCode(CODE_LEN);
+          try { await sendViaEmailJS(email, code); }
+          catch (err) {
+            secLog("ERROR", "שליחת קוד דרך EmailJS נכשלה: " + err.message);
+            vf.error = "שליחת המייל נכשלה. נסו שוב בעוד רגע.";
+            vf.busy = false; renderVerify(); return false;
+          }
+          vf.mailedCode = code;                    // kept in memory only, never shown
+          vf.localCode = null;
+        } else {
           const r = await apiPost(isResend ? "/api/auth/resend" : "/api/auth/register", { email: email });
           if (r.status === 429) {
             vf.error = (r.data && r.data.message) || "נשלחו יותר מדי קודים. נסו שוב מאוחר יותר.";
@@ -3546,10 +3577,6 @@
           }
           vf.localCode = r.data.devCode || null;   // only present in dev
           vf.token = r.data.token || null;         // signed by the server; carries no code
-        } else {
-          // Offline mode: the code lives only in memory on this device.
-          vf.localCode = randomCode4();
-          secLog("INFO", "נוצר קוד אימות חד-פעמי (מצב מקומי — ללא שרת דואר)");
         }
         vf.expiresAt = Date.now() + VERIFY_TTL_MS;
         vf.resendAt = Date.now() + RESEND_COOLDOWN_MS;
@@ -3579,7 +3606,7 @@
       vf.busy = true; vf.error = ""; renderVerify();
 
       let ok = false, msg = "";
-      if (API_BASE) {
+      if (!useEmailJS()) {
         try {
           const r = await apiPost("/api/auth/verify", { email: vf.email, code: code, token: vf.token });
           ok = !!(r.data && r.data.ok);
@@ -3587,10 +3614,10 @@
           if (!ok && r.data && typeof r.data.attemptsLeft === "number") vf.attempts = MAX_CODE_ATTEMPTS - r.data.attemptsLeft;
         } catch (e) { msg = "אין חיבור לשרת."; }
       } else {
-        // Local mode mirrors the server's rules: expiry + attempt cap.
+        // EmailJS mode checks here, with the server's rules: expiry + attempt cap.
         if (Date.now() > vf.expiresAt) { msg = "הקוד פג תוקף. בקשו קוד חדש."; }
         else if (vf.attempts >= MAX_CODE_ATTEMPTS) { msg = "יותר מדי ניסיונות שגויים. בקשו קוד חדש."; }
-        else if (code === vf.localCode) { ok = true; }
+        else if (vf.mailedCode && code === vf.mailedCode) { ok = true; vf.mailedCode = null; }
         else {
           vf.attempts++;
           const left = MAX_CODE_ATTEMPTS - vf.attempts;
