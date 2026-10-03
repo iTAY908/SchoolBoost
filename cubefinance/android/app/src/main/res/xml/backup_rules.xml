@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Back up the WebView's localStorage so a user keeps their cubes across
+     device restores. -->
+<full-backup-content>
+    <include domain="database" path="." />
+    <include domain="file" path="app_webview" />
+</full-backup-content>

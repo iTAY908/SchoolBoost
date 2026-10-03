@@ -1,0 +1,4 @@
+# generated clips + anything holding credentials
+out/
+*.mp4
+.env
