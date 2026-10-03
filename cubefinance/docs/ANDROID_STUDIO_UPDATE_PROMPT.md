@@ -9,26 +9,29 @@
 - דף אימות מייל: אחרי הרשמה או כניסה נשלח למייל של המשתמש קוד בן 6 ספרות דרך EmailJS,
   והמשתמש מקליד אותו באפליקציה
 - קישור "שכחת את הסיסמה?" בדף ההתחברות: קוד למייל ואז בחירת סיסמה חדשה
+- משתמשים ותיקים שכבר נרשמו לפני העדכון ועדיין מחוברים: בפתיחה הראשונה אחרי העדכון נפתח להם
+  ישר דף אימות למייל שאיתו נרשמו (פעם אחת בלבד, הנתונים שלהם נשמרים)
 
 הקוד המלא והבדוק נמצא ב-GitHub (repo ציבורי). אל תכתוב את הקוד בעצמך — תוריד אותו.
 
 שלב 1 — להוריד את הקובץ לתיקייה זמנית (לא ישר ל-assets):
   כתובת:
-  https://raw.githubusercontent.com/iTAY908/SchoolBoost/0125e626f0dedd5cc287f37348d72d6e3481e13c/cubefinance/web/cubefinance-web.html
+  https://raw.githubusercontent.com/iTAY908/SchoolBoost/e9668df14a4811d431f8ae8fcb8ca355e994ad73/cubefinance/web/cubefinance-web.html
   ב-Mac/Linux:   curl -fL -o cubefinance-new.html "<הכתובת>"
   ב-Windows:     curl.exe -fL -o cubefinance-new.html "<הכתובת>"
   (אם curl לא קיים: PowerShell Invoke-WebRequest -Uri "<הכתובת>" -OutFile cubefinance-new.html)
 
 שלב 2 — לוודא שההורדה תקינה:
-  - הגודל בערך 519KB (518975 בתים)
+  - הגודל בערך 520KB (520272 בתים)
   - SHA-256 של הקובץ:
-    9df895074111123e2fbc229a833ffa654f2717078896d3520f5e72e2edeb9e43
+    afacd2eea9ee82a2a9fa522e82aef7f369b4006fb1564dcef5973fadbc99057b
     (Mac/Linux: shasum -a 256 cubefinance-new.html · Windows: certutil -hashfile cubefinance-new.html SHA256)
   - והקובץ מכיל את השורות האלה:
     const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA" };
     const CODE_LEN = 6;
     function renderVerify()
     function renderForgot()
+    startVerification(users[email].email, "existing");
   אם משהו לא תואם — עצור ותגיד לי, אל תעתיק.
 
 שלב 3 — לגבות את app/src/main/assets/index.html הישן ל-index.html.bak מחוץ לתיקיית assets,
