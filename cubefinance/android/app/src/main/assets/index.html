@@ -2810,7 +2810,7 @@
     // owner's connected Gmail — no server of our own. These three values are
     // PUBLIC by design (EmailJS calls it a public key), so they may live here.
     // Leave publicKey empty to use the Vercel functions in web/api instead.
-    const EMAILJS = { serviceId: "", templateId: "", publicKey: "" };
+    const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA" };
     const useEmailJS = () => !!(EMAILJS.serviceId && EMAILJS.templateId && EMAILJS.publicKey);
     const blankDigits = () => Array(CODE_LEN).fill("");
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
