@@ -648,9 +648,9 @@
     .leddesc { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ledamt { font-weight: 800; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
     .ledamt.pos { color: var(--success); } .ledamt.neg { color: #ff8f8f; }
-    /* ---- email verification (4-digit code) ---- */
-    .otpwrap { display: flex; gap: 12px; justify-content: center; direction: ltr; margin: 22px 0 8px; }
-    .otpbox { width: 60px; height: 72px; text-align: center; font-size: 30px; font-weight: 900;
+    /* ---- email verification (6-digit code) ---- */
+    .otpwrap { display: flex; gap: 8px; justify-content: center; direction: ltr; margin: 22px 0 8px; }
+    .otpbox { width: min(48px, 12.5vw); min-width: 0; height: 62px; padding: 0; text-align: center; font-size: 26px; font-weight: 900;
       border-radius: 16px; border: 2px solid var(--border); background: var(--bg); color: var(--text);
       font-family: var(--font); font-variant-numeric: tabular-nums; outline: none; transition: .15s; }
     .otpbox:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(100,114,255,.16); }
@@ -1653,6 +1653,16 @@
       "🛟 נוספה לך קוביית קרן חירום — רשת הביטחון של כל תקציב": "🛟 An emergency-fund cube was added — every budget's safety net",
       "הספר מסביר מתי מותר לגעת בה ואיך ממלאים אותה בחזרה.": "The book explains when you're allowed to touch it and how to fill it back up.",
       "מטשטש את הסכומים בדשבורד — ריחוף עם העכבר חושף אותם": "Blurs the amounts on the dashboard — hover with the mouse to reveal them",
+      "📧 אימות אימייל": "📧 Email verification",
+      "הזינו את הקוד": "Enter the code",
+      "שלחנו קוד בן 6 ספרות אל": "We sent a 6-digit code to",
+      "לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות": "Can't find it? Check your spam / promotions folder too",
+      "שלח קוד חדש": "Send a new code",
+      "הקוד פג תוקף": "The code has expired",
+      "← חזרה למסך הכניסה": "← Back to sign in",
+      "📧 שלחנו לך קוד למייל": "📧 We emailed you a code",
+      "📧 נשלח קוד חדש למייל": "📧 A new code is on its way",
+      "✅ האימייל אומת!": "✅ Email verified!",
       "✅ AI Premium פעיל בחשבון שלך — כל הפיצ׳רים פתוחים.": "✅ AI Premium is active on your account — every feature is unlocked.",
       "אין עדיין קוביות משותפות — צרו אחת והזמינו חברים!": "No shared cubes yet — create one and invite friends!",
       "🌐 הספר נפתח באתר הקריאה — נדרש חיבור לאינטרנט.": "🌐 The book opens on the reading site — an internet connection is required.",
@@ -2789,11 +2799,18 @@
     // ─────────────────────────────────────────────────────────────────────
     // Free web version: the Cubey chat, the AI features and the guide books need no purchase.
     const FREE_ACCESS = true;
-    const API_BASE = "";                       // e.g. "http://192.168.1.20:4000"
+    // Email codes are mailed by the Vercel functions in web/api/auth. On the
+    // Vercel site they are same-origin; anywhere else (the Android app's
+    // file:// page, a preview link) the page calls the live site.
+    const AUTH_HOST = "https://cubefinance.vercel.app";
+    const API_BASE = /^https?:$/.test(location.protocol) && /\.vercel\.app$/.test(location.hostname)
+      ? location.origin : AUTH_HOST;
+    const CODE_LEN = 6;                        // must match web/api/_lib.js
+    const blankDigits = () => Array(CODE_LEN).fill("");
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
     const RESEND_COOLDOWN_MS = 30 * 1000;
     const MAX_CODE_ATTEMPTS = 5;
-    let vf = null; // { email, pw, digits[], error, expiresAt, resendAt, localCode, attempts, busy }
+    let vf = null; // { email, digits[], token, error, expiresAt, resendAt, localCode, attempts, busy }
 
     // ---- Android wrapper bridge -------------------------------------------
     // When this page runs inside the CubeFinance Android app, a small native
@@ -2980,7 +2997,8 @@
       applyReleaseReset();
       const email = getSession();
       const users = loadUsers();
-      if (email && users[email]) { enterApp({ id: users[email].id, email: users[email].email }); }
+      // A saved session only skips the login form — never the email check.
+      if (email && users[email] && !needsEmailCheck(users[email])) { enterApp({ id: users[email].id, email: users[email].email }); }
       else {
         state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup";
         render();
@@ -3388,7 +3406,7 @@
       { const fl = $("fablock"); if (fl) fl.style.display = state.premium ? "none" : "grid"; }
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
-      if (state.screen === "verify") state.screen = "auth"; // the email-code step was removed
+      if (state.screen === "verify") { if (vf) return renderVerify(); state.screen = "auth"; }
       if (state.screen === "auth") return renderAuth();
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
@@ -3478,8 +3496,10 @@
           return;
         }
         if (lockTimer) { clearInterval(lockTimer); lockTimer = null; }
-        // No email-code step: a new account goes straight to the survey.
-        enterApp(res.user); // signup -> onboarding, login -> dashboard or onboarding
+        // An address has to prove it is real before the app opens: new accounts
+        // always, existing ones until they have done it once.
+        if (needsEmailCheck(res.user)) { startVerification(res.user.email); return; }
+        enterApp(res.user); // login -> dashboard or onboarding
       };
       v.querySelector("#aSubmit").onclick = submit;
       pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
@@ -3487,7 +3507,7 @@
     }
 
     // =====================================================================
-    // Email verification screen — 4 one-time digits.
+    // Email verification screen — 6 one-time digits, mailed by web/api/auth.
     // Flow: register → a code is mailed → this screen → survey (onboarding).
     // =====================================================================
     function randomCode4() {
@@ -3525,6 +3545,7 @@
             vf.busy = false; renderVerify(); return false;
           }
           vf.localCode = r.data.devCode || null;   // only present in dev
+          vf.token = r.data.token || null;         // signed by the server; carries no code
         } else {
           // Offline mode: the code lives only in memory on this device.
           vf.localCode = randomCode4();
@@ -3533,10 +3554,10 @@
         vf.expiresAt = Date.now() + VERIFY_TTL_MS;
         vf.resendAt = Date.now() + RESEND_COOLDOWN_MS;
         vf.attempts = 0;
-        vf.digits = ["", "", "", ""];
+        vf.digits = blankDigits();
         vf.busy = false;
         renderVerify();
-        showToast(isResend ? "📧 נשלח קוד חדש" : "📧 שלחנו קוד בן 4 ספרות");
+        showToast(isResend ? "📧 נשלח קוד חדש למייל" : "📧 שלחנו לך קוד למייל");
         return true;
       } catch (e) {
         vf.error = "אין חיבור לשרת. בדקו את החיבור ונסו שוב.";
@@ -3544,8 +3565,8 @@
       }
     }
 
-    function startVerification(email, pw) {
-      vf = { email: email, pw: pw, digits: ["", "", "", ""], error: "", expiresAt: 0,
+    function startVerification(email) {
+      vf = { email: email, digits: blankDigits(), token: null, error: "", expiresAt: 0,
              resendAt: 0, localCode: null, attempts: 0, busy: false };
       state.screen = "verify";
       render();
@@ -3554,13 +3575,13 @@
 
     async function submitCode() {
       const code = vf.digits.join("");
-      if (code.length !== 4) return;
+      if (code.length !== CODE_LEN) return;
       vf.busy = true; vf.error = ""; renderVerify();
 
       let ok = false, msg = "";
       if (API_BASE) {
         try {
-          const r = await apiPost("/api/auth/verify", { email: vf.email, code: code });
+          const r = await apiPost("/api/auth/verify", { email: vf.email, code: code, token: vf.token });
           ok = !!(r.data && r.data.ok);
           msg = (r.data && r.data.message) || "";
           if (!ok && r.data && typeof r.data.attemptsLeft === "number") vf.attempts = MAX_CODE_ATTEMPTS - r.data.attemptsLeft;
@@ -3590,11 +3611,17 @@
         return;
       }
       vf.error = msg || "הקוד שגוי. בדקו את הספרות ונסו שוב.";
-      vf.digits = ["", "", "", ""];
+      vf.digits = blankDigits();
       renderVerify();
       const w = document.querySelector(".otpwrap");
       if (w) { w.classList.add("bad"); setTimeout(() => w.classList.remove("bad"), 450); }
       secLog("WARN", "ניסיון אימות שגוי נרשם");
+    }
+
+    // The store-review account is exempt: reviewers cannot read that inbox.
+    function needsEmailCheck(user) {
+      const u = loadUsers()[normEmail(user && user.email)];
+      return !(u && (u.emailVerified || u.id === REVIEWER_ID));
     }
 
     function markEmailVerified(email) {
@@ -3619,9 +3646,10 @@
         '<div class="authcard">' +
           '<div class="authbrand">📧 אימות אימייל</div>' +
           '<h2 class="authtitle">הזינו את הקוד</h2>' +
-          '<p class="otpmail">שלחנו קוד בן 4 ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
+          '<p class="otpmail">שלחנו קוד בן ' + CODE_LEN + ' ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
+          '<p class="otpmail" style="font-size:12.5px;margin-top:4px">לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות</p>' +
           '<div class="otpwrap" id="otpWrap">' +
-            [0,1,2,3].map((i) =>
+            blankDigits().map((_, i) =>
               '<input class="otpbox' + (vf.digits[i] ? " filled" : "") + '" id="otp' + i + '" inputmode="numeric" ' +
               'autocomplete="one-time-code" maxlength="1" value="' + esc(vf.digits[i]) + '"' +
               (vf.busy ? " disabled" : "") + '>').join("") +
@@ -3635,14 +3663,14 @@
             '<button class="otpresend" id="otpResend"' + (canResend ? "" : " disabled") + '>' +
               (canResend ? "שלח קוד חדש" : "שלח קוד חדש (" + resendIn + ")") + '</button>' +
           '</div>' +
-          '<button class="obexit" id="otpBack">← חזרה למסך ההרשמה</button>' +
+          '<button class="obexit" id="otpBack">← חזרה למסך הכניסה</button>' +
         '</div>';
       v.appendChild(wrap);
 
-      const boxes = [0,1,2,3].map((i) => wrap.querySelector("#otp" + i));
+      const boxes = blankDigits().map((_, i) => wrap.querySelector("#otp" + i));
       const focusFirstEmpty = () => {
         const idx = vf.digits.findIndex((d) => !d);
-        (boxes[idx === -1 ? 3 : idx] || boxes[0]).focus();
+        (boxes[idx === -1 ? CODE_LEN - 1 : idx] || boxes[0]).focus();
       };
       boxes.forEach((box, i) => {
         box.oninput = () => {
@@ -3651,13 +3679,13 @@
           vf.digits[i] = digits;
           box.value = digits;
           box.classList.toggle("filled", !!digits);
-          if (digits && i < 3) boxes[i + 1].focus();
+          if (digits && i < CODE_LEN - 1) boxes[i + 1].focus();
           if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
         };
         box.onkeydown = (e) => {
           if (e.key === "Backspace" && !box.value && i > 0) { boxes[i - 1].focus(); vf.digits[i - 1] = ""; boxes[i - 1].value = ""; }
           if (e.key === "ArrowLeft" && i > 0) boxes[i - 1].focus();
-          if (e.key === "ArrowRight" && i < 3) boxes[i + 1].focus();
+          if (e.key === "ArrowRight" && i < CODE_LEN - 1) boxes[i + 1].focus();
           if (e.key === "Enter" && vf.digits.every((d) => d)) submitCode();
         };
         box.onpaste = (e) => {
@@ -3667,7 +3695,7 @@
         };
       });
       function spread(digits, from) {
-        for (let k = 0; k < digits.length && from + k < 4; k++) {
+        for (let k = 0; k < digits.length && from + k < CODE_LEN; k++) {
           vf.digits[from + k] = digits[k];
           boxes[from + k].value = digits[k];
           boxes[from + k].classList.add("filled");
