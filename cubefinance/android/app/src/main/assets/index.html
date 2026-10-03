@@ -3388,8 +3388,8 @@
       { const fl = $("fablock"); if (fl) fl.style.display = state.premium ? "none" : "grid"; }
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
+      if (state.screen === "verify") state.screen = "auth"; // the email-code step was removed
       if (state.screen === "auth") return renderAuth();
-      if (state.screen === "verify") return renderVerify();
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "language") return renderLanguagePage();
@@ -3478,9 +3478,8 @@
           return;
         }
         if (lockTimer) { clearInterval(lockTimer); lockTimer = null; }
-        // New accounts must verify their email before reaching the survey.
-        if (isSignup) { startVerification(res.user.email, pass.value); return; }
-        enterApp(res.user); // login -> dashboard or onboarding
+        // No email-code step: a new account goes straight to the survey.
+        enterApp(res.user); // signup -> onboarding, login -> dashboard or onboarding
       };
       v.querySelector("#aSubmit").onclick = submit;
       pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
