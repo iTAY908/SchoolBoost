@@ -7,6 +7,7 @@
 שטוען את הקובץ app/src/main/assets/index.html. תעדכן לי את הפרויקט לגרסה החדשה, שכוללת:
 - הצ׳אט עם Cubey וספרי ההדרכה חינמיים לכולם (בלי תשלום)
 - אימות מייל: אחרי הרשמה/כניסה נשלח למייל קוד בן 6 ספרות דרך EmailJS
+- "שכחת את הסיסמה?" בדף ההתחברות: קוד למייל ואז בחירת סיסמה חדשה
 
 שלב 1 — להביא את הקובץ החדש של האפליקציה (לפי הסדר, הראשון שעובד):
   א. אם התיקייה היא git clone של github.com/iTAY908/SchoolBoost:
@@ -20,6 +21,7 @@
   const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA" };
   const FREE_ACCESS = true;
   const CODE_LEN = 6;
+  function renderForgot()
   אם אחת חסרה — עצור ותגיד לי, זה קובץ ישן.
 
 שלב 3 — להעתיק אותו על app/src/main/assets/index.html (לגבות קודם את הישן ל-index.html.bak מחוץ ל-assets).

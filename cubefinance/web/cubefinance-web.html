@@ -938,6 +938,9 @@
     .aswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer;
       font-family: var(--font); font-size: 13.5px; }
     .aswitch button:hover { text-decoration: underline; }
+    .aforgot { display: block; margin: -4px 0 4px auto; background: none; border: none; padding: 4px 0; cursor: pointer;
+      color: var(--primary); font: 700 13px var(--font); }
+    .aforgot:hover { text-decoration: underline; }
     .brandrow { display: flex; align-items: center; justify-content: space-between; }
     .logout { background: none; border: none; color: #ff8f8f; font-weight: 800; font-size: 13px;
       cursor: pointer; font-family: var(--font); }
@@ -1654,6 +1657,19 @@
       "הספר מסביר מתי מותר לגעת בה ואיך ממלאים אותה בחזרה.": "The book explains when you're allowed to touch it and how to fill it back up.",
       "מטשטש את הסכומים בדשבורד — ריחוף עם העכבר חושף אותם": "Blurs the amounts on the dashboard — hover with the mouse to reveal them",
       "📧 אימות אימייל": "📧 Email verification",
+      "שכחת את הסיסמה?": "Forgot your password?",
+      "🔑 איפוס סיסמה": "🔑 Reset password",
+      "נשלח קוד למייל של החשבון, ואחריו תבחרו סיסמה חדשה.": "We'll email a code to the account, then you choose a new password.",
+      "שלחו לי קוד": "Send me a code",
+      "← חזרה להתחברות": "← Back to sign in",
+      "לא מצאנו חשבון עם המייל הזה במכשיר הזה": "No account with this email on this device",
+      "את חשבון הבדיקה אי אפשר לאפס": "The review account can't be reset",
+      "סיסמה חדשה": "New password",
+      "שוב, לאימות": "Again, to confirm",
+      "שמירת הסיסמה החדשה": "Save the new password",
+      "← ביטול": "← Cancel",
+      "הסיסמאות לא זהות": "The passwords don't match",
+      "✅ הסיסמה עודכנה": "✅ Password updated",
       "הזינו את הקוד": "Enter the code",
       "שלחנו קוד בן 6 ספרות אל": "We sent a 6-digit code to",
       "לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות": "Can't find it? Check your spam / promotions folder too",
@@ -3413,6 +3429,8 @@
       // incognito: blur sensitive figures on the dashboard (hover to reveal)
       document.querySelector(".screen").classList.toggle("incognito", state.screen === "app" && !!state.incognito);
       if (state.screen === "verify") { if (vf) return renderVerify(); state.screen = "auth"; }
+      if (state.screen === "forgot") return renderForgot();
+      if (state.screen === "newpw") { if (resetEmail) return renderNewPassword(); state.screen = "auth"; }
       if (state.screen === "auth") return renderAuth();
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
@@ -3454,7 +3472,7 @@
           (isSignup
             ? '<div class="pwmeter" id="pwMeter"><i></i><i></i><i></i><i></i><i></i></div>' +
               '<div class="pwlbl" id="pwLbl">מד חוזק סיסמה — 8+ תווים, אות גדולה, אות קטנה, ספרה ותו מיוחד</div>'
-            : "") +
+            : '<button class="aforgot" id="aForgot">שכחת את הסיסמה?</button>') +
           '<div class="aerr" id="aErr">' + (state.authError || "") + '</div>' +
           '<div class="locknote" id="aLock"></div>' +
           '<button class="distbtn wide" id="aSubmit">' + (isSignup ? "הרשמה" : "התחברות") + '</button>' +
@@ -3510,6 +3528,107 @@
       v.querySelector("#aSubmit").onclick = submit;
       pass.onkeydown = (e) => { if (e.key === "Enter") submit(); };
       v.querySelector("#aToggle").onclick = () => { state.authMode = isSignup ? "login" : "signup"; state.authError = ""; render(); };
+      const forgot = v.querySelector("#aForgot");
+      if (forgot) forgot.onclick = () => {
+        fpState = { email: normEmail(email.value), error: "" };
+        state.authError = ""; state.screen = "forgot"; render();
+      };
+    }
+
+    // =====================================================================
+    // Forgot password: email -> a code to that inbox -> a new password.
+    // Accounts live on this device, so only an account created here can be
+    // reset here. The code proves the person owns the address.
+    // =====================================================================
+    let fpState = null;      // { email, error } while on the "forgot" screen
+    let resetEmail = null;   // set only after the code was confirmed
+
+    function renderForgot() {
+      if (!fpState) fpState = { email: "", error: "" };
+      const v = $("view"); v.innerHTML = "";
+      const wrap = el("div", "authwrap");
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">🔑 איפוס סיסמה</div>' +
+          '<h2 class="authtitle">שכחת את הסיסמה?</h2>' +
+          '<p class="authsub">נשלח קוד למייל של החשבון, ואחריו תבחרו סיסמה חדשה.</p>' +
+          '<label class="flbl">אימייל</label>' +
+          '<div class="fld"><input id="fpEmail" type="email" dir="ltr" placeholder="you@example.com" autocomplete="email"></div>' +
+          '<div class="aerr" id="fpErr">' + esc(fpState.error || "") + '</div>' +
+          '<button class="distbtn wide" id="fpSend">שלחו לי קוד</button>' +
+          '<button class="obexit" id="fpBack">← חזרה להתחברות</button>' +
+        '</div>';
+      v.appendChild(wrap);
+      const input = wrap.querySelector("#fpEmail");
+      input.value = fpState.email || "";
+      const send = () => {
+        const e = normEmail(input.value);
+        fpState.email = e;
+        const u = loadUsers()[e];
+        let err = "";
+        if (!validEmail(e)) err = "כתובת אימייל לא תקינה";
+        else if (!u) err = "לא מצאנו חשבון עם המייל הזה במכשיר הזה";
+        else if (u.id === REVIEWER_ID) err = "את חשבון הבדיקה אי אפשר לאפס";
+        if (err) { fpState.error = err; wrap.querySelector("#fpErr").textContent = err; return; }
+        fpState = null;
+        startVerification(e, "reset");
+      };
+      wrap.querySelector("#fpSend").onclick = send;
+      input.onkeydown = (ev) => { if (ev.key === "Enter") send(); };
+      wrap.querySelector("#fpBack").onclick = () => { fpState = null; state.screen = "auth"; state.authMode = "login"; render(); };
+      setTimeout(() => input.focus(), 60);
+    }
+
+    function renderNewPassword() {
+      const v = $("view"); v.innerHTML = "";
+      const wrap = el("div", "authwrap");
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">🔑 איפוס סיסמה</div>' +
+          '<h2 class="authtitle">סיסמה חדשה</h2>' +
+          '<p class="authsub" style="unicode-bidi:plaintext">' + esc(resetEmail) + '</p>' +
+          '<label class="flbl">סיסמה חדשה</label>' +
+          '<div class="fld"><input id="npPass" type="password" dir="ltr" placeholder="••••••••" autocomplete="new-password"></div>' +
+          '<div class="pwmeter" id="pwMeter"><i></i><i></i><i></i><i></i><i></i></div>' +
+          '<div class="pwlbl" id="pwLbl">מד חוזק סיסמה — 8+ תווים, אות גדולה, אות קטנה, ספרה ותו מיוחד</div>' +
+          '<label class="flbl">שוב, לאימות</label>' +
+          '<div class="fld"><input id="npPass2" type="password" dir="ltr" placeholder="••••••••" autocomplete="new-password"></div>' +
+          '<div class="aerr" id="npErr"></div>' +
+          '<button class="distbtn wide" id="npSave">שמירת הסיסמה החדשה</button>' +
+          '<button class="obexit" id="npBack">← ביטול</button>' +
+        '</div>';
+      v.appendChild(wrap);
+      const p1 = wrap.querySelector("#npPass"), p2 = wrap.querySelector("#npPass2"), errEl = wrap.querySelector("#npErr");
+      p1.oninput = () => {
+        const sc = pwScore(p1.value);
+        wrap.querySelectorAll("#pwMeter i").forEach((seg, i) => {
+          seg.className = i < sc ? (sc <= 2 ? "bad" : sc <= 3 ? "mid" : sc <= 4 ? "good" : "great") : "";
+        });
+        const missing = PW_RULES.filter((r) => !r.re.test(p1.value));
+        wrap.querySelector("#pwLbl").textContent = p1.value
+          ? "חוזק: " + PW_LABELS[sc] + (missing.length ? " · חסר: " + missing.map((m) => m.label).join(", ") : " — כל הדרישות מולאו ✓")
+          : "מד חוזק סיסמה — 8+ תווים, אות גדולה, אות קטנה, ספרה ותו מיוחד";
+      };
+      const save = () => {
+        const missing = PW_RULES.filter((r) => !r.re.test(p1.value));
+        if (missing.length) { errEl.textContent = "סיסמה חלשה מדי — חסר: " + missing.map((m) => m.label).join(", "); return; }
+        if (p1.value !== p2.value) { errEl.textContent = "הסיסמאות לא זהות"; return; }
+        const users = loadUsers();
+        const u = users[resetEmail];
+        if (!u) { resetEmail = null; state.screen = "auth"; render(); return; }
+        u.salt = Math.random().toString(36).slice(2);
+        u.hash = hashPw(p1.value, u.salt);
+        u.failCount = 0; u.lockUntil = 0; u.emailVerified = true;
+        saveUsers(users);
+        secLog("INFO", "הסיסמה אופסה אחרי אימות קוד במייל: " + resetEmail);
+        resetEmail = null;
+        showToast("✅ הסיסמה עודכנה");
+        enterApp({ id: u.id, email: u.email });
+      };
+      wrap.querySelector("#npSave").onclick = save;
+      p2.onkeydown = (ev) => { if (ev.key === "Enter") save(); };
+      wrap.querySelector("#npBack").onclick = () => { resetEmail = null; state.screen = "auth"; state.authMode = "login"; render(); };
+      setTimeout(() => p1.focus(), 60);
     }
 
     // =====================================================================
@@ -3592,8 +3711,8 @@
       }
     }
 
-    function startVerification(email) {
-      vf = { email: email, digits: blankDigits(), token: null, error: "", expiresAt: 0,
+    function startVerification(email, purpose) {
+      vf = { email: email, purpose: purpose || "signup", digits: blankDigits(), token: null, error: "", expiresAt: 0,
              resendAt: 0, localCode: null, attempts: 0, busy: false };
       state.screen = "verify";
       render();
@@ -3629,6 +3748,11 @@
       if (ok) {
         secLog("INFO", "האימייל אומת בהצלחה עם קוד חד-פעמי");
         markEmailVerified(vf.email);
+        if (vf.purpose === "reset") {        // the code proved it — now pick a new password
+          resetEmail = vf.email; vf = null;
+          state.screen = "newpw"; render();
+          return;
+        }
         const users = loadUsers();
         const u = users[vf.email];
         vf = null;
@@ -3671,7 +3795,7 @@
 
       wrap.innerHTML =
         '<div class="authcard">' +
-          '<div class="authbrand">📧 אימות אימייל</div>' +
+          '<div class="authbrand">' + (vf.purpose === "reset" ? "🔑 איפוס סיסמה" : "📧 אימות אימייל") + '</div>' +
           '<h2 class="authtitle">הזינו את הקוד</h2>' +
           '<p class="otpmail">שלחנו קוד בן ' + CODE_LEN + ' ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
           '<p class="otpmail" style="font-size:12.5px;margin-top:4px">לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות</p>' +
