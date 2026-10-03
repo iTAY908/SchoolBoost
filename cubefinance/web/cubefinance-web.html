@@ -658,6 +658,8 @@
     .otpwrap.bad .otpbox { border-color: #ff8f8f; animation: otpShake .4s; }
     @keyframes otpShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)}
       40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .otpnote { background: rgba(100,114,255,.1); border: 1px solid rgba(100,114,255,.28); border-radius: 14px;
+      padding: 12px 14px; font-size: 13.5px; line-height: 1.65; color: var(--text); margin: 6px 0 12px; text-align: start; }
     .otpmail { color: var(--dim); font-size: 14px; line-height: 1.7; text-align: center; }
     .otpmail b { color: var(--text); unicode-bidi: plaintext; }
     .otperr { color: #ff8f8f; font-size: 13.5px; font-weight: 700; text-align: center; min-height: 20px;
@@ -1658,6 +1660,9 @@
       "מטשטש את הסכומים בדשבורד — ריחוף עם העכבר חושף אותם": "Blurs the amounts on the dashboard — hover with the mouse to reveal them",
       "📧 אימות אימייל": "📧 Email verification",
       "שכחת את הסיסמה?": "Forgot your password?",
+      "עדכון אבטחה:": "Security update:",
+      "כדי להמשיך להשתמש באפליקציה, אשרו פעם אחת שזה המייל שלכם. הנתונים שלכם נשמרו.": "To keep using the app, confirm once that this is your email. Your data is safe.",
+      "← התנתקות": "← Log out",
       "🔑 איפוס סיסמה": "🔑 Reset password",
       "נשלח קוד למייל של החשבון, ואחריו תבחרו סיסמה חדשה.": "We'll email a code to the account, then you choose a new password.",
       "שלחו לי קוד": "Send me a code",
@@ -3019,6 +3024,12 @@
       const users = loadUsers();
       // A saved session only skips the login form — never the email check.
       if (email && users[email] && !needsEmailCheck(users[email])) { enterApp({ id: users[email].id, email: users[email].email }); }
+      else if (email && users[email]) {
+        // Someone who signed up before verification existed and is still
+        // logged in: after the update, the app opens straight on the code
+        // screen for the address they registered with.
+        startVerification(users[email].email, "existing");
+      }
       else {
         state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup";
         render();
@@ -3795,6 +3806,9 @@
         '<div class="authcard">' +
           '<div class="authbrand">' + (vf.purpose === "reset" ? "🔑 איפוס סיסמה" : "📧 אימות אימייל") + '</div>' +
           '<h2 class="authtitle">הזינו את הקוד</h2>' +
+          (vf.purpose === "existing"
+            ? '<div class="otpnote">🔒 <b>עדכון אבטחה:</b> כדי להמשיך להשתמש באפליקציה, אשרו פעם אחת שזה המייל שלכם. הנתונים שלכם נשמרו.</div>'
+            : "") +
           '<p class="otpmail">שלחנו קוד בן ' + CODE_LEN + ' ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
           '<p class="otpmail" style="font-size:12.5px;margin-top:4px">לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות</p>' +
           '<div class="otpwrap" id="otpWrap">' +
@@ -3812,7 +3826,7 @@
             '<button class="otpresend" id="otpResend"' + (canResend ? "" : " disabled") + '>' +
               (canResend ? "שלח קוד חדש" : "שלח קוד חדש (" + resendIn + ")") + '</button>' +
           '</div>' +
-          '<button class="obexit" id="otpBack">← חזרה למסך הכניסה</button>' +
+          '<button class="obexit" id="otpBack">' + (vf.purpose === "existing" ? "← התנתקות" : "← חזרה למסך הכניסה") + '</button>' +
         '</div>';
       v.appendChild(wrap);
 
@@ -3856,6 +3870,7 @@
       wrap.querySelector("#otpResend").onclick = () => { if (Date.now() >= vf.resendAt) requestCode(vf.email, true); };
       wrap.querySelector("#otpBack").onclick = () => {
         if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
+        if (vf.purpose === "existing") clearSession(); // leaving means logging out
         vf = null; state.screen = "auth"; state.authMode = "login"; render();
       };
       if (!vf.busy) setTimeout(focusFirstEmpty, 60);
