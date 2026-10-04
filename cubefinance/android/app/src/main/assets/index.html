@@ -2960,6 +2960,16 @@
     // owner's connected Gmail — no server of our own. These three values are
     // PUBLIC by design (EmailJS calls it a public key), so they may live here.
     // Leave publicKey empty to use the Vercel functions in web/api instead.
+    // ---- Server features: OFF -------------------------------------------------
+    // Shared savings, the findable-by-friends profile, codes sent by Supabase and
+    // creator access decided by the server all need the Supabase email sender
+    // (docs/SUPABASE_SETUP.md). While that is not set up they are switched off:
+    // sign-up, login and password-reset codes go out through EmailJS only, the
+    // shared-savings screens are hidden, and the creator account below is
+    // recognised on this device. Set to true to bring everything back.
+    const SERVER_FEATURES = false;
+    const OWNER_EMAILS = ["itayleiss2010@gmail.com"];   // free Premium, free books, no ads, no code screen
+    const isOwnerEmail = (e) => OWNER_EMAILS.includes(normEmail(e));
     const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA", inviteTemplateId: "template_3utf1eb" };
     const useEmailJS = () => !!(EMAILJS.serviceId && EMAILJS.templateId && EMAILJS.publicKey);
     const blankDigits = () => Array(CODE_LEN).fill("");
@@ -3357,6 +3367,10 @@
     // verified session. No session yet → nothing is granted until there is one.
     async function complimentaryCheck() {
       if (!state.authUser) return;
+      if (!SERVER_FEATURES) {                     // no server: the creator's email is recognised here
+        if (isOwnerEmail(state.authUser.email)) setComplimentary(true);
+        return;
+      }
       const who = state.authUser.id;
       let token = null;
       try { token = await sbAccess(false); } catch (e) {}
@@ -4223,7 +4237,7 @@
         // That is what gives the account a real server identity — and with it
         // a profile friends can find in shared savings. If Supabase cannot send
         // right now, the code goes out through EmailJS as before.
-        if (vf.mode !== "emailjs" && await sbRequestCodeFor(email)) {
+        if (SERVER_FEATURES && vf.mode !== "emailjs" && await sbRequestCodeFor(email)) {
           vf.mode = "supabase";
           vf.mailedCode = null; vf.localCode = null;
         } else if (useEmailJS()) {
@@ -4337,6 +4351,7 @@
 
     // The store-review account is exempt: reviewers cannot read that inbox.
     function needsEmailCheck(user) {
+      if (!SERVER_FEATURES && user && isOwnerEmail(user.email)) return false;   // the creator is never asked for a code
       const u = loadUsers()[normEmail(user && user.email)];
       return !(u && (u.emailVerified || u.id === REVIEWER_ID));
     }
@@ -4866,7 +4881,7 @@
 
       // Findable by friends: accounts from before shared savings live only on
       // this phone. One email check gives them a server profile people can find.
-      if (state.authUser && !sbLoad() && !shGet("findme_dismissed", false)) {
+      if (SERVER_FEATURES && state.authUser && !sbLoad() && !shGet("findme_dismissed", false)) {
         const fm = el("div", "setcard findme");
         fm.innerHTML = '<span style="font-size:24px">🔎</span><div style="flex:1"><div class="setmail" style="font-size:14px">שחברים יוכלו למצוא אותך</div>' +
           '<div class="setlbl">אימות מייל חד-פעמי, ואז אפשר להזמין אותך לחיסכון משותף לפי שם. המייל עצמו לא מוצג לאף אחד.</div></div>';
@@ -4889,6 +4904,7 @@
         : [["income", "הכנסה", "#10c088"], ["expenses", "הוצאות", "#f5b544"], ["whatif", "סימולטור", "#8f9aff"],
            ["books", "ספרים", "#e8845e"], ["calm", "רוגע", "#37d0a6"], ["guide", "מדריך", "#6472ff"],
            ["challenges", "אתגרים", "#f2b134"], ["shared", "חיסכון משותף", "#3b82f6"], ["debt", "חובות", "#f0555a"]];
+      if (!SERVER_FEATURES) { const at = modules.findIndex((m) => m[0] === "shared"); if (at >= 0) modules.splice(at, 1); }
       modules.forEach((m) => {
         const route = m[0], label = m[1], tint = m[2];
         const b = el("button", "modbtn");
@@ -6183,6 +6199,7 @@
         ["sharedPush", "חיסכון משותף 🤝", "הצטרפות, הפקדות ובקשות מחיקה — הן נשמרות גם בתיבת ההתראות של המסך"],
         ["hideSensitive", "הסתרת תוכן רגיש 🙈", "בהתראה יופיע נוסח כללי — בלי תשובת ה-AI, בלי סכומים ובלי שמות"],
       ];
+      if (!SERVER_FEATURES) { const at = rows.findIndex((r) => r[0] === "sharedPush"); if (at >= 0) rows.splice(at, 1); }
       rows.forEach(([key, label, hint]) => {
         // Shared-savings pushes come from their own backend, so they (and the
         // hiding switch) work in the app even when the server push above is off.
