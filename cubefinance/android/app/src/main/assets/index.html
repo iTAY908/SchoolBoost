@@ -2964,12 +2964,10 @@
     // Shared savings, the findable-by-friends profile, codes sent by Supabase and
     // creator access decided by the server all need the Supabase email sender
     // (docs/SUPABASE_SETUP.md). While that is not set up they are switched off:
-    // sign-up, login and password-reset codes go out through EmailJS only, the
-    // shared-savings screens are hidden, and the creator account below is
-    // recognised on this device. Set to true to bring everything back.
+    // sign-up, login and password-reset codes go out through EmailJS only and the
+    // shared-savings screens are hidden. No email address gets free access from
+    // the app itself. Set to true to bring the server features back.
     const SERVER_FEATURES = false;
-    const OWNER_EMAILS = ["itayleiss2010@gmail.com"];   // free Premium, free books, no ads, no code screen
-    const isOwnerEmail = (e) => OWNER_EMAILS.includes(normEmail(e));
     const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA", inviteTemplateId: "template_3utf1eb" };
     const useEmailJS = () => !!(EMAILJS.serviceId && EMAILJS.templateId && EMAILJS.publicKey);
     const blankDigits = () => Array(CODE_LEN).fill("");
@@ -3367,10 +3365,7 @@
     // verified session. No session yet → nothing is granted until there is one.
     async function complimentaryCheck() {
       if (!state.authUser) return;
-      if (!SERVER_FEATURES) {                     // no server: the creator's email is recognised here
-        if (isOwnerEmail(state.authUser.email)) setComplimentary(true);
-        return;
-      }
+      if (!SERVER_FEATURES) return;               // no server: no email gets free access from the app
       const who = state.authUser.id;
       let token = null;
       try { token = await sbAccess(false); } catch (e) {}
@@ -4351,7 +4346,6 @@
 
     // The store-review account is exempt: reviewers cannot read that inbox.
     function needsEmailCheck(user) {
-      if (!SERVER_FEATURES && user && isOwnerEmail(user.email)) return false;   // the creator is never asked for a code
       const u = loadUsers()[normEmail(user && user.email)];
       return !(u && (u.emailVerified || u.id === REVIEWER_ID));
     }

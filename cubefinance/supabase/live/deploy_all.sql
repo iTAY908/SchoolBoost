@@ -1755,15 +1755,16 @@ begin
   end loop;
 end $$;
 
--- ######## 3/3 creator access: complimentary_seed.sql ########
+-- ######## 3/3 creator access (empty by default): complimentary_seed.sql ########
 -- Complimentary (creator) access: every paid feature — AI chat, guide books,
 -- Premium tools — and no ads, without a Google Play purchase.
 -- Run in the Supabase SQL Editor after shared_savings_v2.sql. Safe to re-run.
 -- The app learns about this only for the signed-in, email-verified account
 -- (cf2_my_entitlements); the list itself is never readable from the app.
-insert into public.cf_complimentary (email, note)
-values ('itayleiss2010@gmail.com', 'creator')
-on conflict (email) do nothing;
+-- No one is seeded by default. To grant access to one verified email later:
+--   insert into public.cf_complimentary (email, note) values ('someone@example.com', 'note') on conflict (email) do nothing;
+-- (If an earlier version of this file already added a row you don't want:
+--   delete from public.cf_complimentary;)
 
 -- To remove someone later:
 --   delete from public.cf_complimentary where email = '...';

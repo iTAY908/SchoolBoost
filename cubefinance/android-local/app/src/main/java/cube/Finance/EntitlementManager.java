@@ -44,13 +44,6 @@ final class EntitlementManager {
     private static final String KEY_COMPL_ACCOUNT = "compl_account";
     private static final String KEY_COMPL_AT = "compl_at";
     private final java.util.concurrent.ExecutorService net = java.util.concurrent.Executors.newSingleThreadExecutor();
-    /**
-     * Creator account recognised on the device while the server-side check
-     * (cf2_my_entitlements) is not in use. Keep in step with OWNER_EMAILS in the
-     * page, and remove together with SERVER_FEATURES = false.
-     */
-    private static final Set<String> LOCAL_OWNER_EMAILS = new HashSet<>(
-            java.util.Collections.singletonList("itayleiss2010@gmail.com"));
     /** Non-purchasers see ads again at most this long after launch, if Play is slow. */
     static final long STARTUP_WAIT_MS = 6_000;
 
@@ -137,10 +130,6 @@ final class EntitlementManager {
             in.legacyClaimAllowed = hadLocalPremium || !anyLocalPremium;
             if (changed) { serverAsked.clear(); in.serverValid.clear(); lastReportKey = null; }
             if (key == null || (in.complimentaryAccount != null && !in.complimentaryAccount.equals(key))) clearComplimentary();
-            if (email != null && LOCAL_OWNER_EMAILS.contains(email)) {
-                in.complimentaryAccount = key;                 // in memory only: re-derived at every sign-in
-                in.complimentaryAt = System.currentTimeMillis();
-            }
             recompute();
         });
     }
