@@ -10,9 +10,9 @@ applicationId = cube.Finance). תוסיף לה "המשך עם Google" — התח
 אל תכתוב אותם מחדש — תוריד אותם.
 
 שלב 1 — להוריד שני קבצים לתיקייה זמנית ולבדוק אותם:
-  בסיס הכתובת: https://raw.githubusercontent.com/iTAY908/SchoolBoost/03a0bdee1ee76537a1e0e92e5d18133b6f89163b/
+  בסיס הכתובת: https://raw.githubusercontent.com/iTAY908/SchoolBoost/808796d827c04f1e3103f32379faaa722ba88579/
   א. cubefinance/web/cubefinance-web.html
-     גודל 525051 בתים · SHA-256 e531b984a42ab2332eef29a2e32ef9eee347bfe8b9ac237e78200b328f0a0c96
+     גודל 528054 בתים · SHA-256 78758046431dd6e3cc1e08057c4a38ff7d1796c37551f761edae54289540db8a
      חייב להכיל: window.CubeyAuth = {   ·   nativeApp.googleSignIn   ·   const EMAILJS = {
   ב. cubefinance/android/app/src/main/java/com/cubefinance/app/GoogleSignInHelper.java
      גודל 4794 בתים · SHA-256 be148c0efcd81a96af5eda3b67475daa411c6a74356e8734986a09dce25a2e31
