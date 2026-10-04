@@ -41,9 +41,9 @@ final class EntitlementManager {
     private static final String KEY_CACHED_ACCOUNT = "cached_account";
     private static final String KEY_CACHED_AT = "cached_at";
     private static final String KEY_LEGACY_PREFIX = "legacy_";
-    /** Accounts that get Premium and no ads without a purchase (the app owner). Keep in step with the page. */
-    private static final Set<String> COMPLIMENTARY_EMAILS = new HashSet<>(
-            java.util.Collections.singletonList("itayleiss2010@gmail.com"));
+    private static final String KEY_COMPL_ACCOUNT = "compl_account";
+    private static final String KEY_COMPL_AT = "compl_at";
+    private final java.util.concurrent.ExecutorService net = java.util.concurrent.Executors.newSingleThreadExecutor();
     /** Non-purchasers see ads again at most this long after launch, if Play is slow. */
     static final long STARTUP_WAIT_MS = 6_000;
 
@@ -80,6 +80,8 @@ final class EntitlementManager {
         prefs = ctx.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         in.cachedAccount = prefs.getString(KEY_CACHED_ACCOUNT, null);
         in.cachedAt = prefs.getLong(KEY_CACHED_AT, 0);
+        in.complimentaryAccount = prefs.getString(KEY_COMPL_ACCOUNT, null);
+        in.complimentaryAt = prefs.getLong(KEY_COMPL_AT, 0);
         for (Map.Entry<String, ?> e : prefs.getAll().entrySet()) {
             if (e.getKey().startsWith(KEY_LEGACY_PREFIX) && e.getValue() instanceof String) {
                 in.legacyOwners.put(e.getKey().substring(KEY_LEGACY_PREFIX.length()), (String) e.getValue());
@@ -125,9 +127,9 @@ final class EntitlementManager {
             in.accountKnown = true;
             in.account = key;
             email = key == null ? null : newEmail.trim().toLowerCase();
-            in.complimentary = email != null && COMPLIMENTARY_EMAILS.contains(email);
             in.legacyClaimAllowed = hadLocalPremium || !anyLocalPremium;
             if (changed) { serverAsked.clear(); in.serverValid.clear(); lastReportKey = null; }
+            if (key == null || (in.complimentaryAccount != null && !in.complimentaryAccount.equals(key))) clearComplimentary();
             recompute();
         });
     }
@@ -150,6 +152,98 @@ final class EntitlementManager {
             in.playKnown = true;
             recompute();
         });
+    }
+
+    // ---- complimentary (creator) access ----------------------------------------------
+    //
+    // Never decided here or by the page: the BACKEND says it, for the verified
+    // email in a Supabase session (cf2_my_entitlements). The page hands over
+    // the session's access token; this class makes the call itself and takes
+    // the email from the server's answer, so a page cannot simply claim it.
+
+    /** Ask the backend, with this account's Supabase access token. */
+    void verifyComplimentary(@Nullable String accessToken) {
+        if (accessToken == null || accessToken.isEmpty()) return;
+        main.post(() -> askComplimentary(accessToken, in.account));   // read the account on the main thread
+    }
+
+    private void askComplimentary(String accessToken, @Nullable String forAccount) {
+        if (forAccount == null) return;
+        net.execute(() -> {
+            String body = null;
+            int code = 0;
+            java.net.HttpURLConnection c = null;
+            try {
+                c = (java.net.HttpURLConnection) new java.net.URL(BuildConfig.SUPABASE_URL + "/rest/v1/rpc/cf2_my_entitlements").openConnection();
+                c.setRequestMethod("POST");
+                c.setConnectTimeout(10_000);
+                c.setReadTimeout(10_000);
+                c.setDoOutput(true);
+                c.setRequestProperty("apikey", BuildConfig.SUPABASE_PUBLISHABLE_KEY);
+                c.setRequestProperty("Authorization", "Bearer " + accessToken);
+                c.setRequestProperty("Content-Type", "application/json");
+                c.getOutputStream().write("{}".getBytes(StandardCharsets.UTF_8));
+                code = c.getResponseCode();
+                if (code == 200) {
+                    java.io.InputStream is = c.getInputStream();
+                    java.io.ByteArrayOutputStream bo = new java.io.ByteArrayOutputStream();
+                    byte[] buf = new byte[4096];
+                    for (int n; (n = is.read(buf)) > 0; ) bo.write(buf, 0, n);
+                    body = bo.toString("UTF-8");
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "complimentary check: no answer (" + e.getClass().getSimpleName() + ")");
+            } finally {
+                if (c != null) c.disconnect();
+            }
+            if (code != 200 && code != 0) Log.w(TAG, "complimentary check: HTTP " + code + " — nothing changed");
+            final Verdict v = code == 200 ? parseEntitlements(body) : null;
+            main.post(() -> applyComplimentary(v, forAccount));
+        });
+    }
+
+    /** The server's answer: whose verified email, and is it complimentary. null = no usable answer. */
+    static final class Verdict {
+        final String accountKey; final boolean complimentary;
+        Verdict(String accountKey, boolean complimentary) { this.accountKey = accountKey; this.complimentary = complimentary; }
+    }
+
+    @Nullable static Verdict parseEntitlements(@Nullable String json) {
+        if (json == null) return null;
+        try {
+            org.json.JSONObject o = new org.json.JSONObject(json);
+            if (!o.optBoolean("ok", false)) return null;
+            String email = o.optString("email", "");
+            if (email.isEmpty()) return null;
+            return new Verdict(accountKey(email), o.optBoolean("complimentary", false));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Apply only if the server's email is the account signed in now (and was when we asked). */
+    void applyComplimentary(@Nullable Verdict v, @Nullable String askedFor) {
+        if (v == null) return;                                   // offline / error: keep what we had
+        if (in.account == null || !in.account.equals(askedFor) || !in.account.equals(v.accountKey)) {
+            Log.w(TAG, "complimentary answer is for another account — ignored");
+            return;
+        }
+        if (v.complimentary) {
+            in.complimentaryAccount = v.accountKey;
+            in.complimentaryAt = System.currentTimeMillis();
+            prefs.edit().putString(KEY_COMPL_ACCOUNT, v.accountKey).putLong(KEY_COMPL_AT, in.complimentaryAt).apply();
+            Log.i(TAG, "complimentary access confirmed by the server");
+        } else if (v.accountKey.equals(in.complimentaryAccount)) {
+            clearComplimentary();                                // removed on the server
+        }
+        recompute();
+    }
+
+    private void clearComplimentary() {
+        if (in.complimentaryAccount == null && !prefs.contains(KEY_COMPL_ACCOUNT)) return;
+        in.complimentaryAccount = null;
+        in.complimentaryAt = 0;
+        prefs.edit().remove(KEY_COMPL_ACCOUNT).remove(KEY_COMPL_AT).apply();
     }
 
     /** Server account now signed in (PushManager.link succeeded): verify what Play alone vouched for. */
@@ -212,7 +306,7 @@ final class EntitlementManager {
 
         // Remember a confirmed purchaser so the next cold start hides ads at
         // once; forget it the moment Play/the server says otherwise.
-        if (Boolean.TRUE.equals(r.entitled) && !"cache".equals(r.reason) && !"complimentary".equals(r.reason)) {
+        if (Boolean.TRUE.equals(r.entitled) && !"cache".equals(r.reason)) {
             in.cachedAccount = in.account;
             in.cachedAt = in.now;
             prefs.edit().putString(KEY_CACHED_ACCOUNT, in.account).putLong(KEY_CACHED_AT, in.now).apply();

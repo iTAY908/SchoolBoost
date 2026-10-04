@@ -67,11 +67,15 @@ final class EntitlementResolver {
         /** Last account confirmed entitled on this device, and when. */
         String cachedAccount;
         long cachedAt;
+        /**
+         * The account the BACKEND confirmed as complimentary (creator access),
+         * for the verified email in its session — and when it last said so.
+         */
+        String complimentaryAccount;
+        long complimentaryAt;
         long now;
         /** The startup wait is over: stop holding ads for non-purchasers. */
         boolean timedOut;
-        /** The signed-in account is the owner's: Premium and no ads without any purchase. */
-        boolean complimentary;
     }
 
     static final class Result {
@@ -90,12 +94,13 @@ final class EntitlementResolver {
     static Result resolve(Input in) {
         Result r = new Result();
         boolean cacheFresh = in.cachedAccount != null && in.now - in.cachedAt <= CACHE_MAX_MS;
+        boolean complFresh = in.complimentaryAccount != null && in.now - in.complimentaryAt <= CACHE_MAX_MS;
 
         if (!in.accountKnown) {
             // Cold start, before the page reports the account: a device whose
-            // last account was a confirmed purchaser shows no ads meanwhile.
+            // last account was a confirmed purchaser (or creator) shows no ads meanwhile.
             r.reason = "account_unknown";
-            r.ads = cacheFresh ? Ads.SUPPRESSED : (in.timedOut ? Ads.ALLOWED : Ads.PENDING);
+            r.ads = cacheFresh || complFresh ? Ads.SUPPRESSED : (in.timedOut ? Ads.ALLOWED : Ads.PENDING);
             return r;
         }
         if (in.account == null) {
@@ -104,7 +109,10 @@ final class EntitlementResolver {
             r.ads = Ads.ALLOWED;
             return r;
         }
-        if (in.complimentary) {
+        // Complimentary (creator) access comes first: no purchase check —
+        // Play, a refund, the server's purchase verdict — can take it away.
+        // Only for the account the backend confirmed; never for another one.
+        if (complFresh && in.account.equals(in.complimentaryAccount)) {
             r.entitled = true;
             r.reason = "complimentary";
             r.ads = Ads.SUPPRESSED;

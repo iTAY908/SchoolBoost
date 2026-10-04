@@ -282,6 +282,9 @@ public class MainActivity extends AppCompatActivity
             t.put("conversationId", intent.getStringExtra(CubeMessagingService.EXTRA_CONVERSATION));
             t.put("messageId", intent.getStringExtra(CubeMessagingService.EXTRA_MESSAGE));
             t.put("entryId", intent.getStringExtra(CubeMessagingService.EXTRA_ENTRY));
+            t.put("acct", intent.getStringExtra(CubeMessagingService.EXTRA_ACCT));
+            t.put("goalId", intent.getStringExtra(CubeMessagingService.EXTRA_GOAL));
+            t.put("eventId", intent.getStringExtra(CubeMessagingService.EXTRA_EVENT));
             PushManager.setPendingTarget(t.toString());
         } catch (JSONException ignored) {
             return;
@@ -412,6 +415,31 @@ public class MainActivity extends AppCompatActivity
     /** From the page: who is signed in now (null on logout), see EntitlementManager.setAccount. */
     void setAppAccount(String email, boolean hadLocalPremium, boolean anyLocalPremium) {
         if (entitlements != null) entitlements.setAccount(email, hadLocalPremium, anyLocalPremium);
+        // Shared-savings pushes are addressed to an account; the service only
+        // shows those for the account signed in here (also when the app is closed).
+        PushManager.setSharedAccount(this, email == null || email.trim().isEmpty()
+                ? null : EntitlementManager.accountKey(email));
+    }
+
+    // ---- shared savings: FCM token for the Supabase backend ---------------------
+
+    /** SHA-256 key of an email, the same one the server puts on shared pushes. */
+    String accountKey(String email) {
+        return email == null ? null : EntitlementManager.accountKey(email);
+    }
+
+    String pushInstallId() { return PushManager.installId(this); }
+
+    /** Fetches this install's FCM token; the answer arrives in CubeyPush.onFcmToken. */
+    void requestFcmToken() {
+        runOnUiThread(() -> PushManager.fcmToken(this, token ->
+                callJs("window.CubeyPush && CubeyPush.onFcmToken && CubeyPush.onFcmToken("
+                        + (token == null ? "null" : JSONObject.quote(token)) + ");")));
+    }
+
+    /** Page → native: a Supabase access token for the signed-in account; the check itself is made here. */
+    void verifyComplimentary(String accessToken) {
+        if (entitlements != null) entitlements.verifyComplimentary(accessToken);
     }
 
     /** The verdict for the signed-in account → the page (unlocks/locks the AI chat). */
@@ -703,6 +731,8 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         webView.onResume();
         PushManager.setForeground(true, pushForegroundListener);
+        PushManager.setTokenListener(token -> callJs("window.CubeyPush && CubeyPush.onFcmToken && CubeyPush.onFcmToken("
+                + (token == null ? "null" : JSONObject.quote(token)) + ");"));
         if (ads != null) ads.onForeground();
         if (billing != null) billing.restorePurchases();
     }
@@ -712,6 +742,7 @@ public class MainActivity extends AppCompatActivity
         // From here on a chat reply is a system notification, even for the
         // conversation that was open.
         PushManager.setForeground(false, null);
+        PushManager.setTokenListener(null);
         if (ads != null) ads.onBackground();
         webView.onPause();
         super.onPause();

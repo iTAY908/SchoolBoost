@@ -42,6 +42,36 @@ public final class NativeBridge {
         activity.setAppAccount(email, hadLocalPremium, anyLocalPremium);
     }
 
+    // ---- shared savings (Supabase backend, FCM push) ------------------------------
+
+    /** SHA-256 key of an email — matches the "acct" the server puts on shared pushes. */
+    @JavascriptInterface
+    public String accountKey(String email) {
+        return activity.accountKey(email);
+    }
+
+    /** This install's stable id (one device row per install on the server). */
+    @JavascriptInterface
+    public String pushInstallId() {
+        return activity.pushInstallId();
+    }
+
+    /** Asks for the FCM token; the answer arrives in CubeyPush.onFcmToken(token|null). */
+    @JavascriptInterface
+    public void requestFcmToken() {
+        activity.requestFcmToken();
+    }
+
+    /**
+     * Complimentary (creator) access: the page passes the account's Supabase
+     * access token and the native side asks the backend itself — the page
+     * cannot grant it. The result arrives as CubeyBilling.onEntitlement(..., "complimentary").
+     */
+    @JavascriptInterface
+    public void verifyComplimentary(String accessToken) {
+        activity.verifyComplimentary(accessToken);
+    }
+
     /** "Restore purchase": re-query Play (and the server); answer in CubeyBilling.onRestoreResult. */
     @JavascriptInterface
     public void restorePremium() {

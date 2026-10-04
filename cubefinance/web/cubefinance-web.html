@@ -378,7 +378,15 @@
       line-height: 1.45; white-space: pre-wrap; unicode-bidi: plaintext; }
     .bubble.u { align-self: flex-start; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
     .bubble.b { align-self: flex-end; background: var(--card); border-bottom-left-radius: 4px; }
-    .bubble.thinking { color: var(--dim); animation: thinkpulse 1.4s ease-in-out infinite; }
+    .bubble.thinking { color: var(--dim); display: inline-flex; align-items: center; gap: 6px; }
+    .tdots { display: inline-flex; gap: 4px; direction: ltr; }
+    .tdots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .3; animation: tdot 1.2s infinite ease-in-out; }
+    .tdots i:nth-child(2) { animation-delay: .2s; } .tdots i:nth-child(3) { animation-delay: .4s; }
+    @keyframes tdot { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+    @media (prefers-reduced-motion: reduce) { .tdots i { animation: none; opacity: .6; } }
+    .bubble.err { border: 1.5px solid var(--danger); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+    .errretry { background: none; border: 1.5px solid var(--primary); color: var(--primary); border-radius: 999px;
+      padding: 6px 14px; font: 800 13.5px var(--font); cursor: pointer; }
     @keyframes thinkpulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
     .bubble.flash { box-shadow: 0 0 0 2px var(--primary); transition: box-shadow .4s; }
     .increc.hl { outline: 2px solid var(--primary); border-radius: 10px; padding-inline: 8px; transition: outline-color .6s; }
@@ -561,6 +569,47 @@
     .shptrack i { display: block; height: 100%; border-radius: 999px; transition: width .7s cubic-bezier(.2,.8,.2,1); }
     .shpamt { width: 70px; text-align: left; font-size: 12.5px; font-weight: 800; font-variant-numeric: tabular-nums; flex: none; }
     .shactions { display: flex; gap: 8px; margin-top: 14px; align-items: stretch; }
+    .shpending { margin-top: 8px; font-size: 12.5px; color: var(--warning); font-weight: 700; }
+    .shqueue { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .shqitem { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 8px 10px;
+      border-radius: 10px; background: var(--card2, rgba(127,127,127,.08)); }
+    .shqitem.pending { color: var(--warning); }
+    .shqitem.failed { color: var(--danger); }
+    .shpanel:not(:empty) { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .shentry { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+    .shentry:last-child { border-bottom: none; }
+    .shentry span { flex: 1 1 60%; }
+    .shentry i { font-style: normal; color: var(--dim); font-size: 11.5px; }
+    .shentry.reversed span { text-decoration: line-through; color: var(--dim); }
+    .shconsent { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--dim); }
+    .shconsent input { margin-top: 3px; flex: none; }
+    .shdel { margin-top: 12px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--danger); }
+    .shdelhead { font-weight: 800; margin-bottom: 4px; }
+    .shvotes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .shvote { font-size: 12px; padding: 4px 8px; border-radius: 999px; background: rgba(127,127,127,.12); }
+    .shvote.approve { color: var(--success); } .shvote.reject { color: var(--danger); }
+    .fchip.danger { color: var(--danger); border-color: var(--danger); }
+    .shinboxhead { width: 100%; display: flex; justify-content: space-between; align-items: center; background: none; border: none;
+      color: var(--text); font: 800 15px var(--font); cursor: pointer; padding: 0; }
+    .shunread, .shbadge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: #fff;
+      font-size: 12px; font-weight: 800; display: inline-grid; place-items: center; }
+    .shbadge { position: absolute; top: -4px; inset-inline-end: -6px; }
+    .mi { position: relative; }
+    .shnotes { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+    .shnote { text-align: start; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; color: var(--text);
+      font: 13px var(--font); cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+    .shnote.new { border-color: var(--primary); font-weight: 700; }
+    .shnote i { font-style: normal; color: var(--dim); font-size: 11px; }
+    .shfocus { box-shadow: 0 0 0 2px var(--primary); transition: box-shadow .6s; }
+    .shav { width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; color: #fff; font-weight: 900; flex: none; }
+    .shprow { display: flex; align-items: center; gap: 10px; }
+    .shresults { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+    .shuser { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--border); border-radius: 12px; }
+    .shuname { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .shuname b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .shuname span { color: var(--dim); font-size: 12px; text-align: start; }
+    .shtag { font-size: 12px; color: var(--success); font-weight: 800; }
+    .findme { display: flex; gap: 10px; align-items: center; }
     .fld.small { flex: 1; margin: 0; }
     .shactions .distbtn { padding: 10px 14px; font-size: 13.5px; }
     .wichips { display: flex; flex-direction: column; gap: 8px; }
@@ -1741,7 +1790,6 @@
       "התראות זמינות באפליקציית האנדרואיד": "Notifications are available in the Android app",
       "רישומי הכנסה אחרונים": "Recent income records",
       "🔁 נרשם אוטומטית": "🔁 Recorded automatically",
-      "Cubey חושב… 🧊": "Cubey is thinking… 🧊",
       "הרכישה הושלמה! צ׳אט ה-AI זמין והפרסומות הוסרו 🎉": "Purchase complete! AI chat is available and ads have been removed 🎉",
       "✅ AI Premium פעיל בחשבון שלך — צ׳אט ה-AI פתוח והפרסומות הוסרו.": "✅ AI Premium is active on your account — AI chat is open and ads have been removed.",
       "👑 הרכישה שוחזרה — צ׳אט ה-AI פתוח והפרסומות הוסרו": "👑 Purchase restored — AI chat is open and ads have been removed",
@@ -1755,6 +1803,14 @@
       "🔄 כבר קניתי — שחזור רכישה": "🔄 Already bought — restore purchase",
       "תשלום אחד שכולל את כל הטבות צ׳אט ה-AI ואת הסרת הפרסומות, כל עוד הרכישה בתוקף. השימוש בצ׳אט ה-AI כפוף למגבלות השימוש הקיימות. הרכישה משויכת לחשבון שלך באפליקציה ואפשר לשחזר אותה במכשיר חדש.": "One payment that covers all the AI chat benefits and ad removal, for as long as the purchase stays valid. AI chat use is subject to the existing usage limits. The purchase is tied to your account in the app and can be restored on a new device.",
       "תשלום חד-פעמי — שגם מסיר את כל הפרסומות באפליקציה.": "A one-time payment — that also removes every ad in the app.",
+      "מכין תשובה": "Preparing an answer",
+      "מכין תשובה…": "Preparing an answer…",
+      "↻ לנסות שוב": "↻ Try again",
+      "⚠️ התשובה מתעכבת יותר מדקה. אפשר לנסות שוב — ואם היא תגיע בינתיים, היא תופיע כאן.": "⚠️ The answer is taking more than a minute. You can try again — if it arrives meanwhile, it will appear here.",
+      "⚠️ אין חיבור לשרת כרגע. בדקו את האינטרנט ונסו שוב.": "⚠️ No connection to the server right now. Check your internet and try again.",
+      "⚠️ הגעת למכסת השאלות ל-AI לשעה הקרובה. אפשר לנסות שוב מאוחר יותר.": "⚠️ You've reached the AI question limit for the next hour. Try again later.",
+      "⚠️ הצ׳אט עוד לא מחובר לשרת. נסו שוב בעוד רגע.": "⚠️ The chat isn't connected to the server yet. Try again in a moment.",
+      "⚠️ לא הצלחתי להכין תשובה הפעם. נסו שוב.": "⚠️ I couldn't prepare an answer this time. Try again.",
       "🛟 קרן החירום היא חובה — הושארה על 5% לפחות": "🛟 The emergency fund is required — kept at 5% minimum",
       "המוח שלך רוצה לקנות. הנה איך עוצרים אותו.": "Your brain wants to buy. Here's how to stop it.",
       "🎁 בונוס חינם: מחשבון ודף עבודה אישי למעקב": "🎁 Free bonus: a personal calculator and tracking worksheet",
@@ -2681,6 +2737,8 @@
       state.salary.history = (state.salary.history || []).concat([rec]).slice(-24);
       state.game.flags.dist = true;
       saveState();
+      // Opt-in monthly share for shared savings: a record, never a charge.
+      try { sharedRecurringAfterIncome(income, mk); } catch (e) {}
       return { ok: true, income: income, given: plan.given, leftover: plan.leftover, rows: plan.rows };
     }
 
@@ -2849,7 +2907,7 @@
       try {
         localStorage.setItem(stateKey(), JSON.stringify({
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
-          incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
+          incognito: !!state.incognito, premium: !!state.premium && !compl.grantedPremium, game: state.game, shared: state.shared, debts: state.debts,
           calmLog: state.calmLog, salary: state.salary, expenses: state.expenses, books: state.books,
           worksheet: state.worksheet, chat: state.chat, notif: state.notif,
         }));
@@ -2948,7 +3006,7 @@
     // backend is not switched on, push.available() is false and every path
     // below falls back to exactly what the app did before.
     // ====================================================================
-    const NOTIF_DEFAULT = { chatPush: true, incomePush: true, hideSensitive: false, changedAt: 0 };
+    const NOTIF_DEFAULT = { chatPush: true, incomePush: true, sharedPush: true, hideSensitive: false, changedAt: 0 };
     const push = {
       linked: false, uid: null,
       status: "off",          // off | linking | linked | needs_password | password_mismatch | error
@@ -3004,7 +3062,9 @@
       },
       onUnlinked() { if (state.screen === "notifications") render(); },
       onOpenTarget() { pushCheckTarget(); },
+      onFcmToken(token) { sharedOnFcmToken(token); },
       onForegroundPush(type, data) {
+        if (type === "shared") { loadShared(true); return; }
         if (type === "chat" && state.chat && data && data.conversationId === state.chat.cid) chatPoll(0);
         if (type === "income") incomeSync().then((r) => { if (r && r.applied.length) afterIncomeApplied(r.applied); });
       },
@@ -3029,7 +3089,7 @@
     function pushSyncPrefs(toServer) {
       const n = Object.assign({}, NOTIF_DEFAULT, state.notif || {});
       const p = { chatPush: !!n.chatPush, incomePush: !!n.incomePush, hideSensitive: !!n.hideSensitive };
-      try { if (push.available()) nativeApp.pushSetLocalPrefs(JSON.stringify(p)); } catch (e) {}
+      try { if (nativeApp && nativeApp.pushSetLocalPrefs) nativeApp.pushSetLocalPrefs(JSON.stringify(Object.assign({ sharedPush: n.sharedPush !== false }, p))); } catch (e) {}
       if (toServer && push.ready()) push.call("setPrefs", p).catch(() => {});
     }
     function pushSetActiveConversation(cid) {
@@ -3039,7 +3099,7 @@
     // Route a tapped notification once we know who is signed in. Not logged
     // in yet → it waits through the login form and opens right after.
     function pushCheckTarget() {
-      if (!push.available()) return;
+      if (!nativeApp || !nativeApp.pushConsumeTarget) return;
       if (!push.target) {
         let raw = null;
         try { raw = nativeApp.pushConsumeTarget(); } catch (e) {}
@@ -3049,6 +3109,17 @@
       if (!t) return;
       if (!state.authUser) {
         if (state.screen === "auth") showToast("🔔 התחברו כדי לפתוח את ההתראה");
+        return;
+      }
+      if (state.screen === "onboarding" || state.screen === "verify") return;
+      if (t.type === "shared") {
+        // Shared savings: only for the account the event was sent to (the key
+        // is a SHA-256 of the email, computed natively the same way as the server).
+        let mine = null;
+        try { mine = nativeApp.accountKey(state.authUser.email); } catch (e) {}
+        push.target = null;
+        if (!mine || mine !== t.acct) { showToast("ההתראה הזו שייכת לחשבון אחר"); return; }
+        closeChat(); shState.focus = t.goalId; shState.loaded = false; state.screen = "shared"; render();
         return;
       }
       if (!push.linked) return;                                       // onLinkResult calls back here
@@ -3139,10 +3210,11 @@
 
     function enterApp(user) {
       state.authUser = user; state.authError = ""; setSession(user.email);
-      shState = { loaded: false, loading: false, error: "", goals: [], form: null, invite: null, lastCode: null };
-      setTimeout(() => { if (state.authUser === user) cloudEnsure(); }, 0);
+      sharedReset();
+      setTimeout(() => sharedOnEnter(user), 0);   // shared savings: flush queued records, sync the inbox
       loadState();
       notifyNativeAccount(user.email);   // the purchase check runs for THIS account
+      setTimeout(() => { if (state.authUser === user) complimentaryCheck(); }, 0);
       if (state.onboarded) { state.screen = "app"; }
       else { startOnboarding(); state.screen = "onboarding"; }
       if (state.onboarded) {
@@ -3167,8 +3239,10 @@
       const pw = push.pendingPw && push.pendingPw.email === normEmail(user.email) ? push.pendingPw.pw : null;
       push.pendingPw = null;
       pushLinkAccount(user.email, pw);
+      pushCheckTarget();   // a shared-savings notification the app was opened from
     }
     function logout() {
+      try { sharedLogout(); } catch (e) {}
       clearSession();
       state.authUser = null; state.screen = "auth"; state.authMode = "login"; state.authError = "";
       state.onboarded = false; state.pool = 0; state.profile = null; state.cubes = []; state.incognito = false;
@@ -3178,6 +3252,7 @@
       state.worksheet = wsNormalize(null);
       state.chat = null; state.notif = null;
       notifyNativeAccount(null); // nobody signed in: no one's AI Premium applies (chat locked, ads as usual)
+      compl = { account: null, ok: false, grantedPremium: false };   // complimentary access never carries over
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
       pushUnlinkAccount();  // this phone stops receiving the account's notifications
       render();
@@ -3187,7 +3262,7 @@
     // logging in on the same device never sees the previous account's data.
     function resetModuleGlobals() {
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
-      shState.form = null; shState.invite = null; guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
+      sharedReset(); guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
       bkTermsOk = false;
       try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
@@ -3257,15 +3332,40 @@
     // accounts exist only in this device's localStorage. A determined user can
     // therefore set it themselves -- but they can equally set `premium`
     // directly, so this grants nothing that was not already reachable.
-    // The app owner's own account: the whole payment system is off for it —
-    // AI Premium and the guide books are free, there is no email-code step and
-    // (in the Android app) no ads. Matching is by the signed-in email, however
-    // the account was created (form, Google, or an old account).
-    const COMPLIMENTARY_EMAILS = ["itayleiss2010@gmail.com"];
-    const isComplimentaryEmail = (e) => COMPLIMENTARY_EMAILS.includes(normEmail(e));
+    // Complimentary (creator) access: every paid feature and no ads, without a
+    // purchase. Who has it is decided by the BACKEND (cf_complimentary, read by
+    // cf2_my_entitlements) for the verified email of this account's Supabase
+    // session — the page holds no list of emails and grants nothing from what
+    // was typed in a form or kept in localStorage.
+    //   Android: native code asks the server itself with the session token and
+    //            reports back through CubeyBilling.onEntitlement(…, "complimentary").
+    //   Browser: the page asks the server directly.
+    // The answer lives in memory, for one account; sign-out drops it.
+    let compl = { account: null, ok: false, grantedPremium: false };
     function isComplimentaryAccount() {
-      const u = state.authUser;
-      return !!(u && isComplimentaryEmail(u.email));
+      return !!(compl.ok && state.authUser && compl.account === state.authUser.id);
+    }
+    function setComplimentary(ok) {
+      if (!state.authUser) return;
+      const was = isComplimentaryAccount();
+      compl = { account: state.authUser.id, ok: !!ok, grantedPremium: compl.account === state.authUser.id && compl.grantedPremium };
+      if (ok && !state.premium) { state.premium = true; compl.grantedPremium = true; notifyNativePremium(); }
+      if (!ok && was && compl.grantedPremium) { state.premium = false; compl.grantedPremium = false; }
+      if (ok !== was) { saveState(); render(); }
+    }
+    // After every sign-in (and after the email is verified): ask, with the
+    // verified session. No session yet → nothing is granted until there is one.
+    async function complimentaryCheck() {
+      if (!state.authUser) return;
+      const who = state.authUser.id;
+      let token = null;
+      try { token = await sbAccess(false); } catch (e) {}
+      if (!token || !state.authUser || state.authUser.id !== who) return;
+      if (nativeApp && nativeApp.verifyComplimentary) { try { nativeApp.verifyComplimentary(token); } catch (e) {} return; }
+      try {
+        const r = await rpc2("cf2_my_entitlements", {});
+        if (r && r.ok && state.authUser && state.authUser.id === who && r.email === normEmail(state.authUser.email)) setComplimentary(!!r.complimentary);
+      } catch (e) {}
     }
 
     function isReviewerAccount() {
@@ -4119,7 +4219,15 @@
     async function requestCode(email, isResend) {
       vf.busy = true; vf.error = ""; renderVerify();
       try {
-        if (useEmailJS()) {
+        // Preferred: Supabase Auth emails the code and checks it on the server.
+        // That is what gives the account a real server identity — and with it
+        // a profile friends can find in shared savings. If Supabase cannot send
+        // right now, the code goes out through EmailJS as before.
+        if (vf.mode !== "emailjs" && await sbRequestCodeFor(email)) {
+          vf.mode = "supabase";
+          vf.mailedCode = null; vf.localCode = null;
+        } else if (useEmailJS()) {
+          vf.mode = "emailjs";
           const code = randomCode(CODE_LEN);
           try { await sendViaEmailJS(email, code); }
           catch (err) {
@@ -4170,7 +4278,20 @@
       vf.busy = true; vf.error = ""; renderVerify();
 
       let ok = false, msg = "";
-      if (!useEmailJS()) {
+      if (vf.mode === "supabase") {
+        if (Date.now() > vf.expiresAt) msg = "הקוד פג תוקף. בקשו קוד חדש.";
+        else if (vf.attempts >= MAX_CODE_ATTEMPTS) msg = "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
+        else {
+          const r = await sbVerifyCodeFor(vf.email, code);
+          if (r === true) ok = true;
+          else if (r === "network") msg = "אין חיבור לשרת. בדקו את החיבור ונסו שוב.";
+          else {
+            vf.attempts++;
+            const left = MAX_CODE_ATTEMPTS - vf.attempts;
+            msg = left > 0 ? "הקוד שגוי. נותרו " + left + " ניסיונות." : "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
+          }
+        }
+      } else if (!useEmailJS()) {
         try {
           const r = await apiPost("/api/auth/verify", { email: vf.email, code: code, token: vf.token });
           ok = !!(r.data && r.data.ok);
@@ -4216,7 +4337,6 @@
 
     // The store-review account is exempt: reviewers cannot read that inbox.
     function needsEmailCheck(user) {
-      if (user && isComplimentaryEmail(user.email)) return false;   // the owner never gets the code screen
       const u = loadUsers()[normEmail(user && user.email)];
       return !(u && (u.emailVerified || u.id === REVIEWER_ID));
     }
@@ -4263,6 +4383,7 @@
             '<button class="otpresend" id="otpResend"' + (canResend ? "" : " disabled") + '>' +
               (canResend ? "שלח קוד חדש" : "שלח קוד חדש (" + resendIn + ")") + '</button>' +
           '</div>' +
+          (vf.mode === "supabase" ? '<button class="otpresend" id="otpAlt" style="display:block;margin:8px auto 0">לא הגיע קוד? שליחה בדרך אחרת</button>' : "") +
           '<button class="obexit" id="otpBack">' + (vf.purpose === "existing" ? "← התנתקות" : "← חזרה למסך הכניסה") + '</button>' +
         '</div>';
       v.appendChild(wrap);
@@ -4305,6 +4426,8 @@
       }
 
       wrap.querySelector("#otpResend").onclick = () => { if (Date.now() >= vf.resendAt) requestCode(vf.email, true); };
+      const alt = wrap.querySelector("#otpAlt");
+      if (alt) alt.onclick = () => { vf.mode = "emailjs"; vf.resendAt = 0; requestCode(vf.email, true); };
       wrap.querySelector("#otpBack").onclick = () => {
         if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
         if (vf.purpose === "existing") clearSession(); // leaving means logging out
@@ -4741,6 +4864,20 @@
             : '<span class="pi">🏠</span><span class="pt">דירה בבעלות — <b>אין קוביית שכירות</b>. נוצרו רק קוביות <b>חשבונות הבית ואוכל</b>, והיתר הופנה לחיסכון ולהשקעות.</span>'));
       v.appendChild(note);
 
+      // Findable by friends: accounts from before shared savings live only on
+      // this phone. One email check gives them a server profile people can find.
+      if (state.authUser && !sbLoad() && !shGet("findme_dismissed", false)) {
+        const fm = el("div", "setcard findme");
+        fm.innerHTML = '<span style="font-size:24px">🔎</span><div style="flex:1"><div class="setmail" style="font-size:14px">שחברים יוכלו למצוא אותך</div>' +
+          '<div class="setlbl">אימות מייל חד-פעמי, ואז אפשר להזמין אותך לחיסכון משותף לפי שם. המייל עצמו לא מוצג לאף אחד.</div></div>';
+        const go = el("button", "fchip on"); go.textContent = "אימות";
+        go.onclick = () => { state.screen = "shared"; render(); };
+        const no = el("button", "fchip"); no.textContent = "לא עכשיו";
+        no.onclick = () => { shPut("findme_dismissed", true); render(); };
+        fm.appendChild(go); fm.appendChild(no);
+        v.appendChild(fm);
+      }
+
       // engagement modules nav — kids only see the age-appropriate modules
       const nav = el("div", "modnav");
       // [route, label, tint] — the tint gives each destination its own identity
@@ -4758,7 +4895,10 @@
         const isPrem = route === "debt" && !state.premium;
         b.style.setProperty("--tint", tint);
         b.innerHTML = '<span class="mi">' + navIcon(route) +
-          (isPrem ? '<span class="lockb">🔒</span>' : "") + '</span><span class="ml">' + label + '</span>';
+          (isPrem ? '<span class="lockb">🔒</span>' : "") +
+          // unread shared-savings events, from the server inbox
+          (route === "shared" ? '<span class="shbadge" data-shbadge' + (shState.unread ? '>' + shState.unread : ' hidden>') + '</span>' : "") +
+          '</span><span class="ml">' + label + '</span>';
         b.onclick = () => { if (route === "calm") { openCalm(); return; } state.screen = route; render(); };
         nav.appendChild(b);
       });
@@ -5167,7 +5307,7 @@
 
     function setTyping(on) {
       streaming = on;
-      const s = $("chstate"); if (s) s.textContent = on ? "מקליד…" : "היועץ הפיננסי החכם שלך · מכיר את הקוביות";
+      const s = $("chstate"); if (s) s.textContent = on ? "מכין תשובה…" : "היועץ הפיננסי החכם שלך · מכיר את הקוביות";
       const i = $("cin"); if (i) i.disabled = on;
       const b = $("csend"); if (b) b.disabled = on;
     }
@@ -5222,37 +5362,25 @@
       aiSend(text);
     }
 
-    // Stream a bot reply into a single bubble, then reveal optional buttons.
+    // A bot reply appears whole, the moment it exists — no typing effect, no
+    // artificial delay. Optional buttons follow it.
     function botSay(res, rec) {
       const full = res.text || "";
       const m = rec || chatRecord("b", full);
       if (!chatBuilt || !$("msgs")) return;
-      const bubble = appendBubble("b", "", m.id);
-      typeOut(bubble, full, () => { if (res.quick && res.quick.length) showQuickButtons(res.quick); });
-    }
-    let typingIv = null;
-    function typeOut(bubble, full, done) {
-      setTyping(true);
-      let i = 0;
-      const iv = typingIv = setInterval(() => {
-        i += 3;
-        bubble.textContent = full.slice(0, i);
-        scrollToBottom();
-        if (i >= full.length) {
-          clearInterval(iv);
-          bubble.textContent = full;
-          setTyping(pendingAi().length > 0);   // still waiting on the AI → keep the input locked
-          if (done) done();
-          const inp = $("cin"); if (inp && chatOpen && !streaming) inp.focus();
-        }
-      }, 16);
+      appendBubble("b", full, m.id);
+      if (res.quick && res.quick.length) showQuickButtons(res.quick);
+      const inp = $("cin"); if (inp && chatOpen && !streaming) inp.focus();
     }
 
     // ---- AI replies from the server ------------------------------------------
     // The message is stored on the server and answered there, so leaving the
     // app does not lose the answer: it is saved in this conversation and, if
-    // the chat is not on screen, announced with a notification.
-    const AI_WAIT_MS = 11 * 60 * 1000;   // the server gives up after 10 minutes
+    // the chat is not on screen, announced with a notification. While the app
+    // waits, the server holds the request open (chatAwait) and returns the
+    // moment the answer is saved, so it shows up immediately.
+    let aiTimeoutMs = 60 * 1000;            // how long the user waits before "try again"
+    const aiActive = new Set();             // messages with a live wait loop
     const pendingAi = () => (state.chat ? state.chat.messages.filter((x) => x.role === "u" && x.status === "pending") : []);
 
     // The numbers the AI may use — the same snapshot the local advisor works from.
@@ -5271,38 +5399,108 @@
     function aiSend(text) {
       const m = chatRecord("u", text, { status: "pending" });
       appendBubble("u", text, m.id);
-      showThinking(true);
-      aiPost(m).then(() => chatPoll(1200)).catch((e) => {
-        const code = e && e.message;
-        // Lost on the way (or no answer in time): keep it pending — polling
-        // re-sends it with the same id, which the server accepts only once.
-        if (code === "timeout" || code === "network") chatPoll(3000);
-        else aiFallback(m, code);
-      });
+      aiRun(m);
     }
     function aiPost(m) {
       return push.call("chatSend", { conversationId: state.chat.cid, messageId: m.id, text: m.text, context: aiContext() });
     }
+    const aiSleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-    // No AI answer (quota, server error, expired): the local advisor answers.
-    function aiFallback(m, code) {
-      if (m.status !== "pending") return;
-      m.status = "local";
-      saveState();
-      showThinking(false);
-      const head = code === "quota"
-        ? "הגעת למכסת ההודעות ל-AI לשעה הקרובה, אז הפעם עונה היועץ המקומי:\n\n"
-        : "לא הצלחתי לקבל תשובה מהשרת כרגע, אז הנה מה שאני יכול לומר מהנתונים שלך:\n\n";
-      const res = respond(m.text);
-      botSay({ text: head + (res.text || ""), quick: res.quick });
+    // Send (idempotent — the same id is accepted once), then wait for the
+    // answer. Done → shown at once. Server error / no answer within the limit
+    // / no connection → a clear message with a "try again" button.
+    async function aiRun(m) {
+      if (aiActive.has(m.id)) return;
+      aiActive.add(m.id);
+      showThinking(true);
+      const cid = state.chat.cid;
+      const deadline = Date.now() + aiTimeoutMs;
+      const still = () => state.chat && state.chat.cid === cid && m.status === "pending";
+      try {
+        // 1. hand the question over (a lost answer is retried with the same id)
+        let sent = false, lastErr = "network";
+        while (!sent && still() && Date.now() < deadline) {
+          try { await aiPost(m); sent = true; }
+          catch (e) {
+            lastErr = (e && e.message) || "network";
+            if (lastErr !== "network" && lastErr !== "timeout") break;
+            await aiSleep(1500);
+          }
+        }
+        if (!still()) return;
+        if (!sent) { aiFail(m, lastErr === "timeout" ? "network" : lastErr); return; }
+        // 2. wait for it; each call returns as soon as the answer is saved
+        while (still() && Date.now() < deadline) {
+          const left = deadline - Date.now();
+          let r = null;
+          try { r = await push.call("chatAwait", { conversationId: cid, messageId: m.id, waitMs: Math.min(20000, left) }, Math.min(20000, left) + 8000); }
+          catch (e) { await aiSleep(1000); continue; }
+          if (!still()) return;
+          if (r && r.status === "done" && r.reply) { aiDeliver(m, r.reply); return; }
+          if (r && r.status === "error") { aiFail(m, "server"); return; }
+          if (r && r.status === "missing") { try { await aiPost(m); } catch (e) {} }
+        }
+        if (still()) aiFail(m, "timeout");
+      } finally {
+        aiActive.delete(m.id);
+        if (!pendingAi().length) showThinking(false);
+      }
     }
 
+    // The answer, right under its question, drawn immediately.
+    function aiDeliver(q, reply) {
+      const local = state.chat.messages;
+      if (!local.some((x) => x.id === reply.id)) {
+        const b = { id: reply.id, role: "b", text: reply.text, at: reply.createdAt || Date.now(), inReplyTo: q.id };
+        const qi = local.findIndex((x) => x.id === q.id);
+        if (qi === -1) local.push(b); else local.splice(qi + 1, 0, b);
+      }
+      q.status = "done"; delete q.error;
+      saveState();
+      if (!chatBuilt || !$("msgs")) return;
+      const last = local[local.length - 1];
+      if (last.id === reply.id && !$("chthink") && !document.querySelector("#msgs .bubble.err")) appendBubble("b", reply.text, reply.id);
+      else renderChatHistory();
+      if (!pendingAi().length) showThinking(false);
+      const inp = $("cin"); if (inp && chatOpen) inp.focus();
+    }
+
+    const AI_ERR = {
+      timeout: "התשובה מתעכבת יותר מדקה. אפשר לנסות שוב — ואם היא תגיע בינתיים, היא תופיע כאן.",
+      network: "אין חיבור לשרת כרגע. בדקו את האינטרנט ונסו שוב.",
+      quota: "הגעת למכסת השאלות ל-AI לשעה הקרובה. אפשר לנסות שוב מאוחר יותר.",
+      not_linked: "הצ׳אט עוד לא מחובר לשרת. נסו שוב בעוד רגע.",
+      server: "לא הצלחתי להכין תשובה הפעם. נסו שוב.",
+    };
+    function aiFail(m, code) {
+      if (m.status !== "pending") return;
+      m.status = "failed";
+      m.error = AI_ERR[code] ? code : "server";
+      saveState();
+      if (!pendingAi().length) showThinking(false);
+      renderChatHistory();
+    }
+    // Try again: the same question. If the server already gave up on it, a
+    // new id is used; otherwise the same one (it may still be answered).
+    function aiRetry(id) {
+      const m = state.chat && state.chat.messages.find((x) => x.id === id);
+      if (!m || m.status !== "failed" || streaming) return;
+      if (m.error === "server") m.id = newId("m");
+      m.status = "pending"; delete m.error; m.at = Date.now();
+      saveState();
+      renderChatHistory();
+      aiRun(m);
+    }
+
+    // Animated "preparing an answer" — shown only while a real request is open.
     function showThinking(on) {
       const box = $("msgs");
       if (!chatBuilt || !box) return;
       let t = $("chthink");
       if (on && !t) {
-        t = el("div", "bubble b thinking"); t.id = "chthink"; t.textContent = "Cubey חושב… 🧊";
+        t = el("div", "bubble b thinking"); t.id = "chthink";
+        t.setAttribute("role", "status"); t.setAttribute("aria-live", "polite");
+        t.innerHTML = '<span>מכין תשובה</span><span class="tdots" aria-hidden="true"><i></i><i></i><i></i></span>';
         box.appendChild(t); scrollToBottom();
         setTyping(true);
       } else if (!on && t) {
@@ -5311,15 +5509,12 @@
       }
     }
 
+    // Background catch-up (back from the background, another device, a push):
+    // fold in what the server has; resume waiting for questions still open.
     function chatPoll(delay) {
       clearTimeout(chatPollTimer);
-      const pend = pendingAi();
-      if (!pend.length) { showThinking(false); return; }
-      if (!push.ready() || document.hidden) return;   // resumes on return / link
-      showThinking(true);
-      const oldest = Math.min.apply(null, pend.map((x) => x.at || Date.now()));
-      const slow = Date.now() - oldest > 60 * 1000;
-      chatPollTimer = setTimeout(chatPollNow, delay != null ? delay : (slow ? 5000 : 1500));
+      if (!push.ready() || document.hidden || !state.chat) return;
+      chatPollTimer = setTimeout(chatPollNow, delay != null ? delay : 1500);
     }
     async function chatPollNow() {
       const cid = state.chat && state.chat.cid;
@@ -5327,65 +5522,50 @@
       let r = null;
       try { r = await push.call("chatGet", { conversationId: cid }); } catch (e) {}
       if (r && state.chat && state.chat.cid === cid) chatMerge(r, false);
-      chatPoll(r ? null : 4000);
+      pendingAi().forEach((m) => {
+        if (aiActive.has(m.id)) return;
+        if (Date.now() - (m.at || 0) < aiTimeoutMs) aiRun(m); else aiFail(m, "timeout");
+      });
     }
     function chatResumePending() { chatPoll(0); }
 
-    // Fold the server's copy of the conversation into the local one.
+    // Fold the server's copy of the conversation into the local one. An answer
+    // that arrives after "try again" was shown replaces the error message.
     function chatMerge(r, instant) {
       const local = state.chat.messages;
       const byId = {}; local.forEach((m) => { byId[m.id] = m; });
-      const onServer = {};
-      const fresh = [];
+      let fresh = 0;
       (r.messages || []).forEach((s) => {
-        onServer[s.id] = s;
         if (s.role === "assistant") {
           if (byId[s.id]) return;
           const m = { id: s.id, role: "b", text: s.text, at: s.createdAt, inReplyTo: s.inReplyTo };
           const qi = local.findIndex((x) => x.id === s.inReplyTo);
           if (qi === -1) local.push(m); else local.splice(qi + 1, 0, m);   // right under its question
-          byId[m.id] = m; fresh.push(m);
-          const q = byId[s.inReplyTo]; if (q && q.status === "pending") q.status = "done";
+          byId[m.id] = m; fresh++;
+          const q = byId[s.inReplyTo];
+          if (q && (q.status === "pending" || q.status === "failed")) { q.status = "done"; delete q.error; }
         } else if (s.role === "user") {
           const q = byId[s.id];
           if (!q) {
             // From another device, or a conversation opened from a notification.
-            const m = { id: s.id, role: "u", text: s.text, at: s.createdAt, status: s.status === "done" ? "done" : s.status === "error" ? "error" : "pending" };
-            local.push(m); byId[m.id] = m; fresh.push(m);
+            const m = { id: s.id, role: "u", text: s.text, at: s.createdAt, status: s.status === "done" ? "done" : s.status === "error" ? "failed" : "pending" };
+            if (m.status === "failed") m.error = "server";
+            local.push(m); byId[m.id] = m; fresh++;
           } else if (q.status === "pending" && s.status === "error") {
-            aiFallback(q, "error");
+            aiFail(q, "server");
           }
-        }
-      });
-      const now = Date.now();
-      local.forEach((q) => {
-        if (q.role !== "u" || q.status !== "pending") return;
-        if (now - (q.at || now) > AI_WAIT_MS) { aiFallback(q, "expired"); return; }
-        if (!onServer[q.id] && now - (q.at || now) > 8000 && now - (q.resent || 0) > 30000) {
-          q.resent = now;
-          aiPost(q).catch(() => {});
         }
       });
       if (local.length > 100) local.splice(0, local.length - 100);
       saveState();
       if (!chatBuilt || !$("msgs")) return;
-      const last = local[local.length - 1];
-      // Typed out only when the user is watching; otherwise it is just there.
-      if (!instant && chatOpen && !document.hidden && Date.now() > chatInstantUntil
-          && fresh.length === 1 && fresh[0] === last && last.role === "b") {
-        showThinking(pendingAi().length > 0);
-        typeOut(appendBubble("b", "", last.id), last.text);
-      } else if (fresh.length) {
-        renderChatHistory();
-      } else if (!pendingAi().length) {
-        showThinking(false);
-      }
+      if (fresh) renderChatHistory();
+      else if (!pendingAi().length) showThinking(false);
     }
 
     function renderChatHistory() {
       const box = $("msgs");
       if (!box || !state.chat) return;
-      if (typingIv) { clearInterval(typingIv); typingIv = null; }   // the full text is drawn below
       box.querySelectorAll(".bubble, .qbtns").forEach((n) => n.remove());
       const msgs = state.chat.messages;
       if (msgs.length) {
@@ -5396,6 +5576,15 @@
         const b = el("div", "bubble " + (m.role === "u" ? "u" : "b"));
         b.textContent = m.text; b.dataset.mid = m.id;
         box.appendChild(b);
+        if (m.role === "u" && m.status === "failed") {
+          const e = el("div", "bubble b err");
+          e.setAttribute("role", "alert");
+          e.innerHTML = '<span>⚠️ ' + esc(AI_ERR[m.error] || AI_ERR.server) + '</span>';
+          const r = el("button", "errretry"); r.textContent = "↻ לנסות שוב";
+          r.onclick = () => aiRetry(m.id);
+          e.appendChild(r);
+          box.appendChild(e);
+        }
       });
       if (pendingAi().length) showThinking(true); else setTyping(false);
       scrollToBottom();
@@ -5891,7 +6080,8 @@
       } else if (settStep === 1) {
         const w = el("div", "setcard warn");
         w.innerHTML = '<h3>למחוק את החשבון? ⚠️</h3>' +
-          '<p>כל הנתונים שלך — הפרופיל, הקוביות, היתרות והצ׳אט — <b>יימחקו לצמיתות</b> ולא יהיה אפשר לשחזר אותם.</p>';
+          '<p>כל הנתונים שלך — הפרופיל, הקוביות, היתרות והצ׳אט — <b>יימחקו לצמיתות</b> ולא יהיה אפשר לשחזר אותם.</p>' +
+          '<p>חסכונות משותפים שייכים לכל המשתתפים בהם: הרישומים שלך בהם נשארים אצל השותפים, וחיסכון משותף נמחק רק בהסכמת כולם.</p>';
         body.appendChild(w);
         const d = el("button", "dangerbtn"); d.textContent = "אני מבין/ה — המשך למחיקה";
         d.onclick = () => { settStep = 2; render(); }; body.appendChild(d);
@@ -5990,15 +6180,19 @@
       const rows = [
         ["chatPush", "תשובות מצ׳אט AI 💬", "כשהתשובה של Cubey מוכנה ויצאת מהצ׳אט"],
         ["incomePush", "הכנסה חודשית 💰", "כשההכנסה הקבועה נרשמה אוטומטית בתחילת החודש"],
-        ["hideSensitive", "הסתרת תוכן רגיש 🙈", "בהתראה יופיע נוסח כללי — בלי תשובת ה-AI ובלי סכומים"],
+        ["sharedPush", "חיסכון משותף 🤝", "הצטרפות, הפקדות ובקשות מחיקה — הן נשמרות גם בתיבת ההתראות של המסך"],
+        ["hideSensitive", "הסתרת תוכן רגיש 🙈", "בהתראה יופיע נוסח כללי — בלי תשובת ה-AI, בלי סכומים ובלי שמות"],
       ];
       rows.forEach(([key, label, hint]) => {
+        // Shared-savings pushes come from their own backend, so they (and the
+        // hiding switch) work in the app even when the server push above is off.
+        const rowAvail = key === "sharedPush" || key === "hideSensitive" ? !!nativeApp : avail;
         const c = el("div", "setcard swrow");
         c.innerHTML = '<div><div class="setmail">' + label + '</div><div class="setlbl" style="margin-top:4px">' + hint + '</div></div>' +
-          '<button class="sw' + (n[key] ? " on" : "") + '" aria-label="' + label + '"' + (avail ? "" : " disabled") + '></button>';
+          '<button class="sw' + (n[key] ? " on" : "") + '" aria-label="' + label + '"' + (rowAvail ? "" : " disabled") + '></button>';
         const sw = c.querySelector(".sw");
         sw.onclick = () => {
-          if (!avail) return;
+          if (!rowAvail) return;
           state.notif = Object.assign({}, n, state.notif || {});
           state.notif[key] = !state.notif[key];
           state.notif.changedAt = Date.now();
@@ -6369,6 +6563,7 @@
           ? '<div class="privline">🔐 <b>התקציב נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים במכשיר בלבד.</div>' +
             '<div class="privline">☁️ <b>מה כן עובר לשרת.</b> הודעות שנשלחות לצ׳אט ה-AI (יחד עם תמונת מצב של הקוביות, כדי שהתשובה תתבסס על המספרים שלך) וההכנסה החודשית הקבועה (סכום, מטבע ואזור זמן) — כדי לענות גם כשהאפליקציה סגורה ולשלוח התראות. מחיקת החשבון מוחקת גם אותם.</div>'
           : '<div class="privline">🔐 <b>הכול נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.</div>') +
+        '<div class="privline">🤝 <b>חיסכון משותף.</b> אם פתחת או הצטרפת לחיסכון משותף, שם התצוגה, המייל, הרישומים וההתראות של אותו חיסכון נשמרים בשרת (Supabase) — כדי שכל המשתתפים יראו את אותם נתונים מכל מכשיר. הם לא נמחקים אוטומטית; חיסכון נמחק רק כשכל המשתתפים מאשרים, ורישומי ההפקדות שלו נשמרים לתיעוד.</div>' +
         '<div class="privline">🏦 <b>אין חיבור לחשבון הבנק שלך.</b> האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת קבצים מהמכשיר. פיצ׳ר קריאת העו״ש הוסר מהמערכת לגמרי.</div>' +
         '<div class="privline">💳 <b>גם כרטיס נטען לא מחובר.</b> הסכום שבכרטיס הוא מספר שאתה מזין ומעדכן בעצמך — אין גישה לכרטיס האמיתי ואין תנועות נסתרות.</div>' +
         '<div class="privline">🚫 <b>אין רישום אירועים גלוי.</b> האפליקציה לא מציגה ולא שומרת רישום פנימי של פעולות התחברות — רישום כזה עלול לחשוף את כתובת המייל שלך למי שמחזיק במכשיר.</div>';
@@ -6640,7 +6835,8 @@
       onEntitlement(email, entitled, reason, event) {
         if (!state.authUser || !email || normEmail(email) !== normEmail(state.authUser.email)) return;
         if (entitled === null || entitled === undefined) return;
-        if (!entitled && isComplimentaryAccount()) return;   // the owner keeps Premium without a Play purchase
+        // Native already put complimentary first; record it for the guide books.
+        compl = { account: state.authUser.id, ok: !!entitled && reason === "complimentary", grantedPremium: false };
         const had = !!state.premium;
         if (entitled) closeBillingSheetIfOpen();
         if (had !== !!entitled) {
@@ -7641,128 +7837,467 @@
     }
 
     // =====================================================================
-    // Shared savings ("חיסכון משותף") — real, between accounts, via Supabase.
-    // The server side is cubefinance/supabase/shared_savings.sql: tables are
-    // locked, and every action goes through a cf_* function that checks the
-    // caller's device token. The URL and key below are PUBLIC by design.
-    // Deposits come out of the user's own cubes (same money-sound plan as
-    // the chat), so no money is ever invented.
+    // Shared savings ("חיסכון משותף") — between accounts, on Supabase (v2).
+    // Server: supabase/shared_savings.sql + shared_savings_v2.sql (cf2_*).
+    //  * Identity is a Supabase Auth session for THIS app account, opened with
+    //    a code Supabase emails itself — so the same goals are reachable from
+    //    any device, after a reinstall or after logging out and back in.
+    //  * The server holds the only real copy: one ledger per goal, in agorot.
+    //    What is kept here is a cache plus a queue of actions not yet confirmed.
+    //  * Nothing here moves real money. A contribution is a RECORD the member
+    //    makes: it is taken out of their own cubes, and the wording everywhere
+    //    says "recorded" — never "transferred" or "paid".
     // =====================================================================
     const CLOUD = { url: "https://sfrkenhauekqdijtunpg.supabase.co", key: "sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q" };
     const INVITE_TTL_MIN = 10;
+    const SH_POLL_MS = 5000;
 
-    async function cloudRpc(fn, args) {
-      const res = await fetch(CLOUD.url + "/rest/v1/rpc/" + fn, {
-        method: "POST",
-        headers: { apikey: CLOUD.key, "Content-Type": "application/json" },
-        body: JSON.stringify(args || {}),
-      });
+    const shErrOf = (code) => Object.assign(new Error(code), { code: code });
+    const toMinor = (shekels) => Math.round(Number(shekels) * 100);
+    // ₪200 · ₪1,250 · ₪200.50 — money is kept in agorot; this is display only.
+    function fmtMinor(minor) {
+      const neg = minor < 0, abs = Math.abs(Math.trunc(minor || 0));
+      const cents = abs % 100;
+      return (neg ? "-" : "") + "₪" + fmt(Math.floor(abs / 100)) + (cents ? "." + String(cents).padStart(2, "0") : "");
+    }
+
+    // ---- Supabase Auth session, per app account ----------------------------
+    // During sign-up / verification the app user is not entered yet, so these
+    // work from the email and store the session under that account's id.
+    async function sbRequestCodeFor(email) {
+      try {
+        const r = await sbFetch("/auth/v1/otp", { email: normEmail(email), create_user: true });
+        return r.ok;
+      } catch (e) { return false; }
+    }
+    async function sbVerifyCodeFor(email, code) {
+      let r;
+      try { r = await sbFetch("/auth/v1/verify", { type: "email", email: normEmail(email), token: code }); }
+      catch (e) { return "network"; }
+      if (!r.ok || !r.data || !r.data.access_token) return r.status >= 500 ? "network" : "bad";
+      if (r.data.user && normEmail(r.data.user.email || "") !== normEmail(email)) return "bad";
+      const u = loadUsers()[normEmail(email)];
+      if (u) {
+        try {
+          localStorage.setItem("cubefinance_web:sb:" + u.id, JSON.stringify({
+            email: normEmail(email), access: r.data.access_token, refresh: r.data.refresh_token,
+            exp: Date.now() + (Number(r.data.expires_in) || 3600) * 1000 }));
+        } catch (e) {}
+      }
+      return true;
+    }
+    const sbKey = () => "cubefinance_web:sb:" + (state.authUser ? state.authUser.id : "anon");
+    function sbLoad() {
+      if (!state.authUser) return null;
+      try {
+        const s = JSON.parse(localStorage.getItem(sbKey()) || "null");
+        return s && s.email === normEmail(state.authUser.email) ? s : null;
+      } catch (e) { return null; }
+    }
+    function sbSave(s) { try { if (s) localStorage.setItem(sbKey(), JSON.stringify(s)); else localStorage.removeItem(sbKey()); } catch (e) {} }
+    async function sbFetch(path, body, token) {
+      let res;
+      try {
+        res = await fetch(CLOUD.url + path, {
+          method: "POST",
+          headers: Object.assign({ apikey: CLOUD.key, "Content-Type": "application/json" }, token ? { Authorization: "Bearer " + token } : {}),
+          body: JSON.stringify(body || {}),
+        });
+      } catch (e) { throw shErrOf("network"); }
       let data = null;
       try { data = await res.json(); } catch (e) {}
-      if (!res.ok) throw new Error((data && (data.message || data.hint)) || ("http " + res.status));
-      return data || {};
+      return { ok: res.ok, status: res.status, data: data };
     }
-    // A long random secret per account on this device. The server keeps only
-    // its SHA-256; whoever holds it acts as this account in shared savings.
-    function cloudToken() {
-      if (!state.authUser) return null;
-      const k = "cubefinance_web:cloud:" + state.authUser.id;
-      let t = null;
-      try { t = localStorage.getItem(k); } catch (e) {}
-      if (!t || t.length < 32) {
-        const a = new Uint8Array(32);
-        crypto.getRandomValues(a);
-        t = Array.from(a, (b) => b.toString(16).padStart(2, "0")).join("");
-        try { localStorage.setItem(k, t); } catch (e) {}
+    function sbStore(d) {
+      const s = { email: normEmail(state.authUser.email), access: d.access_token, refresh: d.refresh_token,
+                  exp: Date.now() + (Number(d.expires_in) || 3600) * 1000 };
+      sbSave(s);
+      return s;
+    }
+    // Supabase emails a 6-digit code to the account's own address.
+    async function sbSendCode() {
+      const r = await sbFetch("/auth/v1/otp", { email: normEmail(state.authUser.email), create_user: true });
+      if (r.status === 429) throw shErrOf("rate_limited");
+      if (!r.ok) throw shErrOf("code_send_failed");
+    }
+    async function sbVerify(code) {
+      const email = normEmail(state.authUser.email);
+      const r = await sbFetch("/auth/v1/verify", { type: "email", email: email, token: code });
+      if (!r.ok || !r.data || !r.data.access_token) throw shErrOf(r.status === 429 ? "rate_limited" : "bad_code");
+      if (r.data.user && normEmail(r.data.user.email || "") !== email) throw shErrOf("bad_code");
+      return sbStore(r.data);
+    }
+    let sbRefreshing = null;
+    async function sbAccess(force) {
+      const s = sbLoad();
+      if (!s) return null;
+      if (!force && s.exp - 60000 > Date.now()) return s.access;
+      if (!sbRefreshing) {
+        sbRefreshing = sbFetch("/auth/v1/token?grant_type=refresh_token", { refresh_token: s.refresh })
+          .then((r) => {
+            if (r.ok && r.data && r.data.access_token) return sbStore(r.data).access;
+            if (r.status === 400 || r.status === 401 || r.status === 403) { sbSave(null); return null; }   // revoked → verify again
+            throw shErrOf("network");
+          })
+          .finally(() => { sbRefreshing = null; });
       }
-      return t;
+      return sbRefreshing;
     }
-    function cloudName() {
-      const u = state.authUser && loadUsers()[state.authUser.email];
-      return (u && u.name) || (state.authUser ? state.authUser.email.split("@")[0] : "");
+    async function rpc2(fn, args) {
+      let t = await sbAccess(false);
+      if (!t) throw shErrOf("need_verify");
+      let r = await sbFetch("/rest/v1/rpc/" + fn, args, t);
+      if (r.status === 401) {
+        t = await sbAccess(true);
+        if (!t) throw shErrOf("need_verify");
+        r = await sbFetch("/rest/v1/rpc/" + fn, args, t);
+      }
+      if (r.status >= 500 || r.status === 0) throw shErrOf("network");
+      if (!r.ok) throw shErrOf(r.status === 401 ? "need_verify" : "server");
+      return r.data;
     }
-    let cloudReg = { user: null, promise: null };
-    function cloudEnsure(force) {
-      if (!state.authUser) return Promise.resolve({ ok: false, error: "no_user" });
-      if (!force && cloudReg.user === state.authUser.id && cloudReg.promise) return cloudReg.promise;
-      cloudReg.user = state.authUser.id;
-      cloudReg.promise = cloudRpc("cf_register", { p_token: cloudToken(), p_email: state.authUser.email, p_name: cloudName() })
-        .catch(() => { cloudReg.promise = null; return { ok: false, error: "network" }; });
-      return cloudReg.promise;
-    }
+    const okOrThrow = (r) => { if (!r || r.ok === false) throw shErrOf((r && r.error) || "server"); return r; };
 
     const SH_ERR = {
       network: "אין חיבור לשרת. בדקו את האינטרנט ונסו שוב.",
-      email_taken: "המייל הזה כבר רשום לחיסכון משותף במכשיר אחר. כרגע אפשר להשתמש בחיסכון המשותף רק במכשיר הראשון שבו נכנסת.",
+      server: "השרת לא הצליח להשלים את הפעולה. נסו שוב.",
+      need_verify: "צריך לאמת את המייל של החשבון כדי להמשיך.",
+      code_send_failed: "לא הצלחנו לשלוח קוד למייל. נסו שוב בעוד רגע.",
+      bad_code: "הקוד שגוי או שפג תוקפו. בקשו קוד חדש.",
       no_profile: "לא הצלחנו לחבר את החשבון לשרת. נסו שוב.",
       invalid: "הקוד שגוי או שכבר נוצל.",
       expired: "הקוד פג תוקף — בקשו מהחבר קוד חדש.",
       wrong_account: "הקוד הזה נשלח למייל אחר. היכנסו עם החשבון של המייל שהוזמן.",
-      already_member: "את/ה כבר חבר/ה בחיסכון הזה 🙂",
       goal_full: "החיסכון הזה מלא (עד 12 משתתפים).",
+      goal_deleted: "החיסכון הזה כבר נמחק.",
       rate_limited: "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
       not_member: "את/ה כבר לא חבר/ה בחיסכון הזה.",
       bad_input: "צריך שם וסכום יעד 🙂",
+      bad_amount: "סכום לא תקין.",
       bad_email: "כתובת אימייל לא תקינה",
       too_many_goals: "אפשר לפתוח עד 20 חסכונות משותפים.",
+      key_reused: "הפעולה כבר נרשמה עם סכום אחר.",
+      last_member: "את/ה המשתתף/ת האחרון/ה — אפשר לבקש מחיקה במקום יציאה.",
+      consent_required: "צריך לסמן את האישור כדי להפעיל הפקדה חודשית.",
+      no_recurring: "ההפקדה החודשית כבויה בחיסכון הזה.",
+      not_yours: "אפשר לבטל רק רישום שלך.",
+      not_reversible: "את הרישום הזה אי אפשר לבטל.",
+      pending_payments: "יש תשלומים שעדיין ממתינים — אי אפשר למחוק עד שיסתיימו.",
+      request_invalidated: "בקשת המחיקה בוטלה כי היו שינויים בחיסכון. אפשר לבקש שוב.",
+      request_rejected: "בקשת המחיקה כבר נדחתה.",
+      request_cancelled: "בקשת המחיקה בוטלה.",
+      request_completed: "החיסכון כבר נמחק.",
+      no_request: "בקשת המחיקה לא נמצאה.",
     };
     const shErr = (code) => SH_ERR[code] || "משהו השתבש. נסו שוב.";
+    // Errors that mean "the server said no" — the action will not succeed by retrying.
+    const SH_FINAL = new Set(["not_member", "goal_deleted", "bad_amount", "key_reused", "no_recurring", "bad_period", "bad_source", "bad_key", "no_profile"]);
 
-    let shState = { loaded: false, loading: false, error: "", goals: [], form: null, invite: null, lastCode: null };
-    // invite: { goalId, email, result }   lastCode: { goalId, code, until }
+    // ---- state ------------------------------------------------------------------
+    let shState;
+    function sharedReset() {
+      clearTimeout(shState && shState.pollTimer);
+      shState = {
+        phase: "idle",                 // idle | verify | ready
+        verify: { step: "send", busy: false, error: "" },
+        loaded: false, loading: false, error: "", stale: false,
+        goals: [], unread: 0, notes: [], notesOpen: false,
+        form: null, newKey: null, invite: null, lastCode: null,
+        join: { busy: false, msg: "", ok: false },
+        open: {},                      // goalId -> "history" | "recurring" | "delete" | "invite"
+        history: {},                   // goalId -> entries
+        focus: null, pollTimer: null, armed: {},
+        profile: null, profEdit: false, search: null, invites: {}, legacyConflict: false,
+      };
+    }
+    sharedReset();
 
-    async function loadShared() {
-      shState.loading = true; shState.error = "";
-      try {
-        const reg = await cloudEnsure();
-        if (!reg || reg.ok === false) throw Object.assign(new Error(), { code: (reg && reg.error) || "network" });
-        const r = await cloudRpc("cf_my_goals", { p_token: cloudToken() });
-        if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-        shState.goals = r.goals || [];
-      } catch (e) {
-        shState.error = e.code || "network";
-      }
-      shState.loading = false; shState.loaded = true;
-      if (state.screen === "shared") render();
+    // Per-account local stores. The server is the record; these only make the
+    // screen work offline and hold actions that have not been confirmed yet.
+    const shLsKey = (k) => "cubefinance_web:" + k + ":" + (state.authUser ? state.authUser.id : "anon");
+    const shGet = (k, dflt) => { try { const v = JSON.parse(localStorage.getItem(shLsKey(k)) || "null"); return v == null ? dflt : v; } catch (e) { return dflt; } };
+    const shPut = (k, v) => { try { localStorage.setItem(shLsKey(k), JSON.stringify(v)); } catch (e) {} };
+    // queue:  [{ key, goalId, goalName, amountMinor, source, period, at, state: pending|failed, error, sent, plan }]
+    // local:  { goalId: agorot this device took out of its own cubes for that goal }
+    const shQueue = () => shGet("shq", []);
+    const shLocal = () => shGet("shlocal", {});
+
+    // ---- sync ---------------------------------------------------------------------
+    async function sharedEnsureProfile() {
+      if (shState.profileOk) return;
+      // The v1 device token (if this phone created a v1 profile) is the proof
+      // that lets that old profile and its goals be claimed — never the email alone.
+      let legacy = null;
+      try { legacy = localStorage.getItem("cubefinance_web:cloud:" + state.authUser.id); } catch (e) {}
+      const r = okOrThrow(await rpc2("cf2_register", { p_name: cloudName(), p_legacy_token: legacy && legacy.length >= 32 ? legacy : null }));
+      shState.profile = r.profile || null;
+      shState.legacyConflict = !!r.legacy_conflict;
+      shState.profileOk = true;
+      sharedRegisterDevice();
+    }
+    // The person's own name, if they gave one (e.g. from Google sign-in) —
+    // never the email or a piece of it.
+    function cloudName() {
+      const u = state.authUser && loadUsers()[state.authUser.email];
+      return (u && u.name) || "";
+    }
+    // FCM token → this account on the server (multi-device: one row per install).
+    function sharedRegisterDevice() {
+      try { if (nativeApp && nativeApp.requestFcmToken) nativeApp.requestFcmToken(); } catch (e) {}
+    }
+    async function sharedOnFcmToken(token) {
+      if (!token || !state.authUser || !sbLoad() || !nativeApp || !nativeApp.pushInstallId) return;
+      try { await rpc2("cf2_register_device", { p_install: nativeApp.pushInstallId(), p_token: token }); } catch (e) {}
     }
 
+    async function loadShared(silent) {
+      if (!state.authUser) return;
+      if (!sbLoad()) { shState.phase = "verify"; shState.loaded = true; if (state.screen === "shared") render(); return; }
+      shState.phase = "ready";
+      if (shState.loading) return;
+      shState.loading = true;
+      if (!silent) shState.error = "";
+      const who = state.authUser.id;
+      try {
+        await sharedEnsureProfile();
+        await sharedFlush();
+        const [r, n] = await Promise.all([rpc2("cf2_my_goals", {}), rpc2("cf2_notifications", { p_after_seq: 0 })]);
+        if (!state.authUser || state.authUser.id !== who) return;
+        okOrThrow(r); okOrThrow(n);
+        sharedApplyDeletions(n.items || []);
+        shState.goals = r.goals || [];
+        shState.unread = n.unread || 0;
+        shState.notes = n.items || [];
+        shState.error = ""; shState.stale = false;
+        shPut("shcache", { goals: shState.goals, notes: shState.notes, unread: shState.unread, at: Date.now() });
+        for (const gid of Object.keys(shState.history)) sharedLoadHistory(gid, true);
+      } catch (e) {
+        if (e.code === "need_verify") { shState.phase = "verify"; }
+        else {
+          shState.error = e.code || "network";
+          const c = shGet("shcache", null);
+          if (c && !shState.goals.length) { shState.goals = c.goals || []; shState.notes = c.notes || []; shState.unread = c.unread || 0; }
+          shState.stale = true;
+        }
+      } finally {
+        shState.loading = false; shState.loaded = true;
+      }
+      // A background refresh never redraws under someone's fingers: while a
+      // field is focused the data is updated and drawn on the next render.
+      const typing = silent && document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+      if (state.screen === "shared" && !typing) render();
+      sharedUpdateBadge();
+    }
+
+    // While the screen is open: refresh every few seconds, so a contribution
+    // on another phone shows here without a manual refresh.
+    function sharedPoll() {
+      clearTimeout(shState.pollTimer);
+      if (state.screen !== "shared" || !state.authUser || shState.phase !== "ready") return;
+      shState.pollTimer = setTimeout(async () => {
+        if (state.screen === "shared" && !document.hidden) await loadShared(true);
+        sharedPoll();
+      }, SH_POLL_MS);
+    }
+
+    // On every app open (and back from the background): flush what is queued
+    // and pick up notifications that arrived while away — push or no push.
+    async function sharedOnEnter(user) {
+      if (!state.authUser || state.authUser !== user || !sbLoad()) return;
+      const before = shGet("shcache", { notes: [] }).notes.reduce((m, n) => Math.max(m, n.seq || 0), 0);
+      await loadShared(true);
+      const fresh = (shState.notes || []).filter((n) => !n.read_at && (n.seq || 0) > before);
+      if (fresh.length && state.screen !== "shared") showToast("🔔 " + (fresh.length === 1 ? sharedNoteText(fresh[0]) : "יש לך " + fresh.length + " עדכונים חדשים בחיסכון המשותף"));
+    }
+
+    function sharedUpdateBadge() {
+      document.querySelectorAll("[data-shbadge]").forEach((b) => { b.textContent = shState.unread ? String(shState.unread) : ""; b.hidden = !shState.unread; });
+    }
+
+    // A goal everyone agreed to delete: the money THIS device took out of its
+    // cubes for it goes back to the free balance — once.
+    function sharedApplyDeletions(notes) {
+      const local = shLocal();
+      const done = shGet("shreturned", []);
+      let back = 0;
+      notes.filter((n) => n.kind === "goal_deleted" && done.indexOf(n.goal_id) === -1).forEach((n) => {
+        done.push(n.goal_id);
+        const amt = Math.max(0, local[n.goal_id] || 0);
+        if (amt > 0) { state.pool += amt / 100; back += amt; }
+        delete local[n.goal_id];
+      });
+      if (done.length) shPut("shreturned", done.slice(-200));
+      shPut("shlocal", local);
+      if (back > 0) { saveState(); showToast("💸 " + fmtMinor(back) + " שרשמת בחיסכון שנמחק חזרו ליתרה הפנויה"); }
+    }
+
+    // ---- contributions: local queue → server -------------------------------------------
+    function sharedQueueContribution(goal, amountMinor, source, period) {
+      const q = shQueue();
+      const key = source === "recurring" ? "rec:" + goal.id + ":" + period
+        : "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      if (q.some((o) => o.key === key)) return { ok: false, reason: "queued" };
+      if (source === "recurring" && shGet("shrecdone", []).indexOf(key) !== -1) return { ok: false, reason: "done" };
+      const plan = buildFundingPlan(amountMinor / 100, null);
+      if (!plan) return { ok: false, reason: "funds" };
+      plan.forEach((s) => {
+        if (s.key === "__pool") state.pool = Math.max(0, state.pool - s.amount);
+        else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance = Math.max(0, c.balance - s.amount); }
+      });
+      saveState();
+      q.push({ key: key, goalId: goal.id, goalName: goal.name, amountMinor: amountMinor, source: source, period: period || null,
+               at: Date.now(), state: "pending", error: "", sent: false, plan: plan });
+      shPut("shq", q);
+      return { ok: true, key: key };
+    }
+    function sharedRefund(op) {
+      (op.plan || []).forEach((s) => {
+        if (s.key === "__pool") state.pool += s.amount;
+        else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance += s.amount; else state.pool += s.amount; }
+      });
+      saveState();
+    }
+    let shFlushing = null;
+    function sharedFlush() {
+      if (shFlushing) return shFlushing;
+      shFlushing = (async () => {
+        let q = shQueue();
+        for (const op of q.filter((o) => o.state === "pending")) {
+          const firstTry = !op.sent;
+          op.sent = true; shPut("shq", q);
+          let r;
+          try {
+            r = await rpc2("cf2_contribute", { p_goal: op.goalId, p_amount_minor: op.amountMinor, p_key: op.source === "manual" ? op.key : null,
+                                               p_source: op.source, p_period: op.period });
+          } catch (e) { break; }   // offline / not verified: stays pending, nothing changes
+          q = shQueue();
+          const cur = q.find((o) => o.key === op.key);
+          if (!cur) continue;
+          if (r && r.ok) {
+            if (r.duplicate && firstTry && op.source === "recurring") {
+              sharedRefund(cur);   // another device already recorded this month — keep this device's money
+            } else {
+              const local = shLocal(); local[op.goalId] = (local[op.goalId] || 0) + op.amountMinor; shPut("shlocal", local);
+              if (op.source === "manual" && !r.duplicate) showToast("✅ נרשמה הפקדה של " + fmtMinor(op.amountMinor) + " ב\"" + op.goalName + "\"");
+            }
+            if (op.source === "recurring") { const d = shGet("shrecdone", []); d.push(op.key); shPut("shrecdone", d.slice(-300)); }
+            q = q.filter((o) => o.key !== op.key);
+          } else if (r && SH_FINAL.has(r.error)) {
+            sharedRefund(cur);
+            cur.state = "failed"; cur.error = r.error;
+          } else {
+            break;   // unknown answer: try again later
+          }
+          shPut("shq", q);
+        }
+      })().finally(() => { shFlushing = null; });
+      return shFlushing;
+    }
+    window.addEventListener("online", () => { if (state.authUser && sbLoad()) loadShared(true); });
+
+    // Monthly opt-in contribution: when this month's income is put into the
+    // cubes, record the share the member chose. A bookkeeping entry only —
+    // income being recorded never authorizes a charge or a transfer.
+    function sharedRecurringAfterIncome(incomeShekels, month) {
+      if (!state.authUser) return;
+      const goals = (shState.goals && shState.goals.length ? shState.goals : (shGet("shcache", { goals: [] }).goals || []));
+      let queued = 0;
+      goals.forEach((g) => {
+        const amt = sharedRecurringAmount(g.my_recurring, incomeShekels);
+        if (!amt) return;
+        const r = sharedQueueContribution(g, amt, "recurring", month);
+        if (r.ok) queued++;
+      });
+      if (queued) { showToast("🤝 נרשמה הפקדה חודשית ל-" + queued + " חיסכון/ות משותף/ים"); if (sbLoad()) sharedFlush().then(() => loadShared(true)); }
+    }
+    function sharedRecurringAmount(rec, incomeShekels) {
+      if (!rec) return 0;
+      if (rec.mode === "fixed") return Number(rec.value) || 0;
+      if (rec.mode === "percent") return Math.round((Number(incomeShekels) || 0) * (Number(rec.value) || 0) / 10000) * 100;
+      return 0;
+    }
+
+    // ---- texts ---------------------------------------------------------------------------
+    function sharedNoteText(n) {
+      const who = n.actor_name || "משתתף/ת", goal = "״" + (n.goal_name || "") + "״";
+      const amt = n.amount_minor != null ? fmtMinor(n.amount_minor) : "";
+      switch (n.kind) {
+        case "member_joined": return who + " הצטרף/ה לחיסכון המשותף " + goal + ".";
+        case "invited": return who + " הזמין/ה אותך לחיסכון המשותף " + goal + ".";
+        case "contribution": return who + " רשם/ה הפקדה של " + amt + " לחיסכון המשותף " + goal + ".";
+        case "recurring": return who + " רשם/ה הפקדה חודשית של " + amt + " לחיסכון המשותף " + goal + ".";
+        case "reversal": return who + " ביטל/ה רישום של " + amt + " בחיסכון המשותף " + goal + ".";
+        case "member_left": return who + " יצא/ה מהחיסכון המשותף " + goal + ".";
+        case "deletion_requested": return who + " ביקש/ה למחוק את החיסכון המשותף " + goal + ". נדרש אישור שלך.";
+        case "deletion_rejected": return who + " דחה/תה את בקשת המחיקה של " + goal + ". החיסכון נשאר.";
+        case "deletion_cancelled": return who + " ביטל/ה את בקשת המחיקה של " + goal + ".";
+        case "deletion_invalidated": return "בקשת המחיקה של " + goal + " בוטלה כי היו שינויים בחיסכון. אפשר לבקש שוב.";
+        case "goal_deleted": return "כל המשתתפים אישרו — החיסכון המשותף " + goal + " נמחק.";
+        default: return "יש עדכון חדש בחיסכון המשותף";
+      }
+    }
+    function sharedEntryText(e) {
+      const who = e.me ? "את/ה" : e.name;
+      const amt = fmtMinor(Math.abs(e.amount_minor));
+      if (e.kind === "deposit") return who + " " + (e.me ? "רשמת" : "רשם/ה") + " הפקדה של " + amt + " לחיסכון המשותף.";
+      if (e.kind === "recurring") return who + " " + (e.me ? "רשמת" : "רשם/ה") + " הפקדה חודשית של " + amt + (e.period ? " (" + e.period + ")" : "") + ".";
+      if (e.kind === "reversal") return who + " " + (e.me ? "ביטלת" : "ביטל/ה") + " רישום של " + amt + ".";
+      if (e.kind === "opening") return who + ": יתרת פתיחה של " + amt + " (מהגרסה הקודמת).";
+      return who + ": " + amt;
+    }
+
+    // ---- page ----------------------------------------------------------------------------
     function renderSharedPage() {
       const body = pageShell("חיסכון משותף 🤝", () => {
-        shState.form = null; shState.invite = null; state.screen = "app"; render();
+        shState.form = null; shState.invite = null; clearTimeout(shState.pollTimer); state.screen = "app"; render();
       });
-      if (!shState.loaded && !shState.loading) loadShared();
+      if (!shState.loaded && !shState.loading) loadShared(false);
+      if (shState.phase === "verify") { body.appendChild(sharedVerifyCard()); return; }
 
       const intro = el("p", "termupd");
-      intro.textContent = "חוסכים ביחד עם חברים ובני משפחה: כל אחד מפקיד מהקוביות שלו, וכולם רואים את ההתקדמות.";
+      intro.textContent = "חוסכים ביחד עם חברים ובני משפחה. כל הפקדה היא רישום: הסכום יורד מהקוביות שלך ונרשם בחיסכון המשותף — האפליקציה לא מעבירה כסף אמיתי.";
       body.appendChild(intro);
+
+      body.appendChild(sharedInboxCard());
+      body.appendChild(sharedProfileCard());
+      sharedPermissionHint(body);
 
       const row = el("div", "frow");
       row.style.cssText = "gap:8px;margin-bottom:12px";
       const bNew = el("button", "addcube"); bNew.style.flex = "1";
       bNew.innerHTML = '<span class="addicon">＋</span><span>חיסכון משותף חדש</span>';
-      bNew.onclick = () => { shState.form = shState.form === "new" ? null : "new"; render(); };
+      bNew.onclick = () => { shState.form = shState.form === "new" ? null : "new"; shState.newKey = "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); render(); };
       const bJoin = el("button", "addcube"); bJoin.style.flex = "1";
       bJoin.innerHTML = '<span class="addicon">🔑</span><span>יש לי קוד הצטרפות</span>';
-      bJoin.onclick = () => { shState.form = shState.form === "join" ? null : "join"; render(); };
+      bJoin.onclick = () => { shState.form = shState.form === "join" ? null : "join"; shState.join = { busy: false, msg: "", ok: false }; render(); };
       row.appendChild(bNew); row.appendChild(bJoin);
       body.appendChild(row);
 
       if (shState.form === "new") body.appendChild(sharedNewForm());
       if (shState.form === "join") body.appendChild(sharedJoinForm());
 
+      if (shState.legacyConflict) {
+        const c = el("div", "setcard");
+        c.innerHTML = '<div class="setlbl">ℹ️ נמצא בשרת גם פרופיל ישן מהגרסה הקודמת עם המייל הזה. כדי לא לערבב בין חשבונות הוא לא חובר אוטומטית.</div>';
+        body.appendChild(c);
+      }
+      if (shState.error) {
+        const c = el("div", "setcard");
+        c.innerHTML = '<div class="unknote">⚠️ ' + esc(shErr(shState.error)) + (shState.stale && shState.goals.length ? " מוצגים הנתונים האחרונים שנשמרו." : "") + '</div>' +
+          '<button class="fchip on" id="shRetry" style="margin-top:10px">🔄 נסו שוב</button>';
+        c.querySelector("#shRetry").onclick = () => loadShared(false);
+        body.appendChild(c);
+      }
       if (shState.loading && !shState.goals.length) {
         const p = el("p", "termupd"); p.textContent = "טוען… ⏳"; body.appendChild(p);
-      } else if (shState.error) {
-        const c = el("div", "setcard");
-        c.innerHTML = '<div class="unknote">⚠️ ' + esc(shErr(shState.error)) + '</div>' +
-          '<button class="fchip on" id="shRetry" style="margin-top:10px">🔄 נסו שוב</button>';
-        c.querySelector("#shRetry").onclick = () => { cloudReg.promise = null; shState.loaded = false; render(); };
-        body.appendChild(c);
-      } else if (shState.loaded && !shState.goals.length && !shState.form) {
+      } else if (shState.loaded && !shState.goals.length && !shState.form && !shState.error) {
         const p = el("p", "termupd"); p.textContent = "אין עדיין חיסכון משותף — פתחו אחד והזמינו חבר, או הצטרפו עם קוד.";
         body.appendChild(p);
       }
       shState.goals.forEach((g) => body.appendChild(cloudGoalCard(g)));
+      // queued actions for goals that are gone from the list
+      const orphan = shQueue().filter((o) => !shState.goals.some((g) => g.id === o.goalId));
+      if (orphan.length) body.appendChild(sharedQueueList(orphan));
 
       if (state.shared && state.shared.length) {
         const h = el("h3"); h.textContent = "קוביות משותפות ישנות (הדגמה, רק במכשיר הזה)";
@@ -7770,6 +8305,105 @@
         body.appendChild(h);
         state.shared.forEach((sc) => body.appendChild(legacySharedCard(sc)));
       }
+      if (shState.focus) {
+        const target = body.querySelector('[data-goal="' + CSS.escape(shState.focus) + '"]');
+        shState.focus = null;
+        if (target) { setTimeout(() => target.scrollIntoView({ block: "center", behavior: "smooth" }), 60); target.classList.add("shfocus"); setTimeout(() => target.classList.remove("shfocus"), 2200); }
+      }
+      sharedPoll();
+    }
+
+    // Once per account (and again only if the session is ever revoked): the
+    // account's own email gets a code from Supabase. That is what lets the same
+    // goals open on another phone, after a reinstall, or after logging out.
+    function sharedVerifyCard() {
+      const v = shState.verify;
+      const c = el("div", "setcard");
+      c.innerHTML = '<h3 style="margin:0 0 6px">חיבור החיסכון המשותף לחשבון 🔐</h3>' +
+        '<p class="termupd" style="margin:0 0 10px">החסכונות המשותפים נשמרים בשרת ושייכים לחשבון שלך — לא למכשיר. כדי לפתוח אותם נאמת פעם אחת את המייל <b dir="ltr">' + esc(state.authUser.email) + '</b>. אחרי זה הם זמינים מכל מכשיר שבו תתחבר/י.</p>' +
+        (v.step === "code"
+          ? '<div class="fld"><input id="sbCode" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456" style="letter-spacing:6px;text-align:center;font-weight:900"></div>' +
+            '<button class="distbtn wide" id="sbVerify" style="margin-top:10px"' + (v.busy ? " disabled" : "") + '>' + (v.busy ? "מאמת…" : "אימות") + '</button>' +
+            '<button class="obback" id="sbResend">שליחת קוד חדש</button>'
+          : '<button class="distbtn wide" id="sbSend"' + (v.busy ? " disabled" : "") + '>' + (v.busy ? "שולח…" : "📧 שליחת קוד למייל") + '</button>') +
+        (v.error ? '<div class="aerr">' + esc(shErr(v.error)) + '</div>' : "");
+      const send = async () => {
+        v.busy = true; v.error = ""; render();
+        try { await sbSendCode(); v.step = "code"; } catch (e) { v.error = e.code || "network"; }
+        v.busy = false; render();
+      };
+      const s = c.querySelector("#sbSend"); if (s) s.onclick = send;
+      const rs = c.querySelector("#sbResend"); if (rs) rs.onclick = send;
+      const inp = c.querySelector("#sbCode");
+      if (inp) { inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); }; setTimeout(() => inp.focus(), 60); }
+      const vb = c.querySelector("#sbVerify");
+      if (vb) vb.onclick = async () => {
+        if (!inp || inp.value.length !== 6) { showToast("הקוד הוא 6 ספרות"); return; }
+        v.busy = true; v.error = ""; render();
+        try {
+          await sbVerify(inp.value);
+          shState.verify = { step: "send", busy: false, error: "" };
+          shState.phase = "ready"; shState.loaded = false;
+          complimentaryCheck();
+          showToast("✅ החשבון חובר לחיסכון המשותף");
+          render();
+        } catch (e) { v.busy = false; v.error = e.code || "network"; render(); }
+      };
+      return c;
+    }
+
+    function sharedInboxCard() {
+      const c = el("div", "setcard shinbox");
+      const n = shState.notes || [];
+      c.innerHTML = '<button class="shinboxhead" id="shInbox"><span>🔔 התראות</span>' +
+        (shState.unread ? '<b class="shunread">' + shState.unread + '</b>' : '<span class="setlbl">אין חדשות</span>') + '</button>';
+      if (shState.notesOpen) {
+        const list = el("div", "shnotes");
+        if (!n.length) list.innerHTML = '<div class="setlbl">עוד אין התראות.</div>';
+        n.slice(0, 30).forEach((x) => {
+          const it = el("button", "shnote" + (x.read_at ? "" : " new"));
+          it.innerHTML = '<span>' + esc(sharedNoteText(x)) + '</span><i>' + esc(new Date(x.created_at).toLocaleString("he-IL", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })) + '</i>';
+          it.onclick = () => { shState.focus = x.goal_id; shState.notesOpen = false; render(); };
+          list.appendChild(it);
+          if (x.kind === "invited" && x.invite_valid && x.invite_code) {
+            const j = el("button", "fchip on"); j.textContent = "להצטרפות — אישור";
+            j.onclick = () => { shState.notesOpen = false; shState.form = "join"; shState.join = { busy: false, msg: "", ok: false, code: x.invite_code }; render(); };
+            list.appendChild(j);
+          }
+        });
+        c.appendChild(list);
+      }
+      c.querySelector("#shInbox").onclick = async () => {
+        shState.notesOpen = !shState.notesOpen;
+        render();
+        const top = n.reduce((m, x) => Math.max(m, x.seq || 0), 0);
+        if (shState.notesOpen && shState.unread && top) {
+          try { okOrThrow(await rpc2("cf2_mark_read", { p_upto_seq: top })); shState.unread = 0; n.forEach((x) => { x.read_at = x.read_at || new Date().toISOString(); }); sharedUpdateBadge(); }
+          catch (e) {}
+        }
+      };
+      return c;
+    }
+
+    // Push is a bonus, never the only channel: without permission the inbox
+    // above still holds every event.
+    function sharedPermissionHint(body) {
+      if (!nativeApp || !nativeApp.pushPermissionState) return;
+      let perm = "granted";
+      try { perm = nativeApp.pushPermissionState(); } catch (e) {}
+      if (perm === "granted") return;
+      const c = el("div", "setcard");
+      c.innerHTML = '<div class="setlbl">ההתראות כבויות במכשיר — עדכונים יופיעו רק כאן, בתיבת ההתראות.</div>' +
+        '<button class="fchip on" id="shPerm" style="margin-top:8px">' + (perm === "blocked" ? "פתיחת הגדרות ההתראות" : "אפשר התראות") + '</button>';
+      c.querySelector("#shPerm").onclick = () => { try { nativeApp.requestPushPermission(); } catch (e) {} };
+      body.appendChild(c);
+    }
+    function sharedAskPermissionOnce() {
+      try {
+        if (!nativeApp || !nativeApp.pushPermissionState) return;
+        const p = nativeApp.pushPermissionState();
+        if (p === "default" || p === "denied") nativeApp.requestPushPermission();
+      } catch (e) {}
     }
 
     function sharedNewForm() {
@@ -7785,175 +8419,484 @@
       f.querySelector("#shCreate").onclick = async (ev) => {
         const name = f.querySelector("#shName").value.trim(), target = Number(t.value) || 0;
         if (!name || target <= 0) { showToast(shErr("bad_input")); return; }
-        ev.target.disabled = true;
+        ev.target.disabled = true; ev.target.textContent = "פותח…";
         try {
-          const reg = await cloudEnsure();
-          if (!reg.ok) throw Object.assign(new Error(), { code: reg.error });
-          const r = await cloudRpc("cf_create_goal", { p_token: cloudToken(), p_name: name, p_target: target });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          // The same key on a retry → the same goal, never two.
+          const r = okOrThrow(await rpc2("cf2_create_goal", { p_name: name, p_target_minor: toMinor(target), p_key: shState.newKey }));
           shState.form = null;
           showToast("🤝 נפתח חיסכון משותף: " + name + " — עכשיו הזמינו חבר");
-          await loadShared();
-          shState.invite = { goalId: r.goal_id, email: "", result: null };
+          sharedAskPermissionOnce();
+          await loadShared(true);
+          shState.open[r.goal_id] = "invite"; shState.invite = { goalId: r.goal_id, email: "", result: null };
           render();
-        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+        } catch (e) { ev.target.disabled = false; ev.target.textContent = "פתיחת החיסכון ✨"; showToast(shErr(e.code || "network")); }
       };
       return f;
     }
 
+    // Joining: success is shown ONLY after the server said the membership is
+    // saved. A lost response is recovered by asking again with the same code —
+    // the server returns the same membership instead of "invalid".
     function sharedJoinForm() {
+      const j = shState.join;
       const f = el("div", "setcard");
       f.innerHTML = '<h3 style="margin:0 0 6px">הצטרפות עם קוד</h3>' +
         '<p class="termupd" style="margin:0 0 10px">הקלידו את הקוד בן 6 הספרות שקיבלתם במייל או בווטסאפ.</p>' +
-        '<div class="fld"><input id="shCode" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456" style="letter-spacing:6px;text-align:center;font-weight:900"></div>' +
-        '<button class="distbtn wide" id="shJoin" style="margin-top:12px">הצטרפות</button>' +
+        '<div class="fld"><input id="shCode" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456" style="letter-spacing:6px;text-align:center;font-weight:900"' + (j.busy ? " disabled" : "") + '></div>' +
+        '<button class="distbtn wide" id="shJoin" style="margin-top:12px"' + (j.busy ? " disabled" : "") + '>' + (j.busy ? "מצטרף… ⏳" : "אישור הצטרפות") + '</button>' +
+        (j.msg ? '<div class="' + (j.ok ? "wisafe" : "aerr") + '" style="margin-top:10px">' + esc(j.msg) + '</div>' : "") +
         '<button class="obback" id="shJoinCancel">ביטול</button>';
       const inp = f.querySelector("#shCode");
-      inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); };
-      f.querySelector("#shJoinCancel").onclick = () => { shState.form = null; render(); };
-      f.querySelector("#shJoin").onclick = async (ev) => {
-        if (inp.value.length !== 6) { showToast("הקוד הוא 6 ספרות"); return; }
-        ev.target.disabled = true;
-        try {
-          const reg = await cloudEnsure();
-          if (!reg.ok) throw Object.assign(new Error(), { code: reg.error });
-          const r = await cloudRpc("cf_accept_invite", { p_token: cloudToken(), p_code: inp.value });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-          shState.form = null;
-          burstCoins("🤝");
-          showToast("🎉 הצטרפת ל\"" + r.goal_name + "\"");
-          await loadShared();
-        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
-      };
-      setTimeout(() => inp.focus(), 60);
+      inp.value = j.code || "";
+      inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); j.code = inp.value; };
+      f.querySelector("#shJoinCancel").onclick = () => { if (!j.busy) { shState.form = null; render(); } };
+      f.querySelector("#shJoin").onclick = () => { if (!j.busy) sharedJoin(inp.value); };
+      if (!j.busy) setTimeout(() => inp.focus(), 60);
       return f;
+    }
+    async function sharedJoin(code) {
+      const j = shState.join;
+      if (!/^\d{6}$/.test(code || "")) { showToast("הקוד הוא 6 ספרות"); return; }
+      j.busy = true; j.msg = ""; j.ok = false; j.code = code; render();
+      let r = null, lastErr = "network";
+      for (let attempt = 0; attempt < 4 && !r; attempt++) {
+        try { r = await rpc2("cf2_accept_invite", { p_code: code }); }
+        catch (e) {
+          lastErr = e.code || "network";
+          if (lastErr !== "network") break;
+          if (attempt === 0) { j.msg = "החיבור איטי — בודקים מול השרת אם ההצטרפות נשמרה…"; render(); }
+          await new Promise((res) => setTimeout(res, 1200 * (attempt + 1)));
+        }
+      }
+      j.busy = false;
+      if (!r) {
+        // Not confirmed. The same code can be sent again safely; nothing is shown as joined.
+        j.msg = shErr(lastErr) + " ההצטרפות לא אושרה עדיין — אפשר ללחוץ שוב, זה בטוח.";
+        render(); return;
+      }
+      if (!r.ok) { j.msg = shErr(r.error); render(); return; }
+      j.ok = true; j.msg = "הצטרפת בהצלחה לחיסכון המשותף";
+      burstCoins("🤝");
+      showToast("הצטרפת בהצלחה לחיסכון המשותף" + (r.goal_name ? " ״" + r.goal_name + "״" : ""));
+      sharedAskPermissionOnce();
+      shState.focus = r.goal_id;
+      await loadShared(true);
+      shState.form = null;
+      render();
     }
 
     const SH_COLORS = ["#6c5ce7", "#74B9FF", "#FD79A8", "#55EFC4", "#FAB1A0", "#f5b544", "#00CEC9", "#e8845e"];
 
     function cloudGoalCard(g) {
       const members = g.members || [];
-      const total = members.reduce((s, m) => s + Number(m.amount || 0), 0);
-      const target = Number(g.target) || 1;
+      const total = Number(g.balance_minor) || 0;
+      const target = Math.max(1, Number(g.target_minor) || 1);
       const pct = Math.min(100, Math.round((total / target) * 100));
+      const queued = shQueue().filter((o) => o.goalId === g.id);
+      const pendMinor = queued.filter((o) => o.state === "pending").reduce((s, o) => s + o.amountMinor, 0);
+      const mode = shState.open[g.id] || "";
       const card = el("div", "setcard shcard");
+      card.dataset.goal = g.id;
       card.innerHTML =
         '<div class="shtop"><b>🤝 ' + esc(g.name) + '</b>' +
           (total >= target ? '<span class="shdone">הושלם! 🎉</span>' : '<span class="shpct">' + pct + '%</span>') + '</div>' +
-        '<div class="shsum">₪' + fmt(total) + ' <span>מתוך ₪' + fmt(target) + ' · ' + members.length + ' משתתפים</span></div>' +
-        '<div class="chtrack big"><i style="width:0%"></i></div>' +
+        '<div class="shsum">' + fmtMinor(total) + ' <span>מתוך ' + fmtMinor(target) + ' · ' + members.length + ' משתתפים · יתרה מאושרת בשרת</span></div>' +
+        '<div class="chtrack big"><i style="width:' + pct + '%"></i></div>' +
+        (pendMinor ? '<div class="shpending">⏳ ממתין לסנכרון: ' + fmtMinor(pendMinor) + ' — נרשם במכשיר, עוד לא אושר בשרת ולא נכלל ביתרה</div>' : "") +
         '<div class="shparts"></div>' +
+        (g.deletion ? '<div class="shdel"></div>' : "") +
         '<div class="shactions">' +
           '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="200" class="shAmt"></div>' +
-          '<button class="distbtn shAdd">הפקדה שלי</button>' +
+          '<button class="distbtn shAdd">רישום הפקדה</button>' +
         '</div>' +
-        '<div class="frow" style="gap:8px;margin-top:10px">' +
-          '<button class="fchip on shInv">👥 הזמנת חבר</button>' +
-          '<button class="fchip shRef">🔄 רענון</button>' +
-          '<button class="fchip shLeave">' + (g.owner ? "🗑️ סגירת החיסכון" : "🚪 יציאה") + '</button>' +
-        '</div>';
-      requestAnimationFrame(() => { card.querySelector(".chtrack i").style.width = pct + "%"; });
+        '<div class="frow" style="gap:8px;margin-top:10px;flex-wrap:wrap">' +
+          '<button class="fchip' + (mode === "invite" ? " on" : "") + ' shInv">👥 הזמנת חבר</button>' +
+          '<button class="fchip' + (mode === "history" ? " on" : "") + ' shHist">🧾 היסטוריה</button>' +
+          '<button class="fchip' + (mode === "recurring" ? " on" : "") + ' shRec">🔁 הפקדה חודשית' + (g.my_recurring ? " ✓" : "") + '</button>' +
+          '<button class="fchip shLeave">🚪 יציאה</button>' +
+          (g.deletion ? "" : '<button class="fchip shDelReq">🗑️ בקשת מחיקה</button>') +
+        '</div>' +
+        '<div class="shpanel"></div>';
       const parts = card.querySelector(".shparts");
       members.forEach((m, i) => {
-        const mp = Math.min(100, Math.round((Number(m.amount || 0) / target) * 100));
+        const c = Number(m.contributed_minor) || 0;
+        const mp = Math.min(100, Math.max(0, Math.round((c / target) * 100)));
         const r = el("div", "shp");
         r.innerHTML = '<span class="shpname"' + (m.me ? ' style="color:var(--primary);font-weight:800"' : "") + '>' + esc(m.me ? "את/ה" : m.name) + '</span>' +
-          '<div class="shptrack"><i style="width:0%;background:' + SH_COLORS[i % SH_COLORS.length] + '"></i></div>' +
-          '<span class="shpamt">₪' + fmt(Number(m.amount || 0)) + '</span>';
+          '<div class="shptrack"><i style="width:' + mp + '%;background:' + SH_COLORS[i % SH_COLORS.length] + '"></i></div>' +
+          '<span class="shpamt">' + fmtMinor(c) + '</span>';
         parts.appendChild(r);
-        requestAnimationFrame(() => { r.querySelector("i").style.width = mp + "%"; });
       });
+      if (queued.length) card.insertBefore(sharedQueueList(queued), card.querySelector(".shactions"));
+      if (g.deletion) sharedDeletionPanel(g, card.querySelector(".shdel"));
 
       const amt = card.querySelector(".shAmt");
       amt.oninput = () => { amt.value = amt.value.replace(/[^0-9]/g, ""); };
-      card.querySelector(".shAdd").onclick = async (ev) => {
+      card.querySelector(".shAdd").onclick = () => {
         const amount = Number(amt.value) || 0;
         if (amount <= 0) return;
-        const plan = buildFundingPlan(amount, null);
-        if (!plan) { showToast("אין מספיק כסף פנוי בקוביות 🙂"); return; }
-        // Take the money from the cubes now; put it back if the server says no.
-        const before = { pool: state.pool, cubes: state.cubes.map((c) => ({ key: c.key, balance: c.balance })) };
-        plan.forEach((s) => {
-          if (s.key === "__pool") state.pool = Math.max(0, state.pool - s.amount);
-          else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance = Math.max(0, c.balance - s.amount); }
-        });
-        ev.target.disabled = true;
-        try {
-          const r = await cloudRpc("cf_deposit", { p_token: cloudToken(), p_goal: g.id, p_amount: amount });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-          saveState();
-          showToast("💸 הפקדת ₪" + fmt(amount) + " (נלקח: " + describeSources(plan) + ")");
-          await loadShared();
-        } catch (e) {
-          state.pool = before.pool;
-          before.cubes.forEach((b) => { const c = state.cubes.find((x) => x.key === b.key); if (c) c.balance = b.balance; });
-          saveState(); ev.target.disabled = false;
-          showToast("ההפקדה לא נשמרה — הכסף נשאר בקוביות. " + shErr(e.code || "network"));
-        }
-      };
-      card.querySelector(".shRef").onclick = () => loadShared();
-      card.querySelector(".shLeave").onclick = async () => {
-        const msg = g.owner ? "לסגור את החיסכון לכל המשתתפים?" : "לצאת מהחיסכון המשותף?";
-        if (!confirm(msg)) return;
-        try { await cloudRpc("cf_leave", { p_token: cloudToken(), p_goal: g.id }); await loadShared(); }
-        catch (e) { showToast(shErr("network")); }
-      };
-      card.querySelector(".shInv").onclick = () => {
-        shState.invite = shState.invite && shState.invite.goalId === g.id ? null : { goalId: g.id, email: "", result: null };
+        const r = sharedQueueContribution(g, toMinor(amount), "manual", null);
+        if (!r.ok) { showToast(r.reason === "funds" ? "אין מספיק כסף פנוי בקוביות 🙂" : "הפעולה כבר בתור"); return; }
+        amt.value = "";
         render();
+        sharedFlush().then(() => loadShared(true));
       };
-      if (shState.invite && shState.invite.goalId === g.id) card.appendChild(invitePanel(g));
+      const toggle = (m) => () => { shState.open[g.id] = mode === m ? "" : m; if (m === "invite") shState.invite = { goalId: g.id, email: "", result: null }; render(); };
+      card.querySelector(".shInv").onclick = toggle("invite");
+      card.querySelector(".shHist").onclick = () => { toggle("history")(); if (shState.open[g.id] === "history") sharedLoadHistory(g.id, false); };
+      card.querySelector(".shRec").onclick = toggle("recurring");
+      const leave = card.querySelector(".shLeave");
+      leave.onclick = async () => {
+        if (!shState.armed["leave" + g.id]) {
+          shState.armed["leave" + g.id] = true; leave.textContent = "לחצו שוב לאישור יציאה";
+          setTimeout(() => { shState.armed["leave" + g.id] = false; if (leave.isConnected) leave.textContent = "🚪 יציאה"; }, 4000);
+          showToast("יציאה לא מוחקת את החיסכון ולא את הרישומים שלך בו");
+          return;
+        }
+        leave.disabled = true;
+        try { okOrThrow(await rpc2("cf2_leave", { p_goal: g.id })); showToast("יצאת מהחיסכון. הרישומים שלך נשארים בו."); await loadShared(true); }
+        catch (e) { leave.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      const dr = card.querySelector(".shDelReq");
+      if (dr) dr.onclick = async () => {
+        if (!shState.armed["del" + g.id]) {
+          shState.armed["del" + g.id] = true;
+          dr.textContent = members.length > 1 ? "לחצו שוב — כל המשתתפים יתבקשו לאשר" : "לחצו שוב למחיקה";
+          setTimeout(() => { shState.armed["del" + g.id] = false; if (dr.isConnected) dr.textContent = "🗑️ בקשת מחיקה"; }, 4000);
+          return;
+        }
+        dr.disabled = true;
+        try {
+          const r = okOrThrow(await rpc2("cf2_request_deletion", { p_goal: g.id }));
+          showToast(r.deleted ? "החיסכון נמחק" : "נשלחה בקשת מחיקה — החיסכון יימחק רק אחרי שכל המשתתפים יאשרו");
+          await loadShared(true);
+        } catch (e) { dr.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+
+      const panel = card.querySelector(".shpanel");
+      if (mode === "invite") panel.appendChild(invitePanel(g));
+      if (mode === "history") panel.appendChild(sharedHistoryPanel(g));
+      if (mode === "recurring") panel.appendChild(sharedRecurringPanel(g));
       return card;
     }
 
-    function invitePanel(g) {
-      const inv = shState.invite;
-      const p = el("div", "invpanel");
-      p.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px solid var(--border)";
-      const res = inv.result;
-      const last = shState.lastCode && shState.lastCode.goalId === g.id && shState.lastCode.until > Date.now() ? shState.lastCode : null;
-      p.innerHTML =
-        '<label class="flbl">חיפוש חבר לפי אימייל</label>' +
-        '<div class="frow" style="gap:8px"><div class="fld" style="flex:1;margin:0"><input id="invEmail" type="email" dir="ltr" placeholder="friend@gmail.com"></div>' +
-        '<button class="fchip on" id="invSearch">🔍 חיפוש</button></div>' +
-        '<div id="invRes" class="termupd" style="margin:8px 0 0">' +
-          (res === null ? "" :
-            res.self ? "זה המייל שלך 🙂" :
-            res.found ? "✅ נמצא: <b>" + esc(res.name) + "</b> משתמש/ת ב-CubeFinance" :
-            "לא מצאנו משתמש עם המייל הזה. אפשר עדיין לשלוח הזמנה — אחרי שיירשם עם המייל הזה הוא יוכל להצטרף.") + '</div>' +
-        '<button class="distbtn wide" id="invMail" style="margin-top:10px">📧 שליחת קוד הזמנה למייל</button>' +
-        '<div class="gor">או</div>' +
-        '<button class="gbtn" id="invWa" style="background:#25D366;color:#fff;border-color:#25D366">💬 שיתוף קוד בווטסאפ</button>' +
-        (last ? '<div class="unknote" style="margin-top:10px;text-align:center">קוד הצטרפות: <b dir="ltr" style="font-size:22px;letter-spacing:4px">' + esc(last.code) + '</b><br>' +
-                'תקף עד ' + new Date(last.until).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) +
-                ' <button class="fchip" id="invCopy" style="margin-inline-start:6px">📋 העתקה</button></div>' : "");
-      const em = p.querySelector("#invEmail");
-      em.value = inv.email || "";
-      em.oninput = () => {
-        inv.email = em.value.trim();
-        if (inv.result) { inv.result = null; p.querySelector("#invRes").textContent = ""; }
+    function sharedQueueList(list) {
+      const box = el("div", "shqueue");
+      list.forEach((o) => {
+        const r = el("div", "shqitem " + o.state);
+        r.innerHTML = o.state === "pending"
+          ? '<span>⏳ ' + fmtMinor(o.amountMinor) + (o.source === "recurring" ? " (חודשי)" : "") + ' — ממתין לאישור השרת</span>'
+          : '<span>❌ ' + fmtMinor(o.amountMinor) + ' לא נרשם: ' + esc(shErr(o.error)) + ' הסכום חזר לקוביות.</span><button class="fchip">הבנתי</button>';
+        const b = r.querySelector("button");
+        if (b) b.onclick = () => { shPut("shq", shQueue().filter((x) => x.key !== o.key)); render(); };
+        box.appendChild(r);
+      });
+      return box;
+    }
+
+    async function sharedLoadHistory(goalId, silent) {
+      try {
+        const r = okOrThrow(await rpc2("cf2_history", { p_goal: goalId, p_before_seq: null, p_limit: 50 }));
+        shState.history[goalId] = r.entries || [];
+      } catch (e) { if (!silent) shState.history[goalId] = { error: e.code || "network" }; }
+      if (state.screen === "shared") render();
+    }
+    function sharedHistoryPanel(g) {
+      const p = el("div", "shhist");
+      const h = shState.history[g.id];
+      if (!h) { p.innerHTML = '<div class="setlbl">טוען היסטוריה…</div>'; return p; }
+      if (h.error) { p.innerHTML = '<div class="unknote">' + esc(shErr(h.error)) + '</div>'; return p; }
+      if (!h.length) { p.innerHTML = '<div class="setlbl">עוד אין רישומים.</div>'; return p; }
+      p.innerHTML = '<div class="setlbl" style="margin-bottom:6px">כל רישום נשמר בשרת עם שעה ומזהה. ביטול הוא רישום הפוך — שום דבר לא נמחק.</div>';
+      h.forEach((e) => {
+        const r = el("div", "shentry" + (e.reversed ? " reversed" : ""));
+        r.innerHTML = '<span>' + esc(sharedEntryText(e)) + '</span><i>' + esc(new Date(e.created_at).toLocaleString("he-IL", { day: "numeric", month: "numeric", year: "2-digit", hour: "2-digit", minute: "2-digit" })) +
+          (e.reversed ? " · בוטל" : "") + '</i>';
+        if (e.me && !e.reversed && e.kind !== "reversal") {
+          const b = el("button", "fchip"); b.textContent = "ביטול רישום";
+          b.onclick = async () => {
+            b.disabled = true;
+            try {
+              const res = okOrThrow(await rpc2("cf2_reverse", { p_entry: e.id }));
+              if (!res.duplicate) {
+                // the record came out of this account's cubes; it goes back to the free balance
+                state.pool += Math.abs(e.amount_minor) / 100; saveState();
+                const local = shLocal(); local[g.id] = Math.max(0, (local[g.id] || 0) - Math.abs(e.amount_minor)); shPut("shlocal", local);
+              }
+              showToast("הרישום בוטל — " + fmtMinor(Math.abs(e.amount_minor)) + " חזרו ליתרה הפנויה");
+              await loadShared(true); sharedLoadHistory(g.id, true);
+            } catch (er) { b.disabled = false; showToast(shErr(er.code || "network")); }
+          };
+          r.appendChild(b);
+        }
+        p.appendChild(r);
+      });
+      return p;
+    }
+
+    // Opt-in monthly contribution from the member's own recorded income. The
+    // calculation is shown; nothing is enabled without the explicit tick.
+    function sharedRecurringPanel(g) {
+      const rec = g.my_recurring;
+      const income = monthlyIncome();
+      const d = shState.recDraft && shState.recDraft.goalId === g.id ? shState.recDraft
+        : (shState.recDraft = { goalId: g.id, mode: rec ? rec.mode : "percent",
+             value: rec ? (rec.mode === "percent" ? String(rec.value / 100) : String(rec.value / 100)) : "", consent: false });
+      const p = el("div", "shrec");
+      const preview = () => {
+        const v = Number(d.value) || 0;
+        const r = d.mode === "percent" ? { mode: "percent", value: Math.round(v * 100) } : { mode: "fixed", value: toMinor(v) };
+        const a = sharedRecurringAmount(r, income);
+        if (!v) return "בחרו סכום או אחוז.";
+        if (d.mode === "percent") return income > 0 ? v + "% × הכנסה חודשית של ₪" + fmt(income) + " = " + fmtMinor(a) + " בכל חודש" : "עוד לא הוזנה הכנסה חודשית — אין ממה לחשב אחוז.";
+        return fmtMinor(a) + " בכל חודש";
       };
-      p.querySelector("#invSearch").onclick = async () => {
-        const e = normEmail(em.value);
-        if (!validEmail(e)) { showToast(shErr("bad_email")); return; }
+      p.innerHTML =
+        '<div class="setlbl">' + (rec ? "פעיל: " + (rec.mode === "percent" ? (rec.value / 100) + "% מההכנסה" : fmtMinor(rec.value)) + " בכל חודש" : "כבוי") + '</div>' +
+        '<div class="frow" style="gap:8px;margin:8px 0"><button class="fchip' + (d.mode === "percent" ? " on" : "") + '" id="rcPct">אחוז מההכנסה</button>' +
+        '<button class="fchip' + (d.mode === "fixed" ? " on" : "") + '" id="rcFix">סכום קבוע</button></div>' +
+        '<div class="fld small"><span class="cur">' + (d.mode === "percent" ? "%" : "₪") + '</span><input id="rcVal" inputmode="decimal" value="' + esc(d.value) + '"></div>' +
+        '<div class="setlbl" id="rcCalc" style="margin-top:6px"></div>' +
+        '<label class="shconsent"><input type="checkbox" id="rcOk"' + (d.consent ? " checked" : "") + '> ' +
+          'אני מאשר/ת שבכל פעם שההכנסה החודשית שלי נכנסת לקוביות, יירשם גם הסכום הזה כהפקדה שלי בחיסכון המשותף. ' +
+          '<b>זה רישום בלבד — לא חיוב ולא העברה בנקאית.</b> ההכנסה שלי לא נשלחת לשרת ולא נראית לאחרים.</label>' +
+        '<button class="distbtn wide" id="rcSave" style="margin-top:10px">שמירה</button>' +
+        (rec ? '<button class="obback" id="rcOff">כיבוי ההפקדה החודשית</button>' : "");
+      const calc = () => { p.querySelector("#rcCalc").textContent = preview(); };
+      p.querySelector("#rcPct").onclick = () => { d.mode = "percent"; render(); };
+      p.querySelector("#rcFix").onclick = () => { d.mode = "fixed"; render(); };
+      const val = p.querySelector("#rcVal");
+      val.oninput = () => { val.value = val.value.replace(/[^0-9.]/g, ""); d.value = val.value; calc(); };
+      p.querySelector("#rcOk").onchange = (e) => { d.consent = e.target.checked; };
+      calc();
+      p.querySelector("#rcSave").onclick = async (ev) => {
+        const v = Number(d.value) || 0;
+        if (v <= 0 || (d.mode === "percent" && v > 100)) { showToast("ערך לא תקין"); return; }
+        if (!d.consent) { showToast(shErr("consent_required")); return; }
+        ev.target.disabled = true;
         try {
-          const r = await cloudRpc("cf_search", { p_token: cloudToken(), p_email: e });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-          inv.email = e; inv.result = { found: !!r.found, name: r.name || "", self: !!r.self };
-          render();
-        } catch (er) { showToast(shErr(er.code || "network")); }
+          okOrThrow(await rpc2("cf2_set_recurring", { p_goal: g.id, p_mode: d.mode,
+            p_value: d.mode === "percent" ? Math.round(v * 100) : toMinor(v), p_consent: true }));
+          shState.recDraft = null; shState.open[g.id] = "";
+          showToast("🔁 ההפקדה החודשית נשמרה — תירשם כשההכנסה של החודש תיכנס");
+          await loadShared(true);
+        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      const off = p.querySelector("#rcOff");
+      if (off) off.onclick = async () => {
+        off.disabled = true;
+        try { okOrThrow(await rpc2("cf2_set_recurring", { p_goal: g.id, p_mode: "off", p_value: null, p_consent: null })); shState.recDraft = null; await loadShared(true); }
+        catch (e) { off.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      return p;
+    }
+
+    // Deletion by agreement: who approved, who has not answered yet. No answer
+    // never counts; one "no" ends the request; any change voids it.
+    function sharedDeletionPanel(g, box) {
+      const d = g.deletion;
+      const mine = (d.votes || []).find((v) => v.me);
+      box.innerHTML = '<div class="shdelhead">🗑️ ' + esc(d.mine ? "ביקשת למחוק את החיסכון" : d.requested_by + " ביקש/ה למחוק את החיסכון") + '</div>' +
+        '<div class="setlbl">החיסכון יימחק רק אם כל המשתתפים יאשרו. דחייה אחת מבטלת את הבקשה, ושינוי בחברים או בסכומים מבטל אותה.</div>' +
+        '<div class="shvotes">' + (d.votes || []).map((v) =>
+          '<span class="shvote ' + (v.vote || "wait") + '">' + esc(v.me ? "את/ה" : v.name) + ': ' +
+          (v.vote === "approve" ? "✓ אישר/ה" : v.vote === "reject" ? "✗ דחה/תה" : "⏳ ממתין/ה") + '</span>').join("") + '</div>' +
+        '<div class="frow" style="gap:8px;margin-top:8px"></div>';
+      const row = box.querySelector(".frow");
+      const act = (label, cls, fn) => { const b = el("button", cls); b.textContent = label; b.onclick = async () => { b.disabled = true; try { await fn(); } catch (e) { b.disabled = false; showToast(shErr(e.code || "network")); } }; row.appendChild(b); };
+      if (mine && !mine.vote) {
+        act("אישור המחיקה", "fchip danger", async () => {
+          const r = okOrThrow(await rpc2("cf2_vote_deletion", { p_request: d.id, p_vote: "approve" }));
+          showToast(r.status === "completed" ? "כל המשתתפים אישרו — החיסכון נמחק" : "האישור שלך נרשם. ממתינים לשאר המשתתפים.");
+          await loadShared(true);
+        });
+        act("דחייה", "fchip on", async () => {
+          okOrThrow(await rpc2("cf2_vote_deletion", { p_request: d.id, p_vote: "reject" }));
+          showToast("דחית את הבקשה — החיסכון נשאר"); await loadShared(true);
+        });
+      }
+      if (d.mine) act("ביטול הבקשה", "fchip", async () => {
+        okOrThrow(await rpc2("cf2_cancel_deletion", { p_request: d.id }));
+        showToast("בקשת המחיקה בוטלה"); await loadShared(true);
+      });
+    }
+
+    // ---- people: search, avatar, own profile -----------------------------------
+    // Search shows registered people who can be invited — that is all it says
+    // about them. There is no presence data, so nothing claims anyone is online;
+    // and a goal's member list only ever shows people who confirmed joining.
+    function shAvatar(name, hue) {
+      const t = String(name || "?").replace(/^@/, "").trim();
+      const ch = (t.match(/[\p{L}\p{N}]/u) || ["?"])[0].toUpperCase();
+      return '<span class="shav" style="background:hsl(' + (Number(hue) || 0) + ',55%,45%)">' + esc(ch) + '</span>';
+    }
+    const shPublicName = (p) => (p && p.display_name) ? p.display_name : "משתמש/ת CubeFinance";
+
+    // How other people see you, and whether they can find you.
+    function sharedProfileCard() {
+      const p = shState.profile;
+      const c = el("div", "setcard shprof");
+      if (!p) return c;
+      const ed = shState.profEdit;
+      c.innerHTML =
+        '<div class="shprow">' + shAvatar(p.display_name || p.username, 210) +
+          '<div style="flex:1"><div class="setmail">' + esc(shPublicName(p)) + '</div>' +
+          '<div class="setlbl" dir="ltr" style="text-align:start">@' + esc(p.username || "") + '</div></div>' +
+          '<button class="fchip" id="prEdit">' + (ed ? "סגירה" : "עריכה") + '</button></div>' +
+        (!p.display_name ? '<div class="setlbl" style="margin-top:8px">💡 הוסיפו שם — כך חברים יזהו אתכם בחיפוש. המייל שלכם לא מוצג לאף אחד.</div>' : "") +
+        (ed ? '<label class="flbl">שם תצוגה</label><div class="fld"><input id="prName" maxlength="40" placeholder="איך יראו אותך"></div>' +
+              '<label class="flbl">שם משתמש</label><div class="fld"><span class="cur">@</span><input id="prUser" dir="ltr" maxlength="20"></div>' +
+              '<button class="distbtn wide" id="prSave" style="margin-top:10px">שמירה</button>' : "") +
+        '<div class="swrow" style="margin-top:10px"><div><div class="setmail" style="font-size:14px">להופיע בחיפוש</div>' +
+          '<div class="setlbl">חברים יוכלו למצוא אותך לפי שם או @שם משתמש ולהזמין אותך. כבוי — רק מי שיש לו קוד יוכל לצרף אותך.</div></div>' +
+          '<button class="sw' + (p.discoverable ? " on" : "") + '" id="prDisc" aria-label="להופיע בחיפוש"></button></div>';
+      c.querySelector("#prEdit").onclick = () => { shState.profEdit = !ed; render(); };
+      if (ed) {
+        c.querySelector("#prName").value = p.display_name || "";
+        c.querySelector("#prUser").value = p.username || "";
+        c.querySelector("#prSave").onclick = async (ev) => {
+          const name = c.querySelector("#prName").value.trim();
+          const user = c.querySelector("#prUser").value.trim().toLowerCase();
+          ev.target.disabled = true;
+          try {
+            const r = okOrThrow(await rpc2("cf2_update_profile", { p_display_name: name || null, p_username: user && user !== p.username ? user : null, p_discoverable: null }));
+            shState.profile = r.profile; shState.profEdit = false;
+            showToast("✅ הפרופיל עודכן");
+            render();
+          } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+        };
+      }
+      c.querySelector("#prDisc").onclick = async (ev) => {
+        const next = !p.discoverable;
+        ev.target.disabled = true;
+        try {
+          const r = okOrThrow(await rpc2("cf2_update_profile", { p_display_name: null, p_username: null, p_discoverable: next }));
+          shState.profile = r.profile; render();
+        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      return c;
+    }
+
+    // One invitation per recipient: the code from a search invite, an email or
+    // a WhatsApp share is the same code until it is used or expires.
+    const shInv = (goalId) => {
+      const v = (shState.invites || (shState.invites = {}))[goalId];
+      return v && v.until > Date.now() ? v : null;
+    };
+    function sharedSetInvite(goalId, r, kind, target, name) {
+      shState.invites = shState.invites || {};
+      shState.invites[goalId] = { code: r.code, until: Date.now() + (Number(r.expires_in) || 600) * 1000, kind: kind, target: target || null, name: name || null };
+    }
+
+    function sharedRunSearch(goalId) {
+      const s = shState.search;
+      clearTimeout(s.timer);
+      const qy = (s.q || "").trim();
+      if (qy.replace(/^@/, "").length < 2) { s.items = []; s.state = "idle"; s.hasMore = false; shRepaint(goalId); return; }
+      s.timer = setTimeout(async () => {
+        const mine = ++s.seq;
+        s.state = "loading"; shRepaint(goalId);
+        try {
+          const r = okOrThrow(await rpc2("cf2_search_users", { p_query: qy, p_goal: goalId, p_limit: 20, p_offset: s.offset }));
+          if (mine !== s.seq) return;   // a newer query is on its way
+          s.items = s.offset ? s.items.concat(r.items || []) : (r.items || []);
+          s.hasMore = !!r.has_more; s.state = "done";
+        } catch (e) {
+          if (mine !== s.seq) return;
+          s.state = "error"; s.error = e.code || "network";
+        }
+        shRepaint(goalId);
+      }, 350);
+    }
+
+    function shPaintResults(g, list) {
+      if (!list) return;
+      const s = shState.search;
+      list.innerHTML = "";
+      const qy = (s.q || "").trim();
+      if (s.state === "loading" && !s.items.length) list.innerHTML = '<div class="setlbl">מחפש… ⏳</div>';
+      else if (s.state === "error") list.innerHTML = '<div class="aerr">' + esc(shErr(s.error)) + '</div>';
+      else if (s.state === "done" && !s.items.length) list.innerHTML = '<div class="setlbl">' +
+        (qy.indexOf("@") > 0 ? "לא נמצא משתמש עם המייל הזה (או שבחר/ה לא להופיע בחיפוש). אפשר לשלוח לו/ה הזמנה במייל למטה."
+                              : "לא נמצאו משתמשים. נסו שם אחר, @שם משתמש, או מייל מלא.") + '</div>';
+      else if (qy && qy.replace(/^@/, "").length < 2) list.innerHTML = '<div class="setlbl">הקלידו לפחות 2 תווים</div>';
+      s.items.forEach((u) => {
+        const row = el("div", "shuser");
+        row.innerHTML = shAvatar(u.display_name || u.username, u.avatar_hue) +
+          '<div class="shuname"><b>' + esc(shPublicName(u)) + '</b><span dir="ltr">@' + esc(u.username) + '</span></div>' +
+          (u.member ? '<span class="shtag">כבר בחיסכון</span>'
+            : '<button class="fchip on">' + (u.invited ? "הוזמן/ה ✓ — הצגת הקוד" : "הזמנה") + '</button>');
+        const b = row.querySelector("button");
+        if (b) b.onclick = async () => {
+          b.disabled = true;
+          try {
+            const r = okOrThrow(await rpc2("cf2_invite_user", { p_goal: g.id, p_profile: u.profile_id }));
+            sharedSetInvite(g.id, r, "profile", u.profile_id, r.target_name || shPublicName(u));
+            u.invited = true;
+            showToast(r.existing ? "ההזמנה הקיימת עדיין בתוקף" : "📨 ההזמנה נשלחה ל" + (r.target_name || shPublicName(u)));
+            render();
+          } catch (e) { b.disabled = false; showToast(shErr(e.code || "network")); }
+        };
+        list.appendChild(row);
+      });
+      if (s.hasMore && s.state === "done") {
+        const more = el("button", "fchip"); more.textContent = "עוד תוצאות";
+        more.onclick = () => { s.offset = s.items.length; sharedRunSearch(g.id); };
+        list.appendChild(more);
+      }
+
+    }
+    function shRepaint(goalId) {
+      const g = shState.goals.find((x) => x.id === goalId);
+      const list = document.getElementById("invList");
+      if (g && list) shPaintResults(g, list); else render();
+    }
+
+    function invitePanel(g) {
+      const s = shState.search && shState.search.goalId === g.id ? shState.search
+        : (shState.search = { goalId: g.id, q: "", items: [], state: "idle", offset: 0, hasMore: false, seq: 0, timer: null });
+      const inv = shInv(g.id);
+      const p = el("div", "invpanel");
+      p.innerHTML =
+        '<label class="flbl">חיפוש חבר לפי שם, @שם משתמש או מייל מלא</label>' +
+        '<div class="fld" style="margin:0"><span class="cur">🔍</span><input id="invQ" placeholder="שם, @שם או מייל" autocomplete="off"></div>' +
+        '<div id="invList" class="shresults"></div>' +
+        (inv
+          ? '<div class="unknote" style="margin-top:10px;text-align:center">' +
+              (inv.kind === "profile" ? "הזמנה ל<b>" + esc(inv.name || "") + "</b> — נשלחה גם להתראות שלו/ה<br>" : "") +
+              'קוד הצטרפות: <b dir="ltr" style="font-size:22px;letter-spacing:4px">' + esc(inv.code) + '</b><br>' +
+              'תקף עד ' + new Date(inv.until).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) + ' (רק הקוד פג — החיסכון לא)' +
+              ' <button class="fchip" id="invCopy" style="margin-inline-start:6px">📋 העתקה</button></div>'
+          : "") +
+        '<label class="flbl" style="margin-top:12px">' + (inv ? "שליחת אותה הזמנה גם במייל" : "או: הזמנה במייל (גם למי שעוד לא נרשם)") + '</label>' +
+        '<div class="frow" style="gap:8px"><div class="fld" style="flex:1;margin:0"><input id="invEmail" type="email" dir="ltr" placeholder="friend@gmail.com"></div>' +
+        '<button class="fchip on" id="invMail">📧 שליחה</button></div>' +
+        '<button class="gbtn" id="invWa" style="background:#25D366;color:#fff;border-color:#25D366;margin-top:10px">💬 ' + (inv ? "שיתוף אותו קוד בווטסאפ" : "שיתוף קוד בווטסאפ") + '</button>';
+
+      const qi = p.querySelector("#invQ");
+      qi.value = s.q;
+      qi.oninput = () => { s.q = qi.value; s.offset = 0; sharedRunSearch(g.id); };
+
+      shPaintResults(g, p.querySelector("#invList"));
+
+      // Email and WhatsApp share the SAME invitation while it is valid.
+      const getCode = async (forEmail) => {
+        const cur = shInv(g.id);
+        if (cur && (cur.kind !== "email" || !forEmail || cur.target === forEmail)) return cur;
+        const r = okOrThrow(await rpc2("cf2_create_invite", { p_goal: g.id, p_email: forEmail || null }));
+        sharedSetInvite(g.id, r, forEmail ? "email" : "open", forEmail);
+        return shInv(g.id);
       };
       p.querySelector("#invMail").onclick = async (ev) => {
-        const e = normEmail(em.value);
+        const e = normEmail(p.querySelector("#invEmail").value);
         if (!validEmail(e)) { showToast(shErr("bad_email")); return; }
         if (e === normEmail(state.authUser.email)) { showToast("זה המייל שלך 🙂"); return; }
         ev.target.disabled = true;
         try {
-          const r = await cloudRpc("cf_create_invite", { p_token: cloudToken(), p_goal: g.id, p_email: e });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-          await sendInviteEmail(e, r.code, r.inviter_name || cloudName(), g.name);
-          showToast("📧 קוד הזמנה נשלח ל-" + e + " (תקף " + INVITE_TTL_MIN + " דקות)");
-          inv.email = ""; inv.result = null; render();
+          const cur = await getCode(e);
+          await sendInviteEmail(e, cur.code, cloudName() || "חבר/ה", g.name);
+          showToast("📧 ההזמנה (קוד " + cur.code + ") נשלחה ל-" + e);
+          render();
         } catch (er) {
           ev.target.disabled = false;
           showToast(er.code ? shErr(er.code) : "שליחת המייל נכשלה. נסו שוב או שתפו בווטסאפ.");
@@ -7962,18 +8905,16 @@
       p.querySelector("#invWa").onclick = async (ev) => {
         ev.target.disabled = true;
         try {
-          const r = await cloudRpc("cf_create_invite", { p_token: cloudToken(), p_goal: g.id, p_email: null });
-          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
-          shState.lastCode = { goalId: g.id, code: r.code, until: Date.now() + (r.expires_in || 600) * 1000 };
-          openWhatsApp(inviteMessage(r.inviter_name || cloudName(), g.name, Number(g.target), r.code));
+          const cur = await getCode(null);
           render();
+          openWhatsApp(inviteMessage(cloudName(), g.name, Number(g.target_minor) / 100, cur.code));
         } catch (er) { ev.target.disabled = false; showToast(shErr(er.code || "network")); }
       };
       const cp = p.querySelector("#invCopy");
       if (cp) cp.onclick = () => {
-        const t = inviteMessage(cloudName(), g.name, Number(g.target), last.code);
+        const t = inviteMessage(cloudName(), g.name, Number(g.target_minor) / 100, inv.code);
         (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
-          () => showToast("📋 ההזמנה הועתקה"), () => showToast("הקוד: " + last.code));
+          () => showToast("📋 ההזמנה הועתקה"), () => showToast("הקוד: " + inv.code));
       };
       return p;
     }
@@ -8012,6 +8953,14 @@
         }),
       });
       if (!res.ok) throw new Error("emailjs " + res.status);
+    }
+
+    // On logout: this phone stops receiving the account's shared pushes.
+    function sharedLogout() {
+      clearTimeout(shState.pollTimer);
+      if (state.authUser && sbLoad() && nativeApp && nativeApp.pushInstallId) {
+        rpc2("cf2_unregister_device", { p_install: nativeApp.pushInstallId() }).catch(() => {});
+      }
     }
 
     // The old local demo cubes (made-up friends) stay visible so nobody loses
@@ -8895,6 +9844,13 @@
           return;
         }
         wiping = false;
+      }
+      // Shared savings: no longer findable or invitable (records stay with the goals' members).
+      if (sbLoad()) {
+        try { await rpc2("cf2_deactivate_profile", {}); }
+        catch (e) {
+          if (e.code === "network") { showToast("לא הצלחנו לעדכן את השרת של החיסכון המשותף. בדקו את החיבור ונסו שוב"); return; }
+        }
       }
       const email = state.authUser.email;
       try { localStorage.removeItem(stateKey()); } catch (e) {}
