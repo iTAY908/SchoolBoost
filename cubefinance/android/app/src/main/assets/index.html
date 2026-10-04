@@ -2842,7 +2842,7 @@
     // owner's connected Gmail — no server of our own. These three values are
     // PUBLIC by design (EmailJS calls it a public key), so they may live here.
     // Leave publicKey empty to use the Vercel functions in web/api instead.
-    const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA" };
+    const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA", inviteTemplateId: "" };
     const useEmailJS = () => !!(EMAILJS.serviceId && EMAILJS.templateId && EMAILJS.publicKey);
     const blankDigits = () => Array(CODE_LEN).fill("");
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
@@ -2865,6 +2865,8 @@
 
     function enterApp(user) {
       state.authUser = user; state.authError = ""; setSession(user.email);
+      shState = { loaded: false, loading: false, error: "", goals: [], form: null, invite: null, lastCode: null };
+      setTimeout(() => { if (state.authUser === user) cloudEnsure(); }, 0);
       loadState();
       if (state.onboarded) { state.screen = "app"; }
       else { startOnboarding(); state.screen = "onboarding"; }
@@ -2898,7 +2900,7 @@
     // logging in on the same device never sees the previous account's data.
     function resetModuleGlobals() {
       debtResult = null; debtDraft = { name: "", balance: "", rate: "", type: "credit", unknown: false };
-      shForm = null; guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
+      shState.form = null; shState.invite = null; guideFeat = null; cc = null; settStep = 0; exDraft = null; topUp = null; dep = null;
       bkTermsOk = false;
       try { clearCalmTimers(); } catch (e) {} calm = null;
       wiScenario = null; wiWithCut = false; wiCustomType = "once"; wiCustomAmt = "";
@@ -4438,10 +4440,10 @@
       const modules = kid
         ? [["income", "כסף חודשי", "#10c088"], ["expenses", "הוצאות", "#f5b544"], ["whatif", "סימולטור", "#8f9aff"],
            ["books", "ספרים", "#e8845e"], ["calm", "רוגע", "#37d0a6"], ["guide", "מדריך", "#6472ff"],
-           ["challenges", "אתגרים", "#f2b134"], ["shared", "משותפות", "#3b82f6"]]
+           ["challenges", "אתגרים", "#f2b134"], ["shared", "חיסכון משותף", "#3b82f6"]]
         : [["income", "הכנסה", "#10c088"], ["expenses", "הוצאות", "#f5b544"], ["whatif", "סימולטור", "#8f9aff"],
            ["books", "ספרים", "#e8845e"], ["calm", "רוגע", "#37d0a6"], ["guide", "מדריך", "#6472ff"],
-           ["challenges", "אתגרים", "#f2b134"], ["shared", "משותפות", "#3b82f6"], ["debt", "חובות", "#f0555a"]];
+           ["challenges", "אתגרים", "#f2b134"], ["shared", "חיסכון משותף", "#3b82f6"], ["debt", "חובות", "#f0555a"]];
       modules.forEach((m) => {
         const route = m[0], label = m[1], tint = m[2];
         const b = el("button", "modbtn");
@@ -6914,111 +6916,393 @@
     }
 
     // =====================================================================
-    // Worker 2 — Shared Cubes: create with mock friends, per-participant
-    // progress, and instant updates. The user's own deposits are funded via
-    // the same money-sound plan used by the chat (never invented money).
+    // Shared savings ("חיסכון משותף") — real, between accounts, via Supabase.
+    // The server side is cubefinance/supabase/shared_savings.sql: tables are
+    // locked, and every action goes through a cf_* function that checks the
+    // caller's device token. The URL and key below are PUBLIC by design.
+    // Deposits come out of the user's own cubes (same money-sound plan as
+    // the chat), so no money is ever invented.
     // =====================================================================
-    const FRIENDS = [
-      { name: "יוסי", color: "#74B9FF" }, { name: "דנה", color: "#FD79A8" },
-      { name: "נועה", color: "#55EFC4" }, { name: "אבי", color: "#FAB1A0" },
-    ];
-    let shForm = null; // {open, name, target, picked:Set}
-    function renderSharedPage() {
-      const body = pageShell("קוביות משותפות 🤝", () => { shForm = null; state.screen = "app"; render(); });
+    const CLOUD = { url: "https://sfrkenhauekqdijtunpg.supabase.co", key: "sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q" };
+    const INVITE_TTL_MIN = 10;
 
-      const opener = el("button", "addcube");
-      opener.innerHTML = '<span class="addicon">＋</span><span>צור קובייה משותפת</span>';
-      opener.onclick = () => { shForm = { name: "", target: "", picked: new Set(["יוסי", "דנה"]) }; render(); };
-      if (!shForm) body.appendChild(opener);
-
-      if (shForm) {
-        const f = el("div", "setcard");
-        f.innerHTML = '<h3 style="margin:0 0 10px">קובייה משותפת חדשה</h3>' +
-          '<label class="flbl">שם הקובייה</label><div class="fld"><input id="shName" placeholder="טיול חברים לאילת 2026" value="' + shForm.name + '"></div>' +
-          '<label class="flbl">סכום יעד</label><div class="fld"><span class="cur">₪</span><input id="shTarget" inputmode="numeric" placeholder="5000" value="' + shForm.target + '"></div>' +
-          '<label class="flbl">הזמן חברים</label><div class="frow" id="shFriends"></div>' +
-          '<button class="distbtn wide" id="shCreate" style="margin-top:14px">צור ✨</button>' +
-          '<button class="obback" id="shCancel">ביטול</button>';
-        body.appendChild(f);
-        const fr = f.querySelector("#shFriends");
-        FRIENDS.forEach((p) => {
-          const c = el("button", "fchip" + (shForm.picked.has(p.name) ? " on" : ""));
-          c.textContent = p.name;
-          c.style.setProperty("--fc", p.color);
-          c.onclick = () => { shForm.picked.has(p.name) ? shForm.picked.delete(p.name) : shForm.picked.add(p.name); c.classList.toggle("on"); };
-          fr.appendChild(c);
-        });
-        f.querySelector("#shName").oninput = (e) => { shForm.name = e.target.value; };
-        f.querySelector("#shTarget").oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9]/g, ""); shForm.target = e.target.value; };
-        f.querySelector("#shCancel").onclick = () => { shForm = null; render(); };
-        f.querySelector("#shCreate").onclick = () => {
-          const name = (shForm.name || "").trim(), target = Number(shForm.target) || 0;
-          if (!name || target <= 0) { showToast("צריך שם וסכום יעד 🙂"); return; }
-          const parts = [{ name: "אתה", me: true, amount: 0, color: "#6c5ce7" }]
-            .concat(FRIENDS.filter((p) => shForm.picked.has(p.name)).map((p) => ({ name: p.name, me: false, amount: 0, color: p.color })));
-          state.shared.push({ id: "sh_" + Date.now(), name: name, target: target, participants: parts });
-          shForm = null;
-          saveState(); render();
-          showToast("🤝 נוצרה קובייה משותפת: " + name);
-        };
-      }
-
-      if (!state.shared.length && !shForm) {
-        const e0 = el("p", "termupd"); e0.textContent = "אין עדיין קוביות משותפות — צרו אחת והזמינו חברים!";
-        body.appendChild(e0);
-      }
-
-      state.shared.forEach((sc) => body.appendChild(sharedCard(sc)));
+    async function cloudRpc(fn, args) {
+      const res = await fetch(CLOUD.url + "/rest/v1/rpc/" + fn, {
+        method: "POST",
+        headers: { apikey: CLOUD.key, "Content-Type": "application/json" },
+        body: JSON.stringify(args || {}),
+      });
+      let data = null;
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok) throw new Error((data && (data.message || data.hint)) || ("http " + res.status));
+      return data || {};
     }
-    function sharedCard(sc) {
-      const total = sc.participants.reduce((s, p) => s + p.amount, 0);
-      const donePct = Math.min(100, Math.round((total / sc.target) * 100));
+    // A long random secret per account on this device. The server keeps only
+    // its SHA-256; whoever holds it acts as this account in shared savings.
+    function cloudToken() {
+      if (!state.authUser) return null;
+      const k = "cubefinance_web:cloud:" + state.authUser.id;
+      let t = null;
+      try { t = localStorage.getItem(k); } catch (e) {}
+      if (!t || t.length < 32) {
+        const a = new Uint8Array(32);
+        crypto.getRandomValues(a);
+        t = Array.from(a, (b) => b.toString(16).padStart(2, "0")).join("");
+        try { localStorage.setItem(k, t); } catch (e) {}
+      }
+      return t;
+    }
+    function cloudName() {
+      const u = state.authUser && loadUsers()[state.authUser.email];
+      return (u && u.name) || (state.authUser ? state.authUser.email.split("@")[0] : "");
+    }
+    let cloudReg = { user: null, promise: null };
+    function cloudEnsure(force) {
+      if (!state.authUser) return Promise.resolve({ ok: false, error: "no_user" });
+      if (!force && cloudReg.user === state.authUser.id && cloudReg.promise) return cloudReg.promise;
+      cloudReg.user = state.authUser.id;
+      cloudReg.promise = cloudRpc("cf_register", { p_token: cloudToken(), p_email: state.authUser.email, p_name: cloudName() })
+        .catch(() => { cloudReg.promise = null; return { ok: false, error: "network" }; });
+      return cloudReg.promise;
+    }
+
+    const SH_ERR = {
+      network: "אין חיבור לשרת. בדקו את האינטרנט ונסו שוב.",
+      email_taken: "המייל הזה כבר רשום לחיסכון משותף במכשיר אחר. כרגע אפשר להשתמש בחיסכון המשותף רק במכשיר הראשון שבו נכנסת.",
+      no_profile: "לא הצלחנו לחבר את החשבון לשרת. נסו שוב.",
+      invalid: "הקוד שגוי או שכבר נוצל.",
+      expired: "הקוד פג תוקף — בקשו מהחבר קוד חדש.",
+      wrong_account: "הקוד הזה נשלח למייל אחר. היכנסו עם החשבון של המייל שהוזמן.",
+      already_member: "את/ה כבר חבר/ה בחיסכון הזה 🙂",
+      goal_full: "החיסכון הזה מלא (עד 12 משתתפים).",
+      rate_limited: "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
+      not_member: "את/ה כבר לא חבר/ה בחיסכון הזה.",
+      bad_input: "צריך שם וסכום יעד 🙂",
+      bad_email: "כתובת אימייל לא תקינה",
+      too_many_goals: "אפשר לפתוח עד 20 חסכונות משותפים.",
+    };
+    const shErr = (code) => SH_ERR[code] || "משהו השתבש. נסו שוב.";
+
+    let shState = { loaded: false, loading: false, error: "", goals: [], form: null, invite: null, lastCode: null };
+    // invite: { goalId, email, result }   lastCode: { goalId, code, until }
+
+    async function loadShared() {
+      shState.loading = true; shState.error = "";
+      try {
+        const reg = await cloudEnsure();
+        if (!reg || reg.ok === false) throw Object.assign(new Error(), { code: (reg && reg.error) || "network" });
+        const r = await cloudRpc("cf_my_goals", { p_token: cloudToken() });
+        if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+        shState.goals = r.goals || [];
+      } catch (e) {
+        shState.error = e.code || "network";
+      }
+      shState.loading = false; shState.loaded = true;
+      if (state.screen === "shared") render();
+    }
+
+    function renderSharedPage() {
+      const body = pageShell("חיסכון משותף 🤝", () => {
+        shState.form = null; shState.invite = null; state.screen = "app"; render();
+      });
+      if (!shState.loaded && !shState.loading) loadShared();
+
+      const intro = el("p", "termupd");
+      intro.textContent = "חוסכים ביחד עם חברים ובני משפחה: כל אחד מפקיד מהקוביות שלו, וכולם רואים את ההתקדמות.";
+      body.appendChild(intro);
+
+      const row = el("div", "frow");
+      row.style.cssText = "gap:8px;margin-bottom:12px";
+      const bNew = el("button", "addcube"); bNew.style.flex = "1";
+      bNew.innerHTML = '<span class="addicon">＋</span><span>חיסכון משותף חדש</span>';
+      bNew.onclick = () => { shState.form = shState.form === "new" ? null : "new"; render(); };
+      const bJoin = el("button", "addcube"); bJoin.style.flex = "1";
+      bJoin.innerHTML = '<span class="addicon">🔑</span><span>יש לי קוד הצטרפות</span>';
+      bJoin.onclick = () => { shState.form = shState.form === "join" ? null : "join"; render(); };
+      row.appendChild(bNew); row.appendChild(bJoin);
+      body.appendChild(row);
+
+      if (shState.form === "new") body.appendChild(sharedNewForm());
+      if (shState.form === "join") body.appendChild(sharedJoinForm());
+
+      if (shState.loading && !shState.goals.length) {
+        const p = el("p", "termupd"); p.textContent = "טוען… ⏳"; body.appendChild(p);
+      } else if (shState.error) {
+        const c = el("div", "setcard");
+        c.innerHTML = '<div class="unknote">⚠️ ' + esc(shErr(shState.error)) + '</div>' +
+          '<button class="fchip on" id="shRetry" style="margin-top:10px">🔄 נסו שוב</button>';
+        c.querySelector("#shRetry").onclick = () => { cloudReg.promise = null; shState.loaded = false; render(); };
+        body.appendChild(c);
+      } else if (shState.loaded && !shState.goals.length && !shState.form) {
+        const p = el("p", "termupd"); p.textContent = "אין עדיין חיסכון משותף — פתחו אחד והזמינו חבר, או הצטרפו עם קוד.";
+        body.appendChild(p);
+      }
+      shState.goals.forEach((g) => body.appendChild(cloudGoalCard(g)));
+
+      if (state.shared && state.shared.length) {
+        const h = el("h3"); h.textContent = "קוביות משותפות ישנות (הדגמה, רק במכשיר הזה)";
+        h.style.cssText = "font-size:14px;color:var(--dim);margin:22px 0 8px";
+        body.appendChild(h);
+        state.shared.forEach((sc) => body.appendChild(legacySharedCard(sc)));
+      }
+    }
+
+    function sharedNewForm() {
+      const f = el("div", "setcard");
+      f.innerHTML = '<h3 style="margin:0 0 10px">חיסכון משותף חדש</h3>' +
+        '<label class="flbl">למה חוסכים?</label><div class="fld"><input id="shName" maxlength="60" placeholder="טיול חברים לאילת"></div>' +
+        '<label class="flbl">סכום יעד</label><div class="fld"><span class="cur">₪</span><input id="shTarget" inputmode="numeric" placeholder="5000"></div>' +
+        '<button class="distbtn wide" id="shCreate" style="margin-top:14px">פתיחת החיסכון ✨</button>' +
+        '<button class="obback" id="shCancel">ביטול</button>';
+      const t = f.querySelector("#shTarget");
+      t.oninput = () => { t.value = t.value.replace(/[^0-9]/g, ""); };
+      f.querySelector("#shCancel").onclick = () => { shState.form = null; render(); };
+      f.querySelector("#shCreate").onclick = async (ev) => {
+        const name = f.querySelector("#shName").value.trim(), target = Number(t.value) || 0;
+        if (!name || target <= 0) { showToast(shErr("bad_input")); return; }
+        ev.target.disabled = true;
+        try {
+          const reg = await cloudEnsure();
+          if (!reg.ok) throw Object.assign(new Error(), { code: reg.error });
+          const r = await cloudRpc("cf_create_goal", { p_token: cloudToken(), p_name: name, p_target: target });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          shState.form = null;
+          showToast("🤝 נפתח חיסכון משותף: " + name + " — עכשיו הזמינו חבר");
+          await loadShared();
+          shState.invite = { goalId: r.goal_id, email: "", result: null };
+          render();
+        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      return f;
+    }
+
+    function sharedJoinForm() {
+      const f = el("div", "setcard");
+      f.innerHTML = '<h3 style="margin:0 0 6px">הצטרפות עם קוד</h3>' +
+        '<p class="termupd" style="margin:0 0 10px">הקלידו את הקוד בן 6 הספרות שקיבלתם במייל או בווטסאפ.</p>' +
+        '<div class="fld"><input id="shCode" inputmode="numeric" maxlength="6" dir="ltr" placeholder="123456" style="letter-spacing:6px;text-align:center;font-weight:900"></div>' +
+        '<button class="distbtn wide" id="shJoin" style="margin-top:12px">הצטרפות</button>' +
+        '<button class="obback" id="shJoinCancel">ביטול</button>';
+      const inp = f.querySelector("#shCode");
+      inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); };
+      f.querySelector("#shJoinCancel").onclick = () => { shState.form = null; render(); };
+      f.querySelector("#shJoin").onclick = async (ev) => {
+        if (inp.value.length !== 6) { showToast("הקוד הוא 6 ספרות"); return; }
+        ev.target.disabled = true;
+        try {
+          const reg = await cloudEnsure();
+          if (!reg.ok) throw Object.assign(new Error(), { code: reg.error });
+          const r = await cloudRpc("cf_accept_invite", { p_token: cloudToken(), p_code: inp.value });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          shState.form = null;
+          burstCoins("🤝");
+          showToast("🎉 הצטרפת ל\"" + r.goal_name + "\"");
+          await loadShared();
+        } catch (e) { ev.target.disabled = false; showToast(shErr(e.code || "network")); }
+      };
+      setTimeout(() => inp.focus(), 60);
+      return f;
+    }
+
+    const SH_COLORS = ["#6c5ce7", "#74B9FF", "#FD79A8", "#55EFC4", "#FAB1A0", "#f5b544", "#00CEC9", "#e8845e"];
+
+    function cloudGoalCard(g) {
+      const members = g.members || [];
+      const total = members.reduce((s, m) => s + Number(m.amount || 0), 0);
+      const target = Number(g.target) || 1;
+      const pct = Math.min(100, Math.round((total / target) * 100));
       const card = el("div", "setcard shcard");
       card.innerHTML =
-        '<div class="shtop"><b>🤝 ' + esc(sc.name) + '</b>' +
-          (total >= sc.target ? '<span class="shdone">הושלם! 🎉</span>' : '<span class="shpct">' + donePct + '%</span>') + '</div>' +
-        '<div class="shsum">₪' + fmt(total) + ' <span>מתוך ₪' + fmt(sc.target) + '</span></div>' +
+        '<div class="shtop"><b>🤝 ' + esc(g.name) + '</b>' +
+          (total >= target ? '<span class="shdone">הושלם! 🎉</span>' : '<span class="shpct">' + pct + '%</span>') + '</div>' +
+        '<div class="shsum">₪' + fmt(total) + ' <span>מתוך ₪' + fmt(target) + ' · ' + members.length + ' משתתפים</span></div>' +
         '<div class="chtrack big"><i style="width:0%"></i></div>' +
         '<div class="shparts"></div>' +
         '<div class="shactions">' +
           '<div class="fld small"><span class="cur">₪</span><input inputmode="numeric" placeholder="200" class="shAmt"></div>' +
           '<button class="distbtn shAdd">הפקדה שלי</button>' +
-          '<button class="fchip on shSim">⚡ חבר מפקיד</button>' +
+        '</div>' +
+        '<div class="frow" style="gap:8px;margin-top:10px">' +
+          '<button class="fchip on shInv">👥 הזמנת חבר</button>' +
+          '<button class="fchip shRef">🔄 רענון</button>' +
+          '<button class="fchip shLeave">' + (g.owner ? "🗑️ סגירת החיסכון" : "🚪 יציאה") + '</button>' +
         '</div>';
-      requestAnimationFrame(() => { card.querySelector(".chtrack i").style.width = donePct + "%"; });
+      requestAnimationFrame(() => { card.querySelector(".chtrack i").style.width = pct + "%"; });
       const parts = card.querySelector(".shparts");
-      sc.participants.forEach((p) => {
-        const pct = sc.target > 0 ? Math.min(100, Math.round((p.amount / sc.target) * 100)) : 0;
-        const row = el("div", "shp");
-        row.innerHTML = '<span class="shpname"' + (p.me ? ' style="color:var(--primary);font-weight:800"' : "") + '>' + esc(p.name) + '</span>' +
-          '<div class="shptrack"><i style="width:0%;background:' + p.color + '"></i></div>' +
-          '<span class="shpamt">₪' + fmt(p.amount) + '</span>';
-        parts.appendChild(row);
-        requestAnimationFrame(() => { row.querySelector("i").style.width = pct + "%"; });
+      members.forEach((m, i) => {
+        const mp = Math.min(100, Math.round((Number(m.amount || 0) / target) * 100));
+        const r = el("div", "shp");
+        r.innerHTML = '<span class="shpname"' + (m.me ? ' style="color:var(--primary);font-weight:800"' : "") + '>' + esc(m.me ? "את/ה" : m.name) + '</span>' +
+          '<div class="shptrack"><i style="width:0%;background:' + SH_COLORS[i % SH_COLORS.length] + '"></i></div>' +
+          '<span class="shpamt">₪' + fmt(Number(m.amount || 0)) + '</span>';
+        parts.appendChild(r);
+        requestAnimationFrame(() => { r.querySelector("i").style.width = mp + "%"; });
       });
-      const amtInp = card.querySelector(".shAmt");
-      amtInp.oninput = () => { amtInp.value = amtInp.value.replace(/[^0-9]/g, ""); };
-      card.querySelector(".shAdd").onclick = () => {
-        const amount = Number(amtInp.value) || 0;
+
+      const amt = card.querySelector(".shAmt");
+      amt.oninput = () => { amt.value = amt.value.replace(/[^0-9]/g, ""); };
+      card.querySelector(".shAdd").onclick = async (ev) => {
+        const amount = Number(amt.value) || 0;
         if (amount <= 0) return;
         const plan = buildFundingPlan(amount, null);
         if (!plan) { showToast("אין מספיק כסף פנוי בקוביות 🙂"); return; }
+        // Take the money from the cubes now; put it back if the server says no.
+        const before = { pool: state.pool, cubes: state.cubes.map((c) => ({ key: c.key, balance: c.balance })) };
         plan.forEach((s) => {
           if (s.key === "__pool") state.pool = Math.max(0, state.pool - s.amount);
           else { const c = state.cubes.find((x) => x.key === s.key); if (c) c.balance = Math.max(0, c.balance - s.amount); }
         });
-        sc.participants.find((p) => p.me).amount += amount;
-        saveState(); render();
-        showToast("💸 הפקדת ₪" + fmt(amount) + " (נלקח: " + describeSources(plan) + ")");
+        ev.target.disabled = true;
+        try {
+          const r = await cloudRpc("cf_deposit", { p_token: cloudToken(), p_goal: g.id, p_amount: amount });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          saveState();
+          showToast("💸 הפקדת ₪" + fmt(amount) + " (נלקח: " + describeSources(plan) + ")");
+          await loadShared();
+        } catch (e) {
+          state.pool = before.pool;
+          before.cubes.forEach((b) => { const c = state.cubes.find((x) => x.key === b.key); if (c) c.balance = b.balance; });
+          saveState(); ev.target.disabled = false;
+          showToast("ההפקדה לא נשמרה — הכסף נשאר בקוביות. " + shErr(e.code || "network"));
+        }
       };
-      card.querySelector(".shSim").onclick = () => {
-        const friends = sc.participants.filter((p) => !p.me);
-        if (!friends.length) { showToast("אין חברים בקובייה הזו 🙂"); return; }
-        const f = friends[Math.floor(Math.random() * friends.length)];
-        const add = (Math.floor(Math.random() * 9) + 2) * 50; // 100–500
-        f.amount += add;
+      card.querySelector(".shRef").onclick = () => loadShared();
+      card.querySelector(".shLeave").onclick = async () => {
+        const msg = g.owner ? "לסגור את החיסכון לכל המשתתפים?" : "לצאת מהחיסכון המשותף?";
+        if (!confirm(msg)) return;
+        try { await cloudRpc("cf_leave", { p_token: cloudToken(), p_goal: g.id }); await loadShared(); }
+        catch (e) { showToast(shErr("network")); }
+      };
+      card.querySelector(".shInv").onclick = () => {
+        shState.invite = shState.invite && shState.invite.goalId === g.id ? null : { goalId: g.id, email: "", result: null };
+        render();
+      };
+      if (shState.invite && shState.invite.goalId === g.id) card.appendChild(invitePanel(g));
+      return card;
+    }
+
+    function invitePanel(g) {
+      const inv = shState.invite;
+      const p = el("div", "invpanel");
+      p.style.cssText = "margin-top:12px;padding-top:12px;border-top:1px solid var(--border)";
+      const res = inv.result;
+      const last = shState.lastCode && shState.lastCode.goalId === g.id && shState.lastCode.until > Date.now() ? shState.lastCode : null;
+      p.innerHTML =
+        '<label class="flbl">חיפוש חבר לפי אימייל</label>' +
+        '<div class="frow" style="gap:8px"><div class="fld" style="flex:1;margin:0"><input id="invEmail" type="email" dir="ltr" placeholder="friend@gmail.com"></div>' +
+        '<button class="fchip on" id="invSearch">🔍 חיפוש</button></div>' +
+        '<div id="invRes" class="termupd" style="margin:8px 0 0">' +
+          (res === null ? "" :
+            res.self ? "זה המייל שלך 🙂" :
+            res.found ? "✅ נמצא: <b>" + esc(res.name) + "</b> משתמש/ת ב-CubeFinance" :
+            "לא מצאנו משתמש עם המייל הזה. אפשר עדיין לשלוח הזמנה — אחרי שיירשם עם המייל הזה הוא יוכל להצטרף.") + '</div>' +
+        '<button class="distbtn wide" id="invMail" style="margin-top:10px">📧 שליחת קוד הזמנה למייל</button>' +
+        '<div class="gor">או</div>' +
+        '<button class="gbtn" id="invWa" style="background:#25D366;color:#fff;border-color:#25D366">💬 שיתוף קוד בווטסאפ</button>' +
+        (last ? '<div class="unknote" style="margin-top:10px;text-align:center">קוד הצטרפות: <b dir="ltr" style="font-size:22px;letter-spacing:4px">' + esc(last.code) + '</b><br>' +
+                'תקף עד ' + new Date(last.until).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) +
+                ' <button class="fchip" id="invCopy" style="margin-inline-start:6px">📋 העתקה</button></div>' : "");
+      const em = p.querySelector("#invEmail");
+      em.value = inv.email || "";
+      em.oninput = () => {
+        inv.email = em.value.trim();
+        if (inv.result) { inv.result = null; p.querySelector("#invRes").textContent = ""; }
+      };
+      p.querySelector("#invSearch").onclick = async () => {
+        const e = normEmail(em.value);
+        if (!validEmail(e)) { showToast(shErr("bad_email")); return; }
+        try {
+          const r = await cloudRpc("cf_search", { p_token: cloudToken(), p_email: e });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          inv.email = e; inv.result = { found: !!r.found, name: r.name || "", self: !!r.self };
+          render();
+        } catch (er) { showToast(shErr(er.code || "network")); }
+      };
+      p.querySelector("#invMail").onclick = async (ev) => {
+        const e = normEmail(em.value);
+        if (!validEmail(e)) { showToast(shErr("bad_email")); return; }
+        if (e === normEmail(state.authUser.email)) { showToast("זה המייל שלך 🙂"); return; }
+        ev.target.disabled = true;
+        try {
+          const r = await cloudRpc("cf_create_invite", { p_token: cloudToken(), p_goal: g.id, p_email: e });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          await sendInviteEmail(e, r.code, r.inviter_name || cloudName(), g.name);
+          showToast("📧 קוד הזמנה נשלח ל-" + e + " (תקף " + INVITE_TTL_MIN + " דקות)");
+          inv.email = ""; inv.result = null; render();
+        } catch (er) {
+          ev.target.disabled = false;
+          showToast(er.code ? shErr(er.code) : "שליחת המייל נכשלה. נסו שוב או שתפו בווטסאפ.");
+        }
+      };
+      p.querySelector("#invWa").onclick = async (ev) => {
+        ev.target.disabled = true;
+        try {
+          const r = await cloudRpc("cf_create_invite", { p_token: cloudToken(), p_goal: g.id, p_email: null });
+          if (!r.ok) throw Object.assign(new Error(), { code: r.error });
+          shState.lastCode = { goalId: g.id, code: r.code, until: Date.now() + (r.expires_in || 600) * 1000 };
+          openWhatsApp(inviteMessage(r.inviter_name || cloudName(), g.name, Number(g.target), r.code));
+          render();
+        } catch (er) { ev.target.disabled = false; showToast(shErr(er.code || "network")); }
+      };
+      const cp = p.querySelector("#invCopy");
+      if (cp) cp.onclick = () => {
+        const t = inviteMessage(cloudName(), g.name, Number(g.target), last.code);
+        (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+          () => showToast("📋 ההזמנה הועתקה"), () => showToast("הקוד: " + last.code));
+      };
+      return p;
+    }
+
+    function inviteMessage(inviter, goal, target, code) {
+      return "היי! 👋 " + (inviter ? inviter + " מזמין/ה" : "אני מזמין/ה") + " אותך לחסוך ביחד ב-CubeFinance 🤝\n" +
+        "המטרה: \"" + goal + "\" (יעד ₪" + fmt(target) + ")\n\n" +
+        "קוד ההצטרפות: " + code + "\n" +
+        "הקוד תקף ל-" + INVITE_TTL_MIN + " דקות.\n\n" +
+        "פותחים את CubeFinance ← חיסכון משותף ← \"יש לי קוד הצטרפות\".";
+    }
+    function openWhatsApp(text) {
+      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      // Inside the Android app the wrapper hands https links to the system,
+      // which opens WhatsApp. In a browser, a new tab does the same.
+      // (window.open with "noopener" always returns null, so a link click is
+      // used instead — it never navigates the app itself away.)
+      if (nativeApp) { window.location.href = url; return; }
+      const a = document.createElement("a");
+      a.href = url; a.target = "_blank"; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+    // The invite email goes through the same EmailJS account as the sign-up
+    // codes. With a dedicated invite template it reads as an invitation;
+    // without one it falls back to the code template.
+    async function sendInviteEmail(email, code, inviter, goal) {
+      if (!useEmailJS()) throw new Error("no mail");
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: EMAILJS.serviceId,
+          template_id: EMAILJS.inviteTemplateId || EMAILJS.templateId,
+          user_id: EMAILJS.publicKey,
+          template_params: { to_email: email, code: code, inviter: inviter, goal: goal },
+        }),
+      });
+      if (!res.ok) throw new Error("emailjs " + res.status);
+    }
+
+    // The old local demo cubes (made-up friends) stay visible so nobody loses
+    // track of money they moved into them; removing one returns that money.
+    function legacySharedCard(sc) {
+      const mine = (sc.participants.find((p) => p.me) || { amount: 0 }).amount;
+      const card = el("div", "setcard shcard");
+      card.style.opacity = ".85";
+      card.innerHTML = '<div class="shtop"><b>' + esc(sc.name) + '</b><span class="shpct">הדגמה</span></div>' +
+        '<div class="shsum">₪' + fmt(mine) + ' <span>הפקדות שלך</span></div>' +
+        '<button class="fchip" style="margin-top:6px">🗑️ הסרה' + (mine > 0 ? " והחזרת ₪" + fmt(mine) + " לקוביות" : "") + '</button>';
+      card.querySelector("button").onclick = () => {
+        state.pool += mine;
+        state.shared = state.shared.filter((x) => x.id !== sc.id);
         saveState(); render();
-        showToast("🎉 " + f.name + " הפקיד/ה ₪" + fmt(add) + ' ל"' + sc.name + '"');
+        if (mine > 0) showToast("💸 ₪" + fmt(mine) + " חזרו ליתרה הפנויה");
       };
       return card;
     }
