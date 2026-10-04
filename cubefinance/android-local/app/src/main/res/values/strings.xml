@@ -31,4 +31,8 @@
     <string name="push_chat_generic">יש לך תשובה חדשה בצ\'אט. אפשר לפתוח ולקרוא אותה.</string>
     <string name="push_income_title">ההכנסה החודשית שלך עודכנה 💰</string>
     <string name="push_income_generic">ההכנסה החודשית שלך נרשמה ב־CubeFinance.</string>
+    <string name="channel_shared_name">חיסכון משותף</string>
+    <string name="channel_shared_description">הצטרפות, הפקדות ובקשות מחיקה בחסכונות המשותפים שלך</string>
+    <string name="push_shared_title">חיסכון משותף 🤝</string>
+    <string name="push_shared_generic">יש עדכון חדש בחיסכון המשותף</string>
 </resources>

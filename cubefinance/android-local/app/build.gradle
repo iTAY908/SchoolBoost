@@ -23,7 +23,7 @@ android {
         targetSdk 36              // Android 16 (API 36) — see compat notes below
         // Play refuses an upload whose versionCode was used before, so CI can
         // override these without editing the file.
-        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "16") as int)
+        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "17") as int)
         versionName (System.getenv("CUBEY_VERSION_NAME") ?: project.findProperty("CUBEY_VERSION_NAME") ?: "16.0")
         resValue "string", "admob_app_id", "ca-app-pub-8901066122989701~3395897013"
 
@@ -35,6 +35,10 @@ android {
         def pushFlag = (System.getenv("CUBEY_PUSH_ENABLED") ?: project.findProperty("CUBEY_PUSH_ENABLED") ?: "false").toString()
         buildConfigField "boolean", "PUSH_ENABLED",
                 (pushFlag == "true" && file('google-services.json').exists()) ? "true" : "false"
+        // Shared-savings / entitlement backend. Both values are PUBLIC (the same
+        // ones the page uses); the server checks the user's session token.
+        buildConfigField "String", "SUPABASE_URL", "\"https://sfrkenhauekqdijtunpg.supabase.co\""
+        buildConfigField "String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q\""
         // Must match REGION in firebase/functions/index.js.
         buildConfigField "String", "FUNCTIONS_REGION",
                 "\"" + (System.getenv("CUBEY_FUNCTIONS_REGION") ?: project.findProperty("CUBEY_FUNCTIONS_REGION") ?: "europe-west1") + "\""
@@ -132,4 +136,6 @@ dependencies {
 
     // JVM unit tests (EntitlementResolverTest): ./gradlew :app:testDebugUnitTest
     testImplementation 'junit:junit:4.13.2'
+    // real org.json in JVM tests (android.jar only has stubs)
+    testImplementation 'org.json:json:20240303'
 }

@@ -34,6 +34,9 @@ public class CubeMessagingService extends FirebaseMessagingService {
     static final String EXTRA_CONVERSATION = "push_conversation";
     static final String EXTRA_MESSAGE = "push_message";
     static final String EXTRA_ENTRY = "push_entry";
+    static final String EXTRA_ACCT = "push_acct";
+    static final String EXTRA_GOAL = "push_goal";
+    static final String EXTRA_EVENT = "push_event";
 
     @Override
     public void onNewToken(@NonNull String token) {
@@ -43,6 +46,10 @@ public class CubeMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage message) {
         Context ctx = getApplicationContext();
+        Map<String, String> d0 = message.getData();
+        // Shared savings come from the Supabase backend, addressed to an app
+        // account — handled even when the Firebase-functions backend is off.
+        if ("shared".equals(d0.get("type"))) { handleShared(ctx, d0); return; }
         if (!PushManager.isEnabled(ctx)) return;
         Map<String, String> d = message.getData();
         String type = d.get("type");
@@ -103,6 +110,32 @@ public class CubeMessagingService extends FirebaseMessagingService {
         post(ctx, PushManager.CHANNEL_INCOME, PushManager.TAG_INCOME, "income_" + entry, title, body,
                 ctx.getString(R.string.push_income_generic), open, NotificationCompat.CATEGORY_STATUS);
         forward("income", d);
+    }
+
+    private void handleShared(Context ctx, Map<String, String> d) {
+        String acct = d.get("acct");
+        String goal = d.get("goalId");
+        String event = d.get("eventId");
+        if (acct == null || goal == null || event == null) return;
+        // Only for the app account signed in on this phone right now — a push
+        // for an account that logged out here is dropped, never shown.
+        if (!acct.equals(PushManager.sharedAccount(ctx))) return;
+        if (!PushManager.markSeen(ctx, "shared:" + event)) return;   // retries / redelivery
+        if (!PushManager.localPref(ctx, "sharedPush", true)) return;
+
+        boolean hide = PushManager.localPref(ctx, "hideSensitive", false);
+        String title = nonEmpty(d.get("title"), ctx.getString(R.string.push_shared_title));
+        String body = hide ? ctx.getString(R.string.push_shared_generic) : nonEmpty(d.get("body"), ctx.getString(R.string.push_shared_generic));
+
+        Intent open = new Intent(ctx, MainActivity.class)
+                .setAction("cube.Finance.OPEN_SHARED." + event)
+                .putExtra(EXTRA_TYPE, "shared")
+                .putExtra(EXTRA_ACCT, acct)
+                .putExtra(EXTRA_GOAL, goal)
+                .putExtra(EXTRA_EVENT, event);
+        post(ctx, PushManager.CHANNEL_SHARED, PushManager.TAG_SHARED, "shared_" + event, title, body,
+                ctx.getString(R.string.push_shared_generic), open, NotificationCompat.CATEGORY_SOCIAL);
+        forward("shared", d);   // app open: refresh the goal and the inbox now
     }
 
     private static void forward(String type, Map<String, String> d) {

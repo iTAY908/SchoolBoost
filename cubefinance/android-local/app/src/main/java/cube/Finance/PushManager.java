@@ -59,12 +59,20 @@ public final class PushManager {
 
     static final String CHANNEL_CHAT = "chat_replies";
     static final String CHANNEL_INCOME = "income_updates";
+    static final String CHANNEL_SHARED = "shared_savings";
     static final String TAG_CHAT = "push_chat";
     static final String TAG_INCOME = "push_income";
+    static final String TAG_SHARED = "push_shared";
+    private static final String KEY_SHARED_ACCOUNT = "shared_account";
+
+    /** Hands a fresh FCM token to the page, which registers it with the shared-savings backend. */
+    interface TokenListener { void onToken(String token); }
+    private static volatile TokenListener tokenListener = null;
+    static void setTokenListener(TokenListener l) { tokenListener = l; }
 
     /** Only these functions can be reached from the web layer. */
     private static final Set<String> CALLABLE = new HashSet<>(Arrays.asList(
-            "chatSend", "chatGet", "chatDeleteConversation", "incomeSetSchedule", "incomeSync", "setPrefs",
+            "chatSend", "chatGet", "chatAwait", "chatDeleteConversation", "incomeSetSchedule", "incomeSync", "setPrefs",
             "deleteAccountData"));
 
     /** The page asks; the answer comes back through one of these. */
@@ -179,8 +187,39 @@ public final class PushManager {
         });
     }
 
+    // ---- shared savings (Supabase backend, FCM delivery) ----------------------
+    //
+    // Independent of the Firebase-functions backend above: the token goes to
+    // Supabase (via the page), and the pushes are addressed to an app account
+    // by its key — kept here so the service can check it while the app is closed.
+
+    /** FCM itself is usable (google-services.json is in the build). */
+    static boolean fcmAvailable(Context ctx) {
+        return !FirebaseApp.getApps(ctx).isEmpty();
+    }
+
+    static void fcmToken(Context ctx, TokenListener cb) {
+        if (!fcmAvailable(ctx)) { cb.onToken(null); return; }
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(t ->
+                cb.onToken(t.isSuccessful() ? t.getResult() : null));
+    }
+
+    /** The app account signed in on this phone (key = SHA-256 of its email), or null after logout. */
+    static void setSharedAccount(Context ctx, String accountKey) {
+        SharedPreferences.Editor e = prefs(ctx).edit();
+        if (accountKey == null) e.remove(KEY_SHARED_ACCOUNT); else e.putString(KEY_SHARED_ACCOUNT, accountKey);
+        e.apply();
+        if (accountKey == null) cancelTag(ctx, TAG_SHARED);   // the next account must not see these
+    }
+
+    static String sharedAccount(Context ctx) {
+        return prefs(ctx).getString(KEY_SHARED_ACCOUNT, null);
+    }
+
     /** Called by CubeMessagingService when FCM rotates this install's token. */
     static void onNewToken(Context ctx, String token) {
+        TokenListener l = tokenListener;
+        if (l != null) l.onToken(token);   // app open: the page re-registers it right away
         if (!isEnabled(ctx)) return;
         FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
         if (u == null) return;   // not linked — the next login registers it
@@ -385,6 +424,10 @@ public final class PushManager {
                 ctx.getString(R.string.channel_income_name), NotificationManager.IMPORTANCE_HIGH);
         income.setDescription(ctx.getString(R.string.channel_income_description));
         nm.createNotificationChannel(income);
+        NotificationChannel shared = new NotificationChannel(CHANNEL_SHARED,
+                ctx.getString(R.string.channel_shared_name), NotificationManager.IMPORTANCE_HIGH);
+        shared.setDescription(ctx.getString(R.string.channel_shared_description));
+        nm.createNotificationChannel(shared);
     }
 
     /** Clears this app's server notifications (chat + income) from the shade. */
@@ -392,7 +435,9 @@ public final class PushManager {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null) return;
         for (StatusBarNotification n : nm.getActiveNotifications()) {
-            if (TAG_CHAT.equals(n.getTag()) || TAG_INCOME.equals(n.getTag())) nm.cancel(n.getTag(), n.getId());
+            if (TAG_CHAT.equals(n.getTag()) || TAG_INCOME.equals(n.getTag()) || TAG_SHARED.equals(n.getTag())) {
+                nm.cancel(n.getTag(), n.getId());
+            }
         }
     }
 
