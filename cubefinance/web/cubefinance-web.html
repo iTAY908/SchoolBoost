@@ -2863,7 +2863,7 @@
       state.pool = s && s.pool != null ? s.pool : 0;
       state.cubes = s && Array.isArray(s.cubes) ? s.cubes : [];
       state.incognito = !!(s && s.incognito);
-      state.premium = !!(s && s.premium);
+      state.premium = !!(s && s.premium) || isComplimentaryAccount();
       const g = (s && s.game) || {};
       state.game = { points: g.points || 0, claimed: g.claimed || {}, flags: g.flags || {} };
       state.shared = s && Array.isArray(s.shared) ? s.shared : [];
@@ -3257,6 +3257,17 @@
     // accounts exist only in this device's localStorage. A determined user can
     // therefore set it themselves -- but they can equally set `premium`
     // directly, so this grants nothing that was not already reachable.
+    // The app owner's own account gets AI Premium and the guide books free —
+    // but only once the address is verified (email code or Google), so typing
+    // this email into the sign-up form is not enough to claim it.
+    const COMPLIMENTARY_EMAILS = ["itayleiss2010@gmail.com"];
+    function isComplimentaryAccount() {
+      const u = state.authUser;
+      if (!u || !COMPLIMENTARY_EMAILS.includes(normEmail(u.email))) return false;
+      try { const rec = loadUsers()[normEmail(u.email)]; return !!(rec && rec.emailVerified); }
+      catch (e) { return false; }
+    }
+
     function isReviewerAccount() {
       const u = state.authUser;
       if (!u) return false;
@@ -6628,6 +6639,7 @@
       onEntitlement(email, entitled, reason, event) {
         if (!state.authUser || !email || normEmail(email) !== normEmail(state.authUser.email)) return;
         if (entitled === null || entitled === undefined) return;
+        if (!entitled && isComplimentaryAccount()) return;   // the owner keeps Premium without a Play purchase
         const had = !!state.premium;
         if (entitled) closeBillingSheetIfOpen();
         if (had !== !!entitled) {
@@ -6887,7 +6899,7 @@
     // Every purchase gate for the guide books funnels through here, so the
     // review account is unlocked in one place: the buy button becomes "read
     // now", the terms tick is skipped and the payment sheet is never opened.
-    const ownsBook = (id) => isReviewerAccount() ||
+    const ownsBook = (id) => isReviewerAccount() || isComplimentaryAccount() ||
       !!(state.books && state.books.owned && state.books.owned[id]);
     const bookDiscount = (b) => Math.round((1 - b.price / b.listPrice) * 100);
 
