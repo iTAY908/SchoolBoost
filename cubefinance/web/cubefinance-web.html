@@ -378,6 +378,12 @@
       line-height: 1.45; white-space: pre-wrap; unicode-bidi: plaintext; }
     .bubble.u { align-self: flex-start; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
     .bubble.b { align-self: flex-end; background: var(--card); border-bottom-left-radius: 4px; }
+    .bubble.thinking { color: var(--dim); animation: thinkpulse 1.4s ease-in-out infinite; }
+    @keyframes thinkpulse { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+    .bubble.flash { box-shadow: 0 0 0 2px var(--primary); transition: box-shadow .4s; }
+    .increc.hl { outline: 2px solid var(--primary); border-radius: 10px; padding-inline: 8px; transition: outline-color .6s; }
+    .autotag { font-style: normal; font-size: 12px; color: var(--success); margin-inline-start: 6px; }
+    .sw[disabled] { opacity: .45; cursor: not-allowed; }
     .sugg { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
     .sugg button { background: var(--card); border: 1px solid var(--border); border-radius: 999px;
       padding: 9px 13px; color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer;
@@ -829,6 +835,8 @@
     .payhero h3 { margin: 6px 0 2px; font-size: 22px; }
     .payprice { font-size: 30px; font-weight: 900; color: #ffd166; font-variant-numeric: tabular-nums; }
     .payprice span { display: block; font-size: 12.5px; color: var(--dim); font-weight: 600; margin-top: 2px; }
+    .payprice .payloading { font-size: 15px; font-weight: 700; margin: 6px 0 0; }
+    .paynote { margin: 14px 0 0; color: var(--dim); font-size: 12.5px; line-height: 1.6; text-align: start; }
     .payfeat { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 8px;
       text-align: start; color: var(--dim); font-size: 13.5px; line-height: 1.5; }
     .gpaybtn { width: 100%; border: none; cursor: pointer; font-family: var(--font); margin-top: 4px;
@@ -1615,7 +1623,7 @@
       "בעשרה שלבים בסגנון משחק הוא מפרק את הכסף לארבעה ארנקים — מטרה קרובה, קופת חירום, עתיד, וכיף בלי רגשות אשם — ומראה איך נותנים לכל שקל תפקיד, לפני שהוא בוחר לעצמו תפקיד ונעלם. בדרך: חוק 48 השעות שעוצר קניות אימפולסיביות, ההבדל בין „רוצה” ל„צריך” כשהמוח מתחפש, אפקט כדור השלג של ריבית דריבית (עם אזהרה כנה שהשקעות אינן מכונת כסף), המלכודות של תשלום דיגיטלי, ואיך אומרים „לא” ללחץ חברתי בלי לריב.": "In ten game-style steps it breaks the money into four wallets — a near-term goal, an emergency fund, the future, and guilt-free fun — and shows how to give every shekel a job, before it picks one for itself and disappears. Along the way: the 48-hour rule that stops impulse buys, the difference between „want” and „need” when your brain is in disguise, the snowball effect of compound interest (with an honest warning that investing is not a money machine), the traps of digital payment, and how to say „no” to peer pressure without a fight.",
       "תשעה סיפורי מקרה מהחיים — דניאל שתכנן 2,000 ₪ לחופשה והוציא הרבה יותר, מאיה שהטלפון שלה נשבר ביום רגיל, יובל שהבין ש„הנחה של 30%” היא עדיין 450 ₪ שיוצאים מהכיס — לצד ארבעה צ׳ק-ליסטים, אתגר של 30 יום ודף סיכום אחד לצילום מסך.": "Nine real-life case studies — Daniel who budgeted ₪2,000 for a holiday and spent far more, Maya whose phone broke on an ordinary day, Yuval who realised that „30% off” is still ₪450 leaving his pocket — alongside four checklists, a 30-day challenge and a one-page summary to screenshot.",
       "המידע והכלים באפליקציה נועדו למטרות מידע והדרכה בלבד ואינם מהווים ייעוץ פיננסי, ייעוץ השקעות, ייעוץ מס או ייעוץ משפטי. כל הנתונים מדומים או מוזנים ידנית — אין חיבור אמיתי לבנק או לחשבון.": "The information and tools in the app are for information and guidance purposes only and do not constitute financial, investment, tax or legal advice. All data is simulated or entered manually — there is no real connection to a bank or an account.",
-      "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה. ילדים מתחת לגיל 13 מוזמנים להשתמש במצב הילדים — בליווי, בהסכמה ובאחריות הורה או אפוטרופוס. כל הנתונים נשמרים במכשיר בלבד ואינם נשלחים לשום שרת.": "The app is intended for users aged 13 and over. Children under 13 are welcome to use kids mode — accompanied by, with the consent of, and under the responsibility of a parent or guardian. All data is stored on the device only and is not sent to any server.",
+      "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה. ילדים מתחת לגיל 13 מוזמנים להשתמש במצב הילדים — בליווי, בהסכמה ובאחריות הורה או אפוטרופוס. נתוני התקציב נשמרים במכשיר. הודעות לצ׳אט ה-AI וההכנסה החודשית הקבועה נשמרות בשרת מאובטח כדי לענות ולשלוח התראות, ונמחקות עם מחיקת החשבון.": "The app is intended for users aged 13 and over. Children under 13 are welcome to use kids mode — accompanied by, with the consent of, and under the responsibility of a parent or guardian. Budget data stays on the device. Messages to the AI chat and the fixed monthly income are kept on a secure server to answer and send notifications, and are deleted with the account.",
       "קיבלת 5,000 ₪. המוח אומר „חופשה”, החברים אומרים „יאללה, יוצאים”, האינטרנט אומר „מבצע אחרון” — והעתיד לוחש „היי... אולי תשאירו לי משהו?”. הספר הזה עוסק בדיוק ברגע הזה.": "You got ₪5,000. Your brain says „vacation”, your friends say „let's go out”, the internet says „last chance sale” — and your future whispers „hey... maybe leave me something?”. This book is about exactly that moment.",
       "לפני שאתם מוציאים את הכסף, תחליטו מה אתם רוצים שהכסף יעשה. כי ברגע שהכסף מקבל תפקיד, אתם מפסיקים להיות שחקן שמגיב למה שקורה — ומתחילים להיות השחקן שמנהל את המשחק.": "Before you spend the money, decide what you want the money to do. Because the moment money gets a job, you stop being the player who reacts to what happens — and start being the player who runs the game.",
       "כדי שאוכל לעזור באמת, תן לי את המספרים: \"כדאי לי לקנות X ב-800?\", \"X ב-500 או Y ב-900?\", \"מתי אגיע ליעד?\" — או פשוט תגיד לי מה עובר לך בראש ואני אשאל את השאלות.": "To really help, give me the numbers: \"Should I buy X for 800?\", \"X for 500 or Y for 900?\", \"When will I reach my goal?\" — or just tell me what's on your mind and I'll ask the questions.",
@@ -1710,6 +1718,43 @@
       "צריך שם, יתרה וריבית (או לסמן שאינך יודע) 🙂": "A name, balance and interest rate are needed (or tick that you don't know) 🙂",
       ", בלי לפתור כלום, רק להוריד את עוצמת הרעש.": ", without solving anything, just turning the noise down.",
       "יש לאשר את התקנון ותנאי השימוש לפני הרכישה": "You must accept the terms and conditions before purchasing",
+      "🔔 התראות": "🔔 Notifications",
+      "התראות 🔔": "Notifications 🔔",
+      "מה לשלוח לי": "What to send me",
+      "תשובות מצ׳אט AI 💬": "AI chat replies 💬",
+      "כשהתשובה של Cubey מוכנה ויצאת מהצ׳אט": "When Cubey's reply is ready and you have left the chat",
+      "הכנסה חודשית 💰": "Monthly income 💰",
+      "כשההכנסה הקבועה נרשמה אוטומטית בתחילת החודש": "When your fixed income was recorded automatically at the start of the month",
+      "הסתרת תוכן רגיש 🙈": "Hide sensitive content 🙈",
+      "בהתראה יופיע נוסח כללי — בלי תשובת ה-AI ובלי סכומים": "Notifications show a generic text — no AI reply and no amounts",
+      "✅ ההתראות מחוברות לחשבון": "✅ Notifications are connected to your account",
+      "מחבר את ההתראות לחשבון…": "Connecting notifications to your account…",
+      "צריך לחבר את ההתראות לחשבון": "Notifications need to be connected to your account",
+      "הזינו את סיסמת החשבון פעם אחת כדי לקבל התראות במכשיר הזה.": "Enter your account password once to get notifications on this device.",
+      "חיבור התראות": "Connect notifications",
+      "✅ הרשאת התראות פעילה": "✅ Notification permission is on",
+      "⚠️ ההתראות כבויות במכשיר": "⚠️ Notifications are off on this device",
+      "אפשר התראות": "Allow notifications",
+      "פתיחת הגדרות ההתראות": "Open notification settings",
+      "בלי הרשאה לא יופיעו התראות. הצ׳אט וההכנסה החודשית ממשיכים לעבוד כרגיל.": "Without permission no notifications appear. The chat and monthly income keep working as usual.",
+      "התראות השרת עדיין לא הופעלו בגרסה הזו": "Server notifications are not switched on in this version yet",
+      "התראות זמינות באפליקציית האנדרואיד": "Notifications are available in the Android app",
+      "רישומי הכנסה אחרונים": "Recent income records",
+      "🔁 נרשם אוטומטית": "🔁 Recorded automatically",
+      "Cubey חושב… 🧊": "Cubey is thinking… 🧊",
+      "הרכישה הושלמה! צ׳אט ה-AI זמין והפרסומות הוסרו 🎉": "Purchase complete! AI chat is available and ads have been removed 🎉",
+      "✅ AI Premium פעיל בחשבון שלך — צ׳אט ה-AI פתוח והפרסומות הוסרו.": "✅ AI Premium is active on your account — AI chat is open and ads have been removed.",
+      "👑 הרכישה שוחזרה — צ׳אט ה-AI פתוח והפרסומות הוסרו": "👑 Purchase restored — AI chat is open and ads have been removed",
+      "לא נמצאה רכישת AI Premium בחשבון Google Play הזה": "No AI Premium purchase was found on this Google Play account",
+      "רכישת AI Premium כבר לא בתוקף בחשבון הזה": "The AI Premium purchase is no longer valid on this account",
+      "⏳ התשלום ממתין לאישור — צ׳אט ה-AI והסרת הפרסומות ייפתחו ברגע שהתשלום יושלם": "⏳ Payment is pending — AI chat and ad removal will unlock as soon as the payment completes",
+      "חשבון Google Play הזה כבר רכש AI Premium עבור חשבון אחר באפליקציה. התחברו לחשבון ההוא כדי ליהנות ממנו": "This Google Play account already bought AI Premium for another account in the app. Sign in to that account to use it",
+      "🚫 בלי פרסומות — כל הפרסומות באפליקציה מוסרות": "🚫 No ads — every ad in the app is removed",
+      "תשלום חד-פעמי · בלי מנוי": "One-time payment · no subscription",
+      "טוען מחיר מ-Google Play…": "Loading the price from Google Play…",
+      "🔄 כבר קניתי — שחזור רכישה": "🔄 Already bought — restore purchase",
+      "תשלום אחד שכולל את כל הטבות צ׳אט ה-AI ואת הסרת הפרסומות, כל עוד הרכישה בתוקף. השימוש בצ׳אט ה-AI כפוף למגבלות השימוש הקיימות. הרכישה משויכת לחשבון שלך באפליקציה ואפשר לשחזר אותה במכשיר חדש.": "One payment that covers all the AI chat benefits and ad removal, for as long as the purchase stays valid. AI chat use is subject to the existing usage limits. The purchase is tied to your account in the app and can be restored on a new device.",
+      "תשלום חד-פעמי — שגם מסיר את כל הפרסומות באפליקציה.": "A one-time payment — that also removes every ad in the app.",
       "🛟 קרן החירום היא חובה — הושארה על 5% לפחות": "🛟 The emergency fund is required — kept at 5% minimum",
       "המוח שלך רוצה לקנות. הנה איך עוצרים אותו.": "Your brain wants to buy. Here's how to stop it.",
       "🎁 בונוס חינם: מחשבון ודף עבודה אישי למעקב": "🎁 Free bonus: a personal calculator and tracking worksheet",
@@ -2376,6 +2421,8 @@
       expenses: [],                                 // expense journal (what left, and why)
       books: { owned: {} },                         // guide-book library (id -> purchase record)
       worksheet: null,                              // free 40/30/20/10 worksheet (see WS_DEFAULT)
+      chat: null,                                   // the Cubey conversation: { cid, messages:[{id,role,text,status,at}] }
+      notif: null,                                  // server-push settings (see NOTIF_DEFAULT)
     };
 
     // AI cube generation (verified logic): independent -> locked Housing +
@@ -2620,11 +2667,18 @@
       if (income <= 0) return { ok: false, reason: "noincome" };
       const mk = monthKey();
       if (!manual && state.salary.lastApplied === mk) return { ok: false, reason: "already" };
+      return depositIncome(income, mk, null);
+    }
+    // The one place income enters the cubes — the app's own monthly run, the
+    // manual button, and a record the server made (`serverId` set) all use it.
+    function depositIncome(income, mk, serverId) {
       const plan = splitByPercent(income);
       plan.rows.forEach((r) => { if (r.amount > 0) { const c = state.cubes.find((x) => x.key === r.key); if (c) c.balance += r.amount; } });
       state.pool += plan.leftover;
-      state.salary.lastApplied = mk;
-      state.salary.history = (state.salary.history || []).concat([{ m: mk, amount: income, given: plan.given }]).slice(-24);
+      if (!state.salary.lastApplied || mk >= state.salary.lastApplied) state.salary.lastApplied = mk;
+      const rec = { m: mk, amount: income, given: plan.given };
+      if (serverId) { rec.id = serverId; rec.auto = true; }
+      state.salary.history = (state.salary.history || []).concat([rec]).slice(-24);
       state.game.flags.dist = true;
       saveState();
       return { ok: true, income: income, given: plan.given, leftover: plan.leftover, rows: plan.rows };
@@ -2797,7 +2851,7 @@
           onboarded: state.onboarded, pool: state.pool, profile: state.profile, cubes: state.cubes,
           incognito: !!state.incognito, premium: !!state.premium, game: state.game, shared: state.shared, debts: state.debts,
           calmLog: state.calmLog, salary: state.salary, expenses: state.expenses, books: state.books,
-          worksheet: state.worksheet,
+          worksheet: state.worksheet, chat: state.chat, notif: state.notif,
         }));
       } catch (e) {}
     }
@@ -2816,7 +2870,13 @@
       state.debts = s && Array.isArray(s.debts) ? s.debts : [];
       state.calmLog = s && Array.isArray(s.calmLog) ? s.calmLog : [];
       const sal = (s && s.salary) || {};
-      state.salary = { auto: sal.auto !== false, lastApplied: sal.lastApplied || "", history: Array.isArray(sal.history) ? sal.history : [] };
+      state.salary = { auto: sal.auto !== false, lastApplied: sal.lastApplied || "", history: Array.isArray(sal.history) ? sal.history : [],
+        // serverManaged: the backend records this income every month (so the
+        // app no longer does it on open); applied: server records already
+        // reflected in this device's cubes; synced: the first sync happened.
+        serverManaged: !!sal.serverManaged, applied: Array.isArray(sal.applied) ? sal.applied : [], synced: !!sal.synced };
+      state.chat = normChat(s && s.chat);
+      state.notif = Object.assign({}, NOTIF_DEFAULT, (s && s.notif) || {});
       state.expenses = s && Array.isArray(s.expenses) ? s.expenses : [];
       state.books = { owned: (s && s.books && s.books.owned) || {} };
       state.worksheet = wsNormalize(s && s.worksheet);
@@ -2862,12 +2922,227 @@
     function notifyNativeBusy(busy) {
       try { if (nativeApp && nativeApp.setBusy) nativeApp.setBusy(!!busy); } catch (e) {}
     }
+    // Who is signed in (null = nobody). AI Premium — the AI chat and ad
+    // removal — belongs to an app account, so the native side has to know
+    // which one is on screen; it answers through CubeyBilling.onEntitlement.
+    // The two flags only help a purchase made before this update find its
+    // owner: the account that already had Premium on this phone.
+    function notifyNativeAccount(email) {
+      try {
+        if (!nativeApp || !nativeApp.setAppAccount) return;
+        let any = false;
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || k.indexOf("cubefinance_web:state:") !== 0) continue;
+          try { if ((JSON.parse(localStorage.getItem(k)) || {}).premium) { any = true; break; } } catch (e) {}
+        }
+        nativeApp.setAppAccount(email || null, !!(email && state.premium), any);
+      } catch (e) {}
+    }
+
+    // ====================================================================
+    // Server push — the two backend notifications: "the AI reply is ready"
+    // and "your monthly income was recorded". The backend lives in firebase/
+    // (callable functions + FCM); the Android layer (PushManager) holds the
+    // server account and the token. Outside the app, or in a build where the
+    // backend is not switched on, push.available() is false and every path
+    // below falls back to exactly what the app did before.
+    // ====================================================================
+    const NOTIF_DEFAULT = { chatPush: true, incomePush: true, hideSensitive: false, changedAt: 0 };
+    const push = {
+      linked: false, uid: null,
+      status: "off",          // off | linking | linked | needs_password | password_mismatch | error
+      pendingPw: null,        // { email, pw } between the login form and enterApp
+      target: null,           // the notification the app was opened from, until it can be shown
+      reqs: {}, seq: 0,
+      available() { try { return !!(nativeApp && nativeApp.pushIsAvailable && nativeApp.pushIsAvailable()); } catch (e) { return false; } },
+      ready() { return this.linked && this.available(); },
+      call(name, args, timeoutMs) {
+        return new Promise((resolve, reject) => {
+          if (!this.ready()) { reject(new Error("not_linked")); return; }
+          const id = "r" + (++this.seq);
+          const t = setTimeout(() => { delete this.reqs[id]; reject(new Error("timeout")); }, timeoutMs || 20000);
+          this.reqs[id] = { resolve: resolve, reject: reject, t: t };
+          try { nativeApp.pushCall(id, name, JSON.stringify(args || {})); }
+          catch (e) { clearTimeout(t); delete this.reqs[id]; reject(e); }
+        });
+      },
+    };
+    const newId = (p) => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    function normChat(c) {
+      if (!c || typeof c.cid !== "string" || !Array.isArray(c.messages)) return { cid: newId("c"), messages: [] };
+      return { cid: c.cid, messages: c.messages.filter((m) => m && typeof m.text === "string").slice(-100) };
+    }
+    function userTimeZone() {
+      try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Jerusalem"; } catch (e) { return "Asia/Jerusalem"; }
+    }
+
+    // Callbacks the native layer invokes (MainActivity → evaluateJavascript).
+    window.CubeyPush = {
+      onCallResult(id, ok, data, err) {
+        const r = push.reqs[id]; if (!r) return;
+        delete push.reqs[id]; clearTimeout(r.t);
+        if (ok) r.resolve(data); else r.reject(new Error(err || "failed"));
+      },
+      onLinkResult(ok, data, err) {
+        push.linked = !!ok;
+        push.uid = ok && data ? data.uid : null;
+        push.status = ok ? "linked" : (err === "disabled" ? "off" : (err === "needs_password" || err === "password_mismatch" ? err : "error"));
+        if (ok && state.authUser) {
+          // A choice made in this app wins; otherwise adopt the account's.
+          if (data && data.prefs && !(state.notif && state.notif.changedAt)) {
+            state.notif = Object.assign({}, NOTIF_DEFAULT, data.prefs);
+            saveState();
+          }
+          pushSyncPrefs(!!(state.notif && state.notif.changedAt));
+          incomeAfterLink();
+          chatResumePending();
+        }
+        if (!ok) push.target = null;   // can't confirm the tapped notification is this account's
+        pushCheckTarget();
+        if (state.screen === "notifications") render();
+      },
+      onUnlinked() { if (state.screen === "notifications") render(); },
+      onOpenTarget() { pushCheckTarget(); },
+      onForegroundPush(type, data) {
+        if (type === "chat" && state.chat && data && data.conversationId === state.chat.cid) chatPoll(0);
+        if (type === "income") incomeSync().then((r) => { if (r && r.applied.length) afterIncomeApplied(r.applied); });
+      },
+      onPermission() { if (state.screen === "notifications") render(); },
+      onServerResetSent(ok) {
+        showToast(ok ? "📧 שלחנו מייל לאיפוס הסיסמה של חשבון ההתראות" : "לא הצלחנו לשלוח את המייל. נסו שוב בעוד רגע");
+      },
+    };
+
+    function pushLinkAccount(email, password) {
+      if (!push.available()) { push.status = "off"; return; }
+      push.status = "linking";
+      try { nativeApp.pushLink(email, password || null); } catch (e) { push.status = "error"; }
+    }
+    function pushUnlinkAccount() {
+      push.linked = false; push.uid = null; push.target = null; push.status = "off";
+      clearTimeout(chatPollTimer);
+      try { if (push.available()) nativeApp.pushUnlink(); } catch (e) {}
+    }
+    // Settings go to the native mirror (read by the push service when the app
+    // is closed) and to the server (which decides what to send at all).
+    function pushSyncPrefs(toServer) {
+      const n = Object.assign({}, NOTIF_DEFAULT, state.notif || {});
+      const p = { chatPush: !!n.chatPush, incomePush: !!n.incomePush, hideSensitive: !!n.hideSensitive };
+      try { if (push.available()) nativeApp.pushSetLocalPrefs(JSON.stringify(p)); } catch (e) {}
+      if (toServer && push.ready()) push.call("setPrefs", p).catch(() => {});
+    }
+    function pushSetActiveConversation(cid) {
+      try { if (push.available()) nativeApp.pushSetActiveConversation(cid || ""); } catch (e) {}
+    }
+
+    // Route a tapped notification once we know who is signed in. Not logged
+    // in yet → it waits through the login form and opens right after.
+    function pushCheckTarget() {
+      if (!push.available()) return;
+      if (!push.target) {
+        let raw = null;
+        try { raw = nativeApp.pushConsumeTarget(); } catch (e) {}
+        if (raw) { try { push.target = JSON.parse(raw); } catch (e) {} }
+      }
+      const t = push.target;
+      if (!t) return;
+      if (!state.authUser) {
+        if (state.screen === "auth") showToast("🔔 התחברו כדי לפתוח את ההתראה");
+        return;
+      }
+      if (!push.linked) return;                                       // onLinkResult calls back here
+      if (t.uid && t.uid !== push.uid) { push.target = null; return; } // another account's notification
+      if (state.screen === "onboarding" || state.screen === "verify") return;
+      push.target = null;
+      if (t.type === "chat" && t.conversationId) openChatFromPush(t.conversationId, t.messageId);
+      else if (t.type === "income") openIncomeFromPush(t.entryId);
+    }
+
+    // ---- monthly income, server side ------------------------------------
+    // The server keeps the schedule (amount, currency, on/off, time zone) and
+    // writes one record per month. The app sends the schedule whenever any of
+    // it changes, and turns each new record into a deposit into the cubes —
+    // exactly once per record, via depositIncome().
+    let incomeSchedTimer = null;
+    function incomePushSchedule() {
+      clearTimeout(incomeSchedTimer);
+      if (!push.ready() || !state.authUser || !state.onboarded) return Promise.resolve(false);
+      const amount = monthlyIncome();
+      return push.call("incomeSetSchedule", {
+        amount: amount, currency: "ILS", enabled: !!state.salary.auto && amount > 0,
+        timezone: userTimeZone(), lastAppliedMonth: state.salary.lastApplied || "",
+      }).then(() => {
+        if (!state.salary.serverManaged) { state.salary.serverManaged = true; saveState(); }
+        return true;
+      }).catch(() => false);
+    }
+    function incomeScheduleSoon() { clearTimeout(incomeSchedTimer); incomeSchedTimer = setTimeout(incomePushSchedule, 1200); }
+
+    let incomeSyncing = null;
+    function incomeSync() {
+      if (!push.ready() || !state.authUser || !state.onboarded) return Promise.resolve(null);
+      if (incomeSyncing) return incomeSyncing;
+      const who = state.authUser.id;
+      incomeSyncing = push.call("incomeSync", {}).then((r) => {
+        if (!state.authUser || state.authUser.id !== who) return null;   // logged out meanwhile
+        const sal = state.salary, cur = monthKey(), applied = [];
+        const entries = ((r && r.entries) || []).slice().sort((a, b) => (a.month < b.month ? -1 : 1));
+        entries.forEach((e) => {
+          if (!e || sal.applied.indexOf(e.id) !== -1) return;
+          sal.applied.push(e.id);
+          if (sal.lastApplied === e.month) return;               // already put in by the app itself
+          if (sal.lastApplied && e.month < sal.lastApplied) return;
+          if (!sal.synced && e.month !== cur) return;             // first sync here: no replay of old months
+          if (!(e.amount > 0)) return;
+          const res = depositIncome(e.amount, e.month, e.id);
+          applied.push({ id: e.id, month: e.month, amount: e.amount, given: res.given, rows: res.rows });
+        });
+        sal.synced = true;
+        sal.applied = sal.applied.slice(-36);
+        saveState();
+        return { entries: entries, applied: applied };
+      }).catch(() => null).then((x) => { incomeSyncing = null; return x; });
+      return incomeSyncing;
+    }
+    function afterIncomeApplied(applied) {
+      const last = applied[applied.length - 1];
+      state.justFunded = new Set((last.rows || []).filter((x) => x.amount > 0).map((x) => x.key));
+      render();
+      if (state.screen === "app") { burstCoins(); animateCounts(); }
+      showToast("💸 ההכנסה החודשית נרשמה — ₪" + fmt(last.given) + " חולקו לקוביות");
+      setTimeout(() => { state.justFunded = new Set(); }, 800);
+    }
+    function incomeAfterLink() {
+      // Schedule first (it tells the server which month the app already
+      // booked), then pick up whatever the server recorded meanwhile.
+      if (!state.onboarded) return;
+      incomePushSchedule().then(() => incomeSync()).then((r) => { if (r && r.applied.length) afterIncomeApplied(r.applied); });
+    }
+
+    let incomeHighlight = null;
+    function openIncomeFromPush(entryId) {
+      closeChat();
+      incomeSync().then(() => {
+        incomeHighlight = entryId || null;
+        state.screen = "income";
+        render();
+      });
+    }
+
+    // Back from the background: catch up on replies and records.
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden || !push.ready() || !state.authUser) return;
+      chatPoll(0);
+      incomeSync().then((r) => { if (r && r.applied.length) afterIncomeApplied(r.applied); });
+    });
 
     function enterApp(user) {
       state.authUser = user; state.authError = ""; setSession(user.email);
       shState = { loaded: false, loading: false, error: "", goals: [], form: null, invite: null, lastCode: null };
       setTimeout(() => { if (state.authUser === user) cloudEnsure(); }, 0);
       loadState();
+      notifyNativeAccount(user.email);   // the purchase check runs for THIS account
       if (state.onboarded) { state.screen = "app"; }
       else { startOnboarding(); state.screen = "onboarding"; }
       if (state.onboarded) {
@@ -2876,13 +3151,22 @@
         // by inventing money.
         const added = ensureEmergencyCube();
         // Fixed monthly income lands in the cubes on its own, once per calendar
-        // month, the first time the app is opened that month.
-        const auto = state.salary.auto ? receiveMonthlyIncome(false) : { ok: false };
+        // month, the first time the app is opened that month — unless the
+        // server now records it (then it arrives through incomeSync, and
+        // doing it here too would book the month twice).
+        const auto = state.salary.auto && !state.salary.serverManaged ? receiveMonthlyIncome(false) : { ok: false };
         if (added || auto.ok) saveState();
         if (added) setTimeout(() => showToast("🛟 נוספה לך קוביית קרן חירום — רשת הביטחון של כל תקציב"), 700);
         if (auto.ok) setTimeout(() => showToast("💸 הכנסת " + monthLabel() + " חולקה אוטומטית — ₪" + fmt(auto.given) + " לקוביות"), added ? 2600 : 700);
       }
       render();
+      // Tie the server notifications to this account (fresh password if the
+      // user just typed one, the remembered server session otherwise). The
+      // result continues in CubeyPush.onLinkResult: income sync, pending chat
+      // replies, and the notification the app may have been opened from.
+      const pw = push.pendingPw && push.pendingPw.email === normEmail(user.email) ? push.pendingPw.pw : null;
+      push.pendingPw = null;
+      pushLinkAccount(user.email, pw);
     }
     function logout() {
       clearSession();
@@ -2892,7 +3176,10 @@
       state.calmLog = [];
       state.salary = { auto: true, lastApplied: "", history: [] }; state.expenses = []; state.books = { owned: {} };
       state.worksheet = wsNormalize(null);
+      state.chat = null; state.notif = null;
+      notifyNativeAccount(null); // nobody signed in: no one's AI Premium applies (chat locked, ads as usual)
       resetModuleGlobals(); // clear per-session module state so it never leaks to the next account
+      pushUnlinkAccount();  // this phone stops receiving the account's notifications
       render();
     }
     // Wipe module-scoped globals that hold one account's derived data (bank
@@ -3043,9 +3330,11 @@
         // Someone who signed up before verification existed and is still
         // logged in: after the update, the app opens straight on the code
         // screen for the address they registered with.
+        notifyNativeAccount(null);   // not in yet
         startVerification(users[email].email, "existing");
       }
       else {
+        notifyNativeAccount(null);   // nobody signed in — the ad gate stops waiting for an account
         state.screen = "auth"; state.authMode = Object.keys(users).length ? "login" : "signup";
         render();
         playIntro(); // logged out → the intro splash plays over the auth screen
@@ -3459,6 +3748,7 @@
       if (state.screen === "onboarding") return renderOnboarding();
       if (state.screen === "settings") return renderSettingsPage();
       if (state.screen === "language") return renderLanguagePage();
+      if (state.screen === "notifications") return renderNotificationsPage();
       if (state.screen === "terms") return renderTermsPage();
       if (state.screen === "privacy") return renderPrivacyPage();
       if (state.screen === "income") return renderIncomePage();
@@ -3543,6 +3833,9 @@
 
       const submit = () => {
         const res = isSignup ? authSignUp(email.value, pass.value) : authLogIn(email.value, pass.value);
+        // Kept in memory only until enterApp hands it to the native layer,
+        // which signs the server-push account in with it.
+        if (!res.error) push.pendingPw = { email: normEmail(email.value), pw: pass.value };
         if (res.error) {
           state.authError = res.error;
           v.querySelector("#aErr").textContent = res.error;
@@ -3761,6 +4054,7 @@
         u.failCount = 0; u.lockUntil = 0; u.emailVerified = true;
         saveUsers(users);
         secLog("INFO", "הסיסמה אופסה אחרי אימות קוד במייל: " + resetEmail);
+        push.pendingPw = { email: normEmail(u.email), pw: p1.value };
         resetEmail = null;
         showToast("✅ הסיסמה עודכנה");
         enterApp({ id: u.id, email: u.email });
@@ -4223,6 +4517,7 @@
         state.pool = monthly; // start with one month's pocket money ready to split
         state.salary.lastApplied = monthKey(); // this month's money is already in the pool
         state.onboarded = true;
+        incomeScheduleSoon(); // the server starts recording the fixed income from next month
         state.screen = "app";
         clearOb();
         render();
@@ -4252,6 +4547,7 @@
       state.pool = profile.balance || (profile.works ? profile.income : 0);
       state.salary.lastApplied = monthKey(); // this month's income is already in the pool
       state.onboarded = true;
+      incomeScheduleSoon(); // the server starts recording the fixed income from next month
       state.screen = "app";
       clearOb(); // questionnaire done — drop the saved draft
 
@@ -4764,7 +5060,7 @@
     // close/reopen. scrollToBottom() fires on every append + stream tick.
     // =====================================================================
     let chatBuilt = false, chatOpen = false, streaming = false, pendingAction = null;
-    const chatLog = [];
+    let chatPollTimer = null;
     const SUGG = ["עזור לי להחליט מה לקנות", "מה מצב קרן החירום?", "כמה אני יכול לחסוך בחודש?", "תכניס 100 ₪ לחיסכון"];
 
     function scrollToBottom() { const m = $("msgs"); if (m) m.scrollTop = m.scrollHeight; }
@@ -4789,6 +5085,7 @@
       const go = () => { const val = (input.value || "").trim(); if (val && !streaming) { input.value = ""; send(val); } };
       $("csend").onclick = go;
       input.onkeydown = (e) => { if (e.key === "Enter") go(); };
+      renderChatHistory();   // the saved conversation, including replies that arrived while away
       // Keyboard-overlap guard: when the on-screen keyboard shrinks the visual
       // viewport, pad the chat so the input stays visible, and re-anchor scroll.
       input.onfocus = () => setTimeout(scrollToBottom, 250);
@@ -4815,7 +5112,11 @@
       buildChatShell();
       chatOpen = true;
       $("chatwrap").classList.add("on");
-      setTimeout(() => { scrollToBottom(); const i = $("cin"); if (i) i.focus(); }, 60);
+      // While this conversation is on screen its replies show up here, not
+      // as a system notification.
+      if (state.chat) pushSetActiveConversation(state.chat.cid);
+      chatPoll(0);
+      setTimeout(() => { scrollToBottom(); const i = $("cin"); if (i && !streaming) i.focus(); }, 60);
     }
     // Premium gate for the chat: shows the AI buddy behind a gold lock with an
     // upgrade CTA, so free users see the value but the chat itself stays paid.
@@ -4827,7 +5128,7 @@
           '<button class="x" id="chx" aria-label="סגור">✕</button></div>' +
           '<div class="chlockbody"><div class="goldlock">🔒</div>' +
             '<h3>הצ׳אט עם Cubey הוא פיצ׳ר Premium</h3>' +
-            '<p>שאל כל שאלה כספית, דווח על הוצאות בשפה חופשית ובקש פעולות אמיתיות — "תעביר 200 ₪ לקוביית טיול". Cubey מכיר את הקוביות שלך ועונה לפי המצב האמיתי.</p>' +
+            '<p>שאל כל שאלה כספית, דווח על הוצאות בשפה חופשית ובקש פעולות אמיתיות — "תעביר 200 ₪ לקוביית טיול". Cubey מכיר את הקוביות שלך ועונה לפי המצב האמיתי.</p><p>תשלום חד-פעמי — שגם מסיר את כל הפרסומות באפליקציה.</p>' +
             '<button class="distbtn wide" id="chUp">👑 שדרוג ל-\u2066AI Premium · ' + priceLabel() + '\u2069</button>' +
             '<span class="chlockman">אפשר להמשיך לנהל הכול ידנית גם בלי שדרוג 🙂</span>' +
           '</div>' +
@@ -4841,10 +5142,14 @@
       $("chUp").onclick = () => { closeChat(); startPremiumPurchase(); };
       chatOpen = true; chatBuilt = false;
     }
-    function closeChat() { chatOpen = false; $("chatwrap").classList.remove("on"); }
+    function closeChat() { chatOpen = false; $("chatwrap").classList.remove("on"); pushSetActiveConversation(""); }
+    // Drops the chat UI (logout, account switch). The saved conversation
+    // itself lives in state.chat and belongs to the account.
     function resetChat() {
-      chatLog.length = 0; pendingAction = null; streaming = false;
+      pendingAction = null; streaming = false;
       chatBuilt = false; chatOpen = false;
+      clearTimeout(chatPollTimer);
+      pushSetActiveConversation("");
       const w = $("chatwrap"); w.classList.remove("on"); w.innerHTML = "";
     }
 
@@ -4855,12 +5160,14 @@
       const b = $("csend"); if (b) b.disabled = on;
     }
 
-    function appendBubble(role, text) {
+    function appendBubble(role, text, id) {
       const intro = $("chintro"); if (intro && role === "u") intro.remove();
       if (role === "u") { const sg = $("sugg"); if (sg) sg.classList.add("hidden"); }
       const b = el("div", "bubble " + (role === "u" ? "u" : "b"));
       b.textContent = text;
-      $("msgs").appendChild(b);
+      if (id) b.dataset.mid = id;
+      const think = $("chthink");
+      $("msgs").insertBefore(b, think || null);   // the "thinking…" bubble stays last
       scrollToBottom();
       return b;
     }
@@ -4870,39 +5177,247 @@
       buttons.forEach((qb) => {
         const b = el("button", qb.kind === "danger" ? "qd" : "qp");
         b.textContent = qb.label;
-        b.onclick = () => { if (streaming) return; holder.remove(); appendBubble("u", qb.label); botSay(qb.run()); };
+        b.onclick = () => { if (streaming) return; holder.remove(); chatRecord("u", qb.label); appendBubble("u", qb.label); botSay(qb.run()); };
         holder.appendChild(b);
       });
       $("msgs").appendChild(holder);
       scrollToBottom();
     }
 
+    // One entry in the saved conversation (state.chat, persisted per account).
+    function chatRecord(role, text, extra) {
+      if (!state.chat) state.chat = normChat(null);
+      const m = Object.assign({ id: newId(role === "u" ? "m" : "l"), role: role, text: text, at: Date.now() }, extra || {});
+      state.chat.messages.push(m);
+      if (state.chat.messages.length > 100) state.chat.messages.splice(0, state.chat.messages.length - 100);
+      saveState();
+      return m;
+    }
+
     function send(text) {
       if (streaming) return;
-      chatLog.push({ role: "u", text });
-      appendBubble("u", text);
-      botSay(respond(text));
+      // Anything that moves money or logs an expense is answered right here on
+      // the device — it acts on THIS budget and needs its confirm buttons.
+      // Everything else goes to the AI on the server when it is connected;
+      // without it, the local advisor answers as it always has.
+      const local = respond(text, { actionsOnly: push.ready() });
+      if (local) {
+        chatRecord("u", text);
+        appendBubble("u", text);
+        botSay(local);
+        return;
+      }
+      aiSend(text);
     }
 
     // Stream a bot reply into a single bubble, then reveal optional buttons.
-    function botSay(res) {
+    function botSay(res, rec) {
       const full = res.text || "";
-      chatLog.push({ role: "b", text: full });
-      const bubble = appendBubble("b", "");
+      const m = rec || chatRecord("b", full);
+      if (!chatBuilt || !$("msgs")) return;
+      const bubble = appendBubble("b", "", m.id);
+      typeOut(bubble, full, () => { if (res.quick && res.quick.length) showQuickButtons(res.quick); });
+    }
+    let typingIv = null;
+    function typeOut(bubble, full, done) {
       setTyping(true);
       let i = 0;
-      const iv = setInterval(() => {
+      const iv = typingIv = setInterval(() => {
         i += 3;
         bubble.textContent = full.slice(0, i);
         scrollToBottom();
         if (i >= full.length) {
           clearInterval(iv);
           bubble.textContent = full;
-          setTyping(false);
-          if (res.quick && res.quick.length) showQuickButtons(res.quick);
-          const inp = $("cin"); if (inp && chatOpen) inp.focus();
+          setTyping(pendingAi().length > 0);   // still waiting on the AI → keep the input locked
+          if (done) done();
+          const inp = $("cin"); if (inp && chatOpen && !streaming) inp.focus();
         }
       }, 16);
+    }
+
+    // ---- AI replies from the server ------------------------------------------
+    // The message is stored on the server and answered there, so leaving the
+    // app does not lose the answer: it is saved in this conversation and, if
+    // the chat is not on screen, announced with a notification.
+    const AI_WAIT_MS = 11 * 60 * 1000;   // the server gives up after 10 minutes
+    const pendingAi = () => (state.chat ? state.chat.messages.filter((x) => x.role === "u" && x.status === "pending") : []);
+
+    // The numbers the AI may use — the same snapshot the local advisor works from.
+    function aiContext() {
+      const s = advisorSnapshot();
+      return {
+        currency: "ILS", income: s.income, total: s.total, pool: s.pool, emgBalance: s.emgBalance, emgGoal: s.emgGoal,
+        essentials: s.essentials, slack: s.slack, prepaid: !!s.prepaid, kid: isKidMode(),
+        cubes: state.cubes.slice(0, 20).map((c) => ({
+          name: c.name, balance: Math.round(Number(c.balance) || 0), amount: Math.round(Number(c.amount) || 0),
+          pct: Number(c.pct) || 0, goalTarget: Number(c.goalTarget) || 0, locked: !!c.locked,
+        })),
+      };
+    }
+
+    function aiSend(text) {
+      const m = chatRecord("u", text, { status: "pending" });
+      appendBubble("u", text, m.id);
+      showThinking(true);
+      aiPost(m).then(() => chatPoll(1200)).catch((e) => {
+        const code = e && e.message;
+        // Lost on the way (or no answer in time): keep it pending — polling
+        // re-sends it with the same id, which the server accepts only once.
+        if (code === "timeout" || code === "network") chatPoll(3000);
+        else aiFallback(m, code);
+      });
+    }
+    function aiPost(m) {
+      return push.call("chatSend", { conversationId: state.chat.cid, messageId: m.id, text: m.text, context: aiContext() });
+    }
+
+    // No AI answer (quota, server error, expired): the local advisor answers.
+    function aiFallback(m, code) {
+      if (m.status !== "pending") return;
+      m.status = "local";
+      saveState();
+      showThinking(false);
+      const head = code === "quota"
+        ? "הגעת למכסת ההודעות ל-AI לשעה הקרובה, אז הפעם עונה היועץ המקומי:\n\n"
+        : "לא הצלחתי לקבל תשובה מהשרת כרגע, אז הנה מה שאני יכול לומר מהנתונים שלך:\n\n";
+      const res = respond(m.text);
+      botSay({ text: head + (res.text || ""), quick: res.quick });
+    }
+
+    function showThinking(on) {
+      const box = $("msgs");
+      if (!chatBuilt || !box) return;
+      let t = $("chthink");
+      if (on && !t) {
+        t = el("div", "bubble b thinking"); t.id = "chthink"; t.textContent = "Cubey חושב… 🧊";
+        box.appendChild(t); scrollToBottom();
+        setTyping(true);
+      } else if (!on && t) {
+        t.remove();
+        setTyping(false);
+      }
+    }
+
+    function chatPoll(delay) {
+      clearTimeout(chatPollTimer);
+      const pend = pendingAi();
+      if (!pend.length) { showThinking(false); return; }
+      if (!push.ready() || document.hidden) return;   // resumes on return / link
+      showThinking(true);
+      const oldest = Math.min.apply(null, pend.map((x) => x.at || Date.now()));
+      const slow = Date.now() - oldest > 60 * 1000;
+      chatPollTimer = setTimeout(chatPollNow, delay != null ? delay : (slow ? 5000 : 1500));
+    }
+    async function chatPollNow() {
+      const cid = state.chat && state.chat.cid;
+      if (!cid || !push.ready()) return;
+      let r = null;
+      try { r = await push.call("chatGet", { conversationId: cid }); } catch (e) {}
+      if (r && state.chat && state.chat.cid === cid) chatMerge(r, false);
+      chatPoll(r ? null : 4000);
+    }
+    function chatResumePending() { chatPoll(0); }
+
+    // Fold the server's copy of the conversation into the local one.
+    function chatMerge(r, instant) {
+      const local = state.chat.messages;
+      const byId = {}; local.forEach((m) => { byId[m.id] = m; });
+      const onServer = {};
+      const fresh = [];
+      (r.messages || []).forEach((s) => {
+        onServer[s.id] = s;
+        if (s.role === "assistant") {
+          if (byId[s.id]) return;
+          const m = { id: s.id, role: "b", text: s.text, at: s.createdAt, inReplyTo: s.inReplyTo };
+          const qi = local.findIndex((x) => x.id === s.inReplyTo);
+          if (qi === -1) local.push(m); else local.splice(qi + 1, 0, m);   // right under its question
+          byId[m.id] = m; fresh.push(m);
+          const q = byId[s.inReplyTo]; if (q && q.status === "pending") q.status = "done";
+        } else if (s.role === "user") {
+          const q = byId[s.id];
+          if (!q) {
+            // From another device, or a conversation opened from a notification.
+            const m = { id: s.id, role: "u", text: s.text, at: s.createdAt, status: s.status === "done" ? "done" : s.status === "error" ? "error" : "pending" };
+            local.push(m); byId[m.id] = m; fresh.push(m);
+          } else if (q.status === "pending" && s.status === "error") {
+            aiFallback(q, "error");
+          }
+        }
+      });
+      const now = Date.now();
+      local.forEach((q) => {
+        if (q.role !== "u" || q.status !== "pending") return;
+        if (now - (q.at || now) > AI_WAIT_MS) { aiFallback(q, "expired"); return; }
+        if (!onServer[q.id] && now - (q.at || now) > 8000 && now - (q.resent || 0) > 30000) {
+          q.resent = now;
+          aiPost(q).catch(() => {});
+        }
+      });
+      if (local.length > 100) local.splice(0, local.length - 100);
+      saveState();
+      if (!chatBuilt || !$("msgs")) return;
+      const last = local[local.length - 1];
+      // Typed out only when the user is watching; otherwise it is just there.
+      if (!instant && chatOpen && !document.hidden && Date.now() > chatInstantUntil
+          && fresh.length === 1 && fresh[0] === last && last.role === "b") {
+        showThinking(pendingAi().length > 0);
+        typeOut(appendBubble("b", "", last.id), last.text);
+      } else if (fresh.length) {
+        renderChatHistory();
+      } else if (!pendingAi().length) {
+        showThinking(false);
+      }
+    }
+
+    function renderChatHistory() {
+      const box = $("msgs");
+      if (!box || !state.chat) return;
+      if (typingIv) { clearInterval(typingIv); typingIv = null; }   // the full text is drawn below
+      box.querySelectorAll(".bubble, .qbtns").forEach((n) => n.remove());
+      const msgs = state.chat.messages;
+      if (msgs.length) {
+        const intro = $("chintro"); if (intro) intro.remove();
+        const sg = $("sugg"); if (sg) sg.classList.add("hidden");
+      }
+      msgs.forEach((m) => {
+        const b = el("div", "bubble " + (m.role === "u" ? "u" : "b"));
+        b.textContent = m.text; b.dataset.mid = m.id;
+        box.appendChild(b);
+      });
+      if (pendingAi().length) showThinking(true); else setTyping(false);
+      scrollToBottom();
+    }
+
+    // Tapped "צ'אט AI שלח לך הודעה": straight into that conversation, at that reply.
+    let chatInstantUntil = 0;
+    async function openChatFromPush(cid, mid) {
+      // The user came for this reply: show it whole, no typing animation
+      // (also for a poll that was already on its way when they tapped).
+      chatInstantUntil = Date.now() + 5000;
+      state.screen = "app";
+      render();
+      if (!state.chat || state.chat.cid !== cid) {
+        // A conversation that is not the one on this device (another phone,
+        // or history cleared since): show the server's copy of it.
+        resetChat();
+        state.chat = { cid: cid, messages: [] };
+        saveState();
+      }
+      openChat();
+      if (!chatBuilt) return;   // Premium gate showed instead
+      try {
+        const r = await push.call("chatGet", { conversationId: cid });
+        if (state.chat && state.chat.cid === cid) chatMerge(r, true);
+      } catch (e) {}
+      renderChatHistory();
+      chatPoll();
+      const b = mid ? [...document.querySelectorAll("#msgs .bubble")].find((n) => n.dataset.mid === mid) : null;
+      if (b) {
+        b.scrollIntoView({ block: "center" });
+        b.classList.add("flash");
+        setTimeout(() => b.classList.remove("flash"), 1800);
+      }
     }
 
     // =====================================================================
@@ -5114,7 +5629,10 @@
       return { text: lines.join("\n") };
     }
 
-    function respond(text) {
+    // opts.actionsOnly: answer only the requests that act on the budget
+    // (confirmations, transfers, purchase/comparison advice with its buttons,
+    // expense reports) and return null for the rest — those go to the AI.
+    function respond(text, opts) {
       const q = text.toLowerCase();
       const cubes = state.cubes;
       const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
@@ -5213,6 +5731,8 @@
           })),
         };
       }
+
+      if (opts && opts.actionsOnly) return null;
 
       // 4b. The prepaid card itself
       if (/(כרטיס נטען|פריפייד|נטען|כמה טעון|כמה יש בכרטיס|מינוס|אוברדרפט|prepaid|loaded card|on my card|overdraft)/.test(q)) {
@@ -5350,6 +5870,7 @@
         if (nativeBilling.available() && !state.premium)
           mk("🔄 שחזור רכישה", "setitem", () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); });
         mk((isEn() ? "🌐 Language: English" : "🌐 שפה: עברית"), "setitem", () => { state.screen = "language"; render(); });
+        mk("🔔 התראות", "setitem", () => { state.screen = "notifications"; render(); });
         mk("📜 תקנון", "setitem", () => { state.screen = "terms"; render(); });
         mk("🔒 פרטיות ונתונים", "setitem", () => { state.screen = "privacy"; render(); });
         mk("⎋ יציאה מהחשבון", "setitem", () => { resetChat(); logout(); });
@@ -5391,10 +5912,98 @@
       const sp = el("div"); sp.style.height = "24px"; body.appendChild(sp);
     }
 
+    // Notification settings — the two server notifications (AI chat reply,
+    // monthly income), each on/off, plus hiding amounts and replies. Says
+    // plainly when they can't work yet, instead of showing switches that do
+    // nothing: not available in this build, account not connected, or the
+    // system permission is off. None of it affects the chat or the income.
+    function renderNotificationsPage() {
+      const body = pageShell("התראות 🔔", () => { state.screen = "settings"; render(); });
+      const n = Object.assign({}, NOTIF_DEFAULT, state.notif || {});
+      const avail = push.available();
+      const email = state.authUser ? state.authUser.email : "";
+
+      const stc = el("div", "setcard");
+      if (!nativeApp) {
+        stc.innerHTML = '<div class="setmail">התראות זמינות באפליקציית האנדרואיד</div>' +
+          '<div class="setlbl" style="margin-top:4px">בדפדפן הצ׳אט וההכנסה החודשית עובדים כרגיל, בלי התראות.</div>';
+      } else if (!avail) {
+        stc.innerHTML = '<div class="setmail">התראות השרת עדיין לא הופעלו בגרסה הזו</div>' +
+          '<div class="setlbl" style="margin-top:4px">הצ׳אט וההכנסה החודשית עובדים כרגיל. ההתראות יופעלו בעדכון קרוב.</div>';
+      } else if (push.status === "linked") {
+        stc.innerHTML = '<div class="setmail">✅ ההתראות מחוברות לחשבון</div>' +
+          '<div class="setlbl" style="margin-top:4px;unicode-bidi:plaintext;text-align:start">' + esc(email) + '</div>';
+      } else if (push.status === "linking") {
+        stc.innerHTML = '<div class="setmail">מחבר את ההתראות לחשבון…</div>';
+      } else {
+        const mismatch = push.status === "password_mismatch";
+        stc.innerHTML =
+          '<div class="setmail">' + (mismatch ? "הסיסמה של חשבון ההתראות שונה" : "צריך לחבר את ההתראות לחשבון") + '</div>' +
+          '<div class="setlbl" style="margin-top:4px">' + (mismatch
+            ? "כנראה שהסיסמה אופסה באפליקציה. אפשר לקבל מייל לאיפוס הסיסמה של חשבון ההתראות, או להזין כאן את הסיסמה הקודמת."
+            : push.status === "error" ? "לא הצלחנו להתחבר לשרת. בדקו את החיבור והזינו את הסיסמה כדי לנסות שוב."
+            : "הזינו את סיסמת החשבון פעם אחת כדי לקבל התראות במכשיר הזה.") + '</div>' +
+          '<div class="fld" style="margin-top:10px"><input id="nfPw" type="password" dir="ltr" placeholder="••••••••" autocomplete="current-password"></div>' +
+          '<button class="distbtn wide" id="nfLink" style="margin-top:10px">חיבור התראות</button>' +
+          (mismatch ? '<button class="obback" id="nfReset">שלחו לי מייל לאיפוס</button>' : "");
+      }
+      body.appendChild(stc);
+      const linkBtn = stc.querySelector("#nfLink");
+      if (linkBtn) linkBtn.onclick = () => {
+        const pw = stc.querySelector("#nfPw").value;
+        if (!pw) { showToast("הזינו סיסמה 🙂"); return; }
+        pushLinkAccount(email, pw);
+        render();
+      };
+      const resetBtn = stc.querySelector("#nfReset");
+      if (resetBtn) resetBtn.onclick = () => { try { nativeApp.pushSendServerPasswordReset(email); } catch (e) {} };
+
+      // System permission. Without it nothing appears in the shade — the
+      // reply is still saved in the chat and the income still recorded.
+      if (avail) {
+        let perm = "granted";
+        try { perm = nativeApp.pushPermissionState(); } catch (e) {}
+        const pc = el("div", "setcard");
+        pc.innerHTML = perm === "granted"
+          ? '<div class="setmail">✅ הרשאת התראות פעילה</div>'
+          : '<div class="setmail">⚠️ ההתראות כבויות במכשיר</div>' +
+            '<div class="setlbl" style="margin-top:4px">בלי הרשאה לא יופיעו התראות. הצ׳אט וההכנסה החודשית ממשיכים לעבוד כרגיל.</div>' +
+            '<button class="distbtn wide" id="nfPerm" style="margin-top:10px">' + (perm === "blocked" ? "פתיחת הגדרות ההתראות" : "אפשר התראות") + '</button>';
+        body.appendChild(pc);
+        const pb = pc.querySelector("#nfPerm");
+        if (pb) pb.onclick = () => { try { nativeApp.requestPushPermission(); } catch (e) {} };
+      }
+
+      const st = el("div", "section-t"); st.textContent = "מה לשלוח לי"; body.appendChild(st);
+      const rows = [
+        ["chatPush", "תשובות מצ׳אט AI 💬", "כשהתשובה של Cubey מוכנה ויצאת מהצ׳אט"],
+        ["incomePush", "הכנסה חודשית 💰", "כשההכנסה הקבועה נרשמה אוטומטית בתחילת החודש"],
+        ["hideSensitive", "הסתרת תוכן רגיש 🙈", "בהתראה יופיע נוסח כללי — בלי תשובת ה-AI ובלי סכומים"],
+      ];
+      rows.forEach(([key, label, hint]) => {
+        const c = el("div", "setcard swrow");
+        c.innerHTML = '<div><div class="setmail">' + label + '</div><div class="setlbl" style="margin-top:4px">' + hint + '</div></div>' +
+          '<button class="sw' + (n[key] ? " on" : "") + '" aria-label="' + label + '"' + (avail ? "" : " disabled") + '></button>';
+        const sw = c.querySelector(".sw");
+        sw.onclick = () => {
+          if (!avail) return;
+          state.notif = Object.assign({}, n, state.notif || {});
+          state.notif[key] = !state.notif[key];
+          state.notif.changedAt = Date.now();
+          n[key] = state.notif[key];
+          sw.classList.toggle("on", !!state.notif[key]);
+          saveState();
+          pushSyncPrefs(true);
+        };
+        body.appendChild(c);
+      });
+      const sp = el("div"); sp.style.height = "24px"; body.appendChild(sp);
+    }
+
     // Terms of use — full-screen, scrollable, back returns to settings.
     const TERMS = [
       ["זכויות יוצרים", "כל הזכויות על האפליקציה, העיצוב, הקוד והתוכן שמורות לאיתי לייס. אין להעתיק, להפיץ או להשתמש בתוכן ללא אישור."],
-      ["גיל מתאים", "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה. ילדים מתחת לגיל 13 מוזמנים להשתמש במצב הילדים — בליווי, בהסכמה ובאחריות הורה או אפוטרופוס. כל הנתונים נשמרים במכשיר בלבד ואינם נשלחים לשום שרת."],
+      ["גיל מתאים", "האפליקציה מיועדת למשתמשים מגיל 13 ומעלה. ילדים מתחת לגיל 13 מוזמנים להשתמש במצב הילדים — בליווי, בהסכמה ובאחריות הורה או אפוטרופוס. נתוני התקציב נשמרים במכשיר. הודעות לצ׳אט ה-AI וההכנסה החודשית הקבועה נשמרות בשרת מאובטח כדי לענות ולשלוח התראות, ונמחקות עם מחיקת החשבון."],
       ["אחריות", "המידע והכלים באפליקציה נועדו למטרות מידע והדרכה בלבד ואינם מהווים ייעוץ פיננסי, ייעוץ השקעות, ייעוץ מס או ייעוץ משפטי. כל הנתונים מדומים או מוזנים ידנית — אין חיבור אמיתי לבנק או לחשבון."],
       ["פרטיות", "האפליקציה שומרת על פרטיות המשתמש בהתאם למדיניות הפרטיות שלה."],
       ["שימוש הוגן", "אין להשתמש באפליקציה לרעה, לנסות לפרוץ אליה או לפגוע בשירות."],
@@ -5428,6 +6037,12 @@
     // =====================================================================
     function clearHistory() {
       resetChat();
+      // The conversation is gone from the server too, and the next message
+      // starts a fresh one.
+      const old = state.chat && state.chat.cid;
+      if (old && push.ready()) push.call("chatDeleteConversation", { conversationId: old }).catch(() => {});
+      state.chat = normChat(null);
+      saveState();
       clearSecLog();
       secLog("INFO", "היסטוריית הפעולות והצ׳אט נוקתה לבקשת המשתמש");
       showToast("🧹 ההיסטוריה נוקתה");
@@ -5453,13 +6068,16 @@
 
       const autoCard = el("div", "setcard swrow");
       autoCard.innerHTML = '<div><div class="setmail">חלוקה אוטומטית בכל חודש 🔁</div>' +
-        '<div class="setlbl" style="margin-top:4px">בפעם הראשונה שתפתח/י את האפליקציה בחודש חדש, ההכנסה נכנסת לקוביות לפי האחוזים — בלי ללחוץ כלום</div></div>' +
+        '<div class="setlbl" style="margin-top:4px">' + (state.salary.serverManaged && push.ready()
+          ? "ב-1 בכל חודש בבוקר ההכנסה נרשמת אוטומטית — גם כשהאפליקציה סגורה — ונכנסת לקוביות לפי האחוזים. רישום לניהול התקציב בלבד, לא העברת כסף אמיתית"
+          : "בפעם הראשונה שתפתח/י את האפליקציה בחודש חדש, ההכנסה נכנסת לקוביות לפי האחוזים — בלי ללחוץ כלום") + '</div></div>' +
         '<button class="sw' + (state.salary.auto ? " on" : "") + '" id="swAuto" aria-label="חלוקה אוטומטית"></button>';
       body.appendChild(autoCard);
       autoCard.querySelector("#swAuto").onclick = () => {
         state.salary.auto = !state.salary.auto;
         autoCard.querySelector("#swAuto").classList.toggle("on", state.salary.auto);
         saveState();
+        incomePushSchedule();   // turning it off cancels the server's monthly record too
         showToast(state.salary.auto ? "🔁 חלוקה אוטומטית מופעלת" : "חלוקה אוטומטית כבויה — אפשר תמיד לחלק ידנית");
       };
 
@@ -5539,6 +6157,7 @@
       goBtn.onclick = () => {
         const r = receiveMonthlyIncome(true);
         if (!r.ok) { showToast("קודם הזינו סכום חודשי 🙂"); return; }
+        incomePushSchedule();   // the server learns this month is already in, so it won't book it again
         state.justFunded = new Set(r.rows.filter((x) => x.amount > 0).map((x) => x.key));
         state.screen = "app";
         burstCoins();
@@ -5551,11 +6170,45 @@
       amtCard.querySelector("#incAmt").oninput = (e) => {
         e.target.value = e.target.value.replace(/[^0-9]/g, "");
         setMonthlyIncome(e.target.value);
+        incomeScheduleSoon();   // a changed (or cleared) amount reaches the server's schedule
         paintDerived();
       };
 
       paintDerived();
+
+      // Recent records — automatic ones marked, and the one a notification
+      // pointed at highlighted and scrolled into view.
+      const hist = (state.salary.history || []).slice(-12).reverse();
+      if (hist.length) {
+        const st2 = el("div", "section-t"); st2.textContent = "רישומי הכנסה אחרונים"; body.appendChild(st2);
+        const hc = el("div", "setcard");
+        hc.innerHTML = hist.map((h) =>
+          '<div class="pctprev increc' + (incomeHighlight && (h.id === incomeHighlight || h.m === incomeHighlight) ? " hl" : "") + '">' +
+            '<span>' + esc(monthName(h.m)) + (h.auto ? ' <i class="autotag">🔁 נרשם אוטומטית</i>' : "") + '</span>' +
+            '<b>₪' + fmt(h.amount) + '</b></div>').join("");
+        body.appendChild(hc);
+        const hl = hc.querySelector(".hl");
+        if (hl) {
+          setTimeout(() => hl.scrollIntoView({ block: "center", behavior: "smooth" }), 80);
+          setTimeout(() => { incomeHighlight = null; hl.classList.remove("hl"); }, 4000);
+        } else incomeHighlight = null;
+      }
+
       const sp = el("div"); sp.style.height = "40px"; body.appendChild(sp);
+
+      // Opening the page picks up anything the server recorded meanwhile.
+      if (push.ready() && Date.now() - incomePageSyncedAt > 30000) {
+        incomePageSyncedAt = Date.now();
+        incomeSync().then((r) => { if (r && r.applied.length && state.screen === "income") render(); });
+      }
+    }
+    let incomePageSyncedAt = 0;
+    // "2026-10" → "אוקטובר 2026"
+    function monthName(mk) {
+      const p = String(mk || "").split("-");
+      const names = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+      const i = Number(p[1]) - 1;
+      return names[i] ? names[i] + " " + p[0] : String(mk || "");
     }
 
     // =====================================================================
@@ -5700,7 +6353,10 @@
       const st = el("div", "section-t"); st.textContent = "מה נשמר עליך 📋"; body.appendChild(st);
       const facts = el("div", "setcard");
       facts.innerHTML =
-        '<div class="privline">🔐 <b>הכול נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.</div>' +
+        (push.available()
+          ? '<div class="privline">🔐 <b>התקציב נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים במכשיר בלבד.</div>' +
+            '<div class="privline">☁️ <b>מה כן עובר לשרת.</b> הודעות שנשלחות לצ׳אט ה-AI (יחד עם תמונת מצב של הקוביות, כדי שהתשובה תתבסס על המספרים שלך) וההכנסה החודשית הקבועה (סכום, מטבע ואזור זמן) — כדי לענות גם כשהאפליקציה סגורה ולשלוח התראות. מחיקת החשבון מוחקת גם אותם.</div>'
+          : '<div class="privline">🔐 <b>הכול נשאר במכשיר שלך.</b> הפרופיל, הקוביות והיתרות נשמרים ב-localStorage של הדפדפן ולא נשלחים לשום שרת.</div>') +
         '<div class="privline">🏦 <b>אין חיבור לחשבון הבנק שלך.</b> האפליקציה לא מתחברת לבנק, לא מושכת תנועות ולא קוראת קבצים מהמכשיר. פיצ׳ר קריאת העו״ש הוסר מהמערכת לגמרי.</div>' +
         '<div class="privline">💳 <b>גם כרטיס נטען לא מחובר.</b> הסכום שבכרטיס הוא מספר שאתה מזין ומעדכן בעצמך — אין גישה לכרטיס האמיתי ואין תנועות נסתרות.</div>' +
         '<div class="privline">🚫 <b>אין רישום אירועים גלוי.</b> האפליקציה לא מציגה ולא שומרת רישום פנימי של פעולות התחברות — רישום כזה עלול לחשוף את כתובת המייל שלך למי שמחזיק במכשיר.</div>';
@@ -5915,6 +6571,9 @@
     //  the app falls back to the clearly-labelled local simulation.
     // ─────────────────────────────────────────────────────────────────────
     let nativePrice = null;      // Premium, as Google reports it
+    let premiumBuying = false;   // inside Google's sheet for AI Premium right now
+    const PREMIUM_PENDING_MSG = "⏳ התשלום ממתין לאישור — צ׳אט ה-AI והסרת הפרסומות ייפתחו ברגע שהתשלום יושלם";
+    const PREMIUM_OTHER_ACCOUNT_MSG = "חשבון Google Play הזה כבר רכש AI Premium עבור חשבון אחר באפליקציה. התחברו לחשבון ההוא כדי ליהנות ממנו";
     let nativeBookPrice = null;  // the guide book, as Google reports it
     const nativeBilling = {
       available() { return !!(nativeApp && nativeApp.buyPremium); },
@@ -5924,8 +6583,9 @@
       buy() {
         try {
           showToast("פותח את החנות של Google Play…");
+          premiumBuying = true;
           nativeApp.buyPremium();
-        } catch (e) { showToast("לא הצלחתי לפתוח את החנות"); }
+        } catch (e) { premiumBuying = false; showToast("לא הצלחתי לפתוח את החנות"); }
       },
       buyBook() {
         try {
@@ -5934,7 +6594,12 @@
           return true;
         } catch (e) { showToast("לא הצלחתי לפתוח את החנות"); return false; }
       },
-      restore() { try { if (nativeApp && nativeApp.restorePurchases) nativeApp.restorePurchases(); } catch (e) {} },
+      restore() {
+        try {
+          if (nativeApp && nativeApp.restorePremium) nativeApp.restorePremium();   // answers in onRestoreResult
+          else if (nativeApp && nativeApp.restorePurchases) nativeApp.restorePurchases();
+        } catch (e) {}
+      },
     };
 
     // Set while the user is inside Google's sheet for the book. It is what
@@ -5951,13 +6616,42 @@
         // restore arriving while the scrim is up. Without this the user is left
         // staring at a full-screen invisible blocker with no way out.
         if (owned) closeBillingSheetIfOpen();
-        if (productId === BOOK_PRODUCT_ID) { applyBookOwnership(!!owned); return; }
-        // anything else is the Premium unlock
-        if (!!state.premium === !!owned) return;
-        state.premium = !!owned;
-        saveState();
-        if (owned) { burstCoins("👑"); showToast("👑 ברוך הבא ל-AI Premium!"); }
-        render();
+        // The guide book only. AI Premium belongs to an app account and
+        // arrives through onEntitlement below, after the purchase was checked.
+        if (productId === BOOK_PRODUCT_ID) applyBookOwnership(!!owned);
+      },
+      // AI Premium (AI chat + no ads) for the signed-in account, decided on the
+      // native side from Google Play (and the server, where set up). This is
+      // the only thing that changes state.premium in the Android app.
+      //   entitled: true / false / null (not known yet — leave things alone)
+      //   event:    "purchase" when a purchase just completed in this session
+      onEntitlement(email, entitled, reason, event) {
+        if (!state.authUser || !email || normEmail(email) !== normEmail(state.authUser.email)) return;
+        if (entitled === null || entitled === undefined) return;
+        const had = !!state.premium;
+        if (entitled) closeBillingSheetIfOpen();
+        if (had !== !!entitled) {
+          state.premium = !!entitled;
+          saveState();
+          render();
+        }
+        if (entitled && event === "purchase") {
+          premiumBuying = false;
+          burstCoins("🎉");
+          showToast("הרכישה הושלמה! צ׳אט ה-AI זמין והפרסומות הוסרו 🎉");
+        } else if (!entitled && premiumBuying && reason === "other_account") {
+          premiumBuying = false;
+          showToast(PREMIUM_OTHER_ACCOUNT_MSG);
+        } else if (had && !entitled && (reason === "none" || reason === "server_rejected")) {
+          // refunded or revoked
+          showToast("רכישת AI Premium כבר לא בתוקף בחשבון הזה");
+        }
+      },
+      onRestoreResult(entitled, reason) {
+        if (entitled) showToast("👑 הרכישה שוחזרה — צ׳אט ה-AI פתוח והפרסומות הוסרו");
+        else if (reason === "other_account") showToast(PREMIUM_OTHER_ACCOUNT_MSG);
+        else if (reason === "pending") showToast(PREMIUM_PENDING_MSG);
+        else showToast("לא נמצאה רכישת AI Premium בחשבון Google Play הזה");
       },
       onPurchaseResult(productId, ok, reason) {
         closeBillingSheet();
@@ -5968,8 +6662,10 @@
           else showToast("הרכישה בוטלה");
           return;
         }
-        if (ok) return;                    // onOwnershipChanged does the unlocking
-        if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
+        if (ok) return;                    // onEntitlement does the unlocking, once checked
+        premiumBuying = false;
+        if (reason && reason.indexOf("התשלום ממתין") === 0) showToast(PREMIUM_PENDING_MSG);
+        else if (reason) showToast("❌ הרכישה לא הושלמה: " + reason);
         else showToast("הרכישה בוטלה");
       },
       // Billing could not be set up, or Play will not return the products.
@@ -6045,6 +6741,10 @@
           if (p) { nativePrice = p; return p; }
         }
       } catch (e) {}
+      // Inside the app the price is only ever the one Google returns — until
+      // it arrives, say so rather than show a number Play might not charge.
+      // The fixed figure is for the labelled browser simulation only.
+      if (nativeBilling.available()) return "…";
       return "₪" + PREMIUM_PRICE;
     }
     // The book's price, preferring whatever Google actually charges. Changing
@@ -6680,27 +7380,39 @@
       const body = pageShell("שדרוג ל-\u2066AI\u00a0Premium\u2069 👑", () => { state.screen = "app"; render(); });
       if (state.premium) {
         const okc = el("div", "wisafe");
-        okc.textContent = "✅ AI Premium פעיל בחשבון שלך — כל הפיצ׳רים פתוחים.";
+        okc.textContent = "✅ AI Premium פעיל בחשבון שלך — צ׳אט ה-AI פתוח והפרסומות הוסרו.";
         body.appendChild(okc);
         return;
       }
+      const price = priceLabel();
       const hero = el("div", "payhero");
       hero.innerHTML = '<div class="paycrown">👑</div><h3>Cubey AI Premium</h3>' +
-        '<div class="payprice">⁦' + priceLabel() + '⁩ <span>תשלום חד-פעמי · לכל החיים</span></div>' +
+        '<div class="payprice">' + (price === "…" ? '<span class="payloading">טוען מחיר מ-Google Play…</span>' : '⁦' + esc(price) + '⁩') +
+          ' <span>תשלום חד-פעמי · בלי מנוי</span></div>' +
         '<ul class="payfeat">' +
           '<li>💬 צ׳אט עם Cubey — היועץ הפיננסי החכם שמכיר את הקוביות שלך</li>' +
           '<li>🎯 הקצאת AI לכרטיס נטען — פירוק הסכום הטעון לקוביות ותוכנית חיסכון</li>' +
           '<li>💳 אופטימיזציית חובות — מפולת/כדור שלג עם חיסכון ריבית מחושב</li>' +
           '<li>🎯 הקצאת AI לקוביות אישיות לפי עדיפות</li>' +
-        '</ul>';
+          '<li>🚫 בלי פרסומות — כל הפרסומות באפליקציה מוסרות</li>' +
+        '</ul>' +
+        '<p class="paynote">תשלום אחד שכולל את כל הטבות צ׳אט ה-AI ואת הסרת הפרסומות, כל עוד הרכישה בתוקף. ' +
+          'השימוש בצ׳אט ה-AI כפוף למגבלות השימוש הקיימות. הרכישה משויכת לחשבון שלך באפליקציה ואפשר לשחזר אותה במכשיר חדש.</p>';
       body.appendChild(hero);
       const pay = el("button", "gpaybtn");
       pay.innerHTML = '▷ שלם באמצעות Google Play';
       pay.onclick = startPremiumPurchase;
       body.appendChild(pay);
-      const note = el("p", "termupd");
-      note.textContent = "סימולציית חיוב — האימות מתבצע מול שרת (מדומה) למניעת רכישות מזויפות.";
-      body.appendChild(note);
+      if (nativeBilling.available()) {
+        const rs = el("button", "obback");
+        rs.textContent = "🔄 כבר קניתי — שחזור רכישה";
+        rs.onclick = () => { nativeBilling.restore(); showToast("בודק מול Google Play…"); };
+        body.appendChild(rs);
+      } else {
+        const note = el("p", "termupd");
+        note.textContent = "סימולציית חיוב — האימות מתבצע מול שרת (מדומה) למניעת רכישות מזויפות.";
+        body.appendChild(note);
+      }
     }
 
     // native-style Google Play billing bottom sheet (simulation)
@@ -6777,8 +7489,8 @@
         function finishPurchase(res) {
           closeBillingSheet();
           if (res && res.ok) {
-            burstCoins("👑");
-            showToast("👑 ברוך הבא ל-AI Premium!");
+            burstCoins("🎉");
+            showToast("הרכישה הושלמה! צ׳אט ה-AI זמין והפרסומות הוסרו 🎉");
             render();
           } else {
             showToast("❌ האימות נכשל: " + ((res && res.reason) || "שגיאה"));
@@ -8154,8 +8866,23 @@
     }
 
     // Worker 4 — hard wipe: per-account state + user record + session + chat.
-    function wipeAccount() {
-      if (!state.authUser) return;
+    let wiping = false;
+    async function wipeAccount() {
+      if (!state.authUser || wiping) return;
+      // Server copy first (chat, income schedule and records, devices, the
+      // server account). If it can't be reached, stop — deleting only the
+      // local half would leave data behind that the user can no longer reach.
+      if (push.ready()) {
+        wiping = true;
+        showToast("מוחק את הנתונים מהשרת…");
+        try { await push.call("deleteAccountData", {}, 20000); }
+        catch (e) {
+          wiping = false;
+          showToast("לא הצלחנו למחוק את הנתונים מהשרת. בדקו את החיבור ונסו שוב");
+          return;
+        }
+        wiping = false;
+      }
       const email = state.authUser.email;
       try { localStorage.removeItem(stateKey()); } catch (e) {}
       try { localStorage.removeItem(obKey()); } catch (e) {} // saved onboarding draft
@@ -8172,6 +8899,7 @@
 
     // ---- boot -------------------------------------------------------------
     initAuth();
+    pushCheckTarget();   // opened from a notification while logged out → ask to log in first
     // The shell outside #view (nav labels, the intro splash) is static markup
     // that no render() call rebuilds, so it needs one explicit pass.
     translateTree(document.body);

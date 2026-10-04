@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CubeFinance</string>
+
+    <string name="channel_inactivity_name">תזכורות פעילות</string>
+    <string name="channel_inactivity_description">תזכורת לחזור ולעדכן את ההוצאות וההכנסות שלך</string>
+    <string name="notification_inactivity_title">היי, מה קורה? 👋</string>
+    <string name="notification_inactivity_body">זה הזמן לחשב את ההוצאות ולהשאיר קצת לעתיד!</string>
+
+    <string name="channel_weekly_summary_name">סיכום שבועי</string>
+    <string name="channel_weekly_summary_description">תזכורת שבועית לסיכום החיסכון בקובייה</string>
+    <string name="notification_weekly_summary_title">סיכום שבועי 📊</string>
+    <string name="notification_weekly_summary_body">בוא לראות כמה הצלחת לחסוך השבוע בקובייה!</string>
+
+    <string name="channel_weekly_tip_name">טיפים פיננסיים</string>
+    <string name="channel_weekly_tip_description">טיפ פיננסי שבועי מהספר</string>
+    <string name="notification_weekly_tip_title">טיפ פיננסי 💡</string>
+    <string name="notification_weekly_tip_body">פתח את האפליקציה לקרוא פרט חשוב נוסף מהספר!</string>
+
+    <string name="channel_welcome_name">Welcome Notifications</string>
+    <string name="notification_welcome_title">איזה כיף שהצטרפת! 🥳</string>
+    <string name="notification_welcome_body">ברוכים הבאים ל-CubeFinance. מוכנים לקחת שליטה על הכסף שלכם?</string>
+
+    <!-- Server push. The titles below are fallbacks only: the server sends the
+         final wording, and hidden-content mode swaps in the generic bodies. -->
+    <string name="channel_chat_name">תשובות מצ׳אט AI</string>
+    <string name="channel_chat_description">התראה כשהתשובה של Cubey מוכנה ויצאת מהצ׳אט</string>
+    <string name="channel_income_name">הכנסה חודשית</string>
+    <string name="channel_income_description">התראה כשההכנסה החודשית הקבועה נרשמה אוטומטית</string>
+    <string name="push_chat_title">צ\'אט AI שלח לך הודעה</string>
+    <string name="push_chat_generic">יש לך תשובה חדשה בצ\'אט. אפשר לפתוח ולקרוא אותה.</string>
+    <string name="push_income_title">ההכנסה החודשית שלך עודכנה 💰</string>
+    <string name="push_income_generic">ההכנסה החודשית שלך נרשמה ב־CubeFinance.</string>
+</resources>
