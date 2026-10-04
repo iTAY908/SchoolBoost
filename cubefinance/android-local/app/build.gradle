@@ -23,8 +23,8 @@ android {
         targetSdk 36              // Android 16 (API 36) — see compat notes below
         // Play refuses an upload whose versionCode was used before, so CI can
         // override these without editing the file.
-        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "17") as int)
-        versionName (System.getenv("CUBEY_VERSION_NAME") ?: project.findProperty("CUBEY_VERSION_NAME") ?: "16.0")
+        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "18") as int)
+        versionName (System.getenv("CUBEY_VERSION_NAME") ?: project.findProperty("CUBEY_VERSION_NAME") ?: "18.0")
         resValue "string", "admob_app_id", "ca-app-pub-8901066122989701~3395897013"
 
         // Server push (AI chat replies, monthly income). Off until the backend
