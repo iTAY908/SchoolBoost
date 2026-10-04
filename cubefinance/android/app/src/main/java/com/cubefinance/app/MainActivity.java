@@ -220,6 +220,20 @@ public class MainActivity extends AppCompatActivity implements BillingManager.Li
         if (billing != null) runOnUiThread(() -> billing.restorePurchases());
     }
 
+    // ---- Sign in with Google ------------------------------------------------
+
+    private GoogleSignInHelper google;
+
+    /** Called from the page via CubeyNative.googleSignIn(). */
+    public void startGoogleSignIn() {
+        runOnUiThread(() -> {
+            if (google == null) google = new GoogleSignInHelper(this);
+            google.signIn((ok, email, name, error) ->
+                    callJs("window.CubeyAuth && CubeyAuth.onGoogleResult(" + ok + ","
+                            + jsString(email) + "," + jsString(name) + "," + jsString(error) + ")"));
+        });
+    }
+
     /** Push a value into the page without disturbing anything else. */
     private void callJs(String script) {
         runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(script, null); });

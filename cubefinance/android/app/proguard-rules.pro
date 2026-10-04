@@ -42,3 +42,12 @@
 # ---------------------------------------------------------------------------
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
+
+# ---------------------------------------------------------------------------
+# Credential Manager finds its Play Services provider by reflection; without
+# this, release builds report "no provider" and Google sign-in never opens.
+# ---------------------------------------------------------------------------
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** {
+  *;
+}

@@ -36,6 +36,14 @@ public final class NativeBridge {
         return "android";
     }
 
+    // ---- Sign in with Google -------------------------------------------------
+
+    /** Open the system "Continue with Google" sheet; the answer arrives in CubeyAuth.onGoogleResult. */
+    @JavascriptInterface
+    public void googleSignIn() {
+        activity.startGoogleSignIn();
+    }
+
     // ---- Google Play Billing ------------------------------------------------
 
     /** Open Google's purchase sheet for the one-time Premium product. */
