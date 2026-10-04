@@ -948,6 +948,7 @@
     .gbtn:hover { box-shadow: 0 4px 14px -6px rgba(0,0,0,.25); }
     .gbtn:disabled { opacity: .6; cursor: default; }
     .gbtn svg { width: 20px; height: 20px; flex: none; }
+    .gisbox { display: flex; justify-content: center; min-height: 44px; }
     .aforgot { display: block; margin: -4px 0 4px auto; background: none; border: none; padding: 4px 0; cursor: pointer;
       color: var(--primary); font: 700 13px var(--font); }
     .aforgot:hover { text-decoration: underline; }
@@ -3500,7 +3501,9 @@
           (googleAvailable()
             ? '<div class="gor">' + (isEn() ? "or" : "או") + '</div>' +
               '<button class="gbtn" id="aGoogle">' + GOOGLE_G + '<span>המשך עם Google</span></button>'
-            : "") +
+            : webGoogleAvailable()
+              ? '<div class="gor">' + (isEn() ? "or" : "או") + '</div><div class="gisbox" id="gisBtn"></div>'
+              : "") +
           '<div class="aswitch">' + (isSignup ? "כבר יש לך חשבון?" : "עדיין אין לך חשבון?") +
             ' <button id="aToggle">' + (isSignup ? "התחבר" : "הירשם") + '</button></div>' +
           langSwitchHTML() +
@@ -3555,6 +3558,8 @@
       v.querySelector("#aToggle").onclick = () => { state.authMode = isSignup ? "login" : "signup"; state.authError = ""; render(); };
       const gBtn = v.querySelector("#aGoogle");
       if (gBtn) gBtn.onclick = () => startGoogleSignIn(gBtn);
+      const gis = v.querySelector("#gisBtn");
+      if (gis) mountWebGoogleButton(gis);
       const forgot = v.querySelector("#aForgot");
       if (forgot) forgot.onclick = () => {
         fpState = { email: normEmail(email.value), error: "" };
@@ -3610,6 +3615,53 @@
       vf = null; fpState = null; resetEmail = null;
       showToast(isNew ? "✅ נרשמת עם Google" : "✅ נכנסת עם Google");
       enterApp({ id: u.id, email: u.email });
+    }
+
+    // On the website (a real browser on an http/https address) Google's own
+    // web button is used instead. It only works on addresses listed under the
+    // Web client's "Authorized JavaScript origins" in Google Cloud.
+    const GOOGLE_WEB_CLIENT_ID = "1077092568958-32v58kcpofd06b8n2p95hhdsbva9telf.apps.googleusercontent.com";
+    const webGoogleAvailable = () => !googleAvailable() && /^https?:$/.test(location.protocol);
+    let gisLoading = null;
+    function loadGis() {
+      if (window.google && google.accounts && google.accounts.id) return Promise.resolve();
+      if (!gisLoading) gisLoading = new Promise((ok, fail) => {
+        const sc = document.createElement("script");
+        sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+        sc.onload = ok; sc.onerror = () => { gisLoading = null; fail(new Error("gsi load failed")); };
+        document.head.appendChild(sc);
+      });
+      return gisLoading;
+    }
+    function mountWebGoogleButton(box) {
+      loadGis().then(() => {
+        if (!document.body.contains(box)) return;
+        google.accounts.id.initialize({ client_id: GOOGLE_WEB_CLIENT_ID, callback: onGisCredential,
+          ux_mode: "popup", auto_select: false, cancel_on_tap_outside: true });
+        google.accounts.id.renderButton(box, { type: "standard", theme: "outline", size: "large", shape: "pill",
+          text: "continue_with", logo_alignment: "left", locale: isEn() ? "en" : "iw",
+          width: Math.min(400, Math.max(220, box.offsetWidth || 300)) });
+      }).catch(() => {
+        const prev = box.previousElementSibling;
+        if (prev && prev.classList.contains("gor")) prev.remove();
+        box.remove();
+      });
+    }
+    // Google sends a signed ID token (JWT). Read the email from it and check
+    // it was issued to this app, by Google, recently, for a verified address.
+    function onGisCredential(resp) {
+      try {
+        const part = String(resp && resp.credential || "").split(".")[1] || "";
+        const bin = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+        const json = decodeURIComponent(Array.prototype.map.call(bin, (c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+        const t = JSON.parse(json);
+        const iss = String(t.iss || "").replace(/^https:\/\//, "");
+        if (t.aud !== GOOGLE_WEB_CLIENT_ID || iss !== "accounts.google.com" || !(t.exp * 1000 > Date.now()) || t.email_verified === false)
+          throw new Error("bad token");
+        googleEnter(t.email, t.name || "");
+      } catch (e) {
+        showToast("ההתחברות עם Google לא הצליחה. נסו שוב או היכנסו עם מייל וסיסמה");
+      }
     }
 
     window.CubeyAuth = {
