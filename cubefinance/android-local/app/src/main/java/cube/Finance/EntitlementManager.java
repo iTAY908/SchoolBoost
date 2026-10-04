@@ -41,6 +41,9 @@ final class EntitlementManager {
     private static final String KEY_CACHED_ACCOUNT = "cached_account";
     private static final String KEY_CACHED_AT = "cached_at";
     private static final String KEY_LEGACY_PREFIX = "legacy_";
+    /** Accounts that get Premium and no ads without a purchase (the app owner). Keep in step with the page. */
+    private static final Set<String> COMPLIMENTARY_EMAILS = new HashSet<>(
+            java.util.Collections.singletonList("itayleiss2010@gmail.com"));
     /** Non-purchasers see ads again at most this long after launch, if Play is slow. */
     static final long STARTUP_WAIT_MS = 6_000;
 
@@ -122,6 +125,7 @@ final class EntitlementManager {
             in.accountKnown = true;
             in.account = key;
             email = key == null ? null : newEmail.trim().toLowerCase();
+            in.complimentary = email != null && COMPLIMENTARY_EMAILS.contains(email);
             in.legacyClaimAllowed = hadLocalPremium || !anyLocalPremium;
             if (changed) { serverAsked.clear(); in.serverValid.clear(); lastReportKey = null; }
             recompute();
@@ -208,7 +212,7 @@ final class EntitlementManager {
 
         // Remember a confirmed purchaser so the next cold start hides ads at
         // once; forget it the moment Play/the server says otherwise.
-        if (Boolean.TRUE.equals(r.entitled) && !"cache".equals(r.reason)) {
+        if (Boolean.TRUE.equals(r.entitled) && !"cache".equals(r.reason) && !"complimentary".equals(r.reason)) {
             in.cachedAccount = in.account;
             in.cachedAt = in.now;
             prefs.edit().putString(KEY_CACHED_ACCOUNT, in.account).putLong(KEY_CACHED_AT, in.now).apply();

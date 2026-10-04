@@ -70,6 +70,8 @@ final class EntitlementResolver {
         long now;
         /** The startup wait is over: stop holding ads for non-purchasers. */
         boolean timedOut;
+        /** The signed-in account is the owner's: Premium and no ads without any purchase. */
+        boolean complimentary;
     }
 
     static final class Result {
@@ -77,7 +79,7 @@ final class EntitlementResolver {
         Boolean entitled;
         Ads ads;
         String tokenHash;
-        /** play | server | cache | none | pending | other_account | server_rejected | signed_out | account_unknown | play_unknown */
+        /** complimentary | play | server | cache | none | pending | other_account | server_rejected | signed_out | account_unknown | play_unknown */
         String reason;
         /** Pre-update purchases assigned to the signed-in account by this call. */
         final Map<String, String> newLegacyOwners = new HashMap<>();
@@ -100,6 +102,12 @@ final class EntitlementResolver {
             r.entitled = false;
             r.reason = "signed_out";
             r.ads = Ads.ALLOWED;
+            return r;
+        }
+        if (in.complimentary) {
+            r.entitled = true;
+            r.reason = "complimentary";
+            r.ads = Ads.SUPPRESSED;
             return r;
         }
         if (!in.playKnown) {

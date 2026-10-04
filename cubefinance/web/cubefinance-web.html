@@ -3257,15 +3257,15 @@
     // accounts exist only in this device's localStorage. A determined user can
     // therefore set it themselves -- but they can equally set `premium`
     // directly, so this grants nothing that was not already reachable.
-    // The app owner's own account gets AI Premium and the guide books free —
-    // but only once the address is verified (email code or Google), so typing
-    // this email into the sign-up form is not enough to claim it.
+    // The app owner's own account: the whole payment system is off for it —
+    // AI Premium and the guide books are free, there is no email-code step and
+    // (in the Android app) no ads. Matching is by the signed-in email, however
+    // the account was created (form, Google, or an old account).
     const COMPLIMENTARY_EMAILS = ["itayleiss2010@gmail.com"];
+    const isComplimentaryEmail = (e) => COMPLIMENTARY_EMAILS.includes(normEmail(e));
     function isComplimentaryAccount() {
       const u = state.authUser;
-      if (!u || !COMPLIMENTARY_EMAILS.includes(normEmail(u.email))) return false;
-      try { const rec = loadUsers()[normEmail(u.email)]; return !!(rec && rec.emailVerified); }
-      catch (e) { return false; }
+      return !!(u && isComplimentaryEmail(u.email));
     }
 
     function isReviewerAccount() {
@@ -4216,6 +4216,7 @@
 
     // The store-review account is exempt: reviewers cannot read that inbox.
     function needsEmailCheck(user) {
+      if (user && isComplimentaryEmail(user.email)) return false;   // the owner never gets the code screen
       const u = loadUsers()[normEmail(user && user.email)];
       return !(u && (u.emailVerified || u.id === REVIEWER_ID));
     }

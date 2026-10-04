@@ -110,9 +110,17 @@ begin
   if exists (select 1 from public.cf_profiles where email = v_email) then
     return json_build_object('ok', false, 'error', 'email_taken');
   end if;
-  insert into public.cf_profiles (email, display_name, token_hash)
-  values (v_email, case when v_name <> '' then v_name else split_part(v_email, '@', 1) end,
-          encode(extensions.digest(p_token, 'sha256'), 'hex'));
+  begin
+    insert into public.cf_profiles (email, display_name, token_hash)
+    values (v_email, case when v_name <> '' then v_name else split_part(v_email, '@', 1) end,
+            encode(extensions.digest(p_token, 'sha256'), 'hex'));
+  exception when unique_violation then
+    -- someone registered this email (or this device) a split second before us
+    if public.cf_me(p_token) is not null then
+      return json_build_object('ok', true);
+    end if;
+    return json_build_object('ok', false, 'error', 'email_taken');
+  end;
   return json_build_object('ok', true, 'created', true);
 end;
 $$;
@@ -189,14 +197,18 @@ begin
   delete from public.cf_invites where expires_at < now() - interval '1 day';
   loop
     v_code := lpad(((('x' || encode(extensions.gen_random_bytes(4), 'hex'))::bit(32)::bigint) % 1000000)::text, 6, '0');
-    exit when not exists (select 1 from public.cf_invites
-                          where code = v_code and used_at is null and expires_at > now());
     v_tries := v_tries + 1;
-    if v_tries > 20 then return json_build_object('ok', false, 'error', 'busy'); end if;
+    if v_tries > 30 then return json_build_object('ok', false, 'error', 'busy'); end if;
+    begin
+      delete from public.cf_invites                              -- an old, dead row with the same digits
+       where code = v_code and (used_at is not null or expires_at <= now());
+      insert into public.cf_invites (code, goal_id, inviter_id, invitee_email, expires_at)
+      values (v_code, p_goal, v_me, v_email, now() + interval '10 minutes');
+      exit;
+    exception when unique_violation then
+      null;                                                      -- live code with the same digits: draw again
+    end;
   end loop;
-  delete from public.cf_invites where code = v_code;          -- an old, dead row with the same digits
-  insert into public.cf_invites (code, goal_id, inviter_id, invitee_email, expires_at)
-  values (v_code, p_goal, v_me, v_email, now() + interval '10 minutes');
   insert into public.cf_attempts (profile_id, kind) values (v_me, 'invite');
   select * into v_goal from public.cf_goals where id = p_goal;
   return json_build_object('ok', true, 'code', v_code, 'expires_in', 600,
@@ -233,13 +245,15 @@ begin
     insert into public.cf_attempts (profile_id, kind) values (v_me, 'join_fail');
     return json_build_object('ok', false, 'error', 'wrong_account');
   end if;
+  perform 1 from public.cf_goals where id = v_inv.goal_id for update;   -- one joiner at a time per goal
   if exists (select 1 from public.cf_members where goal_id = v_inv.goal_id and profile_id = v_me) then
     return json_build_object('ok', false, 'error', 'already_member');
   end if;
   if (select count(*) from public.cf_members where goal_id = v_inv.goal_id) >= 12 then
     return json_build_object('ok', false, 'error', 'goal_full');
   end if;
-  insert into public.cf_members (goal_id, profile_id) values (v_inv.goal_id, v_me);
+  insert into public.cf_members (goal_id, profile_id) values (v_inv.goal_id, v_me)
+  on conflict do nothing;
   update public.cf_invites set used_at = now() where code = v_inv.code;
   return json_build_object('ok', true, 'goal_id', v_inv.goal_id,
     'goal_name', (select name from public.cf_goals where id = v_inv.goal_id));
