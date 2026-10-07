@@ -14,3 +14,9 @@ public/source
 public/audio/*-voice.m4a
 # קובצי הביניים של מחולל האודיו
 public/audio/*.wav
+
+# HyperFrames — חומר גלם אישי ופלט
+hyperframes-instr/assets/video
+hyperframes-instr/out
+hyperframes-instr/renders
+hyperframes-instr/snapshots

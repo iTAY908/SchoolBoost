@@ -120,6 +120,16 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{ track: null }}
         calculateMetadata={calculateInstrMetadata}
       />
+      <Composition
+        id="InstrBase"
+        component={InstrVideo}
+        durationInFrames={INSTR_DURATION}
+        fps={INSTR_FPS}
+        width={INSTR_WIDTH}
+        height={INSTR_HEIGHT}
+        defaultProps={{ track: null, variant: "base" as const }}
+        calculateMetadata={calculateInstrMetadata}
+      />
 
       {/* תצוגת בדיקה לאפקטים החדשים — AgeBar ו-LogoBadge */}
       <Composition

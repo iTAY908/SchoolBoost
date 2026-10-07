@@ -37,12 +37,16 @@ const pad = (i: number) => String(i).padStart(5, "0");
  */
 const SRC = "source/instr";
 
-type Props = { track: Track | null };
+type Props = {
+  track: Track | null;
+  /** "base" = בלי חיתוך רקע ובלי הדמיה — חומר הגלם לגרסת העיגול ב-HyperFrames */
+  variant?: "full" | "base";
+};
 
 export const calculateInstrMetadata: CalculateMetadataFunction<Props> =
-  async () => {
+  async ({ props }) => {
     const res = await fetch(staticFile(`${SRC}/track-smooth.json`));
-    return { props: { track: (await res.json()) as Track } };
+    return { props: { ...props, track: (await res.json()) as Track } };
   };
 
 /** הפצצה מתפוצצת ממש לפני חיתוך הרקע */
@@ -68,7 +72,11 @@ const avg = (a: number[], from: number, to: number) => {
   return s.reduce((x, y) => x + y, 0) / s.length;
 };
 
-const Caption: React.FC<{ frame: number; track: Track }> = ({ frame, track }) => {
+const Caption: React.FC<{ frame: number; track: Track; base: boolean }> = ({
+  frame,
+  track,
+  base,
+}) => {
   const t = frame / 30;
   const cue = CUES.find((c) => t >= c.from && t < c.to);
   if (!cue) return null;
@@ -82,10 +90,12 @@ const Caption: React.FC<{ frame: number; track: Track }> = ({ frame, track }) =>
   const hx = fixedX + (track.cx[i] - fixedX) * follow;
   const htop = fixedTop + (track.top[i] - fixedTop) * follow;
 
-  const xf = personXf(frame);
+  const xf = base ? { s: 1, tx: 0 } : personXf(frame);
   const side = xf.tx > 1;
   const head = applyXf(hx, htop, xf);
-  const maxW = side ? 580 : 1000;
+  // בגרסת העיגול (HyperFrames) — מהחיתוך הכתובית צרה יותר כדי להיכנס לעיגול
+  const inCircle = base && frame >= CUT_AT;
+  const maxW = side ? 580 : inCircle ? 700 : 1000;
   const half = maxW / 2;
   // בחלק השני הכתובית נשארת בעמודה הימנית ולא נוגעת בתוויות החלקים
   const minX = side ? 470 + half : half + 20;
@@ -98,7 +108,7 @@ const Caption: React.FC<{ frame: number; track: Track }> = ({ frame, track }) =>
     easing: Easing.bezier(0.2, 1.7, 0.4, 1),
   });
   const o = interpolate(age, [0, 3], [0, 1], clamp);
-  const size = (side ? 80 : 124) * (cue.text.length > 16 ? 0.86 : 1);
+  const size = (side ? 80 : inCircle ? 96 : 124) * (cue.text.length > 16 ? 0.86 : 1);
 
   return (
     <div
@@ -210,12 +220,13 @@ const Hud: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-export const InstrVideo: React.FC<Props> = ({ track }) => {
+export const InstrVideo: React.FC<Props> = ({ track, variant = "full" }) => {
   const frame = useCurrentFrame();
   if (!track) return null;
+  const base = variant === "base";
   const i = Math.min(frame, track.n - 1);
-  const cut = frame >= CUT_AT;
-  const xf = personXf(frame);
+  const cut = !base && frame >= CUT_AT;
+  const xf = base ? { s: 1, tx: 0 } : personXf(frame);
 
   // הפצצה נעולה לעולם: מיקומה = עוגן + תזוזת הרקע מאז שהופיעה
   const bombVisible = frame >= BOMB_IN && frame < CUT_AT;
@@ -223,7 +234,7 @@ export const InstrVideo: React.FC<Props> = ({ track }) => {
   const by = BOMB_ANCHOR.y + (track.camy[i] - track.camy[BOMB_IN]);
   const boom = interpolate(frame, [BOOM_AT - 18, BOOM_AT], [0, 1], clamp);
   const blast = interpolate(frame, [BOOM_AT, CUT_AT + 6], [0, 1], clamp);
-  const whiteout = interpolate(frame, [CUT_AT - 3, CUT_AT, CUT_AT + 10], [0, 1, 0], clamp);
+  const whiteout = base ? 0 : interpolate(frame, [CUT_AT - 3, CUT_AT, CUT_AT + 10], [0, 1, 0], clamp);
 
   return (
     <AbsoluteFill style={{ background: P.ink }}>
@@ -247,7 +258,7 @@ export const InstrVideo: React.FC<Props> = ({ track }) => {
       )}
 
       {/* 3. כתוביות — מאחוריו */}
-      <Caption frame={frame} track={track} />
+      <Caption frame={frame} track={track} base={base} />
 
       {/* 4. הדובר עצמו (המסכה) — מעל הכתוביות והפצצה */}
       <Img
@@ -267,7 +278,7 @@ export const InstrVideo: React.FC<Props> = ({ track }) => {
 
       {/* 5. החלק השני — HUD והדמיית המצלמה המתפרקת */}
       {cut && <Hud frame={frame} />}
-      <CameraSim frame={frame} />
+      {!base && <CameraSim frame={frame} />}
 
       {/* הבזק לבן במעבר */}
       <AbsoluteFill style={{ background: "#fff", opacity: whiteout, pointerEvents: "none" }} />
