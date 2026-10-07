@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="scene-hook-template">
+      <style>
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-700.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-900.ttf") format("truetype");
+        font-weight: 900;
+        font-style: normal;
+        font-display: block;
+      }
+
+      /* AbsoluteFill name="SceneHook" */
+      #hook-stage {
+        position: absolute;
+        inset: 0;
+      }
+      #hook-fill {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        padding: 90px;
+      }
+      /* Burst — absolute, static position is the centre of the content box */
+      #hook-burst {
+        position: absolute;
+        left: 90px;
+        top: 510px;
+        width: 900px;
+        height: 900px;
+        border-radius: 50%;
+        border: 6px solid rgba(255, 255, 255, 0.5);
+      }
+      #hook-kicker {
+        direction: rtl;
+        font-family: "Heebo", sans-serif;
+        font-weight: 700;
+        font-size: 46px;
+        letter-spacing: 6px;
+        color: rgba(255, 255, 255, 0.85);
+        padding: 14px 40px;
+        border-radius: 999px;
+        border: 3px solid rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(4px);
+      }
+      #hook-headline {
+        display: flex;
+        justify-content: center;
+      }
+      #hook-dots {
+        display: flex;
+        gap: 20px;
+      }
+      #hook-dots .dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #FFFFFF;
+      }
+      #hook-stage .popwords {
+        direction: rtl;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 11.40px 45.60px;
+        max-width: 900px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 190px;
+        line-height: 1.14;
+        text-align: center;
+      }
+      #hook-stage .popword {
+        display: inline-block;
+        color: #FFFFFF;
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.28), 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      #hook-stage .popword.accent {
+        color: #FFD84D;
+        text-shadow: 0 0 46px #FFD84D8C, 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      </style>
+
+      <div
+        data-composition-id="scene-hook"
+        data-width="1080"
+        data-height="1920"
+        data-duration="2.200000"
+      >
+        <div id="hook-stage">
+          <div id="hook-fill">
+            <div id="hook-burst"></div>
+
+            <div id="hook-kicker">שאלה אחת קטנה</div>
+
+            <div id="hook-headline">
+              <div class="popwords">
+                <span class="popword">מה</span>
+                <span class="popword accent">הסוד...</span>
+              </div>
+            </div>
+
+            <div id="hook-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("hook-stage");
+        const words = Array.from(document.querySelectorAll("#hook-stage .popword"));
+        const dots = Array.from(document.querySelectorAll("#hook-dots .dot"));
+
+        // Burst: opacity [2,8,30] -> [0,.55,0]; scale [2,30] -> [.25,1.25] (Easing.out(cubic))
+        gsap.set("#hook-burst", { opacity: 0, scale: 0.25 });
+        tl.to("#hook-burst", { opacity: 0.55, duration: 6 / 30, ease: "none" }, 2 / 30);
+        tl.to("#hook-burst", { opacity: 0, duration: 22 / 30, ease: "none" }, 8 / 30);
+        tl.to("#hook-burst", { scale: 1.25, duration: 28 / 30, ease: "power2.out" }, 2 / 30);
+
+        // Kicker: opacity [0,8,52,62] -> [0,1,1,0]; translate [0,14] 0,-30 -> 0,0
+        gsap.set("#hook-kicker", { opacity: 0, y: -30 });
+        tl.to("#hook-kicker", { opacity: 1, duration: 8 / 30, ease: "none" }, 0);
+        tl.to("#hook-kicker", { opacity: 0, duration: 10 / 30, ease: "none" }, 52 / 30);
+        tl.to("#hook-kicker", { y: 0, duration: 14 / 30, ease: "b10" }, 0);
+
+        // Headline wrapper: scale [14,66] -> [1,1.07] (Easing.inOut(ease))
+        gsap.set("#hook-headline", { scale: 1 });
+        tl.to("#hook-headline", { scale: 1.07, duration: 52 / 30, ease: "ioEase" }, 14 / 30);
+
+        // PopWords: per-word opacity / scale / translate / rotate pops
+        words.forEach(function (w, i) {
+          var appear = (8 + i * 7) / 30;
+          var accent = w.classList.contains("accent");
+          gsap.set(w, { opacity: 0, scale: 0.55, y: 26, rotation: accent ? -4 : -2 });
+          tl.to(w, { opacity: 1, duration: 5 / 30, ease: "none" }, appear);
+          tl.to(w, { scale: 1, duration: 11 / 30, ease: "b15" }, appear);
+          tl.to(w, { y: 0, duration: 13 / 30, ease: "b10" }, appear);
+          tl.to(w, { rotation: 0, duration: 13 / 30, ease: "b10" }, appear);
+        });
+
+        // Dots: group opacity [30,40] -> [0,1]; each dot pulses on a 24-frame cycle
+        gsap.set("#hook-dots", { opacity: 0 });
+        tl.to("#hook-dots", { opacity: 1, duration: 10 / 30, ease: "none" }, 30 / 30);
+        dots.forEach(function (dot, i) {
+          gsap.set(dot, { opacity: 0.3 });
+          for (var s = 30 + i * 4; s < 66; s += 24) {
+            tl.to(dot, { opacity: 1, duration: 6 / 30, ease: "none" }, s / 30);
+            tl.to(dot, { opacity: 0.3, duration: 6 / 30, ease: "none" }, (s + 6) / 30);
+          }
+        });
+
+        // TransitionSeries.Transition: slide({ direction: "from-left" }) — exiting
+        // scene translates to +100% over the last 10 frames (springTiming damping 200).
+        tl.to(stage, { xPercent: 100, duration: 10 / 30, ease: "spr" }, 56 / 30);
+
+        window.__timelines["scene-hook"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

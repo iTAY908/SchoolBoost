@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="scene-gallery-template">
+      <style>
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-700.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-900.ttf") format("truetype");
+        font-weight: 900;
+        font-style: normal;
+        font-display: block;
+      }
+
+      #gal-stage {
+        position: absolute;
+        inset: 0;
+      }
+      #gal-fill {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      #gal-wall {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 60px;
+        perspective: 1400px;
+      }
+      #gal-stage .cardrow {
+        display: flex;
+        gap: 44px;
+        padding-right: 60px;
+      }
+      #gal-stage .ccard {
+        width: 280px;
+        height: 448.0px;
+        border-radius: 30.80px;
+        border: 2px solid rgba(255, 255, 255, 0.22);
+        box-shadow: 0 30px 60px rgba(45, 0, 25, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 25.20px;
+        gap: 12.60px;
+        direction: rtl;
+      }
+      #gal-stage .ccard-shine {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(115deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 45%);
+      }
+      #gal-stage .ccard-play {
+        position: absolute;
+        left: 50%;
+        top: 42%;
+        transform: translate(-50%, -50%);
+        width: 72.80px;
+        height: 72.80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      }
+      #gal-stage .ccard-tri {
+        width: 0;
+        height: 0;
+        border-top: 15.40px solid transparent;
+        border-bottom: 15.40px solid transparent;
+        border-right: 25.20px solid #2B0418;
+        margin-right: 5.60px;
+      }
+      #gal-stage .ccard-label {
+        font-family: "Heebo", sans-serif;
+        font-weight: 700;
+        font-size: 23.80px;
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      }
+      #gal-stage .ccard-bar {
+        height: 12.60px;
+        border-radius: 999px;
+      }
+      #gal-stage .ccard-bar-a {
+        width: 78%;
+        background: rgba(255, 255, 255, 0.55);
+      }
+      #gal-stage .ccard-bar-b {
+        width: 52%;
+        background: rgba(255, 255, 255, 0.3);
+      }
+      #gal-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(120, 4, 60, 0.28) 0%,
+          rgba(150, 6, 72, 0.7) 40%,
+          rgba(150, 6, 72, 0.7) 62%,
+          rgba(120, 4, 60, 0.28) 100%
+        );
+      }
+      #gal-copy {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 90px;
+      }
+      #gal-stage .popwords {
+        direction: rtl;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 7.44px 29.76px;
+        max-width: 940px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 124px;
+        line-height: 1.14;
+        text-align: center;
+      }
+      #gal-stage .popword {
+        display: inline-block;
+        color: #FFFFFF;
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.28), 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      #gal-stage .popword.accent {
+        color: #FFD84D;
+        text-shadow: 0 0 46px #FFD84D8C, 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      </style>
+
+      <div
+        data-composition-id="scene-gallery"
+        data-width="1080"
+        data-height="1920"
+        data-duration="2.800000"
+      >
+        <div id="gal-stage">
+          <div id="gal-fill">
+            <div id="gal-wall">
+              <div class="cardrow" id="gal-row-top">
+                <div class="ccard" style="background: linear-gradient(150deg, #1B2A4A 0%, #31507F 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>רילס</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #3A1145 0%, #7A2A6B 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>פרסומת</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #0F3B36 0%, #1E6E5C 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>טיזר</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #4A1524 0%, #9A2F46 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>סטורי</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #232338 0%, #4C4A72 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>קמפיין</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+              </div>
+              <div class="cardrow" id="gal-row-bottom">
+                <div class="ccard" style="background: linear-gradient(150deg, #4A1524 0%, #9A2F46 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>אירוע</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #232338 0%, #4C4A72 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>מוצר</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #4A2A0C 0%, #9A6321 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>לוגו</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #1B2A4A 0%, #31507F 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>ראיון</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+                <div class="ccard" style="background: linear-gradient(150deg, #3A1145 0%, #7A2A6B 100%)">
+                  <div class="ccard-shine"></div>
+                  <div class="ccard-play"><div class="ccard-tri"></div></div>
+                  <div class="ccard-label" data-layout-ignore>קליפ</div>
+                  <div class="ccard-bar ccard-bar-a"></div>
+                  <div class="ccard-bar ccard-bar-b"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="gal-scrim" data-layout-allow-occlusion></div>
+
+            <div id="gal-copy">
+              <div class="popwords">
+                <span class="popword">של</span>
+                <span class="popword">הסרטונים</span>
+                <span class="popword">שמושכים</span>
+                <span class="popword accent">הכי</span>
+                <span class="popword accent">הרבה</span>
+                <span class="popword accent">עיניים?</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("gal-stage");
+        const words = Array.from(document.querySelectorAll("#gal-stage .popword"));
+
+        // CardWall opacity [0,12] -> [0,1]
+        gsap.set("#gal-wall", { opacity: 0 });
+        tl.to("#gal-wall", { opacity: 1, duration: 12 / 30, ease: "none" }, 0);
+
+        // Two rows drift in opposite directions. The static -8deg rotation is owned by
+        // GSAP (not CSS) so the tween and the rotation never fight.
+        gsap.set("#gal-row-top", { rotation: -8, x: 220, y: -40 });
+        tl.to("#gal-row-top", { x: -260, y: -40, duration: 84 / 30, ease: "power1.out" }, 0);
+        gsap.set("#gal-row-bottom", { rotation: -8, x: -300, y: 40 });
+        tl.to("#gal-row-bottom", { x: 200, y: 40, duration: 84 / 30, ease: "power1.out" }, 0);
+
+        // PopWords: per-word opacity / scale / translate / rotate pops
+        words.forEach(function (w, i) {
+          var appear = (4 + i * 4) / 30;
+          var accent = w.classList.contains("accent");
+          gsap.set(w, { opacity: 0, scale: 0.55, y: 26, rotation: accent ? -4 : -2 });
+          tl.to(w, { opacity: 1, duration: 5 / 30, ease: "none" }, appear);
+          tl.to(w, { scale: 1, duration: 11 / 30, ease: "b15" }, appear);
+          tl.to(w, { y: 0, duration: 13 / 30, ease: "b10" }, appear);
+          tl.to(w, { rotation: 0, duration: 13 / 30, ease: "b10" }, appear);
+        });
+
+        // Transitions: enters with slide({direction:"from-left"}) over frames 0-10,
+        // leaves with slide({direction:"from-bottom"}) over frames 74-84.
+        tl.fromTo(stage, { xPercent: -100 }, { xPercent: 0, duration: 10 / 30, ease: "spr" }, 0);
+        tl.set(stage, { xPercent: 0 }, 10 / 30);
+        tl.to(stage, { yPercent: -100, duration: 10 / 30, ease: "spr" }, 74 / 30);
+
+        window.__timelines["scene-gallery"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
