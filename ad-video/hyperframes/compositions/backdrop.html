@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="backdrop-template">
+      <style>
+
+      #bd-stage {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background: linear-gradient(
+          165deg,
+          #B3095E 0%,
+          #E30B79 38%,
+          #FF2D8E 68%,
+          #FF7A59 100%
+        );
+      }
+      #bd-glow-top {
+        position: absolute;
+        width: 1500px;
+        height: 1500px;
+        left: -220px;
+        top: -420px;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 140, 190, 0.85) 0%,
+          rgba(255, 140, 190, 0) 62%
+        );
+      }
+      #bd-glow-bottom {
+        position: absolute;
+        width: 1400px;
+        height: 1400px;
+        left: 120px;
+        top: 1180px;
+        background: radial-gradient(
+          circle at 50% 50%,
+          rgba(255, 150, 90, 0.75) 0%,
+          rgba(255, 150, 90, 0) 60%
+        );
+      }
+      #bd-vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 42%,
+          rgba(60, 0, 30, 0.55) 100%
+        );
+      }
+      #bd-grain {
+        position: absolute;
+        inset: 0;
+        opacity: 0.14;
+        mix-blend-mode: overlay;
+        background-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'180'%20height%3D'180'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'3'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'180'%20height%3D'180'%20filter%3D'url(%2523n)'%2F%3E%3C%2Fsvg%3E");
+      }
+      </style>
+
+      <div
+        data-composition-id="backdrop"
+        data-width="1080"
+        data-height="1920"
+        data-duration="12.866667"
+      >
+        <div id="bd-stage">
+          <div id="bd-glow-top" data-layout-allow-overflow></div>
+          <div id="bd-glow-bottom" data-layout-allow-overflow></div>
+          <div id="bd-vignette"></div>
+          <div id="bd-grain"></div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+
+        // Both glows drift across the whole composition (frames 0 -> 385,
+        // Remotion Easing.inOut(Easing.ease)). The backdrop never participates in
+        // the scene transitions, so the gradient reads as one continuous move.
+        tl.fromTo("#bd-glow-top", { x: 0, y: 0 }, { x: 260, y: 180, duration: 385 / 30, ease: "ioEase" }, 0);
+        tl.fromTo("#bd-glow-bottom", { x: 0, y: 0 }, { x: -240, y: -140, duration: 385 / 30, ease: "ioEase" }, 0);
+
+        window.__timelines["backdrop"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

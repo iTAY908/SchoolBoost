@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="scene-results-template">
+      <style>
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-700.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-900.ttf") format("truetype");
+        font-weight: 900;
+        font-style: normal;
+        font-display: block;
+      }
+
+      #res-stage {
+        position: absolute;
+        inset: 0;
+      }
+      #res-fill {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 56px;
+        padding: 90px;
+      }
+      #res-headline {
+        direction: rtl;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 88px;
+        line-height: 1.16;
+        color: #FFFFFF;
+        text-align: center;
+        max-width: 900px;
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.25), 0 8px 28px rgba(70, 0, 35, 0.45);
+      }
+      #res-headline .gold {
+        color: #FFD84D;
+      }
+      #res-metrics {
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+        height: 526px;
+      }
+      #res-stage .metric {
+        direction: rtl;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        width: 820px;
+        padding: 30px 38px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 26px 60px rgba(60, 0, 32, 0.35);
+      }
+      #res-stage .metric-value {
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 82px;
+        color: #2ED573;
+        min-width: 230px;
+        text-align: center;
+        letter-spacing: -2px;
+        direction: ltr;
+      }
+      #res-stage .metric-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      #res-stage .metric-label {
+        font-family: "Heebo", sans-serif;
+        font-weight: 700;
+        font-size: 44px;
+        color: #2B0418;
+      }
+      #res-stage .metric-track {
+        height: 16px;
+        border-radius: 999px;
+        background: rgba(43, 4, 24, 0.1);
+        overflow: hidden;
+      }
+      #res-stage .metric-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2ED573 0%, #7BE495 100%);
+      }
+      #res-stamp {
+        direction: rtl;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 700;
+        font-size: 42px;
+        color: #FFFFFF;
+        padding: 16px 38px;
+        border-radius: 999px;
+        background: rgba(46, 213, 115, 0.22);
+        border: 3px solid #2ED573;
+      }
+      #res-stamp .tick {
+        color: #2ED573;
+        font-size: 46px;
+      }
+      </style>
+
+      <div
+        data-composition-id="scene-results"
+        data-width="1080"
+        data-height="1920"
+        data-duration="3.000000"
+      >
+        <div id="res-stage">
+          <div id="res-fill">
+            <div id="res-headline">
+              <div>עריכת וידאו מקצועית</div>
+              <div class="gold">ברמה הגבוהה ביותר!</div>
+            </div>
+
+            <div id="res-metrics">
+              <div class="metric" data-appear="14" data-value="96" data-suffix="%" data-decimals="0" data-bar="0.96">
+                <div class="metric-value">0%</div>
+                <div class="metric-body">
+                  <div class="metric-label">מעורבות</div>
+                  <div class="metric-track"><div class="metric-fill"></div></div>
+                </div>
+              </div>
+              <div class="metric" data-appear="23" data-value="3.2" data-suffix="x" data-decimals="1" data-bar="0.85">
+                <div class="metric-value">0.0x</div>
+                <div class="metric-body">
+                  <div class="metric-label">יותר צפיות</div>
+                  <div class="metric-track"><div class="metric-fill"></div></div>
+                </div>
+              </div>
+              <div class="metric" data-appear="32" data-value="91" data-suffix="%" data-decimals="0" data-bar="0.91">
+                <div class="metric-value">0%</div>
+                <div class="metric-body">
+                  <div class="metric-label">שימור צופים</div>
+                  <div class="metric-track"><div class="metric-fill"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="res-stamp"><span class="tick">✓</span>נמדד על פני מאות סרטונים</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("res-stage");
+
+        // Headline: opacity [0,9] -> [0,1]; translate [0,16] 0,40 -> 0,0
+        gsap.set("#res-headline", { opacity: 0, y: 40 });
+        tl.to("#res-headline", { opacity: 1, duration: 9 / 30, ease: "none" }, 0);
+        tl.to("#res-headline", { y: 0, duration: 16 / 30, ease: "b10" }, 0);
+
+        // MetricCards — staggered entrance + Easing.out(cubic) count-up and bar fill
+        Array.from(document.querySelectorAll("#res-stage .metric")).forEach(function (card) {
+          const a = Number(card.dataset.appear);
+          const value = Number(card.dataset.value);
+          const decimals = Number(card.dataset.decimals);
+          const suffix = card.dataset.suffix;
+          const bar = Number(card.dataset.bar);
+          const valueEl = card.querySelector(".metric-value");
+          const fillEl = card.querySelector(".metric-fill");
+
+          gsap.set(card, { opacity: 0, scale: 0.86, x: 90 });
+          tl.to(card, { opacity: 1, duration: 7 / 30, ease: "none" }, a / 30);
+          tl.to(card, { scale: 1, duration: 14 / 30, ease: "b14" }, a / 30);
+          tl.to(card, { x: 0, duration: 16 / 30, ease: "b10" }, a / 30);
+
+          const counter = { v: 0 };
+          tl.to(
+            counter,
+            {
+              v: value,
+              duration: 22 / 30,
+              ease: "power2.out",
+              onUpdate: function () {
+                valueEl.textContent = counter.v.toFixed(decimals) + suffix;
+              },
+            },
+            (a + 2) / 30
+          );
+          tl.to(fillEl, { width: bar * 100 + "%", duration: 26 / 30, ease: "power2.out" }, (a + 4) / 30);
+        });
+
+        // Stamp: opacity [52,62] -> [0,1]; scale [52,66] -> [0.8,1]
+        gsap.set("#res-stamp", { opacity: 0, scale: 0.8 });
+        tl.to("#res-stamp", { opacity: 1, duration: 10 / 30, ease: "none" }, 52 / 30);
+        tl.to("#res-stamp", { scale: 1, duration: 14 / 30, ease: "b15" }, 52 / 30);
+
+        // Enters with slide({direction:"from-bottom"}) over frames 0-10.
+        // It leaves under fade(): Remotion's fade() keeps the exiting scene fully
+        // opaque and only fades the incoming one in, so there is no exit tween here.
+        tl.fromTo(stage, { yPercent: 100 }, { yPercent: 0, duration: 10 / 30, ease: "spr" }, 0);
+        tl.set(stage, { yPercent: 0 }, 10 / 30);
+
+        window.__timelines["scene-results"] = tl;
+      </script>
+    </template>
+  </body>
+</html>

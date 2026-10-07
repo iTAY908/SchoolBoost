@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="he">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template id="scene-cta-template">
+      <style>
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-400.ttf") format("truetype");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-700.ttf") format("truetype");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Heebo";
+        src: url("assets/fonts/Heebo-900.ttf") format("truetype");
+        font-weight: 900;
+        font-style: normal;
+        font-display: block;
+      }
+
+      #cta-stage {
+        position: absolute;
+        inset: 0;
+      }
+      #cta-fill {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 64px;
+        padding: 90px;
+      }
+      #cta-button {
+        direction: rtl;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 66px;
+        color: #2B0418;
+        padding: 34px 68px;
+        border-radius: 999px;
+        background: linear-gradient(150deg, #FFFFFF 0%, #FFE3B8 100%);
+        box-shadow: 0 26px 60px rgba(60, 0, 32, 0.45);
+      }
+      #cta-button .emoji {
+        font-size: 62px;
+      }
+      #cta-dm {
+        direction: rtl;
+        font-family: "Heebo", sans-serif;
+        font-weight: 700;
+        font-size: 56px;
+        color: #FFFFFF;
+        text-align: center;
+        text-shadow: 0 6px 24px rgba(70, 0, 35, 0.5);
+      }
+      #cta-sig-wrap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 210px;
+        display: flex;
+        justify-content: center;
+      }
+      #cta-signature {
+        direction: rtl;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 46px;
+        letter-spacing: 2px;
+        color: #FFFFFF;
+        text-shadow: 0 4px 18px rgba(70, 0, 35, 0.6);
+        padding: 16px 42px;
+        border-radius: 999px;
+        border: 3px solid rgba(255, 255, 255, 0.75);
+        background: rgba(120, 4, 60, 0.28);
+      }
+      #cta-signature .handle {
+        opacity: 0.55;
+        font-weight: 700;
+        direction: ltr;
+      }
+      #cta-stage .popwords {
+        direction: rtl;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 7.92px 31.68px;
+        max-width: 920px;
+        font-family: "Heebo", sans-serif;
+        font-weight: 900;
+        font-size: 132px;
+        line-height: 1.14;
+        text-align: center;
+      }
+      #cta-stage .popword {
+        display: inline-block;
+        color: #FFFFFF;
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.28), 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      #cta-stage .popword.accent {
+        color: #FFD84D;
+        text-shadow: 0 0 46px #FFD84D8C, 0 8px 28px rgba(20, 0, 35, 0.45);
+      }
+      </style>
+
+      <div
+        data-composition-id="scene-cta"
+        data-width="1080"
+        data-height="1920"
+        data-duration="3.600000"
+      >
+        <div id="cta-stage">
+          <div id="cta-fill">
+            <div class="popwords">
+              <span class="popword">רוצים</span>
+              <span class="popword">סרטון</span>
+              <span class="popword">כזה</span>
+              <span class="popword accent">לעסק</span>
+              <span class="popword accent">שלכם?</span>
+            </div>
+
+            <div id="cta-button"><span class="emoji">📩</span>שלחו הודעה עכשיו!</div>
+
+            <div id="cta-dm">דברו איתי בפרטי</div>
+
+            <div id="cta-sig-wrap">
+              <div id="cta-signature">STUDIO CUT<span class="handle">@studiocut</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        const tl = gsap.timeline({ paused: true });
+        const stage = document.getElementById("cta-stage");
+        const words = Array.from(document.querySelectorAll("#cta-stage .popword"));
+
+        // PopWords: per-word opacity / scale / translate / rotate pops
+        words.forEach(function (w, i) {
+          var appear = (2 + i * 4) / 30;
+          var accent = w.classList.contains("accent");
+          gsap.set(w, { opacity: 0, scale: 0.55, y: 26, rotation: accent ? -4 : -2 });
+          tl.to(w, { opacity: 1, duration: 5 / 30, ease: "none" }, appear);
+          tl.to(w, { scale: 1, duration: 11 / 30, ease: "b15" }, appear);
+          tl.to(w, { y: 0, duration: 13 / 30, ease: "b10" }, appear);
+          tl.to(w, { rotation: 0, duration: 13 / 30, ease: "b10" }, appear);
+        });
+
+        // CTA button: opacity [26,36] -> [0,1]
+        gsap.set("#cta-button", { opacity: 0, scale: 0.7 });
+        tl.to("#cta-button", { opacity: 1, duration: 10 / 30, ease: "none" }, 26 / 30);
+        // scale ramps 0.7 -> 1 over frames 26-44, then pulses on a 30-frame loop
+        // (Remotion feeds interpolate a frame value wrapped with `% 30` past frame 44).
+        const rampStart = 26 / 30;
+        const rampEnd = rampStart + 18 / 30;
+        tl.to("#cta-button", { scale: 1, duration: 18 / 30, ease: "b13" }, rampStart);
+        // repeat: 2 -> three 30-frame cycles; the root data-duration bounds it.
+        const pulse = gsap.timeline({ repeat: 2 });
+        pulse
+          .to("#cta-button", { scale: 1.06, duration: 8 / 30, ease: "b13" })
+          .to("#cta-button", { scale: 1, duration: 8 / 30, ease: "b13" })
+          .to("#cta-button", { scale: 1, duration: 14 / 30, ease: "none" });
+        tl.add(pulse, rampEnd);
+
+        // DM line: opacity [40,52]; translate [40,56] 0,26 -> 0,0
+        gsap.set("#cta-dm", { opacity: 0, y: 26 });
+        tl.to("#cta-dm", { opacity: 1, duration: 12 / 30, ease: "none" }, 40 / 30);
+        tl.to("#cta-dm", { y: 0, duration: 16 / 30, ease: "b10" }, 40 / 30);
+
+        // Signature: opacity [56,68] -> [0,1]
+        gsap.set("#cta-signature", { opacity: 0 });
+        tl.to("#cta-signature", { opacity: 1, duration: 12 / 30, ease: "none" }, 56 / 30);
+
+        // Enters with slide({direction:"from-left"}) over frames 0-10. Last scene: no exit.
+        tl.fromTo(stage, { xPercent: -100 }, { xPercent: 0, duration: 10 / 30, ease: "spr" }, 0);
+        tl.set(stage, { xPercent: 0 }, 10 / 30);
+
+        window.__timelines["scene-cta"] = tl;
+      </script>
+    </template>
+  </body>
+</html>
