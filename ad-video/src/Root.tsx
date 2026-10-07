@@ -27,6 +27,13 @@ import {
   GraphicsPreview,
 } from "./story/GraphicsPreview";
 import { StoryVideo } from "./story/StoryVideo";
+import { InstrVideo, calculateInstrMetadata } from "./instr/InstrVideo";
+import {
+  DURATION as INSTR_DURATION,
+  FPS as INSTR_FPS,
+  HEIGHT as INSTR_HEIGHT,
+  WIDTH as INSTR_WIDTH,
+} from "./instr/timeline";
 import {
   FPS as STORY_FPS,
   HEIGHT as STORY_HEIGHT,
@@ -100,6 +107,18 @@ export const RemotionRoot: React.FC = () => {
         fps={STORY_FPS}
         width={STORY_WIDTH}
         height={STORY_HEIGHT}
+      />
+
+      {/* סרטון ההנחיות — כתוביות מאחוריו, פצצת אנימה, חיתוך רקע והדמיית מצלמה */}
+      <Composition
+        id="InstrVideo"
+        component={InstrVideo}
+        durationInFrames={INSTR_DURATION}
+        fps={INSTR_FPS}
+        width={INSTR_WIDTH}
+        height={INSTR_HEIGHT}
+        defaultProps={{ track: null }}
+        calculateMetadata={calculateInstrMetadata}
       />
 
       {/* תצוגת בדיקה לאפקטים החדשים — AgeBar ו-LogoBadge */}
