@@ -1,0 +1,6 @@
+#!/bin/sh
+# Block a commit that carries something credential-shaped.
+#
+# Install:  ln -sf ../../tools/pre-commit .git/hooks/pre-commit
+# Bypass once (you had better be sure):  git commit --no-verify
+python3 "$(git rev-parse --show-toplevel)/tools/scan-secrets.py" --staged
