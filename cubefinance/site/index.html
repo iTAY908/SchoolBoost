@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CubeFinance — הכסף שלך, מסודר בקוביות</title>
+<meta name="description" content="CubeFinance מחלקת את ההכנסה שלך לקוביות: שכר דירה, חשבונות, חיסכון ובילויים. מעקב הוצאות, סימולטור, למידה ועוזר AI בעברית. חינם להורדה בגוגל פליי.">
+<meta name="theme-color" content="#07070a">
+<meta property="og:title" content="CubeFinance — הכסף שלך, מסודר בקוביות">
+<meta property="og:description" content="אפליקציה לניהול הכסף הראשון שלך: קוביות, הוצאות, סימולטור ועוזר AI. חינם בגוגל פליי.">
+<meta property="og:image" content="img/logo-512.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/logo-512.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070a; --bg2: #0e0e13; --card: #121218; --line: #23232c;
+    --text: #f5f5f7; --dim: #a1a1ad; --red: #e5162b; --red2: #ff4757; --red-soft: #e5162b1f;
+    --radius: 22px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif; line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; height: auto; }
+  .wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+
+  /* ---------- nav ---------- */
+  nav.top { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); background: #07070acc; border-bottom: 1px solid #ffffff0d; }
+  nav.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 20px; letter-spacing: -.3px; }
+  .brand img { width: 36px; height: 36px; }
+  .brand b { color: var(--red2); font-weight: 800; }
+  .navlinks { display: flex; gap: 26px; }
+  .navlinks a { text-decoration: none; color: var(--dim); font-weight: 500; font-size: 15px; transition: color .2s; }
+  .navlinks a:hover { color: var(--text); }
+  .navcta { text-decoration: none; background: var(--red); color: #fff; font-weight: 700; font-size: 14px; padding: 9px 16px; border-radius: 999px; transition: background .2s, transform .2s; white-space: nowrap; }
+  .navcta:hover { background: var(--red2); transform: translateY(-1px); }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; padding: 70px 0 90px; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; inset: -20% -10% auto auto; width: 760px; height: 760px; border-radius: 50%;
+    background: radial-gradient(circle, #e5162b55 0%, #e5162b14 40%, transparent 70%); filter: blur(10px); pointer-events: none; }
+  .hero::after { content: ""; position: absolute; inset: 0; background-image: linear-gradient(#ffffff06 1px, transparent 1px), linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+    background-size: 56px 56px; mask-image: radial-gradient(ellipse at 30% 40%, #000 20%, transparent 70%); -webkit-mask-image: radial-gradient(ellipse at 30% 40%, #000 20%, transparent 70%); pointer-events: none; }
+  .hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr .95fr; align-items: center; gap: 40px; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: var(--red2); background: var(--red-soft); border: 1px solid #e5162b44; padding: 6px 14px; border-radius: 999px; margin-bottom: 22px; }
+  .pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--red2); box-shadow: 0 0 0 0 #ff4757aa; animation: ping 2s infinite; }
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 #ff4757aa; } 80%, 100% { box-shadow: 0 0 0 10px transparent; } }
+  h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 1.04; font-weight: 900; letter-spacing: -2px; margin: 0 0 20px; }
+  h1 em { font-style: normal; background: linear-gradient(135deg, #ff5a68, #e5162b 60%, #a30d1c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: clamp(17px, 2vw, 20px); color: var(--dim); max-width: 540px; margin: 0 0 32px; }
+  .stores { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .store { display: inline-flex; align-items: center; gap: 12px; padding: 11px 20px 11px 22px; border-radius: 14px; text-decoration: none; min-width: 200px; transition: transform .2s, box-shadow .2s, background .2s; }
+  .store svg { width: 28px; height: 28px; flex: 0 0 28px; }
+  .store span { display: flex; flex-direction: column; line-height: 1.2; text-align: start; }
+  .store small { font-size: 12px; opacity: .8; font-weight: 500; }
+  .store strong { font-size: 19px; font-weight: 800; letter-spacing: -.2px; }
+  .store.play { background: #fff; color: #0b0b0f; box-shadow: 0 10px 40px -10px #e5162b88; }
+  .store.play:hover { transform: translateY(-3px); box-shadow: 0 16px 50px -10px #e5162baa; }
+  .store.apple { background: #1a1a20; color: #6b6b76; border: 1px solid #2a2a33; cursor: not-allowed; position: relative; }
+  .store.apple .soon { position: absolute; top: -10px; inset-inline-start: 14px; background: #2a2a33; color: #b9b9c4; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; border: 1px solid #3a3a45; }
+  .free { margin-top: 18px; color: var(--dim); font-size: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .free span::before { content: "✓"; color: var(--red2); font-weight: 800; margin-inline-end: 6px; }
+
+  /* phones */
+  .phones { position: relative; height: 620px; }
+  .phone { position: absolute; width: 270px; aspect-ratio: 720 / 1404; border-radius: 38px; padding: 9px; background: linear-gradient(160deg, #2b2b33, #0c0c10 60%); box-shadow: 0 40px 80px -30px #000, 0 0 0 1px #ffffff12 inset; }
+  .phone img { width: 100%; height: 100% !important; object-fit: cover; border-radius: 30px; }
+  .phone::before { content: ""; position: absolute; top: 18px; left: 50%; width: 70px; height: 7px; transform: translateX(-50%); background: #000; border-radius: 9px; z-index: 2; opacity: .85; }
+  .phone.p1 { inset-inline-start: 18%; top: 10px; z-index: 3; }
+  .phone.p2 { inset-inline-start: -2%; top: 90px; z-index: 2; transform: rotate(-8deg) scale(.88); opacity: .9; }
+  .phone.p3 { inset-inline-start: 42%; top: 110px; z-index: 1; transform: rotate(8deg) scale(.86); opacity: .85; }
+  .glow { position: absolute; inset: 20% 10% 0; background: radial-gradient(ellipse, #e5162b66, transparent 65%); filter: blur(40px); z-index: 0; }
+
+  /* ---------- strip ---------- */
+  .strip { border-block: 1px solid var(--line); background: var(--bg2); }
+  .strip .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .strip div > div { padding: 26px 10px; text-align: center; }
+  .strip b { display: block; font-size: 28px; font-weight: 900; color: var(--text); letter-spacing: -.5px; }
+  .strip b em { font-style: normal; color: var(--red2); }
+  .strip span { color: var(--dim); font-size: 14px; }
+
+  /* ---------- sections ---------- */
+  section { padding: 100px 0; }
+  .eyebrow { color: var(--red2); font-weight: 800; font-size: 14px; letter-spacing: .5px; margin-bottom: 10px; }
+  h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.1; font-weight: 900; letter-spacing: -1.2px; margin: 0 0 16px; }
+  .sub { color: var(--dim); font-size: 18px; max-width: 620px; margin: 0 0 50px; }
+  .center { text-align: center; } .center .sub { margin-inline: auto; }
+
+  /* features */
+  .feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feat { background: linear-gradient(180deg, #15151c, #101015); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; position: relative; overflow: hidden; transition: border-color .3s, transform .3s; }
+  .feat:hover { border-color: #e5162b66; transform: translateY(-4px); }
+  .feat::after { content: ""; position: absolute; top: -60px; inset-inline-end: -60px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, #e5162b22, transparent 70%); }
+  .ic { width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center; background: var(--red-soft); border: 1px solid #e5162b33; margin-bottom: 18px; }
+  .ic svg { width: 24px; height: 24px; stroke: var(--red2); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .feat h3 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+  .feat p { margin: 0; color: var(--dim); font-size: 15.5px; }
+  .feat ul { margin: 12px 0 0; padding: 0 18px 0 0; color: var(--dim); font-size: 14.5px; }
+  .feat.big { grid-column: span 2; display: grid; grid-template-columns: 1fr 210px; gap: 24px; align-items: center; }
+  .feat.big img { border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 30px 60px -30px #000; }
+
+  /* cubes demo */
+  .cubes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .cube { font-size: 13.5px; font-weight: 700; padding: 7px 12px; border-radius: 10px; background: #1a1a22; border: 1px solid var(--line); }
+  .cube b { color: var(--red2); margin-inline-start: 4px; }
+
+  /* gallery */
+  .gallery { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 10px 20px 30px; scrollbar-width: thin; scrollbar-color: #33333d transparent; }
+  .shot { flex: 0 0 240px; scroll-snap-align: center; text-align: center; }
+  .shot .phone { position: relative; width: 100%; inset: auto; transform: none; opacity: 1; }
+  .shot figcaption { margin-top: 14px; font-weight: 700; }
+  .shot figcaption small { display: block; color: var(--dim); font-weight: 400; font-size: 14px; }
+
+  /* pricing */
+  .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; max-width: 900px; margin: 0 auto; }
+  .price { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 28px; text-align: center; }
+  .price.hl { border-color: #e5162b88; background: linear-gradient(180deg, #1c0e11, #121218); box-shadow: 0 20px 60px -30px #e5162b88; }
+  .price h3 { margin: 0 0 6px; font-size: 18px; }
+  .price .amt { font-size: 42px; font-weight: 900; letter-spacing: -1px; }
+  .price .amt small { font-size: 15px; color: var(--dim); font-weight: 500; }
+  .price p { color: var(--dim); font-size: 14.5px; margin: 6px 0 0; }
+
+  /* faq */
+  .faq { max-width: 820px; margin: 0 auto; display: grid; gap: 12px; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 0 22px; transition: border-color .2s; }
+  details[open] { border-color: #e5162b55; }
+  summary { cursor: pointer; list-style: none; padding: 20px 0; font-weight: 700; font-size: 17px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--red2); font-size: 26px; font-weight: 400; line-height: 1; transition: transform .25s; flex: 0 0 auto; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { margin: 0 0 20px; color: var(--dim); }
+
+  /* disclaimer + contact */
+  .two { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; }
+  .box h3 { margin: 0 0 12px; font-size: 22px; font-weight: 800; }
+  .box ul { margin: 0; padding: 0 18px 0 0; color: var(--dim); }
+  .box li { margin-bottom: 8px; }
+  .box li b { color: var(--text); }
+  .mailrow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin: 16px 0 12px; }
+  .mailrow .mail { flex: 1 1 auto; min-width: 0; font-weight: 700; font-size: 16px; user-select: all; word-break: break-all; }
+  .btn { font-family: inherit; font-weight: 700; font-size: 14px; border-radius: 10px; padding: 9px 14px; cursor: pointer; border: 1px solid #e5162b55; background: var(--red-soft); color: var(--red2); text-decoration: none; display: inline-flex; gap: 6px; align-items: center; transition: background .2s; }
+  .btn:hover { background: #e5162b33; }
+  .toast { min-height: 20px; color: #3ddc97; font-weight: 700; font-size: 14px; }
+
+  /* final cta */
+  .final { text-align: center; position: relative; overflow: hidden; border-radius: 32px; margin: 0 20px; padding: 80px 20px; background: radial-gradient(ellipse at top, #3a0910, #0e0e13 70%); border: 1px solid #e5162b33; }
+  .final .stores { justify-content: center; }
+  .final img.mark { width: 84px; height: 84px; margin: 0 auto 18px; filter: drop-shadow(0 12px 30px #e5162b55); }
+
+  footer { padding: 50px 0 40px; color: var(--dim); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; align-items: center; }
+  footer a { color: var(--dim); text-decoration: none; } footer a:hover { color: var(--text); }
+
+  /* reveal */
+  .rv { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .rv.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } .pill i { animation: none; } html { scroll-behavior: auto; } }
+
+  /* responsive */
+  @media (max-width: 960px) {
+    .hero .wrap { grid-template-columns: 1fr; text-align: center; }
+    .lead { margin-inline: auto; } .stores, .free { justify-content: center; }
+    .phones { height: 520px; max-width: 420px; margin: 0 auto; width: 100%; }
+    .phone { width: 230px; } .phone.p1 { inset-inline-start: calc(50% - 115px); }
+    .phone.p2 { inset-inline-start: -4%; } .phone.p3 { inset-inline-start: 50%; }
+    .feats { grid-template-columns: 1fr 1fr; } .feat.big { grid-column: span 2; }
+    .two { grid-template-columns: 1fr; } .navlinks { display: none; }
+  }
+  @media (max-width: 640px) {
+    section { padding: 70px 0; } .hero { padding: 40px 0 60px; }
+    .feats, .prices { grid-template-columns: 1fr; } .feat.big { grid-column: auto; grid-template-columns: 1fr; }
+    .feat.big img { max-width: 220px; margin: 0 auto; }
+    .strip .wrap { grid-template-columns: 1fr 1fr; }
+    .phones { height: 440px; } .phone { width: 190px; border-radius: 30px; padding: 7px; } .phone img { border-radius: 24px; }
+    .phone.p1 { inset-inline-start: calc(50% - 95px); }
+    .store { min-width: 0; flex: 1 1 220px; justify-content: center; }
+    .brand span { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/logo.svg" alt="" width="36" height="36"><span>Cube<b>Finance</b></span></a>
+    <div class="navlinks">
+      <a href="#features">פיצ׳רים</a>
+      <a href="#screens">תמונות</a>
+      <a href="#pricing">מחירים</a>
+      <a href="#faq">שאלות נפוצות</a>
+      <a href="#contact">יצירת קשר</a>
+    </div>
+    <a class="navcta" href="https://play.google.com/store/apps/details?id=cube.Finance" target="_blank" rel="noopener">להורדה בחינם</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="pill"><i></i>זמינה עכשיו בגוגל פליי</span>
+      <h1>הכסף שלך.<br><em>מסודר בקוביות.</em></h1>
+      <p class="lead">CubeFinance מחלקת את ההכנסה שלך לקוביות לפי מה שחשוב לך: שכר דירה, חשבונות, קרן חירום, חיסכון ובילויים. ככה תמיד רואים כמה נשאר ולאן כל שקל הולך.</p>
+      <div class="stores">
+        <a class="store play" href="https://play.google.com/store/apps/details?id=cube.Finance" target="_blank" rel="noopener" aria-label="להורדה מ-Google Play">
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
+          <span><small>זמינה ב-</small><strong class="ltr">Google Play</strong></span>
+        </a>
+        <span class="store apple" aria-disabled="true" title="בקרוב">
+          <em class="soon">בקרוב</em>
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg>
+          <span><small>בקרוב ב-</small><strong class="ltr">App Store</strong></span>
+        </span>
+      </div>
+      <div class="free"><span>חינם להורדה</span><span>עברית מלאה</span><span>בלי חיבור לבנק</span></div>
+    </div>
+    <div class="phones" aria-hidden="true">
+      <div class="glow"></div>
+      <div class="phone p2"><img src="img/budget.webp" alt="" loading="eager" width="720" height="1404"></div>
+      <div class="phone p3"><img src="img/chat.webp" alt="" loading="eager" width="720" height="1404"></div>
+      <div class="phone p1"><img src="img/home.webp" alt="מסך הבית של CubeFinance" loading="eager" width="720" height="1404"></div>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="wrap">
+    <div><b>7<em>+</em></b><span>קוביות מוכנות לחלוקה</span></div>
+    <div><b><em>₪</em>0</b><span>להורדה ולשימוש הבסיסי</span></div>
+    <div><b>AI</b><span>עוזר אישי בעברית</span></div>
+    <div><b>2<em>′</em></b><span>דקות להתחיל</span></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">מה יש באפליקציה</div>
+      <h2>כל מה שצריך כדי לשלוט בכסף</h2>
+      <p class="sub">בלי טבלאות ובלי מונחים מסובכים. מכניסים את ההכנסה, והאפליקציה עושה את השאר.</p>
+    </div>
+    <div class="feats">
+      <article class="feat big rv">
+        <div>
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg></div>
+          <h3>קוביות אוטומטיות</h3>
+          <p>ההכנסה מתחלקת לבד לקוביות לפי האחוזים שבחרת, וכל קובייה מראה כמה כבר נכנס וכמה נשאר לחודש. אפשר גם ליצור קובייה אישית לכל מטרה: טיול, גאדג׳ט, רכב.</p>
+          <div class="cubes">
+            <span class="cube">🏠 בעל הדירה<b>30%</b></span><span class="cube">💡 חשבונות<b>10%</b></span>
+            <span class="cube">🛒 שוטף<b>23%</b></span><span class="cube">🛟 קרן חירום<b>10%</b></span>
+            <span class="cube">🐷 חיסכון<b>10%</b></span><span class="cube">🎉 בילויים<b>10%</b></span>
+          </div>
+        </div>
+        <img src="img/home.webp" alt="מסך הקוביות" loading="lazy" width="720" height="1404">
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></div>
+        <h3>הכנסות והוצאות</h3>
+        <p>הכנסה קבועה שמתחלקת לבד כל חודש, ורישום הוצאה בשנייה, ישר מהקובייה הנכונה.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></div>
+        <h3>סימולטור "מה יקרה אם"</h3>
+        <p>רוצים לקנות רכב או לטוס? רואים מראש איך זה ישפיע על היתרה בחודשים הקרובים.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></div>
+        <h3>חובות וריבית</h3>
+        <p>סדר החזר חכם לחובות, כדי לשלם פחות ריבית ולסגור אותם מהר יותר.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></div>
+        <h3>Cubey, העוזר שלך</h3>
+        <p>שואלים בעברית פשוטה: "כדאי לי לקנות את זה?", "מתי אגיע ליעד?". Cubey מכיר את הקוביות שלך ועונה לפיהן.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M2 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/></svg></div>
+        <h3>למידה</h3>
+        <ul><li>שיעורים קצרים: לומדים לחסוך</li><li>מדריך מלא וספרי כסף מומלצים</li><li>אתגרים עם נקודות ותגים</li><li>מחשבונים לריבית, יעדים והלוואות</li></ul>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 22c4-2 7-6 7-11-3 0-5 1-7 3-2-2-4-3-7-3 0 5 3 9 7 11z"/><path d="M12 14V8"/></svg></div>
+        <h3>רגע של נשימה</h3>
+        <p>כשהכסף מלחיץ: פינה רגועה עם תרגיל נשימה וטיפים פשוטים. חינם, תמיד.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></div>
+        <h3>תזכורות</h3>
+        <p>תזכורת ללמידה בשעה שבחרת, כל יום או בימים נבחרים, כדי לשמור על הרגל.</p>
+      </article>
+      <article class="feat rv">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+        <h3>כניסה בטוחה</h3>
+        <p>הרשמה עם Google או במייל, ואימות בקוד שנשלח למייל שלך. מצב כהה, ועברית ואנגלית.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="screens" style="padding-top:0">
+  <div class="wrap center rv">
+    <div class="eyebrow">ככה זה נראה</div>
+    <h2>הצצה לאפליקציה</h2>
+    <p class="sub">צילומי מסך אמיתיים מהגרסה שבגוגל פליי.</p>
+  </div>
+  <div class="gallery rv" tabindex="0" aria-label="צילומי מסך">
+    <figure class="shot"><div class="phone"><img src="img/home.webp" alt="מסך הבית: סך הכול בקוביות וחלוקה לתקציב" loading="lazy" width="720" height="1404"></div><figcaption>מסך הבית<small>כל הקוביות במבט אחד</small></figcaption></figure>
+    <figure class="shot"><div class="phone"><img src="img/budget.webp" alt="מסך התקציב: הכנסה, הוצאות, חובות וסימולטור" loading="lazy" width="720" height="1404"></div><figcaption>תקציב<small>הכנסה, הוצאות, חובות וסימולטור</small></figcaption></figure>
+    <figure class="shot"><div class="phone"><img src="img/new-cube.webp" alt="יצירת קובייה אישית" loading="eager" width="720" height="1404"></div><figcaption>קובייה אישית<small>למטרה שלך, במימון קבוע או לפי AI</small></figcaption></figure>
+    <figure class="shot"><div class="phone"><img src="img/chat.webp" alt="צ׳אט עם Cubey" loading="lazy" width="720" height="1404"></div><figcaption>Cubey<small>היועץ שמכיר את הקוביות שלך</small></figcaption></figure>
+    <figure class="shot"><div class="phone"><img src="img/learn.webp" alt="מסך הלמידה" loading="lazy" width="720" height="1404"></div><figcaption>למידה<small>שיעורים, ספרים, מדריך ואתגרים</small></figcaption></figure>
+    <figure class="shot"><div class="phone"><img src="img/learn-reminder.webp" alt="תזכורת למידה" loading="lazy" width="720" height="1404"></div><figcaption>תזכורות<small>הרגל קטן כל יום</small></figcaption></figure>
+  </div>
+</section>
+
+<section id="pricing" style="padding-top:20px">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">מחירים</div>
+      <h2>רוב האפליקציה חינם</h2>
+      <p class="sub">משלמים רק על מה שרוצים, פעם אחת, דרך גוגל פליי. בלי מנויים.</p>
+    </div>
+    <div class="prices">
+      <div class="price rv"><h3>CubeFinance</h3><div class="amt">₪0</div><p>קוביות, הכנסות והוצאות, סימולטור, חובות, למידה, אתגרים ותזכורות.</p></div>
+      <div class="price hl rv"><h3>צ׳אט AI עם Cubey</h3><div class="amt">₪10 <small>תשלום אחד</small></div><p>עוזר אישי בעברית שמכיר את הקוביות שלך, בלי פרסומות.</p></div>
+      <div class="price rv"><h3>ספר ההדרכה</h3><div class="amt">₪19 <small>תשלום אחד</small></div><p>מדריך מעשי מלא לניהול הכסף הראשון.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" style="padding-top:20px">
+  <div class="wrap">
+    <div class="center rv">
+      <div class="eyebrow">שאלות נפוצות</div>
+      <h2>יש שאלות? יש תשובות</h2>
+    </div>
+    <div class="faq rv">
+      <details><summary>מה זה CubeFinance?</summary><p>אפליקציה לניהול הכסף האישי, שמחלקת את ההכנסה שלך ל"קוביות", אחת לכל מטרה: שכר דירה, חשבונות, קרן חירום, חיסכון, בילויים ועוד. ככה רואים בכל רגע כמה כסף יש לכל דבר.</p></details>
+      <details><summary>כמה זה עולה?</summary><p>ההורדה והשימוש הבסיסי בחינם. צ׳אט ה-AI עם Cubey עולה ₪10 וספר ההדרכה ₪19. שניהם בתשלום חד-פעמי דרך גוגל פליי, בלי מנוי.</p></details>
+      <details><summary>האפליקציה מתחברת לחשבון הבנק שלי?</summary><p>לא. אין שום חיבור לבנק או לכרטיס אשראי. את ההכנסות וההוצאות מזינים בעצמכם, וזה חלק מהלמידה.</p></details>
+      <details><summary>האם הנתונים שלי בטוחים?</summary><p>הכניסה לחשבון מאובטחת בקוד חד-פעמי שנשלח למייל שלכם, כך שמי שיודע רק את המייל שלכם לא יכול להיכנס. הנתונים לא נמכרים ולא מועברים לאף אחד, ונמחקים לגמרי כשמוחקים את החשבון.</p></details>
+      <details><summary>יש גרסה לאייפון?</summary><p>עוד לא. גרסת ה-App Store בדרך. בינתיים האפליקציה זמינה לאנדרואיד בגוגל פליי.</p></details>
+      <details><summary>למי האפליקציה מתאימה?</summary><p>לצעירים בתחילת הדרך: משכורת ראשונה, דירה ראשונה, חיסכון ראשון. מגיל 13 ומעלה (מתחת לגיל 13 בליווי הורה).</p></details>
+      <details><summary>מצאתי באג או שיש לי רעיון. למי פונים?</summary><p>נשמח לשמוע! כתבו למייל <span class="ltr">itayleiss2010@gmail.com</span>. כל משוב עוזר לשפר את האפליקציה.</p></details>
+    </div>
+  </div>
+</section>
+
+<section id="contact" style="padding-top:20px">
+  <div class="wrap two">
+    <div class="box rv">
+      <div class="eyebrow">גילוי נאות</div>
+      <h3>למי האפליקציה מיועדת</h3>
+      <ul>
+        <li>CubeFinance מיועדת <b>לצעירים בתחילת הדרך</b>, ללמידת ניהול הכסף הראשון שלהם.</li>
+        <li>היא בנויה לשימוש של <b>שנתיים עד שלוש שנים לכל היותר</b>, ולא לשימוש לאורך 10 או 20 שנה.</li>
+        <li>היא <b>אינה</b> כלי לתכנון פיננסי ארוך טווח, לפנסיה, למשכנתא או להשקעות.</li>
+        <li>כל מה שמוצג בה, כולל הסימולטור, הטיפים והתשובות של Cubey, הוא <b>להמחשה וללימוד בלבד</b>. זה לא ייעוץ פיננסי, השקעות, מס או משפט, ולא תחליף לאיש מקצוע מוסמך.</li>
+        <li>ההחלטות הכספיות והאחריות להן הן של המשתמש בלבד.</li>
+      </ul>
+    </div>
+    <div class="box rv">
+      <div class="eyebrow">יצירת קשר</div>
+      <h3>דברו איתנו</h3>
+      <p style="color:var(--dim);margin:0">שאלה, בעיה או רעיון? כתבו לנו:</p>
+      <div class="mailrow">
+        <span class="mail ltr" id="mail">itayleiss2010@gmail.com</span>
+        <button class="btn" type="button" id="copyMail">העתקה</button>
+      </div>
+      <a class="btn" href="mailto:itayleiss2010@gmail.com">✉️ שליחת מייל</a>
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<div class="final rv">
+  <img class="mark" src="img/logo.svg" alt="" width="84" height="84">
+  <h2>מתחילים לסדר את הכסף. היום.</h2>
+  <p class="sub" style="margin-inline:auto;margin-bottom:30px">הורדה בחינם, שתי דקות הגדרה, וכל שקל במקום שלו.</p>
+  <div class="stores">
+    <a class="store play" href="https://play.google.com/store/apps/details?id=cube.Finance" target="_blank" rel="noopener" aria-label="להורדה מ-Google Play">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
+      <span><small>זמינה ב-</small><strong class="ltr">Google Play</strong></span>
+    </a>
+    <span class="store apple" aria-disabled="true" title="בקרוב">
+      <em class="soon">בקרוב</em>
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg>
+      <span><small>בקרוב ב-</small><strong class="ltr">App Store</strong></span>
+    </span>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 CubeFinance · איתי לייס. כל הזכויות שמורות.</span>
+    <span>להמחשה וללימוד בלבד, לא ייעוץ פיננסי · <a href="#contact">יצירת קשר</a></span>
+  </div>
+</footer>
+
+<script>
+  // Fade sections in as they scroll into view.
+  (function () {
+    var els = document.querySelectorAll(".rv");
+    if (!("IntersectionObserver" in window)) { els.forEach(function (e) { e.classList.add("in"); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+
+  // Copy the contact email (falls back to selecting it).
+  (function () {
+    var btn = document.getElementById("copyMail"), mail = document.getElementById("mail"), toast = document.getElementById("toast"), t;
+    function say(s) { toast.textContent = s; clearTimeout(t); t = setTimeout(function () { toast.textContent = ""; }, 3000); }
+    function select() { var r = document.createRange(); r.selectNodeContents(mail); var s = getSelection(); s.removeAllRanges(); s.addRange(r); say("המייל סומן — העתיקו אותו"); }
+    btn.addEventListener("click", function () {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(mail.textContent).then(function () { say("✓ המייל הועתק"); }, select);
+        else select();
+      } catch (e) { select(); }
+    });
+  })();
+</script>
+</body>
+</html>
