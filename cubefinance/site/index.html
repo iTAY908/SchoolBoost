@@ -26,6 +26,7 @@
   body { margin: 0; background: var(--bg); color: var(--text); font-family: "Heebo", system-ui, -apple-system, "Segoe UI", Arial, sans-serif; line-height: 1.6; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
   a { color: inherit; }
   img { display: block; max-width: 100%; height: auto; }
+  [hidden] { display: none !important; }
   .wrap { width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 20px; }
   .ltr { direction: ltr; unicode-bidi: isolate; }
 
@@ -66,6 +67,20 @@
   .store.apple .soon { position: absolute; top: -10px; inset-inline-start: 14px; background: #2a2a33; color: #b9b9c4; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; border: 1px solid #3a3a45; }
   .free { margin-top: 18px; color: var(--dim); font-size: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
   .free span::before { content: "✓"; color: var(--red2); font-weight: 800; margin-inline-end: 6px; }
+
+
+  /* official Google Play badge (Google's PNG has built-in padding, hence the negative margin) */
+  .gp-badge { display: inline-block; line-height: 0; border-radius: 12px; transition: transform .2s, filter .2s; filter: drop-shadow(0 10px 30px #e5162b55); }
+  .gp-badge:hover { transform: translateY(-3px); filter: drop-shadow(0 14px 40px #e5162b88); }
+  .gp-img { height: 84px; width: auto; margin: -12px -12px; }
+  .gp-fallback { display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 18px; background: #000; color: #fff; border: 1px solid #a6a6a6; border-radius: 10px; line-height: 1.15; direction: ltr; }
+  .gp-fallback svg { width: 30px; height: 30px; } .gp-fallback span { display: flex; flex-direction: column; text-align: left; }
+  .gp-fallback small { font-size: 10px; letter-spacing: .5px; } .gp-fallback strong { font-size: 21px; font-weight: 600; }
+  .as-badge { position: relative; display: inline-flex; align-items: center; gap: 10px; height: 58px; padding: 0 18px; background: #000; color: #6d6d78; border: 1px solid #3a3a44; border-radius: 10px; line-height: 1.15; direction: ltr; cursor: not-allowed; }
+  .as-badge svg { width: 28px; height: 28px; } .as-badge span { display: flex; flex-direction: column; text-align: left; }
+  .as-badge small { font-size: 10px; } .as-badge strong { font-size: 21px; font-weight: 600; }
+  .as-badge .soon { position: absolute; top: -11px; right: 12px; background: #2a2a33; color: #c9c9d4; font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; border: 1px solid #3a3a45; direction: rtl; }
+  @media (max-width: 640px) { .gp-img { height: 76px; } .gp-fallback, .as-badge { height: 52px; } }
 
   /* phones */
   .phones { position: relative; height: 620px; }
@@ -208,15 +223,8 @@
       <h1>הכסף שלך.<br><em>מסודר בקוביות.</em></h1>
       <p class="lead">CubeFinance מחלקת את ההכנסה שלך לקוביות לפי מה שחשוב לך: שכר דירה, חשבונות, קרן חירום, חיסכון ובילויים. ככה תמיד רואים כמה נשאר ולאן כל שקל הולך.</p>
       <div class="stores">
-        <a class="store play" href="https://play.google.com/store/apps/details?id=cube.Finance" target="_blank" rel="noopener" aria-label="להורדה מ-Google Play">
-          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
-          <span><small>זמינה ב-</small><strong class="ltr">Google Play</strong></span>
-        </a>
-        <span class="store apple" aria-disabled="true" title="בקרוב">
-          <em class="soon">בקרוב</em>
-          <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg>
-          <span><small>בקרוב ב-</small><strong class="ltr">App Store</strong></span>
-        </span>
+        <a class="gp-badge" href="https://play.google.com/store/apps/details?id=cube.Finance&amp;utm_source=site&amp;pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1" target="_blank" rel="noopener" aria-label="קבלו את CubeFinance ב-Google Play"><img class="gp-img" alt="קבלו את זה ב-Google Play" width="646" height="250" src="https://play.google.com/intl/en_us/badges/static/images/badges/iw_badge_web_generic.png" data-alt="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"><span class="gp-fallback" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg><span><small>GET IT ON</small><strong class="ltr">Google Play</strong></span></span></a>
+        <span class="as-badge" aria-disabled="true" title="בקרוב ב-App Store"><em class="soon">בקרוב</em><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg><span><small class="ltr">Download on the</small><strong class="ltr">App Store</strong></span></span>
       </div>
       <div class="free"><span>חינם להורדה</span><span>עברית מלאה</span><span>בלי חיבור לבנק</span></div>
     </div>
@@ -384,15 +392,8 @@
   <h2>מתחילים לסדר את הכסף. היום.</h2>
   <p class="sub" style="margin-inline:auto;margin-bottom:30px">הורדה בחינם, שתי דקות הגדרה, וכל שקל במקום שלו.</p>
   <div class="stores">
-    <a class="store play" href="https://play.google.com/store/apps/details?id=cube.Finance" target="_blank" rel="noopener" aria-label="להורדה מ-Google Play">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
-      <span><small>זמינה ב-</small><strong class="ltr">Google Play</strong></span>
-    </a>
-    <span class="store apple" aria-disabled="true" title="בקרוב">
-      <em class="soon">בקרוב</em>
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg>
-      <span><small>בקרוב ב-</small><strong class="ltr">App Store</strong></span>
-    </span>
+    <a class="gp-badge" href="https://play.google.com/store/apps/details?id=cube.Finance&amp;utm_source=site&amp;pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1" target="_blank" rel="noopener" aria-label="קבלו את CubeFinance ב-Google Play"><img class="gp-img" alt="קבלו את זה ב-Google Play" width="646" height="250" src="https://play.google.com/intl/en_us/badges/static/images/badges/iw_badge_web_generic.png" data-alt="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"><span class="gp-fallback" hidden><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg><span><small>GET IT ON</small><strong class="ltr">Google Play</strong></span></span></a>
+    <span class="as-badge" aria-disabled="true" title="בקרוב ב-App Store"><em class="soon">בקרוב</em><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1zM13.9 5.1c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.2 1.1.1 2.3-.6 3-1.5z"/></svg><span><small class="ltr">Download on the</small><strong class="ltr">App Store</strong></span></span>
   </div>
 </div>
 
@@ -404,6 +405,16 @@
 </footer>
 
 <script>
+
+  // Official Google Play badge: Hebrew → English → a drawn copy if Google's image can't load.
+  document.querySelectorAll(".gp-img").forEach(function (img) {
+    function fail() {
+      if (img.dataset.alt) { var a = img.dataset.alt; img.dataset.alt = ""; img.src = a; return; }
+      img.hidden = true; img.nextElementSibling.hidden = false;
+    }
+    img.addEventListener("error", fail);
+    if (img.complete && img.naturalWidth === 0) fail();
+  });
   // Fade sections in as they scroll into view.
   (function () {
     var els = document.querySelectorAll(".rv");
