@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>CubeFinance AI scene</title>
+<!--
+  The first 5 seconds of the 10-second ad: Cubey (the AI) answering a real
+  question, shown — not told. 1080x1920, driven frame by frame through
+  window.renderAt(seconds) like scene.html.
+    0.00-0.60  phone rises out of the dark
+    0.65-1.75  the question is typed, letter by letter
+    1.80-2.05  sent: the bubble flies up
+    2.05-2.45  Cubey is thinking (dots, avatar glows)
+    2.45-4.35  the answer streams in; the fun-cube bar shrinks as it "calculates"
+    4.40-5.00  push into the screen, to black → scene.html (logo) follows
+-->
+<style>
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-hebrew-500-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-hebrew-800-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #050507; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: Heebo, sans-serif; color: #f5f5f7; background: #050507; perspective: 2200px; }
+  .layer { position: absolute; inset: 0; }
+  #glow { background: radial-gradient(ellipse 65% 42% at 50% 50%, #e5162b66 0%, #e5162b20 40%, transparent 70%); }
+  #grid { background-image: linear-gradient(#ffffff0a 2px, transparent 2px), linear-gradient(90deg, #ffffff0a 2px, transparent 2px); background-size: 108px 108px; background-position: center;
+    -webkit-mask-image: radial-gradient(ellipse 60% 45% at 50% 50%, #000 10%, transparent 75%); mask-image: radial-gradient(ellipse 60% 45% at 50% 50%, #000 10%, transparent 75%); }
+  #vignette { background: radial-gradient(ellipse at center, transparent 45%, #000000c8 100%); }
+  #fade { background: #000; }
+
+  /* phone */
+  #phone { position: absolute; left: 50%; top: 200px; width: 760px; height: 1520px; margin-left: -380px; border-radius: 86px; padding: 16px;
+    background: linear-gradient(155deg, #34343d, #0d0d12 55%, #1d1d24); box-shadow: 0 80px 140px -40px #000, 0 0 0 2px #ffffff14 inset, 0 0 120px -20px #e5162b55;
+    transform-style: preserve-3d; }
+  #screen { position: relative; width: 100%; height: 100%; border-radius: 72px; overflow: hidden; background: linear-gradient(180deg, #0d0d13, #09090d); }
+  #island { position: absolute; top: 22px; left: 50%; width: 170px; height: 44px; margin-left: -85px; border-radius: 30px; background: #000; z-index: 5; }
+  #status { position: absolute; top: 26px; left: 46px; right: 46px; display: flex; justify-content: space-between; font: 800 26px Heebo; color: #e9e9ee; direction: ltr; z-index: 4; }
+
+  #head { position: absolute; top: 92px; left: 0; right: 0; height: 120px; display: flex; align-items: center; gap: 18px; padding: 0 36px; border-bottom: 1px solid #ffffff12; background: #0e0e14; }
+  #ava { position: relative; width: 78px; height: 78px; }
+  #ava svg { width: 100%; height: 100%; display: block; }
+  #avaGlow { position: absolute; inset: -14px; border-radius: 30px; background: radial-gradient(circle, #ff475788, transparent 70%); }
+  #head .nm { font-weight: 800; font-size: 36px; line-height: 1.1; }
+  #head .nm b { color: #ff4757; font-weight: 800; font-size: 26px; margin-inline-start: 8px; padding: 2px 10px; border-radius: 10px; background: #e5162b26; border: 1px solid #e5162b55; }
+  #head .st { font-weight: 500; font-size: 22px; color: #9a9aa6; display: flex; align-items: center; gap: 8px; }
+  #head .st i { width: 11px; height: 11px; border-radius: 50%; background: #3ddc97; box-shadow: 0 0 10px #3ddc97; }
+
+  #chat { position: absolute; top: 212px; left: 0; right: 0; bottom: 150px; padding: 26px 30px; display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; overflow: hidden; }
+  .msg { max-width: 84%; padding: 22px 26px; border-radius: 32px; font-weight: 500; font-size: 32px; line-height: 1.42; }
+  .me { align-self: flex-start; background: linear-gradient(135deg, #ff4757, #d4142a); color: #fff; border-bottom-right-radius: 10px; box-shadow: 0 14px 34px -14px #e5162bcc; }
+  .ai { align-self: flex-end; box-sizing: border-box; background: #17171f; border: 1px solid #2a2a35; border-bottom-left-radius: 10px; }
+  #a { width: 84%; }
+  #dots { display: flex; gap: 10px; padding: 26px 30px; }
+  #dots i { width: 16px; height: 16px; border-radius: 50%; background: #ff4757; }
+  .ai .w { display: inline; }
+  .card { margin: 14px 0; padding: 18px 20px; border-radius: 22px; background: #0d0d12; border: 1px solid #2a2a35; display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; font-size: 25px; font-weight: 800; }
+  .bar { height: 14px; border-radius: 10px; background: #26262f; overflow: hidden; direction: ltr; }
+  .bar i { display: block; height: 100%; border-radius: 10px; }
+  #funBar { background: linear-gradient(90deg, #ff4757, #e5162b); }
+  #saveBar { background: linear-gradient(90deg, #f0f0f5, #b9b9c6); width: 100%; }
+  .amt { direction: ltr; font-variant-numeric: tabular-nums; min-width: 120px; text-align: right; }
+  #funAmt { color: #ff6b77; }
+  .lock { color: #9a9aa6; font-weight: 500; font-size: 22px; }
+
+  #input { position: absolute; left: 26px; right: 26px; bottom: 40px; height: 92px; display: flex; align-items: center; gap: 16px; }
+  #field { flex: 1; height: 88px; border-radius: 46px; border: 2px solid #e5162b88; background: #111118; display: flex; align-items: center; padding: 0 30px; font-weight: 500; font-size: 29px; color: #f2f2f6; white-space: nowrap; overflow: hidden; }
+  #field .ph { color: #6c6c78; }
+  #caret { display: inline-block; width: 3px; height: 34px; background: #ff4757; margin-inline-start: 2px; vertical-align: middle; }
+  #send { width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #ff4757, #c8102a); display: grid; place-items: center; box-shadow: 0 10px 30px -8px #e5162bcc; }
+  #send svg { width: 38px; height: 38px; transform: scaleX(-1); }
+  #shine { position: absolute; top: -30%; width: 40%; height: 160%; background: linear-gradient(90deg, transparent, #ffffff1c, transparent); transform: rotate(16deg); pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="glow"></div>
+  <div class="layer" id="grid"></div>
+  <div id="phone">
+    <div id="screen">
+      <div id="island"></div>
+      <div id="status"><span>9:41</span><span>●●● 5G ▮</span></div>
+      <div id="head">
+        <div id="ava"><div id="avaGlow"></div><div id="avaSvg"></div></div>
+        <div><div class="nm">Cubey<b>AI</b></div><div class="st"><i></i>מכיר את הקוביות שלך</div></div>
+      </div>
+      <div id="chat">
+        <div class="msg me" id="q">כדאי לי לקנות אוזניות ב-800 ₪?</div>
+        <div class="msg ai" id="think"><div id="dots"><i></i><i></i><i></i></div></div>
+        <div class="msg ai" id="a">
+          <div id="a1"></div>
+          <div class="card" id="card">
+            <div class="row"><span>🎉 בילויים</span><div class="bar"><i id="funBar"></i></div><span class="amt" id="funAmt">₪1,150</span></div>
+            <div class="row"><span>🐷 חיסכון</span><div class="bar"><i id="saveBar"></i></div><span class="amt">₪2,000</span></div>
+            <div class="lock" id="lock">🔒 החיסכון נשאר שלם</div>
+          </div>
+          <div id="a2"></div>
+        </div>
+      </div>
+      <div id="input">
+        <div id="field"><span id="typed"></span><span id="caret"></span><span class="ph" id="ph">כתוב ל-Cubey…</span></div>
+        <div id="send"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 20.5 21 12 3 3.5 3 10l12 2-12 2z"/></svg></div>
+      </div>
+      <div id="shine"></div>
+    </div>
+  </div>
+  <div class="layer" id="vignette"></div>
+  <div class="layer" id="fade"></div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const prog = (t, a, b) => clamp((t - a) / (b - a));
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const easeIn = (x) => x * x * x;
+  const easeOutBack = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+  const QUESTION = "כדאי לי לקנות אוזניות ב-800 ₪?";
+  const A1 = "בדקתי את הקוביות שלך 👀".split(" ");
+  const A2 = "💡 עדיף לחכות 3 שבועות: ככה זה יוצא מקוביית הבילויים, בלי לגעת בחיסכון.".split(" ");
+  $("a1").innerHTML = A1.map((w) => '<span class="w">' + w + " </span>").join("");
+  $("a2").innerHTML = A2.map((w) => '<span class="w">' + w + " </span>").join("");
+  const a1w = Array.from($("a1").children), a2w = Array.from($("a2").children);
+  window.setLogo = (svg) => { $("avaSvg").innerHTML = svg; };
+  const fmt = (n) => "₪" + Math.round(n).toLocaleString("en-US");
+
+  // When the question is typed — exported for the music (one click per letter).
+  const TYPE_A = .65, TYPE_B = 1.70;
+  window.typeTimes = Array.from(QUESTION).map((_, i) => TYPE_A + (TYPE_B - TYPE_A) * i / QUESTION.length);
+
+  window.renderAt = (t) => {
+    const bg = easeOut(prog(t, 0, .6));
+    $("glow").style.opacity = bg;
+    $("grid").style.opacity = bg * .85;
+    $("grid").style.backgroundPosition = "center " + (t * 16) + "px";
+
+    // phone entrance, float, and the final push-in
+    const enter = easeOut(prog(t, 0, .75));
+    const push = easeIn(prog(t, 4.5, 5.0));
+    const ry = 14 * (1 - enter) - 4 * easeInOut(prog(t, .75, 4.4)) * (1 - push);
+    const rx = 8 * (1 - enter);
+    const y = 220 * (1 - enter) + Math.sin(t * 1.6) * 6 - 120 * push;
+    const sc = (.92 + .08 * enter) * (1 + 1.3 * push);
+    $("phone").style.transform = "translateY(" + y + "px) rotateX(" + rx + "deg) rotateY(" + ry + "deg) scale(" + sc + ")";
+    $("phone").style.opacity = easeOut(prog(t, 0, .4));
+
+    // typing
+    const n = window.typeTimes.filter((x) => t >= x).length;
+    const sent = t >= 1.80;
+    $("typed").textContent = sent ? "" : QUESTION.slice(0, n);
+    $("ph").style.display = (n === 0 || sent) ? "inline" : "none";
+    $("caret").style.opacity = sent ? 0 : (Math.floor(t * 3) % 2 === 0 || (n > 0 && n < QUESTION.length) ? 1 : 0);
+    $("caret").style.display = n === 0 && !sent ? "none" : "inline-block";
+    // send button press
+    const press = t >= 1.72 && t < 1.92 ? Math.sin(prog(t, 1.72, 1.92) * Math.PI) : 0;
+    $("send").style.transform = "scale(" + (1 - .14 * press) + ")";
+    $("send").style.boxShadow = "0 10px " + (30 + 50 * press) + "px -8px #e5162b" + (press > 0 ? "ff" : "cc");
+
+    // the user's bubble flies up from the input
+    const qp = easeOutBack(prog(t, 1.80, 2.08));
+    $("q").style.display = t >= 1.80 ? "block" : "none";
+    $("q").style.transform = "translateY(" + (140 * (1 - qp)) + "px) scale(" + (.85 + .15 * qp) + ")";
+    $("q").style.opacity = clamp(prog(t, 1.80, 1.9));
+
+    // thinking
+    const thinking = t >= 2.05 && t < 2.45;
+    $("think").style.display = thinking ? "block" : "none";
+    Array.from($("dots").children).forEach((d, i) => {
+      const ph = (t * 5 - i * .35);
+      d.style.transform = "translateY(" + (-10 * Math.max(0, Math.sin(ph * Math.PI))) + "px)";
+      d.style.opacity = .45 + .55 * Math.max(0, Math.sin(ph * Math.PI));
+    });
+    $("avaGlow").style.opacity = t < 2.0 ? .25 : .35 + .5 * Math.abs(Math.sin(t * 6)) * (t < 4.5 ? 1 : 0);
+
+    // the answer
+    const showA = t >= 2.45;
+    $("a").style.display = showA ? "block" : "none";
+    const ap = easeOut(prog(t, 2.45, 2.65));
+    $("a").style.transform = "translateY(" + (40 * (1 - ap)) + "px)";
+    $("a").style.opacity = ap;
+    a1w.forEach((w, i) => { w.style.display = t >= 2.50 + i * .08 ? 'inline' : 'none'; });
+    const cp = easeOut(prog(t, 2.85, 3.1));
+    $("card").style.opacity = cp;
+    $("card").style.transform = "scale(" + (.94 + .06 * cp) + ")";
+    // the calculation: ₪1,150 → ₪350 (800 for the headphones)
+    const calc = easeInOut(prog(t, 3.05, 3.65));
+    $("funBar").style.width = (100 - 70 * calc) + "%";
+    $("funAmt").textContent = fmt(1150 - 800 * calc);
+    $("lock").style.opacity = easeOut(prog(t, 3.55, 3.75));
+    $("a2").style.display = t >= 3.70 ? 'block' : 'none';
+    a2w.forEach((w, i) => { w.style.display = t >= 3.70 + i * .045 ? 'inline' : 'none'; });
+
+    // a light sweep over the glass, then into black
+    const sh = prog(t, .2, 1.4);
+    $("shine").style.left = (-50 + 170 * easeInOut(sh)) + "%";
+    $("shine").style.opacity = sh > 0 && sh < 1 ? 1 : 0;
+    $("fade").style.opacity = Math.max(1 - prog(t, 0, .2), easeIn(prog(t, 4.7, 5.0)));
+  };
+  window.renderAt(0);
+</script>
+</body>
+</html>
