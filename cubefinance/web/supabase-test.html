@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת Supabase — CubeFinance</title>
+<!-- Checks, step by step, the same things the app relies on:
+     1) does Supabase really email a 6-digit code,
+     2) does the code open a session,
+     3) is the database installed (cf2_register),
+     4) does the creator account get free access (cf2_my_entitlements).
+     The URL and publishable key below are public by design. Nothing is stored. -->
+<style>
+  :root { --bg:#f4f6fc; --card:#fff; --text:#171a2b; --dim:#5c6280; --primary:#4f5dff; --ok:#10a873; --bad:#e0434a; --line:#e2e6f3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b0e18; --card:#151b29; --text:#eef0ff; --dim:#9aa1c4; --primary:#8f9aff; --line:#262e45; } }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--text); font-family:"Segoe UI",-apple-system,"Noto Sans Hebrew",Arial,sans-serif; }
+  .wrap { max-width:460px; margin:0 auto; }
+  h1 { font-size:22px; margin:6px 0 4px; }
+  p.sub { color:var(--dim); margin:0 0 14px; line-height:1.6; font-size:15px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:12px; }
+  .card h2 { font-size:16px; margin:0 0 10px; }
+  input { width:100%; padding:13px; font-size:17px; border-radius:12px; border:2px solid var(--line); background:var(--bg); color:var(--text); direction:ltr; }
+  input.code { letter-spacing:8px; text-align:center; font-weight:800; font-size:22px; }
+  button { width:100%; margin-top:10px; padding:14px; font-size:16px; font-weight:800; border:0; border-radius:12px; background:var(--primary); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.55; }
+  .res { margin-top:12px; padding:12px; border-radius:12px; line-height:1.65; font-size:15px; white-space:pre-wrap; display:none; }
+  .res.ok { display:block; background:#10a87322; color:var(--ok); }
+  .res.bad { display:block; background:#e0434a1f; color:var(--bad); }
+  .res.info { display:block; background:#4f5dff18; color:var(--text); }
+  .off { opacity:.45; pointer-events:none; }
+  code { direction:ltr; unicode-bidi:isolate; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧪 בדיקת Supabase</h1>
+  <p class="sub">שלושה צעדים. בסוף תדע בדיוק מה עובד ומה חסר. הבדיקה שולחת מייל אמיתי לכתובת שתכתוב.</p>
+
+  <div class="card" id="c1">
+    <h2>1. שליחת קוד למייל</h2>
+    <input id="email" type="email" value="itayleiss2010@gmail.com" autocomplete="email">
+    <button id="send">שלח קוד</button>
+    <div class="res" id="r1"></div>
+  </div>
+
+  <div class="card off" id="c2">
+    <h2>2. הקלדת הקוד שהגיע</h2>
+    <input id="code" class="code" inputmode="numeric" maxlength="10" placeholder="••••••" autocomplete="one-time-code">
+    <button id="verify">אמת</button>
+    <div class="res" id="r2"></div>
+  </div>
+
+  <div class="card off" id="c3">
+    <h2>3. המאגר וגישת היוצר</h2>
+    <div class="res" id="r3"></div>
+  </div>
+</div>
+<script>
+  const URL_ = "https://sfrkenhauekqdijtunpg.supabase.co";
+  const KEY = "sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q";
+  const $ = (id) => document.getElementById(id);
+  const show = (id, cls, text) => { const r = $(id); r.className = "res " + cls; r.textContent = text; };
+
+  async function post(path, body, token) {
+    let res;
+    try {
+      res = await fetch(URL_ + path, { method: "POST",
+        headers: Object.assign({ apikey: KEY, "Content-Type": "application/json" }, token ? { Authorization: "Bearer " + token } : {}),
+        body: JSON.stringify(body || {}) });
+    } catch (e) { return { net: true, error: String(e.message || e) }; }
+    let data = null; try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, status: res.status, data };
+  }
+  const errText = (r) => { const d = r.data || {}; return (d.error_code || d.code || "") + " " + (d.msg || d.message || d.error_description || d.error || ""); };
+
+  function sendHint(r) {
+    if (r.net) return "אין אינטרנט, או שהדפדפן חסם את הבקשה (" + r.error + ").";
+    const t = errText(r).toLowerCase();
+    if (r.status === 429 || t.includes("rate_limit")) return "נחסמת זמנית: Supabase שולח רק מייל אחד לדקה לכל כתובת, ויש מכסה לשעה.\nחכה דקה ונסה שוב. אם זה חוזר מיד, כנראה שעדיין לא חיברת SMTP (מכסת ברירת המחדל קטנה מאוד).";
+    if (t.includes("not_authorized") || t.includes("not authorized")) return "השולח המובנה של Supabase מאשר רק חברי צוות.\nצריך לחבר SMTP: Authentication ← Emails ← SMTP Settings ← Enable custom SMTP.";
+    if (t.includes("smtp") || t.includes("sending")) return "Supabase לא הצליח לשלוח דרך ה-SMTP שהגדרת.\nבדוק: Host smtp.gmail.com · Port 465 · Username = כל כתובת הג׳ימייל · Password = סיסמת אפליקציה של 16 תווים בלי רווחים.";
+    if (t.includes("signup") && t.includes("disabled")) return "הרשמה כבויה ב-Supabase: Authentication ← Sign In / Providers ← Email, ולהפעיל Enable sign ups.";
+    return "שלח צילום מסך של ההודעה הזו.";
+  }
+  function verifyHint(r) {
+    if (r.net) return "אין חיבור. נסה שוב.";
+    const t = errText(r).toLowerCase();
+    if (t.includes("expired") || t.includes("invalid")) return "הקוד שגוי או שפג תוקפו.\nאם בקוד שהגיע יש יותר מ-6 ספרות: ב-Authentication ← Sign In / Providers ← Email צריך Email OTP Length = 6.";
+    return "שלח צילום מסך של ההודעה הזו.";
+  }
+
+  $("send").onclick = async () => {
+    const email = $("email").value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { show("r1", "bad", "כתובת מייל לא תקינה."); return; }
+    $("send").disabled = true; $("send").textContent = "שולח…"; show("r1", "info", "שולח בקשה ל-Supabase…");
+    const r = await post("/auth/v1/otp", { email, create_user: true });
+    $("send").disabled = false; $("send").textContent = "שלח קוד שוב";
+    if (r.ok) {
+      show("r1", "ok", "✅ Supabase קיבל את הבקשה.\nעכשיו בדוק את תיבת הדואר של " + email + " (גם בספאם), והקלד למטה את הקוד.\n\nאם עברה דקה ולא הגיע כלום, ה-SMTP כנראה לא מוגדר נכון, ושלח לי את צילום המסך של הגדרות ה-SMTP.");
+      $("c2").classList.remove("off"); $("code").focus();
+    } else show("r1", "bad", "❌ " + (r.net ? "שגיאת רשת" : "HTTP " + r.status) + "\n" + (r.net ? r.error : errText(r)) + "\n\nמה לעשות: " + sendHint(r));
+  };
+
+  $("verify").onclick = async () => {
+    const email = $("email").value.trim().toLowerCase(), token = $("code").value.replace(/\D/g, "");
+    if (token.length < 6) { show("r2", "bad", "הקוד קצר מדי."); return; }
+    $("verify").disabled = true; show("r2", "info", "מאמת…");
+    const r = await post("/auth/v1/verify", { type: "email", email, token });
+    $("verify").disabled = false;
+    if (!r.ok || !r.data || !r.data.access_token) { show("r2", "bad", "❌ HTTP " + (r.status || "-") + "\n" + (r.net ? r.error : errText(r)) + "\n\nמה לעשות: " + verifyHint(r)); return; }
+    show("r2", "ok", "✅ הקוד נכון, ונפתח חיבור מאומת לחשבון " + (r.data.user && r.data.user.email) + " (קוד באורך " + token.length + " ספרות).");
+    $("c3").classList.remove("off");
+    await dbCheck(r.data.access_token);
+  };
+
+  async function dbCheck(tok) {
+    const lines = [];
+    const reg = await post("/rest/v1/rpc/cf2_register", { p_name: "" }, tok);
+    if (reg.status === 404 || (reg.data && /could not find the function/i.test(errText(reg)))) {
+      show("r3", "bad", "❌ המאגר עוד לא מותקן (הפונקציה cf2_register לא קיימת).\nמה לעשות: SQL Editor ← הדבק את כל deploy_all.sql ← Run."); return;
+    }
+    if (!reg.ok || !reg.data || reg.data.ok !== true) { show("r3", "bad", "❌ cf2_register החזיר שגיאה: HTTP " + reg.status + " " + JSON.stringify(reg.data).slice(0, 200)); return; }
+    lines.push("✅ המאגר מותקן: הפרופיל שלך " + (reg.data.created ? "נוצר עכשיו" : "כבר קיים") + " בשרת (אפשר למצוא אותך בחיפוש).");
+    const ent = await post("/rest/v1/rpc/cf2_my_entitlements", {}, tok);
+    if (ent.ok && ent.data && ent.data.ok) {
+      lines.push(ent.data.complimentary
+        ? "✅ גישת יוצר פעילה: " + ent.data.email + " מקבל Premium, ספרים בלי תשלום ובלי פרסומות."
+        : "ℹ️ " + ent.data.email + " הוא משתמש רגיל (בלי גישת יוצר). אם זה אמור להיות המייל שלך: הרץ ב-SQL Editor את\ninsert into public.cf_complimentary (email, note) values ('" + ent.data.email + "', 'creator') on conflict do nothing;");
+    } else lines.push("❌ בדיקת גישת היוצר נכשלה: HTTP " + ent.status);
+    show("r3", lines.every((l) => l.startsWith("✅") || l.startsWith("ℹ️")) ? "ok" : "bad", lines.join("\n\n"));
+  }
+</script>
+</body>
+</html>

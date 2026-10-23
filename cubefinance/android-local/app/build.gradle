@@ -1,0 +1,141 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Firebase's Google Services plugin hard-fails the build the moment it's
+// applied without app/google-services.json present — and that file is
+// per-project, generated in the Firebase console, never something to fake or
+// commit as a placeholder. Applying it conditionally means a checkout without
+// the file still builds clean, and Firebase turns on with zero further edits
+// the moment the real file is dropped in at app/google-services.json (or
+// app/src/<variant>/google-services.json for a variant-specific override).
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}
+
+android {
+    namespace 'cube.Finance'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "cube.Finance"
+        minSdk 24                 // Android 7.0 — covers ~98% of active devices
+        targetSdk 36              // Android 16 (API 36) — see compat notes below
+        // Play refuses an upload whose versionCode was used before, so CI can
+        // override these without editing the file.
+        versionCode ((System.getenv("CUBEY_VERSION_CODE") ?: project.findProperty("CUBEY_VERSION_CODE") ?: "18") as int)
+        versionName (System.getenv("CUBEY_VERSION_NAME") ?: project.findProperty("CUBEY_VERSION_NAME") ?: "18.0")
+        resValue "string", "admob_app_id", "ca-app-pub-8901066122989701~3395897013"
+
+        // Server push (AI chat replies, monthly income). Off until the backend
+        // in firebase/ is deployed and the console steps in firebase/README.md
+        // are done — the app then never claims notifications are active while
+        // nothing on the server can send them. Turn on with
+        // CUBEY_PUSH_ENABLED=true in ~/.gradle/gradle.properties (or env).
+        def pushFlag = (System.getenv("CUBEY_PUSH_ENABLED") ?: project.findProperty("CUBEY_PUSH_ENABLED") ?: "false").toString()
+        buildConfigField "boolean", "PUSH_ENABLED",
+                (pushFlag == "true" && file('google-services.json').exists()) ? "true" : "false"
+        // Shared-savings / entitlement backend. Both values are PUBLIC (the same
+        // ones the page uses); the server checks the user's session token.
+        buildConfigField "String", "SUPABASE_URL", "\"https://sfrkenhauekqdijtunpg.supabase.co\""
+        buildConfigField "String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q\""
+        // Must match REGION in firebase/functions/index.js.
+        buildConfigField "String", "FUNCTIONS_REGION",
+                "\"" + (System.getenv("CUBEY_FUNCTIONS_REGION") ?: project.findProperty("CUBEY_FUNCTIONS_REGION") ?: "europe-west1") + "\""
+    }
+
+    signingConfigs {
+        release {
+            // Supplied by CI (env vars) or by ~/.gradle/gradle.properties locally.
+            // Falls back to unsigned so a debug checkout still builds.
+            def storePath = System.getenv("CUBEY_KEYSTORE_PATH") ?: project.findProperty("CUBEY_KEYSTORE_PATH")
+            if (storePath) {
+                storeFile file(storePath)
+                storePassword System.getenv("CUBEY_KEYSTORE_PASSWORD") ?: project.findProperty("CUBEY_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("CUBEY_KEY_ALIAS") ?: project.findProperty("CUBEY_KEY_ALIAS")
+                keyPassword System.getenv("CUBEY_KEY_PASSWORD") ?: project.findProperty("CUBEY_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            def storePath = System.getenv("CUBEY_KEYSTORE_PATH") ?: project.findProperty("CUBEY_KEYSTORE_PATH")
+            if (storePath) signingConfig signingConfigs.release
+        }
+        debug {
+            versionNameSuffix "-debug"
+        }
+    }
+
+    // AGP 8 does not generate BuildConfig unless asked — AdController and
+    // CubeApp read BuildConfig.DEBUG to pick test ads / enable web inspection.
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The whole UI is one bundled HTML file — no resource bloat.
+    packagingOptions {
+        resources { excludes += ['META-INF/*.kotlin_module'] }
+    }
+}
+
+dependencies {
+    // play-services-ads declares a *strict* constraint pinning
+    // com.google.guava:listenablefuture to the empty conflict-avoidance
+    // artifact, which otherwise wins over WorkManager's plain request for
+    // the real one. Telling Gradle guava replaces listenablefuture (guava
+    // itself contains the class) resolves both to one consistent artifact.
+    modules {
+        module('com.google.guava:listenablefuture') {
+            replacedBy('com.google.guava:guava', 'guava already provides listenablefuture')
+        }
+    }
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.4'
+    // Firebase — BoM pins every Firebase artifact's version in one place;
+    // individual firebase-* dependencies below take no version of their own.
+    implementation platform('com.google.firebase:firebase-bom:34.18.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth'
+    // Server push: FCM delivers the notifications, callable functions carry
+    // the chat messages / income schedule to the backend in firebase/.
+    implementation 'com.google.firebase:firebase-messaging'
+    implementation 'com.google.firebase:firebase-functions'
+    // Sign in with Google — launches the account picker and returns an ID
+    // token, which firebase-auth exchanges for a Firebase credential.
+    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    // Google Mobile Ads (interstitial every 10 minutes)
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    // Google Play Billing — the one-time Premium unlock
+    implementation 'com.android.billingclient:billing:9.1.0'
+    // "Remember me" — Keystore-backed encrypted credential storage.
+    implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    // Fingerprint / face unlock, gating access to the stored credentials.
+    implementation 'androidx.biometric:biometric:1.1.0'
+    // Local inactivity reminder notification.
+    // (Was pinned to 2.9.1 while AGP was held at 8.5.2, since 2.10.0+ needs
+    // AGP 8.6+; now that AGP is 8.6.1 that constraint no longer applies, but
+    // 2.9.1 is left as-is here since nothing requires the newer version.)
+    implementation 'androidx.work:work-runtime-ktx:2.9.1'
+    // "Continue with Google" (GoogleSignInHelper) — Credential Manager, since
+    // Google blocks its sign-in page inside a WebView.
+    implementation 'androidx.credentials:credentials:1.3.0'
+    implementation 'androidx.credentials:credentials-play-services-auth:1.3.0'
+    implementation 'com.google.android.libraries.identity.googleid:googleid:1.1.1'
+
+    // JVM unit tests (EntitlementResolverTest): ./gradlew :app:testDebugUnitTest
+    testImplementation 'junit:junit:4.13.2'
+    // real org.json in JVM tests (android.jar only has stubs)
+    testImplementation 'org.json:json:20240303'
+}

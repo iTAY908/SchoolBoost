@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>CubeFinance logo intro</title>
+<!--
+  5-second logo intro, 1080x1920 (9:16). No CSS animations: render.js calls
+  window.renderAt(seconds) for every frame, so each frame is exact.
+  Timeline:
+    0.00-0.50  red glow and grid fade in
+    0.35-1.45  "CubeFinance" letters rise in, one by one
+    1.15-1.70  the word moves down; the logo drops in and lands at 1.70 (the hit)
+    2.15-3.00  tagline, word by word
+    3.25-3.70  "available on Google Play"
+    3.70-5.00  hold, light sweep, slow push-in, fade at the very end
+-->
+<style>
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 900; src: url(fonts/heebo-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-hebrew-500-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-hebrew-800-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: Heebo; font-weight: 900; src: url(fonts/heebo-hebrew-900-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #050507; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; font-family: Heebo, sans-serif; color: #f5f5f7; background: #050507; }
+  .layer { position: absolute; inset: 0; }
+  #glow { background: radial-gradient(ellipse 70% 45% at 50% 46%, #e5162b70 0%, #e5162b26 38%, transparent 70%); }
+  #glow2 { background: radial-gradient(circle at 50% 110%, #a30d1c66, transparent 55%); }
+  #grid { background-image: linear-gradient(#ffffff0b 2px, transparent 2px), linear-gradient(90deg, #ffffff0b 2px, transparent 2px);
+    background-size: 108px 108px; background-position: center;
+    -webkit-mask-image: radial-gradient(ellipse 60% 45% at 50% 48%, #000 15%, transparent 75%); mask-image: radial-gradient(ellipse 60% 45% at 50% 48%, #000 15%, transparent 75%); }
+  #vignette { background: radial-gradient(ellipse at center, transparent 45%, #000000c0 100%); }
+  #content { position: absolute; inset: 0; transform-origin: 50% 48%; }
+
+  #logoWrap { position: absolute; left: 50%; top: 610px; width: 360px; height: 360px; margin-left: -180px; }
+  #logoWrap svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 30px 60px #e5162b66); }
+  #sweep { position: absolute; inset: 0; border-radius: 80px; overflow: hidden; pointer-events: none; }
+  #sweep i { position: absolute; top: -20%; width: 34%; height: 140%; background: linear-gradient(90deg, transparent, #ffffff55, transparent); transform: rotate(18deg); }
+  #ring { position: absolute; left: 50%; top: 790px; width: 360px; height: 360px; margin: -180px 0 0 -180px; border-radius: 50%; border: 10px solid #ff4757; }
+  #flash { background: radial-gradient(circle at 50% 41%, #ffffffcc, #ff475755 18%, transparent 45%); }
+
+  #title { position: absolute; left: 0; right: 0; top: 1040px; text-align: center; direction: ltr; font-weight: 900; font-size: 150px; letter-spacing: -5px; line-height: 1; white-space: nowrap; }
+  #title span { display: inline-block; }
+  #title .r { background: linear-gradient(135deg, #ff6a76, #e5162b 60%, #b30f20); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #underline { position: absolute; left: 50%; top: 1215px; height: 8px; width: 420px; margin-left: -210px; border-radius: 8px; background: linear-gradient(90deg, transparent, #ff4757, transparent); }
+
+  #tag { position: absolute; left: 0; right: 0; top: 1260px; text-align: center; font-weight: 800; font-size: 68px; color: #f1f1f4; white-space: nowrap; }
+  #tag span { display: inline-block; margin: 0 9px; }
+
+  #badge { position: absolute; left: 50%; top: 1500px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  #badge .cap { font-weight: 500; font-size: 38px; color: #c9c9d2; }
+  #badge .btn { display: flex; align-items: center; gap: 22px; direction: ltr; background: #000; border: 3px solid #a6a6a6; border-radius: 26px; padding: 22px 46px 22px 36px; box-shadow: 0 20px 60px -10px #e5162b88; }
+  #badge svg { width: 80px; height: 80px; }
+  #badge .txt { display: flex; flex-direction: column; line-height: 1.05; text-align: left; }
+  #badge small { font-weight: 500; font-size: 28px; letter-spacing: 2px; color: #fff; }
+  #badge strong { font-weight: 800; font-size: 64px; color: #fff; letter-spacing: -1px; }
+  #fade { background: #000; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="glow2"></div>
+  <div class="layer" id="glow"></div>
+  <div class="layer" id="grid"></div>
+  <div id="content">
+    <div id="ring"></div>
+    <div id="logoWrap"><div id="logoSvg"></div><div id="sweep"><i></i></div></div>
+    <div id="title"></div>
+    <div id="underline"></div>
+    <div id="tag"></div>
+    <div id="badge">
+      <div class="cap">זמינה עכשיו</div>
+      <div class="btn">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
+        <div class="txt"><small>GET IT ON</small><strong>Google Play</strong></div>
+      </div>
+    </div>
+  </div>
+  <div class="layer" id="flash"></div>
+  <div class="layer" id="vignette"></div>
+  <div class="layer" id="fade"></div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const prog = (t, a, b) => clamp((t - a) / (b - a));
+  const easeOut = (x) => 1 - Math.pow(1 - x, 3);
+  const easeInOut = (x) => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  const easeOutBack = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+  // letters of the title, "Cube" white and "Finance" red
+  const word = "CubeFinance";
+  $("title").innerHTML = word.split("").map((ch, i) => '<span class="' + (i >= 4 ? "r" : "") + '">' + ch + "</span>").join("");
+  const letters = Array.from($("title").children);
+  const tagWords = ["עוזרת", "לך", "לנהל", "את", "הכסף"];
+  $("tag").innerHTML = tagWords.map((w) => "<span>" + w + "</span>").join(" ");
+  const tagSpans = Array.from($("tag").children);
+
+  window.setLogo = (svg) => { $("logoSvg").innerHTML = svg; };
+
+  window.renderAt = (t) => {
+    // background
+    const bg = easeOut(prog(t, 0, .6));
+    const pulse = t > 1.7 ? 1 + .12 * Math.exp(-(t - 1.7) * 3) : 1;
+    $("glow").style.opacity = bg * pulse;
+    $("glow").style.transform = "scale(" + (0.85 + .15 * bg + (t > 1.7 ? .06 * Math.exp(-(t - 1.7) * 2.5) : 0)) + ")";
+    $("glow2").style.opacity = easeOut(prog(t, .2, 1.2));
+    $("grid").style.opacity = bg * .9;
+    $("grid").style.backgroundPosition = "center " + (t * 18) + "px";
+
+    // slow push-in over the whole clip
+    $("content").style.transform = "scale(" + (1 + .045 * easeInOut(prog(t, 0, 5))) + ")";
+
+    // title letters: rise + unblur, staggered (0.35 → 1.45)
+    letters.forEach((el, i) => {
+      const p = easeOut(prog(t, .35 + i * .065, .35 + i * .065 + .42));
+      el.style.opacity = p;
+      el.style.transform = "translateY(" + (90 * (1 - p)) + "px) scale(" + (1.25 - .25 * p) + ")";
+      el.style.filter = "blur(" + (18 * (1 - p)) + "px)";
+    });
+    // title settles: before the logo it sits in the middle, then moves to its final place
+    const lift = easeInOut(prog(t, 1.15, 1.55));
+    $("title").style.transform = "translateY(" + (-300 * (1 - lift)) + "px) scale(" + (1.12 - .12 * lift) + ")";
+    const ul = easeOut(prog(t, 1.85, 2.3));
+    $("underline").style.opacity = ul;
+    $("underline").style.transform = "scaleX(" + ul + ")";
+
+    // logo drops in and lands at 1.70
+    const lp = prog(t, 1.52, 1.70);
+    const landed = t >= 1.70;
+    let s, y, o;
+    if (!landed) { s = .3 + .8 * easeOut(lp); y = -260 * (1 - easeOut(lp)); o = easeOut(prog(t, 1.52, 1.62)); }
+    else { const k = t - 1.70; s = 1 + .1 * Math.exp(-k * 7) * Math.cos(k * 22); y = 0; o = 1; }
+    $("logoWrap").style.opacity = o;
+    $("logoWrap").style.transform = "translateY(" + y + "px) scale(" + s + ")";
+    // shockwave + flash at the hit
+    const rk = prog(t, 1.70, 2.35);
+    $("ring").style.opacity = t < 1.70 ? 0 : (1 - rk) * .9;
+    $("ring").style.transform = "scale(" + (.8 + 2.6 * easeOut(rk)) + ")";
+    $("ring").style.borderWidth = (14 * (1 - rk) + 1) + "px";
+    $("flash").style.opacity = t < 1.70 ? 0 : Math.exp(-(t - 1.70) * 9) * .85;
+    // light sweep across the logo
+    const sw = easeInOut(prog(t, 3.95, 4.55));
+    $("sweep").firstElementChild.style.left = (-50 + 160 * sw) + "%";
+    $("sweep").style.opacity = sw > 0 && sw < 1 ? 1 : 0;
+
+    // tagline word by word (RTL, so the first word is on the right)
+    tagSpans.forEach((el, i) => {
+      const p = easeOut(prog(t, 2.15 + i * .12, 2.15 + i * .12 + .4));
+      el.style.opacity = p;
+      el.style.transform = "translateY(" + (40 * (1 - p)) + "px)";
+      el.style.filter = "blur(" + (10 * (1 - p)) + "px)";
+    });
+
+    // Google Play
+    const bp = prog(t, 3.25, 3.7);
+    $("badge").style.opacity = easeOut(bp);
+    $("badge").style.transform = "translateX(-50%) translateY(" + (60 * (1 - easeOutBack(bp))) + "px)";
+
+    // in from black / out to black
+    $("fade").style.opacity = Math.max(1 - prog(t, 0, .25), prog(t, 4.8, 5));
+  };
+  window.renderAt(0);
+</script>
+</body>
+</html>
