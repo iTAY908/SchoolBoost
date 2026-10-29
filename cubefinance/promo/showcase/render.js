@@ -18,10 +18,12 @@ const FPS = 30, DUR = 30;
   });
   fs.mkdirSync(outDir, { recursive: true });
   const stage = await p.$('#stage');
-  const list = mode === 'stills' ? times.map(Number) : Array.from({ length: FPS * DUR }, (_, f) => f / FPS);
+  // frames mode takes an optional range: node render.js frames <dir> [from] [to]
+  const from = mode === 'frames' && times[0] ? +times[0] : 0, to = mode === 'frames' && times[1] ? +times[1] : FPS * DUR - 1;
+  const list = mode === 'stills' ? times.map(Number) : Array.from({ length: to - from + 1 }, (_, f) => (from + f) / FPS);
   for (let i = 0; i < list.length; i++) {
     await p.evaluate((t) => window.renderAt(t), list[i]);
-    const name = mode === 'stills' ? 'still-' + list[i] + '.png' : String(i).padStart(4, '0') + '.png';
+    const name = mode === 'stills' ? 'still-' + list[i] + '.png' : String(from + i).padStart(4, '0') + '.png';
     await stage.screenshot({ path: path.join(outDir, name) });
   }
   if (errs.length) console.error('page errors:', errs);
