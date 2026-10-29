@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CubeFinance" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/bg_deep</item>
+        <item name="android:statusBarColor">@color/bg_deep</item>
+        <item name="android:navigationBarColor">@color/bg_deep</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Shown for the split second before the WebView paints, so the app never
+         flashes white on launch. -->
+    <style name="Theme.CubeFinance.Splash" parent="Theme.CubeFinance">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+</resources>

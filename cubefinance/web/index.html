@@ -1,0 +1,1600 @@
+<title>CubeFinance — Web Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+  /* ==========================================================================
+     CubeFinance — self-contained web preview.
+     Single-theme by deliberate choice: this mirrors the mobile app, which is
+     dark-only (userInterfaceStyle: "dark"). The budget engine, transfer
+     simulation, alerts and rule-based chat are ported to client-side JS, so the
+     whole experience runs with no backend.
+     ========================================================================== */
+  :root {
+    --bg: #0d0d14;
+    --bg-deep: #08080d;
+    --elevated: #16161f;
+    --card: #1c1c28;
+    --card-2: #221f3a;
+    --border: #2a2a3a;
+    --text: #e7e7f2;
+    --dim: #9a9ab0;
+    --primary: #6c5ce7;
+    --primary-dim: #4b3fb8;
+    --danger: #d63031;
+    --warning: #fdcb6e;
+    --success: #00b894;
+    --c-housing: #6c5ce7;
+    --c-essentials: #00b894;
+    --c-savings: #0984e3;
+    --c-investments: #e17055;
+    --c-emergency: #d63031;
+    --c-lifestyle: #fdcb6e;
+    --radius: 16px;
+    --radius-lg: 24px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #1a1533 0%, transparent 55%),
+      radial-gradient(900px 500px at 110% 10%, #10233a 0%, transparent 50%),
+      var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* --- desktop chrome around the device --- */
+  .stage {
+    width: 100%;
+    max-width: 1040px;
+    padding: clamp(16px, 4vw, 48px) 20px 64px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .stage { grid-template-columns: 1fr auto; }
+  }
+
+  .pitch { max-width: 440px; }
+  .pitch .eyebrow {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .pitch h1 {
+    font-size: clamp(34px, 5vw, 52px);
+    line-height: 1.02;
+    letter-spacing: -1.5px;
+    margin: 14px 0 16px;
+    text-wrap: balance;
+  }
+  .pitch h1 .grad {
+    background: linear-gradient(120deg, #8f7dff, #57b6ff 60%, #46e0b4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .pitch p { color: var(--dim); font-size: 16px; line-height: 1.55; margin: 0 0 22px; }
+  .pitch .feats { display: flex; flex-direction: column; gap: 12px; }
+  .pitch .feat { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; }
+  .pitch .feat .dot {
+    width: 26px; height: 26px; border-radius: 8px; flex: none;
+    display: grid; place-items: center; font-size: 14px;
+    background: #ffffff10; border: 1px solid var(--border);
+  }
+  .pitch .feat b { color: var(--text); }
+  .pitch .feat span { color: var(--dim); }
+  .pitch code { background: #ffffff14; padding: 1px 5px; border-radius: 5px; font-size: 12px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .pitch .note {
+    margin-top: 26px; font-size: 12.5px; color: var(--dim);
+    border-left: 2px solid var(--primary-dim); padding-left: 12px; line-height: 1.5;
+  }
+
+  /* --- device frame --- */
+  .device {
+    width: 390px;
+    max-width: 92vw;
+    height: 812px;
+    max-height: 88vh;
+    background: var(--bg);
+    border-radius: 44px;
+    padding: 12px;
+    border: 1px solid #33334a;
+    box-shadow:
+      0 0 0 10px #101018,
+      0 40px 90px -30px #000,
+      inset 0 0 0 1px #ffffff08;
+    position: relative;
+    justify-self: center;
+  }
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    border-radius: 33px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 26px; background: #000; border-radius: 14px; z-index: 60;
+  }
+
+  /* scroll region */
+  .view { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+  .view::-webkit-scrollbar { width: 0; }
+  .pad { padding: 44px 20px 24px; }
+
+  /* --- typography helpers --- */
+  .brand { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
+  h2.title { font-size: 28px; letter-spacing: -.8px; margin: 0 0 6px; line-height: 1.08; text-wrap: balance; }
+  .sub { color: var(--dim); font-size: 14px; line-height: 1.45; margin: 0; }
+  .money { font-variant-numeric: tabular-nums; }
+  .label { font-size: 12px; color: var(--dim); font-weight: 600; margin-bottom: 8px; letter-spacing: .2px; }
+
+  /* --- buttons/inputs --- */
+  .btn {
+    width: 100%; border: none; cursor: pointer; font-family: var(--font);
+    background: var(--primary); color: #fff; font-size: 16px; font-weight: 700;
+    padding: 15px; border-radius: var(--radius); transition: transform .1s, opacity .15s, background .15s;
+  }
+  .btn:hover { background: #7d6dff; }
+  .btn:active { transform: scale(.985); }
+  .btn:disabled { background: var(--border); color: #6f6f85; cursor: not-allowed; }
+  .ghost {
+    background: none; border: none; color: var(--dim); font-weight: 600; font-size: 15px;
+    padding: 12px; width: 100%; cursor: pointer; font-family: var(--font);
+  }
+  .ghost:hover { color: var(--text); }
+
+  .field { margin-bottom: 16px; }
+  .input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 0 16px; transition: border-color .15s;
+  }
+  .input-wrap:focus-within { border-color: var(--primary); }
+  .input-wrap .cur { color: var(--dim); font-size: 20px; font-weight: 700; }
+  .input-wrap input {
+    flex: 1; background: none; border: none; outline: none; color: var(--text);
+    font-size: 20px; font-weight: 700; padding: 15px 0; font-family: var(--font);
+    font-variant-numeric: tabular-nums; width: 100%;
+  }
+  .input-wrap input::placeholder { color: #55556a; }
+
+  .option {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; cursor: pointer; font-family: var(--font);
+    transition: border-color .15s, background .15s;
+  }
+  .option:hover { border-color: #3c3c52; }
+  .option.sel { border-color: var(--primary); background: var(--card-2); }
+  .option .radio {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border);
+    flex: none; display: grid; place-items: center; transition: border-color .15s;
+  }
+  .option.sel .radio { border-color: var(--primary); }
+  .option .radio i { width: 10px; height: 10px; border-radius: 50%; background: var(--primary); display: none; }
+  .option.sel .radio i { display: block; }
+  .option .otext b { display: block; color: var(--dim); font-size: 16px; font-weight: 700; }
+  .option.sel .otext b { color: var(--text); }
+  .option .otext span { color: var(--dim); font-size: 13px; }
+
+  /* --- progress --- */
+  .prog-head { padding: 44px 20px 0; display: flex; flex-direction: column; gap: 12px; }
+  .track { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .track > i { display: block; height: 100%; background: var(--primary); border-radius: 999px; transition: width .35s cubic-bezier(.2,.8,.2,1); }
+  .stepcount { font-size: 12px; color: var(--dim); font-weight: 600; }
+
+  .footer { padding: 12px 20px 22px; display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #ffffff08; }
+
+  .fade { animation: fade .28s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  /* --- dashboard hero --- */
+  .hero {
+    background: linear-gradient(160deg, #201b3d, #14131d);
+    border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 22px;
+  }
+  .hero .hl { color: var(--dim); font-size: 13px; font-weight: 600; }
+  .hero .hv { font-size: 42px; font-weight: 900; letter-spacing: -1.5px; margin: 4px 0 0; }
+  .hero .poolrow { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; }
+  .hero .poolrow .pt { color: var(--dim); font-size: 13px; }
+  .hero .poolrow .pt b { color: var(--text); }
+  .pill-btn {
+    background: var(--primary); color: #fff; border: none; border-radius: 999px;
+    padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: var(--font);
+  }
+  .pill-btn:hover { background: #7d6dff; }
+  .pill-btn:disabled { background: var(--border); color: #6f6f85; cursor: not-allowed; }
+
+  .headline { color: var(--dim); font-size: 13.5px; line-height: 1.5; margin: 18px 2px; }
+  .section-t { font-size: 16px; font-weight: 700; margin: 8px 2px 14px; }
+
+  .alertbox { background: #2a1f1f; border: 1px solid #4a2b2b; border-radius: var(--radius); padding: 14px; margin: 4px 0 18px; display: flex; flex-direction: column; gap: 6px; }
+  .alertbox .a { font-size: 13px; font-weight: 600; color: var(--warning); }
+  .alertbox .a.crit { color: var(--danger); }
+
+  /* --- cube card --- */
+  .cube {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+    padding: 16px; margin-bottom: 12px; transition: border-color .2s, transform .2s;
+  }
+  .cube.hl { animation: pop .5s ease; }
+  @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.035)} 100%{transform:scale(1)} }
+  .cube .top { display: flex; align-items: center; gap: 12px; }
+  .cube .chip { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 20px; flex: none; }
+  .cube .nm { font-size: 16px; font-weight: 700; }
+  .cube .nt { font-size: 12px; color: var(--dim); margin-top: 1px; }
+  .cube .pct { margin-left: auto; font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
+  .cube .brow { display: flex; align-items: baseline; gap: 8px; margin-top: 14px; }
+  .cube .bal { font-size: 24px; font-weight: 800; }
+  .cube .tgt { font-size: 13px; color: var(--dim); font-weight: 600; }
+  .cube .fixed { margin-left: auto; font-size: 10px; letter-spacing: 1px; font-weight: 800; color: var(--dim); }
+  .cube .ftrack { height: 8px; background: var(--bg); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+  .cube .ftrack > i { display: block; height: 100%; border-radius: 999px; width: 0; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+  .cube .low { font-size: 12px; font-weight: 700; color: var(--danger); margin-top: 10px; }
+
+  /* --- modal / sheet --- */
+  .overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); z-index: 40; display: none; }
+  .overlay.on { display: block; animation: fade .2s ease; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: var(--elevated); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+    padding: 18px 20px 28px; transform: translateY(110%); transition: transform .32s cubic-bezier(.2,.9,.2,1);
+  }
+  .sheet.on { transform: none; }
+  .handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 14px; }
+  .poolchip { display: flex; justify-content: space-between; align-items: center; background: var(--card); border-radius: var(--radius); padding: 14px 16px; margin: 14px 0; }
+  .poolchip .pl { color: var(--dim); font-size: 13px; font-weight: 600; }
+  .poolchip .pv { font-size: 18px; font-weight: 800; }
+  .quickrow { display: flex; gap: 8px; margin-bottom: 6px; }
+  .quick { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; text-align: center; color: var(--text); font-weight: 700; cursor: pointer; font-family: var(--font); font-size: 13px; }
+  .quick:hover { border-color: var(--primary); }
+
+  /* --- coins --- */
+  .coins { position: absolute; inset: 0; z-index: 55; pointer-events: none; overflow: hidden; }
+  .coin { position: absolute; top: -40px; font-size: 28px; will-change: transform, opacity; }
+
+  /* --- FAB + chat --- */
+  .fab {
+    position: absolute; right: 18px; bottom: 22px; z-index: 30;
+    width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer;
+    background: var(--primary); font-size: 28px; display: grid; place-items: center;
+    box-shadow: 0 10px 30px -6px var(--primary);
+  }
+  .fab:hover { background: #7d6dff; }
+  .fab .badge { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--danger); border: 2px solid var(--primary); }
+  .fab.pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+  .chatwrap { position: absolute; inset: 0; z-index: 45; display: none; flex-direction: column; justify-content: flex-end; background: rgba(0,0,0,.4); }
+  .chatwrap.on { display: flex; }
+  .chat {
+    height: 82%; background: var(--bg); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+    display: flex; flex-direction: column; overflow: hidden; transform: translateY(4%); animation: slideup .3s ease;
+  }
+  @keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(4%); } }
+  .chat .ch { display: flex; align-items: center; padding: 16px; border-bottom: 1px solid var(--border); }
+  .chat .ch .t { font-size: 17px; font-weight: 700; }
+  .chat .ch .s { font-size: 12px; color: var(--dim); margin-top: 2px; }
+  .chat .ch .x { margin-left: auto; background: none; border: none; color: var(--dim); font-size: 20px; cursor: pointer; }
+  .chat .strip { background: #2a1f1f; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--warning); }
+  .msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .msgs::-webkit-scrollbar { width: 0; }
+  .intro { text-align: center; padding: 30px 24px; color: var(--dim); }
+  .intro .e { font-size: 40px; }
+  .intro p { font-size: 14px; line-height: 1.5; margin-top: 8px; }
+  .bubble { max-width: 82%; padding: 11px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; white-space: pre-wrap; unicode-bidi: plaintext; }
+  #chatIn, .sugg button, .qreplies button { unicode-bidi: plaintext; }
+  .bubble.u { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+  .bubble.b { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
+  .sugg { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 12px; }
+  .sugg button { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 9px 14px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+  .sugg button:hover { border-color: var(--primary); }
+  .qreplies { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; align-self: flex-start; max-width: 90%; }
+  .qreplies button { background: var(--card-2); border: 1px solid var(--primary-dim); border-radius: 999px; padding: 9px 13px; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: background .15s; }
+  .qreplies button:hover { background: var(--primary); }
+  .inbar { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .inbar input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 12px 16px; color: var(--text); font-size: 15px; outline: none; font-family: var(--font); }
+  .inbar input:focus { border-color: var(--primary); }
+  .inbar button { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--primary); color: #fff; font-size: 17px; cursor: pointer; flex: none; }
+  .inbar button:disabled { opacity: .4; cursor: default; }
+
+  .restart { position: absolute; top: 12px; right: 16px; z-index: 35; background: #ffffff12; border: 1px solid var(--border); color: var(--dim); font-size: 11px; font-weight: 600; padding: 6px 10px; border-radius: 999px; cursor: pointer; font-family: var(--font); }
+  .restart:hover { color: var(--text); }
+
+  .toast {
+    position: absolute; top: 46px; left: 50%; transform: translate(-50%, -14px);
+    z-index: 70; background: #221f3a; border: 1px solid var(--primary-dim);
+    color: var(--text); font-size: 13px; font-weight: 600; padding: 10px 16px;
+    border-radius: 999px; box-shadow: 0 12px 30px -10px #000; white-space: nowrap;
+    opacity: 0; transition: opacity .35s, transform .35s; unicode-bidi: plaintext; pointer-events: none;
+  }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  .sync {
+    position: absolute; top: 12px; left: 16px; z-index: 35;
+    font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: #ffffff10; unicode-bidi: plaintext;
+  }
+  .sync.ok { color: var(--success); border-color: #16513f; background: #0f2a22; }
+  .sync.busy { color: var(--warning); }
+  .sync.off { color: var(--dim); }
+
+  /* ===== Design polish (applies everywhere) ===== */
+  .btn { background: linear-gradient(135deg, #8072ff, #6c5ce7); box-shadow: 0 10px 24px -12px var(--primary); }
+  .btn:hover { background: linear-gradient(135deg, #8f82ff, #7669f0); }
+  .pill-btn { background: linear-gradient(135deg, #8072ff, #6c5ce7); box-shadow: 0 8px 18px -10px var(--primary); }
+  .pill-btn:hover { background: linear-gradient(135deg, #8f82ff, #7669f0); }
+  .hero { box-shadow: 0 20px 50px -30px #000, inset 0 1px 0 #ffffff0a; }
+  .cube { box-shadow: 0 4px 14px -10px #000; transition: transform .18s, border-color .2s, box-shadow .2s; }
+  .cube:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -14px #000; }
+  .cube .chip { box-shadow: inset 0 0 0 1px #ffffff12; }
+  .section-t { display: flex; align-items: center; gap: 8px; }
+  .section-t::before { content: ""; width: 4px; height: 15px; border-radius: 2px; background: linear-gradient(var(--primary), #46e0b4); }
+  .fab { background: linear-gradient(140deg, #8072ff, #6c5ce7); }
+  .fab:hover { background: linear-gradient(140deg, #8f82ff, #7669f0); }
+
+  /* ===== Custom cube ===== */
+  .addcube {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: transparent; border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
+    padding: 16px; color: var(--dim); font-size: 15px; font-weight: 700; cursor: pointer;
+    font-family: var(--font); unicode-bidi: plaintext; transition: border-color .15s, color .15s, background .15s;
+  }
+  .addcube:hover { border-color: var(--primary); color: var(--text); background: #ffffff08; }
+  .addcube .addicon { font-size: 20px; color: var(--primary); font-weight: 800; }
+  .prio { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+  .prio input[type=range] { flex: 1; accent-color: var(--primary); height: 6px; }
+  .priov {
+    min-width: 40px; text-align: center; font-size: 20px; font-weight: 800; color: var(--primary);
+    background: #ffffff10; border-radius: 10px; padding: 4px 6px; font-variant-numeric: tabular-nums;
+  }
+  .airesult {
+    margin-top: 14px; background: linear-gradient(150deg, #201d38, #17161f);
+    border: 1px solid var(--primary-dim); border-radius: var(--radius); padding: 14px;
+  }
+  .aiamt { font-size: 26px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+  .aiamt span { font-size: 13px; font-weight: 600; color: var(--dim); }
+  .aiexp { color: var(--dim); font-size: 13.5px; line-height: 1.5; margin-top: 6px; unicode-bidi: plaintext; }
+
+  /* ===== Auth screen ===== */
+  #restart { top: 48px; }
+  .logout { color: #ff8f8f; }
+  .authwrap { height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .authcard {
+    width: 100%; max-width: 340px;
+    background: linear-gradient(165deg, #1b1830, #14131d);
+    border: 1.5px solid var(--border); border-radius: var(--radius-lg);
+    padding: 28px 22px; box-shadow: 0 30px 70px -40px #000;
+  }
+  .authbrand { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: -.2px; }
+  .authtitle { font-size: 26px; font-weight: 800; letter-spacing: -.6px; margin: 12px 0 4px; }
+  .authsub { color: var(--dim); font-size: 14px; margin: 0 0 20px; line-height: 1.4; }
+  .authcard .input-wrap input { font-size: 16px; font-weight: 600; }
+  .autherr { color: var(--danger); font-size: 13.5px; font-weight: 700; min-height: 18px; margin: 2px 2px 10px; unicode-bidi: plaintext; }
+  .authswitch { text-align: center; color: var(--dim); font-size: 13.5px; margin-top: 14px; }
+  .authswitch button { background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer; font-family: var(--font); font-size: 13.5px; padding: 4px; }
+  .authswitch button:hover { text-decoration: underline; }
+
+  /* ===== Mobile: fill the screen with ONE natural scroll (no phone frame) =====
+     The nested phone-in-phone frame created a second scroll region that fought
+     touch scrolling. On narrow screens we drop the frame + pitch so the app is
+     the full viewport and its own .view is the single scroll context. */
+  @media (max-width: 760px) {
+    body { display: block; }
+    .stage { padding: 0; gap: 0; max-width: none; display: block; }
+    .pitch { display: none; }
+    .notch { display: none; }
+    .device {
+      width: 100%; max-width: 100%;
+      height: 100vh; height: 100dvh; max-height: none;
+      border: 0; border-radius: 0; padding: 0; box-shadow: none;
+    }
+    .screen { border-radius: 0; height: 100vh; height: 100dvh; }
+    .pad { padding: 30px 18px 24px; }
+    .prog-head { padding: 30px 18px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+
+<div class="stage">
+  <div class="pitch">
+    <div class="eyebrow">CubeFinance · Web Preview</div>
+    <h1>Your money, split into <span class="grad">Cubes</span> you can actually see.</h1>
+    <p>
+      A financial planner that turns one balance into clear budget cubes — then
+      lets an AI buddy reason over them. No bank connection: every number is
+      yours to enter.
+    </p>
+    <div class="feats">
+      <div class="feat"><span class="dot">🧭</span><div><b>Guided onboarding</b> <span>— age, work, housing &amp; a balance to track.</span></div></div>
+      <div class="feat"><span class="dot">🧊</span><div><b>Auto-budgeted cubes</b> <span>— math that adapts to your situation.</span></div></div>
+      <div class="feat"><span class="dot">🪙</span><div><b>Simulated transfers</b> <span>— distribute your pool into cubes.</span></div></div>
+      <div class="feat"><span class="dot">💬</span><div><b>Cubey, your buddy</b> <span>— “Can I afford 500 ₪?” answered live.</span></div></div>
+    </div>
+    <p class="note">
+      This is the real app's logic running entirely in your browser — the same
+      budget engine and buddy from the codebase, ported client-side so nothing
+      needs installing. Your progress saves automatically; add
+      <code>?api=&lt;backend&gt;&amp;uid=&lt;id&gt;</code> to sync across devices. Try it on the right. →
+    </p>
+  </div>
+
+  <div class="device">
+    <div class="notch"></div>
+    <div class="screen" id="screen">
+      <button class="restart" id="restart" style="display:none">↺ Restart</button>
+      <button class="restart logout" id="logout" style="display:none">⎋ יציאה</button>
+      <div class="sync off" id="sync">📴 מקומי</div>
+      <!-- app renders here -->
+      <div class="coins" id="coins"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// Ported core logic (from backend/src/logic + services). Pure, no backend.
+// ============================================================================
+const CUBE_META = {
+  housing:     { name: 'Housing & Bills', color: '#6C5CE7', icon: '🏠' },
+  essentials:  { name: 'Essentials',      color: '#00B894', icon: '🛒' },
+  savings:     { name: 'Savings',         color: '#0984E3', icon: '🐷' },
+  investments: { name: 'Investments',     color: '#E17055', icon: '📈' },
+  emergency:   { name: 'Emergency Fund',  color: '#D63031', icon: '🛡️' },
+  lifestyle:   { name: 'Lifestyle',       color: '#FDCB6E', icon: '✨' },
+};
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const round = (n) => Math.round(n * 100) / 100;
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+
+function ageTilt(age) {
+  const a = clamp(Number(age) || 30, 16, 90);
+  const agg = clamp((60 - a) / 40, 0, 1);
+  return {
+    investments: 0.7 + agg * 0.8,
+    savings: 1.3 - agg * 0.4,
+    emergency: 1.2 - agg * 0.3,
+    lifestyle: 0.9 + agg * 0.2,
+    essentials: 1.0,
+  };
+}
+function normalizeToShare(weights, target) {
+  const total = Object.values(weights).reduce((s, w) => s + w, 0) || 1;
+  const out = {};
+  for (const [k, w] of Object.entries(weights)) out[k] = (w / total) * target;
+  return out;
+}
+function computeBudget(profile) {
+  const income = Math.max(0, Number(profile.monthlyIncome) || 0);
+  const independent = !profile.livesWithParents;
+  const tilt = ageTilt(profile.age);
+  const h = profile.housing || {};
+  const housingCost = independent
+    ? round((+h.rent || 0) + (+h.arnona || 0) + (+h.utilities || 0) + (+h.houseCommittee || 0))
+    : 0;
+  const housingShare = income > 0 ? clamp(housingCost / income, 0, 0.85) : 0;
+  const discretionary = 1 - housingShare;
+
+  let weights = independent
+    ? { essentials: .32*tilt.essentials, savings: .24*tilt.savings, investments: .18*tilt.investments, emergency: .12*tilt.emergency, lifestyle: .14*tilt.lifestyle }
+    : { essentials: .22*tilt.essentials, savings: .30*tilt.savings, investments: .26*tilt.investments, emergency: .10*tilt.emergency, lifestyle: .12*tilt.lifestyle };
+  const shares = normalizeToShare(weights, discretionary);
+
+  const cubes = [];
+  if (independent && housingCost > 0) {
+    cubes.push(buildCube('housing', housingShare, income, { note: 'Fixed monthly obligations', fixed: true }));
+  }
+  const notes = {
+    essentials: 'Food, transport, phone, day-to-day',
+    savings: independent ? 'Short-term goals & buffer' : 'Boosted — no rent to pay',
+    investments: independent ? 'Long-term wealth' : 'Boosted — put youth to work',
+    emergency: 'Rainy-day fund (aim: 3–6 months)',
+    lifestyle: independent ? 'Fun, dining, subscriptions' : 'Boosted — enjoy responsibly',
+  };
+  for (const key of ['essentials','savings','investments','emergency','lifestyle']) {
+    cubes.push(buildCube(key, shares[key], income, { note: notes[key] }));
+  }
+  reconcile(cubes, income);
+  return {
+    income, currency: 'ILS', situation: independent ? 'independent' : 'with_parents',
+    housingCost, cubes,
+    summary: {
+      headline: independent
+        ? 'Independent plan — a dedicated Housing cube covers your fixed bills.'
+        : 'Living-with-parents plan — housing savings redirected into wealth-building cubes.',
+    },
+  };
+}
+function buildCube(key, share, income, extra = {}) {
+  const m = CUBE_META[key];
+  return { key, name: m.name, color: m.color, icon: m.icon,
+    percentage: round(share * 100), monthlyContribution: round(share * income),
+    balance: 0, fixed: false, ...extra };
+}
+function reconcile(cubes, income) {
+  const sum = cubes.reduce((s, c) => s + c.monthlyContribution, 0);
+  const diff = round(income - sum);
+  if (Math.abs(diff) < 0.01) return;
+  const flex = cubes.filter((c) => !c.fixed).sort((a, b) => b.monthlyContribution - a.monthlyContribution)[0];
+  if (flex) { flex.monthlyContribution = round(flex.monthlyContribution + diff);
+    flex.percentage = income > 0 ? round((flex.monthlyContribution / income) * 100) : 0; }
+}
+function simulateTransfer(cubes, amount) {
+  const pool = Math.max(0, Number(amount) || 0);
+  const w = cubes.map((c) => ({ ...c }));
+  const allocations = [];
+  let remaining = pool;
+  for (const c of w) {
+    if (!c.fixed || remaining <= 0) continue;
+    const give = round(Math.min(Math.max(0, c.monthlyContribution - c.balance), remaining));
+    if (give > 0) { c.balance = round(c.balance + give); remaining = round(remaining - give);
+      allocations.push({ key: c.key, amount: give }); }
+  }
+  if (remaining > 0) {
+    const flex = w.filter((c) => !c.fixed);
+    const totalPct = flex.reduce((s, c) => s + c.percentage, 0) || 1;
+    let dist = 0;
+    flex.forEach((c, i) => {
+      const give = i === flex.length - 1 ? round(remaining - dist) : round((c.percentage / totalPct) * remaining);
+      dist = round(dist + give); c.balance = round(c.balance + give);
+      const ex = allocations.find((a) => a.key === c.key);
+      if (ex) ex.amount = round(ex.amount + give); else allocations.push({ key: c.key, amount: give });
+    });
+  }
+  const moved = round(allocations.reduce((s, a) => s + a.amount, 0));
+  return { cubes: w, allocations, moved };
+}
+function evaluateAlerts(cubes) {
+  const out = [];
+  for (const c of cubes) {
+    if (c.balance < 0) out.push({ level: 'critical', message: `${c.name} is overdrawn (${fmt(c.balance)} ₪). Move funds in.` });
+    else if (c.monthlyContribution > 0 && c.balance < c.monthlyContribution * 0.2)
+      out.push({ level: 'warning', message: `${c.name} is running low: ${fmt(c.balance)} of ${fmt(c.monthlyContribution)} ₪.` });
+  }
+  return out;
+}
+// ---- conversational buddy (bilingual, with an expense-logging flow) --------
+const isHeb = (s) => /[֐-׿]/.test(s || '');
+
+const CUBE_SYNONYMS = {
+  housing: ['housing', 'rent', 'bills', 'דיור', 'שכירות', 'שכ"ד', 'שכר דירה', 'בית', 'חשבונות', 'ארנונה'],
+  essentials: ['essentials', 'food', 'grocery', 'groceries', 'אוכל', 'מצרכים', 'מכולת', 'בסיס', 'תחבורה', 'סופר'],
+  savings: ['savings', 'saving', 'save', 'חיסכון', 'חסכון', 'לחסוך'],
+  investments: ['investment', 'investments', 'invest', 'השקעות', 'השקעה', 'להשקיע', 'מניות'],
+  emergency: ['emergency', 'חירום', 'חרום'],
+  lifestyle: ['lifestyle', 'fun', 'friend', 'friends', 'ליהנות', 'להנות', 'בילוי', 'בילויים', 'כיף', 'חברים', 'בידור', 'מסעדה', 'מסעדות', 'בית קפה'],
+};
+
+function matchCube(text) {
+  const q = (text || '').toLowerCase();
+  for (const c of state.cubes) {
+    const syns = CUBE_SYNONYMS[c.key] || [];
+    if (syns.some((w) => q.includes(w.toLowerCase())) || q.includes(c.name.toLowerCase())) return c.key;
+  }
+  return null;
+}
+function parseAmount(text) {
+  const m = (text || '').replace(/,/g, '').match(/(\d+(?:\.\d+)?)/);
+  return m ? Number(m[1]) : null;
+}
+const SPEND_RE = /(spent|spend|paid|bought|cost|בזבזתי|בזבזת|ביזבזתי|הוצאתי|הוצאת|קניתי|שילמתי|שילמת)/i;
+const AFFORD_RE = /(afford|can i (buy|spend)|יכול לקנות|אפשר לקנות|להרשות|יכול לבזבז|אפשר לבזבז|אפשר להוציא)/i;
+const RENT_RE = /(rent|שכירות|שכר דירה|שכ"ד|ארנונה|עולה|לעדכן|adjust|increase)/i;
+const STATUS_RE = /(status|overview|how am i|how'?s|doing|low|balance|מצב|סטטוס|סקירה|איך אני|כמה יש|נמוך|יתרה)/i;
+// Hebrew letters aren't \w, so \b is unreliable — anchor on a trailing space/end/punct instead.
+const GREET_RE = /^(hi|hey|hello|yo|sup|היי|הי|שלום|מה קורה|מה נשמע|אהלן)(\s|$|[!?.,])/i;
+
+function cubeQuick() {
+  return state.cubes.map((c) => ({ label: `${c.icon} ${c.name}`, cubeKey: c.key }));
+}
+
+/** Perform an expense: deduct from a cube, update alerts, return a reply. */
+function doExpense(key, opts = {}) {
+  const heb = opts.heb ?? state.pending?.heb ?? true;
+  const amount = opts.amount ?? state.pending?.amount ?? 0;
+  state.pending = null;
+  const cube = state.cubes.find((c) => c.key === key);
+  if (!cube) return { reply: heb ? 'לא מצאתי את הקובייה הזאת 🤔' : "I couldn't find that cube 🤔" };
+  cube.balance = round(cube.balance - amount);
+  state.alerts = evaluateAlerts(state.cubes);
+  state.lastFunded = new Set([key]);
+  const over = cube.balance < 0;
+  const reply = heb
+    ? `רשמתי ✅ הורדתי ${fmt(amount)} ₪ מהקובייה "${cube.name}". היתרה החדשה: ${fmt(cube.balance)} ₪.` +
+      (over ? ' ⚠️ הקובייה ירדה למינוס — כדאי להעביר אליה כסף מהחשבון הראשי.' : '')
+    : `Logged ✅ I took ${fmt(amount)} ₪ out of your "${cube.name}" cube. New balance: ${fmt(cube.balance)} ₪.` +
+      (over ? ' ⚠️ It went negative — consider moving funds in from your main account.' : '');
+  return { reply };
+}
+
+/** Core responder. Returns { reply, quick? }. May set/clear state.pending. */
+function respond(text) {
+  const heb = isHeb(text);
+  const q = (text || '').toLowerCase();
+  const cubes = state.cubes;
+  const byKey = Object.fromEntries(cubes.map((c) => [c.key, c]));
+  const total = cubes.reduce((s, c) => s + c.balance, 0);
+
+  // 0. Awaiting a cube choice for a logged expense?
+  if (state.pending && state.pending.type === 'expense') {
+    const key = matchCube(text);
+    if (key) return doExpense(key, { heb: state.pending.heb });
+    if (/(cancel|בטל|עזוב|לא משנה|nevermind)/i.test(q)) {
+      state.pending = null;
+      return { reply: heb ? 'ביטלתי, לא רשמתי כלום 👍' : 'Cancelled — nothing logged 👍' };
+    }
+    return {
+      reply: heb ? 'לא הבנתי איזו קובייה 🤔 בחר/י אחת מהאפשרויות:' : "I didn't catch which cube 🤔 pick one:",
+      quick: cubeQuick(),
+    };
+  }
+
+  // 1. Affordability
+  if (AFFORD_RE.test(text)) {
+    const amount = parseAmount(text);
+    if (!amount) return { reply: heb ? 'כמה כסף מדובר? כתוב לי סכום ואבדוק 🙂' : 'How much are we talking? Give me a number and I\'ll check 🙂' };
+    const life = byKey.lifestyle || cubes.find((c) => !c.fixed);
+    if (!life) return { reply: heb ? 'עדיין אין קוביות — סיים/י את ההרשמה קודם 🧊' : "You haven't set up your cubes yet — finish onboarding first 🧊" };
+    if (amount <= life.balance)
+      return { reply: heb
+        ? `כן! 🎉 הוצאה של ${fmt(amount)} ₪ מהקובייה "${life.name}" (יתרה ${fmt(life.balance)} ₪) תשאיר לך ${fmt(life.balance - amount)} ₪ שם. אפשר בשקט.`
+        : `Yes! 🎉 Spending ${fmt(amount)} ₪ from your "${life.name}" cube (balance ${fmt(life.balance)} ₪) leaves ${fmt(life.balance - amount)} ₪ there. You're good.` };
+    if (amount <= total)
+      return { reply: heb
+        ? `קצת גבולי. בקובייה "${life.name}" יש רק ${fmt(life.balance)} ₪, אז ${fmt(amount)} ₪ יורידו אותה למינוס. יש לך ${fmt(total)} ₪ בסך הכל בקוביות — אם ממש צריך, קח את ההפרש מהחיסכון במודע.`
+        : `It's tight. Your "${life.name}" cube only has ${fmt(life.balance)} ₪, so ${fmt(amount)} ₪ would overdraw it. You have ${fmt(total)} ₪ across cubes — if you must, pull the difference from Savings deliberately.` };
+    return { reply: heb
+      ? `הייתי אומר לא כרגע. ${fmt(amount)} ₪ זה יותר מכל היתרה שלך (${fmt(total)} ₪). בוא נשמור על קוביית החירום והדיור.`
+      : `I'd say no for now. ${fmt(amount)} ₪ is more than your total balance of ${fmt(total)} ₪. Let's protect your Emergency and Housing cubes.` };
+  }
+
+  // 2. Logging an expense: "I spent 200"
+  if (SPEND_RE.test(text)) {
+    const amount = parseAmount(text);
+    if (!amount) return { reply: heb ? 'כמה בזבזת? כתוב לי סכום 🙂' : 'How much did you spend? Give me a number 🙂' };
+    const key = matchCube(text);
+    if (key) return doExpense(key, { heb, amount }); // cube named in the same sentence
+    state.pending = { type: 'expense', amount, heb };
+    return {
+      reply: heb
+        ? `סבבה 🙂 באיזו קובייה בזבזת את ה-${fmt(amount)} ₪?`
+        : `Got it 🙂 which cube did you spend the ${fmt(amount)} ₪ from?`,
+      quick: cubeQuick(),
+    };
+  }
+
+  // 3. Rent / adjust
+  if (RENT_RE.test(text)) {
+    const ho = byKey.housing;
+    if (ho) return { reply: heb
+      ? `אם השכירות משתנה, עדכן/י את היעד של קוביית "דיור" (כרגע ${fmt(ho.monthlyContribution)} ₪ לחודש). התוספת בדרך כלל באה קודם מ-Lifestyle, ואז מהחיסכון.`
+      : `If your rent changes, update your Housing cube target (currently ${fmt(ho.monthlyContribution)} ₪/mo). The extra usually comes out of Lifestyle first, then Savings.` };
+    return { reply: heb
+      ? `אתה גר עם ההורים, אז אין קוביית דיור. אם זה משתנה — תגיד לי את השכירות החדשה ואבנה מחדש את הקוביות.`
+      : `You live with parents, so there's no Housing cube. If that changes, tell me the new rent and I'll rebuild your cubes.` };
+  }
+
+  // 4. Status / how am I doing
+  if (STATUS_RE.test(text)) {
+    const lowest = [...cubes].sort((a, b) => a.balance - b.balance)[0];
+    return { reply: heb
+      ? `סה"כ בקוביות: ${fmt(total)} ₪.${lowest ? ` הקובייה הכי נמוכה כרגע היא "${lowest.name}" עם ${fmt(lowest.balance)} ₪.` : ''} אפשר לשאול אותי "אפשר להרשות 500 ₪?" מתי שרוצה.`
+      : `Total across cubes: ${fmt(total)} ₪.${lowest ? ` Your lowest cube right now is "${lowest.name}" at ${fmt(lowest.balance)} ₪.` : ''} Ask me "can I afford ___?" anytime.` };
+  }
+
+  // 5. Greeting
+  if (GREET_RE.test(text.trim())) {
+    return { reply: heb
+      ? `היי! 👋 אני Cubey, החבר הפיננסי שלך. יש לך ${fmt(total)} ₪ בקוביות. אפשר לספר לי על הוצאה ("בזבזתי 200 ₪"), לשאול "אפשר להרשות 300 ₪?", או "מה המצב שלי?"`
+      : `Hey! 👋 I'm Cubey, your money buddy. You've got ${fmt(total)} ₪ across cubes. Tell me about a spend ("I spent 200 ₪"), ask "can I afford 300 ₪?", or "how am I doing?"` };
+  }
+
+  // 6. Helpful fallback (acknowledges the message)
+  return { reply: heb
+    ? `הבנתי אותך 🙂 אני יודע לעזור עם הכסף שבקוביות (סה"כ ${fmt(total)} ₪). נסה: "בזבזתי 200 ₪ על אוכל", "אפשר להרשות 500 ₪?", או "מה המצב שלי?"`
+    : `I hear you 🙂 I can help with the money in your cubes (total ${fmt(total)} ₪). Try: "I spent 200 ₪ on food", "can I afford 500 ₪?", or "how am I doing?"` };
+}
+
+// ============================================================================
+// App state + rendering (mirrors the Zustand store + screens)
+// ============================================================================
+const screen = document.getElementById('screen');
+const coinsEl = document.getElementById('coins');
+const restartBtn = document.getElementById('restart');
+const logoutBtn = document.getElementById('logout');
+
+const state = {
+  onboarded: false,
+  profile: null, cubes: [], mainAccount: 0, summary: null, alerts: [],
+  chat: [], chatStreaming: false, lastFunded: new Set(), pending: null,
+  draft: { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' },
+  stepIndex: 0,
+  // auth gate
+  screen: 'auth', // 'auth' | 'app'
+  authUser: null, // { id, email }
+  authMode: 'login', // 'login' | 'signup'
+  authError: '',
+};
+
+// ============================================================================
+// Mock Auth Service — a simulated secure local user store (no real backend DB).
+// Passwords are salted + hashed (mock hash; NOT cryptographically secure — a
+// real app must hash server-side with bcrypt/scrypt). Users live in localStorage.
+// ============================================================================
+const USERS_KEY = 'cubefinance:users';
+const SESSION_KEY = 'cubefinance:session';
+
+function loadUsers() { try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch (_) { return {}; } }
+function saveUsers(u) { try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch (_) {} }
+function mockHash(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  for (let r = 0; r < 800; r++) h = ((h * 33) ^ (h >>> 7)) >>> 0; // key-stretch (mock)
+  return h.toString(16);
+}
+const hashPw = (pw, salt) => mockHash(salt + '::' + pw);
+const validEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
+function authSignUp(email, pw) {
+  email = (email || '').trim().toLowerCase();
+  if (!validEmail(email)) return { error: 'כתובת אימייל לא תקינה' };
+  if ((pw || '').length < 4) return { error: 'הסיסמה חייבת להכיל לפחות 4 תווים' };
+  const users = loadUsers();
+  if (users[email]) return { error: 'האימייל כבר רשום במערכת' }; // "Email already registered"
+  const salt = Math.random().toString(36).slice(2);
+  const id = 'acc_' + mockHash(email).slice(0, 8) + Date.now().toString(36);
+  users[email] = { id, email, salt, hash: hashPw(pw, salt), createdAt: Date.now() };
+  saveUsers(users);
+  return { user: { id, email } };
+}
+function authLogIn(email, pw) {
+  email = (email || '').trim().toLowerCase();
+  const users = loadUsers();
+  const u = users[email];
+  if (!u) return { error: 'לא נמצא משתמש עם אימייל זה' };
+  // Security: block access unless the exact password matches the stored hash.
+  if (u.hash !== hashPw(pw, u.salt)) return { error: 'שגיאה: סיסמה שגויה' };
+  return { user: { id: u.id, email: u.email } };
+}
+function setSession(email) { try { localStorage.setItem(SESSION_KEY, email); } catch (_) {} }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch (_) {} }
+function getSession() { try { return localStorage.getItem(SESSION_KEY); } catch (_) { return null; } }
+
+// ============================================================================
+// Persistence — recognise the returning user and resume where they left off.
+// Everything lives in localStorage (no expiry), so leaving mid-onboarding for
+// hours and coming back continues from the exact same step with entered data.
+// ============================================================================
+const STORAGE_BASE = 'cubefinance:v1';
+let userId = null;
+let localSavedAt = 0;
+// App state is namespaced per account so multiple users on one device stay separate.
+const stateKey = () => STORAGE_BASE + ':' + (userId || 'anon');
+
+// --- Backend connection -----------------------------------------------------
+// Point the app at a backend with ?api=http://host:port (remembered), else the
+// default. On the hosted artifact the CSP blocks external calls, so sync simply
+// falls back to localStorage — the app keeps working, just device-local.
+const params = new URLSearchParams(location.search);
+const qApi = params.get('api');
+const qUid = params.get('uid'); // shared account id — open on another device with the same ?uid= to sync
+try { if (qApi) localStorage.setItem('cubefinance:api', qApi); } catch (_) {}
+// Cloud sync is opt-in: use a backend only when one is configured (?api= or a
+// stored value) or we're on a local dev origin. On the hosted artifact / file://
+// there's no backend to reach, so we stay cleanly local (no failed requests).
+let API_BASE = '';
+try {
+  const stored = qApi || localStorage.getItem('cubefinance:api');
+  if (stored) API_BASE = stored.replace(/\/$/, '');
+  else if (/^https?:\/\/(localhost|127\.|192\.168\.|10\.)/.test(location.origin)) API_BASE = 'http://localhost:4000';
+} catch (_) {}
+let cloudStatus = 'local'; // 'local' | 'syncing' | 'synced' | 'offline'
+let pushTimer = null;
+let booting = true; // suppress saves until the first cloud reconcile completes
+
+function buildSnapshot() {
+  return {
+    userId,
+    savedAt: Date.now(),
+    onboarded: state.onboarded,
+    profile: state.profile,
+    cubes: state.cubes,
+    mainAccount: state.mainAccount,
+    summary: state.summary,
+    alerts: state.alerts,
+    chat: state.chat,
+    pending: state.pending,
+    draft: state.draft,
+    stepIndex: state.stepIndex,
+  };
+}
+
+function persist() {
+  // Only persist while a user is signed in and the initial reconcile is done.
+  if (booting || state.screen !== 'app' || !userId) return;
+  const snap = buildSnapshot();
+  localSavedAt = snap.savedAt;
+  try { localStorage.setItem(stateKey(), JSON.stringify(snap)); } catch (_) {}
+  cloudPush(snap); // debounced; no-op if backend unreachable
+}
+
+// Push the snapshot to the backend (debounced). Silent fallback on failure.
+function cloudPush(snap) {
+  if (!API_BASE) return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    setCloud('syncing');
+    try {
+      const r = await fetch(`${API_BASE}/api/state`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, state: snap, savedAt: snap.savedAt }),
+      });
+      if (!r.ok) throw new Error('bad status');
+      setCloud('synced');
+    } catch (_) {
+      setCloud(navigator.onLine === false ? 'offline' : 'local');
+    }
+  }, 600);
+}
+
+// Pull the snapshot from the backend and adopt it if it's newer than local.
+async function cloudPull() {
+  if (!API_BASE) return;
+  setCloud('syncing');
+  try {
+    const r = await fetch(`${API_BASE}/api/state?userId=${encodeURIComponent(userId)}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error('bad status');
+    const data = await r.json();
+    if (data && data.state && (data.savedAt || 0) > localSavedAt) {
+      adoptSnapshot(data.state);
+      localSavedAt = data.savedAt || Date.now();
+      pendingToast = '☁️ נטען מהענן';
+      render();
+    } else if (localSavedAt > (data.savedAt || 0)) {
+      cloudPush(buildSnapshot()); // local is newer — send it up
+    }
+    setCloud('synced');
+  } catch (_) {
+    setCloud(navigator.onLine === false ? 'offline' : 'local');
+  }
+}
+
+function adoptSnapshot(snap) {
+  state.onboarded = !!snap.onboarded;
+  state.profile = snap.profile || null;
+  state.cubes = Array.isArray(snap.cubes) ? snap.cubes : [];
+  state.mainAccount = snap.mainAccount || 0;
+  state.summary = snap.summary || null;
+  state.alerts = Array.isArray(snap.alerts) ? snap.alerts : [];
+  state.chat = Array.isArray(snap.chat) ? snap.chat : [];
+  state.pending = snap.pending || null;
+  state.draft = Object.assign({ age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' }, snap.draft || {});
+  state.stepIndex = snap.stepIndex || 0;
+  state.chatStreaming = false;
+  state.lastFunded = new Set();
+}
+
+function setCloud(s) { cloudStatus = s; updateSyncChip(); }
+function updateSyncChip() {
+  const chip = document.getElementById('sync');
+  if (!chip) return;
+  const map = {
+    synced: ['☁️ מסונכרן', 'ok'],
+    syncing: ['⏳ מסנכרן…', 'busy'],
+    offline: ['📴 לא מקוון', 'off'],
+    local: ['📴 מקומי', 'off'],
+  };
+  const [txt, cls] = map[cloudStatus] || map.local;
+  chip.textContent = txt;
+  chip.className = 'sync ' + cls;
+}
+
+// Wipe the in-memory app data (used on logout / account switch).
+function resetAppData() {
+  state.onboarded = false;
+  state.profile = null;
+  state.cubes = [];
+  state.mainAccount = 0;
+  state.summary = null;
+  state.alerts = [];
+  state.chat = [];
+  state.pending = null;
+  state.draft = { age: '', employed: null, income: '', withParents: null, rent: '', arnona: '', utilities: '', committee: '', balance: '' };
+  state.stepIndex = 0;
+  state.chatStreaming = false;
+  state.lastFunded = new Set();
+}
+
+// Load the signed-in user's saved snapshot from their namespaced key.
+function loadUserState() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(stateKey()) || 'null'); } catch (_) {}
+  if (!saved) { localSavedAt = 0; return; }
+  localSavedAt = saved.savedAt || 0;
+  state.onboarded = !!saved.onboarded;
+  state.profile = saved.profile || null;
+  state.cubes = Array.isArray(saved.cubes) ? saved.cubes : [];
+  state.mainAccount = saved.mainAccount || 0;
+  state.summary = saved.summary || null;
+  state.alerts = Array.isArray(saved.alerts) ? saved.alerts : [];
+  state.chat = Array.isArray(saved.chat) ? saved.chat : [];
+  state.pending = saved.pending || null;
+  state.draft = Object.assign(state.draft, saved.draft || {});
+  state.stepIndex = saved.stepIndex || 0;
+  const hadProgress = state.onboarded || state.stepIndex > 0 ||
+    Object.values(saved.draft || {}).some((v) => v !== '' && v !== null);
+  if (hadProgress) scheduleResumeToast(saved.savedAt);
+}
+
+// After a successful sign-up / log-in: load that account's data and enter the app.
+function enterApp(user) {
+  state.authUser = user;
+  state.screen = 'app';
+  state.authError = '';
+  setSession(user.email);
+  userId = user.id;
+  booting = true;
+  resetAppData();
+  loadUserState();
+  render();
+  cloudPull().finally(() => { booting = false; persist(); });
+}
+
+function logout() {
+  clearSession();
+  state.authUser = null;
+  state.screen = 'auth';
+  state.authError = '';
+  state.authMode = 'login';
+  resetAppData();
+  userId = null;
+  localSavedAt = 0;
+  booting = false;
+  render();
+}
+
+// Decide the entry screen at startup based on the saved session.
+function initAuth() {
+  const email = getSession();
+  const users = loadUsers();
+  if (email && users[email]) {
+    enterApp({ id: users[email].id, email: users[email].email });
+  } else {
+    state.screen = 'auth';
+    state.authMode = Object.keys(users).length ? 'login' : 'signup';
+    booting = false;
+    render();
+  }
+}
+
+function elapsedText(since) {
+  const mins = Math.max(0, Math.round((Date.now() - (since || Date.now())) / 60000));
+  if (mins < 1) return 'ממש עכשיו';
+  if (mins < 60) return `לפני ${mins} דק׳`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `לפני ${hrs} שעות`;
+  const days = Math.round(hrs / 24);
+  return `לפני ${days} ימים`;
+}
+
+let pendingToast = null;
+function scheduleResumeToast(savedAt) {
+  const when = elapsedText(savedAt);
+  pendingToast = state.onboarded
+    ? `👋 ברוך שובך! (ביקור אחרון ${when})`
+    : `⏱️ ממשיכים מאיפה שהפסקת · ${when}`;
+}
+function showToast(msg) {
+  const t = el('div', 'toast');
+  t.textContent = msg;
+  screen.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('on'));
+  setTimeout(() => { t.classList.remove('on'); setTimeout(() => t.remove(), 400); }, 3400);
+}
+
+function stepList() {
+  const d = state.draft;
+  const l = ['age', 'employment'];
+  if (d.employed) l.push('income');
+  l.push('housing');
+  if (d.withParents === false) l.push('housingCosts');
+  l.push('balance');
+  return l;
+}
+
+function render() {
+  const authed = state.screen === 'app';
+  restartBtn.style.display = authed && state.onboarded ? 'block' : 'none';
+  logoutBtn.style.display = authed ? 'block' : 'none';
+  document.getElementById('sync').style.display = authed ? 'block' : 'none';
+  const kept = screen.querySelector('.coins');
+  screen.querySelectorAll(':scope > *:not(.coins):not(.restart):not(.sync):not(.logout)').forEach((n) => n.remove());
+  const root = !authed ? renderAuth() : state.onboarded ? renderDashboard() : renderOnboarding();
+  screen.insertBefore(root, kept);
+  persist();
+  if (pendingToast) { const m = pendingToast; pendingToast = null; setTimeout(() => showToast(m), 250); }
+}
+
+// ---------- Auth screen (Sign Up / Log In) ----------
+function renderAuth() {
+  const isSignup = state.authMode === 'signup';
+  const wrap = el('div', 'authwrap fade');
+  const card = el('div', 'authcard');
+  card.innerHTML = `
+    <div class="authbrand">🧊 CubeFinance</div>
+    <h2 class="authtitle">${isSignup ? 'יצירת חשבון' : 'התחברות'}</h2>
+    <p class="authsub">${isSignup ? 'הירשם כדי להתחיל לחלק את הכסף לקוביות.' : 'התחבר כדי להמשיך לקוביות שלך.'}</p>
+    <div class="field"><div class="label">אימייל</div>
+      <div class="input-wrap"><input id="authEmail" type="email" dir="ltr" placeholder="you@example.com" autocomplete="email"></div></div>
+    <div class="field"><div class="label">סיסמה</div>
+      <div class="input-wrap"><input id="authPass" type="password" dir="ltr" placeholder="••••••" autocomplete="${isSignup ? 'new-password' : 'current-password'}"></div></div>
+    <div class="autherr" id="authErr">${state.authError || ''}</div>
+    <button class="btn" id="authSubmit">${isSignup ? 'הרשמה' : 'התחברות'}</button>
+    <div class="authswitch">${isSignup ? 'כבר יש לך חשבון?' : 'עדיין אין לך חשבון?'}
+      <button id="authToggle">${isSignup ? 'התחבר' : 'הירשם'}</button></div>`;
+
+  const email = card.querySelector('#authEmail');
+  const pass = card.querySelector('#authPass');
+  const submit = () => {
+    const res = isSignup ? authSignUp(email.value, pass.value) : authLogIn(email.value, pass.value);
+    if (res.error) { state.authError = res.error; card.querySelector('#authErr').textContent = res.error; return; }
+    // Sign up -> auto login -> onboarding.  Log in -> dashboard or onboarding
+    // depending on whether this account finished onboarding before.
+    enterApp(res.user);
+  };
+  card.querySelector('#authSubmit').onclick = submit;
+  pass.onkeydown = (e) => { if (e.key === 'Enter') submit(); };
+  card.querySelector('#authToggle').onclick = () => { state.authMode = isSignup ? 'login' : 'signup'; state.authError = ''; render(); };
+
+  wrap.appendChild(card);
+  return wrap;
+}
+
+// ---------- Onboarding ----------
+function renderOnboarding() {
+  const steps = stepList();
+  const idx = Math.min(state.stepIndex, steps.length - 1);
+  const step = steps[idx];
+  const isLast = idx === steps.length - 1;
+
+  const wrap = el('div', 'screen-inner');
+  wrap.style.cssText = 'display:flex;flex-direction:column;height:100%';
+
+  const head = el('div', 'prog-head');
+  head.innerHTML = `<div class="brand">🧊 CubeFinance</div>
+    <div class="track"><i style="width:${Math.round(((idx+1)/steps.length)*100)}%"></i></div>
+    <div class="stepcount">Step ${idx+1} of ${steps.length}</div>`;
+
+  const body = el('div', 'view');
+  const pad = el('div', 'pad fade');
+  pad.appendChild(stepContent(step));
+  body.appendChild(pad);
+
+  const foot = el('div', 'footer');
+  const next = el('button', 'btn');
+  next.textContent = isLast ? 'Build my Cubes 🧊' : 'Continue';
+  next.disabled = !canAdvance(step);
+  next.onclick = () => { if (isLast) finishOnboarding(); else { state.stepIndex = idx + 1; render(); } };
+  foot.appendChild(next);
+  if (idx > 0) {
+    const back = el('button', 'ghost'); back.textContent = 'Back';
+    back.onclick = () => { state.stepIndex = idx - 1; render(); };
+    foot.appendChild(back);
+  }
+
+  wrap.append(head, body, foot);
+  return wrap;
+}
+
+function stepContent(step) {
+  const d = state.draft;
+  const c = el('div');
+  const header = (t, s) => `<h2 class="title">${t}</h2><p class="sub">${s}</p>`;
+  const rerenderFooter = () => {
+    const steps = stepList();
+    const cur = steps[Math.min(state.stepIndex, steps.length - 1)];
+    const btn = screen.querySelector('.footer .btn');
+    if (btn) btn.disabled = !canAdvance(cur);
+  };
+  const money = (labelText, key, ph, focus) => {
+    const f = el('div', 'field');
+    f.innerHTML = `<div class="label">${labelText}</div><div class="input-wrap"><span class="cur">₪</span><input inputmode="numeric" placeholder="${ph}" value="${d[key]}"></div>`;
+    const inp = f.querySelector('input');
+    inp.oninput = () => { d[key] = inp.value.replace(/[^0-9.]/g, ''); if (inp.value !== d[key]) inp.value = d[key]; rerenderFooter(); persist(); };
+    if (focus) setTimeout(() => inp.focus(), 60);
+    return f;
+  };
+  const opt = (labelText, subText, on, cb) => {
+    const b = el('button', 'option' + (on ? ' sel' : ''));
+    b.innerHTML = `<span class="radio"><i></i></span><span class="otext"><b>${labelText}</b>${subText ? `<span>${subText}</span>` : ''}</span>`;
+    b.onclick = () => { cb(); render(); };
+    return b;
+  };
+
+  if (step === 'age') {
+    c.innerHTML = header('How old are you?', 'Your age helps us tune investment suggestions.');
+    c.appendChild(money('Age', 'age', '28', true));
+  } else if (step === 'employment') {
+    c.innerHTML = header('Do you work?', 'Tells us whether to plan around an income.');
+    c.append(
+      opt("Yes, I'm employed", '', d.employed === true, () => { d.employed = true; }),
+      opt('Not right now', "We'll plan around your balance instead", d.employed === false, () => { d.employed = false; d.income = ''; }),
+    );
+  } else if (step === 'income') {
+    c.innerHTML = header('Monthly income', 'Your estimated take-home each month.');
+    c.appendChild(money('Estimated monthly income', 'income', '10000', true));
+  } else if (step === 'housing') {
+    c.innerHTML = header('Where do you live?', 'This decides whether we build a Housing cube.');
+    c.append(
+      opt('With my parents', 'No rent — we redirect that into savings & investing', d.withParents === true, () => { d.withParents = true; }),
+      opt('Independently', "We'll create a Housing & Bills cube", d.withParents === false, () => { d.withParents = false; }),
+    );
+  } else if (step === 'housingCosts') {
+    c.innerHTML = header('Your monthly home costs', 'Only rent is required — add the rest for a sharper plan.');
+    c.append(
+      money('Rent', 'rent', '3500', true),
+      money('Arnona (city tax)', 'arnona', '300'),
+      money('Utilities (water / electric / gas)', 'utilities', '400'),
+      money("House committee (va'ad bayit)", 'committee', '100'),
+    );
+  } else if (step === 'balance') {
+    c.innerHTML = header('Starting balance', 'Enter the balance you want to track and manage. Simulated — no bank connection.');
+    c.appendChild(money('Balance to track', 'balance', '15000', true));
+    const hint = el('p', 'sub'); hint.style.marginTop = '10px';
+    hint.textContent = 'We\'ll split this across your cubes when you tap “Distribute” on the dashboard.';
+    c.appendChild(hint);
+  }
+  return c;
+}
+
+function canAdvance(step) {
+  const d = state.draft;
+  switch (step) {
+    case 'age': return Number(d.age) >= 16 && Number(d.age) <= 100;
+    case 'employment': return d.employed !== null;
+    case 'income': return Number(d.income) > 0;
+    case 'housing': return d.withParents !== null;
+    case 'housingCosts': return Number(d.rent) > 0;
+    case 'balance': return d.balance !== '' && Number(d.balance) >= 0;
+    default: return false;
+  }
+}
+
+function finishOnboarding() {
+  const d = state.draft;
+  const profile = {
+    age: Number(d.age), employed: !!d.employed, monthlyIncome: Number(d.income) || 0,
+    livesWithParents: !!d.withParents, initialBalance: Number(d.balance) || 0,
+    housing: d.withParents ? undefined : { rent: +d.rent||0, arnona: +d.arnona||0, utilities: +d.utilities||0, houseCommittee: +d.committee||0 },
+  };
+  const budget = computeBudget(profile);
+  state.profile = profile;
+  state.cubes = budget.cubes;
+  state.summary = budget.summary;
+  state.mainAccount = profile.initialBalance;
+  state.onboarded = true;
+  render();
+}
+
+// ---------- Dashboard ----------
+function renderDashboard() {
+  const total = state.cubes.reduce((s, c) => s + c.balance, 0);
+  const wrap = el('div'); wrap.style.cssText = 'display:flex;flex-direction:column;height:100%';
+  const view = el('div', 'view');
+  const pad = el('div', 'pad');
+
+  const brand = el('div', 'brand'); brand.textContent = '🧊 CubeFinance'; brand.style.marginBottom = '16px';
+
+  const hero = el('div', 'hero');
+  hero.innerHTML = `<div class="hl">Total across cubes</div>
+    <div class="hv money">₪${fmt(total)}</div>
+    <div class="poolrow">
+      <div class="pt">Main account: <b class="money">₪${fmt(state.mainAccount)}</b></div>
+    </div>`;
+  const distBtn = el('button', 'pill-btn'); distBtn.textContent = 'Distribute →';
+  distBtn.disabled = state.mainAccount <= 0;
+  distBtn.onclick = openSheet;
+  hero.querySelector('.poolrow').appendChild(distBtn);
+
+  pad.append(brand, hero);
+
+  if (state.summary) { const h = el('p', 'headline'); h.textContent = state.summary.headline; pad.appendChild(h); }
+
+  if (state.alerts.length) {
+    const box = el('div', 'alertbox');
+    state.alerts.forEach((a) => { const p = el('div', 'a' + (a.level === 'critical' ? ' crit' : '')); p.textContent = (a.level === 'critical' ? '🔴 ' : '🟡 ') + a.message; box.appendChild(p); });
+    pad.appendChild(box);
+  }
+
+  const st = el('div', 'section-t'); st.textContent = 'Your Cubes'; pad.appendChild(st);
+  state.cubes.forEach((c) => pad.appendChild(cubeCard(c)));
+
+  // Create Custom Cube entry point
+  const addCard = el('button', 'addcube');
+  addCard.innerHTML = `<span class="addicon">＋</span><span>צור קובייה אישית</span>`;
+  addCard.onclick = openCustomCube;
+  pad.appendChild(addCard);
+
+  const spacer = el('div'); spacer.style.height = '90px'; pad.appendChild(spacer);
+  view.appendChild(pad); wrap.appendChild(view);
+
+  wrap.appendChild(buildSheet());
+  wrap.appendChild(buildCustomCubeSheet());
+  wrap.appendChild(buildFab());
+  wrap.appendChild(buildChat());
+  return wrap;
+}
+
+// ============================================================================
+// Custom Cube — create a personal goal cube funded manually or by the AI's
+// 1–10 priority logic. Persisted with the rest of the cubes (per-account).
+// ============================================================================
+const CUSTOM_COLORS = ['#A29BFE', '#55EFC4', '#FD79A8', '#74B9FF', '#81ECEC', '#FAB1A0', '#B2BEC3'];
+
+// AI budgeting logic: allocate a monthly amount from the discretionary budget
+// (income minus fixed housing) based on a 1–10 priority rating.
+function allocateCustomCube(priority) {
+  const p = clamp(Math.round(priority), 1, 10);
+  const income = state.profile?.monthlyIncome || 0;
+  const housing = state.cubes.find((c) => c.key === 'housing');
+  const discretionary = Math.max(0, income - (housing ? housing.monthlyContribution : 0));
+  let pct, tone;
+  if (p >= 8) { pct = 0.10 + (p - 8) * 0.05; tone = 'high'; }   // 10% / 15% / 20%
+  else { pct = 0.01 + (p - 1) * 0.005; tone = 'low'; }          // ~1%..4% (symbolic)
+  let amount = round(discretionary * pct);
+  if (income > 0 && amount < 50) amount = 50; // small floor so it's meaningful
+  const explanation = tone === 'high'
+    ? `דירגת את זה ${p}/10 — עדיפות גבוהה. הקצאתי ${fmt(amount)} ₪ בחודש, נתח משמעותי מהתקציב הפנוי (${fmt(discretionary)} ₪), על חשבון צמצום קל בקוביית ההנאות (Lifestyle).`
+    : `דירגת את זה ${p}/10, אז זה לא דחוף. הקצאתי סכום קטן וסמלי של ${fmt(amount)} ₪ בחודש כדי שתוכל להמשיך להתמקד ביעדי החיסכון העיקריים שלך.`;
+  return { amount, priority: p, tone, discretionary, explanation };
+}
+
+function createCustomCube(name, amount, meta = {}) {
+  customOpen = false;
+  const income = state.profile?.monthlyIncome || 0;
+  amount = Math.max(0, round(amount));
+  const idx = state.cubes.filter((c) => c.custom).length;
+  const cube = {
+    key: 'custom_' + Date.now(),
+    name: name.trim() || 'קובייה אישית',
+    color: CUSTOM_COLORS[idx % CUSTOM_COLORS.length],
+    icon: '🎯',
+    percentage: income > 0 ? round((amount / income) * 100) : 0,
+    monthlyContribution: amount,
+    balance: 0,
+    custom: true,
+    priority: meta.priority || null,
+    note: meta.priority ? `יעד אישי · עדיפות ${meta.priority}/10` : 'יעד אישי',
+    aiExplanation: meta.explanation || null,
+  };
+  // High-priority AI cubes "make room" by trimming the Lifestyle target.
+  if (meta.priority && meta.priority >= 8) {
+    const life = state.cubes.find((c) => c.key === 'lifestyle');
+    if (life) {
+      const cut = Math.min(life.monthlyContribution, amount);
+      life.monthlyContribution = round(life.monthlyContribution - cut);
+      life.percentage = income > 0 ? round((life.monthlyContribution / income) * 100) : 0;
+    }
+  }
+  state.cubes.push(cube);
+  state.lastFunded = new Set([cube.key]);
+  persist();
+  render();
+  pendingToast = `🎯 נוצרה קובייה: ${cube.name}`;
+  const m = pendingToast; pendingToast = null; setTimeout(() => showToast(m), 150);
+}
+
+function cubeCard(c) {
+  const target = c.monthlyContribution || 1;
+  const pctFill = clamp(c.balance / target, 0, 1) * 100;
+  const low = c.balance < target * 0.2;
+  const card = el('div', 'cube' + (state.lastFunded.has(c.key) ? ' hl' : ''));
+  card.innerHTML = `
+    <div class="top">
+      <div class="chip" style="background:${c.color}22">${c.icon}</div>
+      <div><div class="nm">${c.name}</div><div class="nt">${c.note || ''}</div></div>
+      <div class="pct" style="color:${c.color};background:${c.color}22">${c.percentage}%</div>
+    </div>
+    <div class="brow">
+      <span class="bal money" data-to="${c.balance}">₪${fmt(c.balance)}</span>
+      <span class="tgt money">/ ₪${fmt(target)}·mo</span>
+      ${c.fixed ? '<span class="fixed">FIXED</span>' : ''}
+    </div>
+    <div class="ftrack"><i style="background:${low ? 'var(--danger)' : c.color}"></i></div>
+    ${low ? '<div class="low">⚠️ Running low</div>' : ''}`;
+  requestAnimationFrame(() => { const bar = card.querySelector('.ftrack > i'); if (bar) bar.style.width = pctFill + '%'; });
+  return card;
+}
+
+// ---------- Transfer sheet ----------
+let sheetOpen = false;
+function buildSheet() {
+  const overlay = el('div', 'overlay' + (sheetOpen ? ' on' : ''));
+  overlay.id = 'ov';
+  overlay.onclick = closeSheet;
+  const sheet = el('div', 'sheet' + (sheetOpen ? ' on' : ''));
+  sheet.id = 'sheet';
+  sheet.onclick = (e) => e.stopPropagation();
+  sheet.innerHTML = `
+    <div class="handle"></div>
+    <h2 class="title" style="font-size:22px">Distribute funds</h2>
+    <p class="sub">Move money from your main-account pool into your cubes, split by each cube's percentage (fixed cubes funded first).</p>
+    <div class="poolchip"><span class="pl">Main account pool</span><span class="pv money">₪${fmt(state.mainAccount)}</span></div>
+    <div class="field"><div class="label">Amount to distribute</div><div class="input-wrap"><span class="cur">₪</span><input id="amt" inputmode="numeric" value="${Math.round(state.mainAccount)}"></div></div>
+    <div class="quickrow"></div>
+    <button class="btn" id="doTransfer">Distribute</button>
+    <button class="ghost" id="cancelT">Cancel</button>`;
+  const qr = sheet.querySelector('.quickrow');
+  [['25%',.25],['50%',.5],['All',1]].forEach(([lab,f]) => {
+    const b = el('button', 'quick'); b.textContent = lab;
+    b.onclick = () => { sheet.querySelector('#amt').value = Math.round(state.mainAccount * f); syncBtn(); };
+    qr.appendChild(b);
+  });
+  const amt = sheet.querySelector('#amt');
+  const doT = sheet.querySelector('#doTransfer');
+  const syncBtn = () => {
+    const v = Number(amt.value) || 0;
+    doT.textContent = `Distribute ₪${fmt(v)}`;
+    doT.disabled = v <= 0 || v > state.mainAccount;
+  };
+  amt.oninput = () => { amt.value = amt.value.replace(/[^0-9.]/g,''); syncBtn(); };
+  doT.onclick = () => runTransfer(Number(amt.value) || 0);
+  sheet.querySelector('#cancelT').onclick = closeSheet;
+  setTimeout(syncBtn, 0);
+  overlay.appendChild(sheet);
+  return overlay;
+}
+function openSheet() { sheetOpen = true; document.getElementById('ov')?.classList.add('on'); document.getElementById('sheet')?.classList.add('on'); }
+function closeSheet() { sheetOpen = false; document.getElementById('ov')?.classList.remove('on'); document.getElementById('sheet')?.classList.remove('on'); }
+
+// ---------- Custom Cube modal ----------
+let customOpen = false;
+let cc = { mode: null, name: '', amount: 0, priority: 5, computed: false, explanation: '' };
+function openCustomCube() { cc = { mode: null, name: '', amount: 0, priority: 5, computed: false, explanation: '' }; customOpen = true; render(); }
+function closeCustomCube() { customOpen = false; render(); }
+
+function ccOption(label, sub, on, cb) {
+  const b = el('button', 'option' + (on ? ' sel' : ''));
+  b.innerHTML = `<span class="radio"><i></i></span><span class="otext"><b>${label}</b><span>${sub}</span></span>`;
+  b.onclick = cb;
+  return b;
+}
+
+function buildCustomCubeSheet() {
+  const overlay = el('div', 'overlay'); overlay.id = 'ccov'; overlay.onclick = closeCustomCube;
+  const sheet = el('div', 'sheet'); sheet.id = 'ccsheet'; sheet.onclick = (e) => e.stopPropagation();
+  const body = el('div'); sheet.appendChild(body); renderCC(body);
+  overlay.appendChild(sheet);
+  if (customOpen) requestAnimationFrame(() => { overlay.classList.add('on'); sheet.classList.add('on'); });
+  return overlay;
+}
+
+function renderCC(body) {
+  body.innerHTML = `
+    <div class="handle"></div>
+    <h2 class="title" style="font-size:22px">צור קובייה אישית 🎯</h2>
+    <p class="sub">קובייה למטרה אישית — טיול, גאדג׳ט, כל יעד. הנתונים נשמרים לתמיד.</p>
+    <div class="field"><div class="label">שם הקובייה</div>
+      <div class="input-wrap"><input id="ccName" placeholder="טיול ליפן" value="${cc.name || ''}"></div></div>
+    <div class="label">איך לממן?</div>`;
+  const opts = el('div');
+  opts.append(
+    ccOption('סכום חודשי קבוע', 'אני קובע כמה להפריש', cc.mode === 'manual', () => { cc.mode = 'manual'; renderCC(body); }),
+    ccOption('תן ל-AI להחליט 🤖', 'לפי חשיבות הקובייה עבורך', cc.mode === 'ai', () => { cc.mode = 'ai'; renderCC(body); }),
+  );
+  body.appendChild(opts);
+
+  if (cc.mode === 'manual') {
+    const f = el('div', 'field'); f.style.marginTop = '12px';
+    f.innerHTML = `<div class="label">סכום חודשי</div><div class="input-wrap"><span class="cur">₪</span><input id="ccAmt" inputmode="numeric" value="${cc.amount || ''}" placeholder="500"></div>`;
+    body.appendChild(f);
+    f.querySelector('#ccAmt').oninput = (e) => { e.target.value = e.target.value.replace(/[^0-9.]/g, ''); cc.amount = Number(e.target.value) || 0; sync(); };
+  } else if (cc.mode === 'ai') {
+    const box = el('div'); box.style.marginTop = '12px';
+    box.innerHTML = `
+      <div class="label">כמה חשובה לך הקובייה? (1 = נמוך, 10 = קריטי)</div>
+      <div class="prio"><input type="range" min="1" max="10" value="${cc.priority}" id="ccPrio"><span class="priov" id="ccPrioV">${cc.priority}</span></div>
+      <button class="btn" id="ccCalc" style="margin-top:10px">חשב עם AI 🤖</button>
+      <div class="airesult" id="ccResult" style="display:${cc.computed ? 'block' : 'none'}"></div>`;
+    body.appendChild(box);
+    const prio = box.querySelector('#ccPrio'), pv = box.querySelector('#ccPrioV'), rb = box.querySelector('#ccResult');
+    prio.oninput = () => { cc.priority = Number(prio.value); pv.textContent = cc.priority; cc.computed = false; rb.style.display = 'none'; sync(); };
+    box.querySelector('#ccCalc').onclick = () => {
+      const r = allocateCustomCube(cc.priority);
+      cc.amount = r.amount; cc.explanation = r.explanation; cc.computed = true;
+      rb.style.display = 'block';
+      rb.innerHTML = `<div class="aiamt">₪${fmt(r.amount)} <span>לחודש</span></div><div class="aiexp">${r.explanation}</div>`;
+      sync();
+    };
+    if (cc.computed) rb.innerHTML = `<div class="aiamt">₪${fmt(cc.amount)} <span>לחודש</span></div><div class="aiexp">${cc.explanation}</div>`;
+  }
+
+  body.querySelector('#ccName').oninput = (e) => { cc.name = e.target.value; sync(); };
+
+  const create = el('button', 'btn'); create.textContent = 'צור קובייה'; create.style.marginTop = '16px';
+  create.onclick = () => createCustomCube(cc.name, cc.amount, cc.mode === 'ai' ? { priority: cc.priority, explanation: cc.explanation } : {});
+  const cancel = el('button', 'ghost'); cancel.textContent = 'ביטול'; cancel.onclick = closeCustomCube;
+  body.append(create, cancel);
+
+  function sync() { create.disabled = !((cc.name || '').trim() && cc.amount > 0 && (cc.mode === 'manual' || (cc.mode === 'ai' && cc.computed))); }
+  sync();
+}
+
+function runTransfer(amount) {
+  const res = simulateTransfer(state.cubes, amount);
+  state.cubes = res.cubes;
+  state.mainAccount = Math.max(0, round(state.mainAccount - res.moved));
+  state.alerts = evaluateAlerts(state.cubes);
+  state.lastFunded = new Set(res.allocations.map((a) => a.key));
+  closeSheet();
+  burstCoins();
+  render();
+  animateCounts();
+  setTimeout(() => { state.lastFunded = new Set(); }, 800);
+}
+
+function animateCounts() {
+  screen.querySelectorAll('.bal').forEach((elm) => {
+    const to = Number(elm.dataset.to);
+    const from = 0;
+    const start = performance.now(), dur = 650;
+    function tick(t) {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      elm.textContent = '₪' + fmt(from + (to - from) * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+function burstCoins() {
+  for (let i = 0; i < 16; i++) {
+    const c = el('div', 'coin'); c.textContent = '🪙';
+    const x = Math.random() * 300 + 30;
+    c.style.left = x + 'px';
+    coinsEl.appendChild(c);
+    const dur = 800 + Math.random() * 500, delay = Math.random() * 250;
+    c.animate([
+      { transform: 'translateY(-40px) rotate(0deg)', opacity: 1 },
+      { transform: `translateY(820px) rotate(${360 + Math.random()*360}deg)`, opacity: 0 },
+    ], { duration: dur, delay, easing: 'cubic-bezier(.4,0,.7,1)', fill: 'forwards' });
+    setTimeout(() => c.remove(), dur + delay + 50);
+  }
+}
+
+// ---------- FAB + chat ----------
+let chatOpen = false;
+function buildFab() {
+  const hasAlerts = state.alerts.length > 0;
+  const fab = el('button', 'fab' + (hasAlerts ? ' pulse' : ''));
+  fab.innerHTML = '🧊' + (hasAlerts ? '<span class="badge"></span>' : '');
+  fab.onclick = () => { chatOpen = true; render(); };
+  return fab;
+}
+const SUGG = ['בזבזתי 200 ₪ היום', 'אפשר להרשות 500 ₪?', 'מה המצב שלי?'];
+function buildChat() {
+  const wrap = el('div', 'chatwrap' + (chatOpen ? ' on' : ''));
+  wrap.onclick = (e) => { if (e.target === wrap) { chatOpen = false; render(); } };
+  const chat = el('div', 'chat');
+  const alertStrip = state.alerts.length ? `<div class="strip">🔔 ${state.alerts[0].message}</div>` : '';
+  chat.innerHTML = `
+    <div class="ch"><div><div class="t">Cubey 🧊</div><div class="s">${state.chatStreaming ? 'typing…' : 'Your financial buddy · knows your cubes'}</div></div><button class="x">✕</button></div>
+    ${alertStrip}
+    <div class="msgs" id="msgs"></div>
+    ${state.chat.length === 0 ? '<div class="sugg" id="sugg"></div>' : ''}
+    <div class="inbar"><input id="chatIn" placeholder="כתוב ל-Cubey…" ${state.chatStreaming ? 'disabled' : ''}><button id="send" ${state.chatStreaming ? 'disabled' : ''}>➤</button></div>`;
+  chat.querySelector('.x').onclick = () => { chatOpen = false; render(); };
+  const msgs = chat.querySelector('#msgs');
+  if (state.chat.length === 0) {
+    msgs.innerHTML = `<div class="intro"><div class="e">👋</div><p dir="auto">היי! אני Cubey 🧊 — רואה את הקוביות והיתרות שלך. ספר לי על הוצאה ("בזבזתי 200 ₪"), שאל אם אפשר להרשות משהו, או "מה המצב שלי?"</p></div>`;
+    const sg = chat.querySelector('#sugg');
+    SUGG.forEach((s) => { const b = el('button'); b.textContent = s; b.onclick = () => sendChat(s); sg.appendChild(b); });
+  } else {
+    state.chat.forEach((m, mi) => {
+      const b = el('div', 'bubble ' + (m.role === 'user' ? 'u' : 'b'));
+      b.textContent = m.content || '…';
+      msgs.appendChild(b);
+      // Quick-reply buttons under the latest assistant message (e.g. pick a cube).
+      if (m.role === 'assistant' && m.quick && mi === state.chat.length - 1 && !state.chatStreaming) {
+        const qr = el('div', 'qreplies');
+        m.quick.forEach((o) => { const bt = el('button'); bt.textContent = o.label; bt.onclick = () => pickCube(o.cubeKey); qr.appendChild(bt); });
+        msgs.appendChild(qr);
+      }
+    });
+  }
+  const input = chat.querySelector('#chatIn');
+  const send = () => { const v = input.value.trim(); if (v) sendChat(v); };
+  chat.querySelector('#send').onclick = send;
+  input.onkeydown = (e) => { if (e.key === 'Enter') send(); };
+  setTimeout(() => { msgs.scrollTop = msgs.scrollHeight; if (!state.chatStreaming) input?.focus(); }, 30);
+  wrap.appendChild(chat);
+  return wrap;
+}
+
+function sendChat(text) {
+  if (state.chatStreaming) return;
+  state.chat.push({ role: 'user', content: text });
+  botSay(respond(text));
+}
+
+// The user tapped a cube quick-reply button to resolve a logged expense.
+function pickCube(key) {
+  if (state.chatStreaming) return;
+  const cube = state.cubes.find((c) => c.key === key);
+  if (!cube) return;
+  state.chat.push({ role: 'user', content: cube.name });
+  botSay(doExpense(key));
+}
+
+// Push an assistant reply and stream it in, then reveal any quick replies.
+function botSay(res) {
+  state.chat.push({ role: 'assistant', content: '', quick: null });
+  state.chatStreaming = true;
+  render();
+  const full = res.reply || '';
+  let i = 0;
+  const iv = setInterval(() => {
+    i += 3;
+    state.chat[state.chat.length - 1].content = full.slice(0, i);
+    const msgs = screen.querySelector('#msgs');
+    if (msgs) {
+      const bots = msgs.querySelectorAll('.bubble.b');
+      const last = bots[bots.length - 1];
+      if (last) last.textContent = state.chat[state.chat.length - 1].content || '…';
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    if (i >= full.length) {
+      clearInterval(iv);
+      const msg = state.chat[state.chat.length - 1];
+      msg.content = full;
+      msg.quick = res.quick || null;
+      state.chatStreaming = false;
+      render();
+      setTimeout(() => { state.lastFunded = new Set(); }, 900);
+    }
+  }, 18);
+}
+
+// ---------- utils ----------
+function el(tag, cls) { const n = document.createElement(tag); if (cls) n.className = cls; return n; }
+
+restartBtn.onclick = () => {
+  if (!confirm('להתחיל מחדש? הנתונים של החשבון הזה יימחקו (החשבון עצמו יישאר).')) return;
+  resetAppData();
+  chatOpen = false; sheetOpen = false;
+  try { localStorage.removeItem(stateKey()); } catch (_) {}
+  localSavedAt = 0;
+  render();
+};
+
+logoutBtn.onclick = () => { logout(); };
+
+// Boot: the auth gate decides whether to show login/signup or the app.
+initAuth();
+updateSyncChip();
+window.addEventListener('online', () => { if (state.screen === 'app') cloudPull(); });
+window.addEventListener('offline', () => setCloud('offline'));
+</script>

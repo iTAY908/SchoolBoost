@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>CubeFinance showcase</title>
+<!--
+  CubeFinance product film, 1920x1080, 30 s. Driven frame by frame: render.js
+  calls window.renderAt(seconds); nothing here animates on its own.
+  Screens in screens/ are real frames from the app (sample data), cropped of
+  the status and navigation bars only. Cards are exact crops of those screens.
+    0-4    brand reveal              logo floats, headline, phone rises
+    4-9    "רואים את התמונה המלאה."   home screen, income/expense cards pull out
+    9-14   "מתקרבים למטרה."           savings screen, emergency-fund card, progress bar
+    14-21  "שואלים את Cubey."         chat: question, then the real answer
+    21-26  "עושים סדר בכסף."          three cards orbit, then return into the phone
+    26-30  end card                   logo, name, Google Play — held from 26.8
+-->
+<style>
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-latin-800-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 900; src: url(fonts/heebo-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF; }
+  @font-face { font-family: Heebo; font-weight: 500; src: url(fonts/heebo-hebrew-500-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: Heebo; font-weight: 800; src: url(fonts/heebo-hebrew-800-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  @font-face { font-family: Heebo; font-weight: 900; src: url(fonts/heebo-hebrew-900-normal.woff2) format("woff2"); unicode-range: U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #070b1a; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; font-family: Heebo, sans-serif; color: #f4f6ff;
+    background: radial-gradient(ellipse 70% 80% at 50% 38%, #1b2558 0%, #10183a 45%, #070b1a 100%); }
+  .layer { position: absolute; inset: 0; pointer-events: none; }
+  #floor { background: linear-gradient(180deg, transparent 72%, #0a1230 72.2%, #060a18 100%); opacity: .9; }
+  #floorGlow { background: radial-gradient(ellipse 40% 14% at 50% 79%, #6472ff22, transparent 70%); }
+  #sweepLight { background: radial-gradient(ellipse 30% 50% at 50% 30%, #8f9aff18, transparent 70%); }
+  #vignette { background: radial-gradient(ellipse at center, transparent 55%, #00000090 100%); }
+
+  /* ---------- 3D rig ---------- */
+  #rig { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; perspective: 2400px; perspective-origin: 50% 42%; }
+  .shadow { position: absolute; width: 420px; height: 46px; margin-left: -210px; border-radius: 50%;
+    background: radial-gradient(ellipse, #000000b0 0%, #00000055 45%, transparent 72%); filter: blur(6px); }
+  #phone { position: absolute; left: 0; top: 0; width: 458px; height: 864px; margin: -432px 0 0 -229px; transform-style: preserve-3d; }
+  #body { position: absolute; inset: 0; border-radius: 58px; background: linear-gradient(150deg, #3a4266 0%, #161b33 40%, #0b0f22 70%, #2a3156 100%);
+    box-shadow: 0 0 0 2px #ffffff14 inset, 0 1px 0 0 #ffffff30 inset; }
+  #screen { position: absolute; left: 14px; top: 14px; width: 430px; height: 836px; border-radius: 46px; overflow: hidden; background: #0b0f1e; }
+  #screen img { position: absolute; left: 0; top: 0; width: 430px; height: 836px; }
+  #cam { position: absolute; left: 50%; top: 22px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #05070f; box-shadow: 0 0 0 2px #1d2340; z-index: 3; }
+  #glare { position: absolute; inset: 0; border-radius: 46px; background: linear-gradient(115deg, transparent 30%, #ffffff10 45%, transparent 60%); }
+  .card { position: absolute; border-radius: 22px; overflow: hidden; background-repeat: no-repeat; opacity: 0;
+    box-shadow: 0 28px 60px -12px #000000c0, 0 0 0 1px #ffffff1a; backface-visibility: hidden; }
+  .card .hl { position: absolute; border-radius: 10px; box-shadow: 0 0 0 3px #47d1ff, 0 0 26px 6px #47d1ff88; opacity: 0; }
+
+  #logo3d { position: absolute; left: 960px; top: 430px; width: 300px; height: 300px; margin: -150px 0 0 -150px; transform-style: preserve-3d; }
+  #logo3d svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 40px 50px #00000080); }
+
+  /* ---------- text ---------- */
+  .tx { position: absolute; direction: rtl; text-align: right; }
+  .tx .h { font-weight: 900; font-size: 96px; line-height: 1.04; letter-spacing: -2px; white-space: nowrap; }
+  .tx .s { margin-top: 22px; font-weight: 500; font-size: 42px; color: #9fb4ff; white-space: nowrap; }
+  .tx .ln { display: block; }
+  .pill { display: inline-flex; align-items: center; gap: 12px; margin-top: 30px; padding: 14px 26px; border-radius: 999px; font-weight: 500; font-size: 30px;
+    color: #dfe6ff; background: #ffffff10; border: 1px solid #ffffff26; }
+  .pill i { width: 12px; height: 12px; border-radius: 50%; background: #47d1ff; box-shadow: 0 0 12px #47d1ff; }
+  .grad { background: linear-gradient(90deg, #47d1ff, #8f9aff 55%, #b28cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #t1 { left: 0; right: 0; top: 700px; text-align: center; }
+  #t1 .h { font-size: 88px; }
+  #t2, #t4 { right: 150px; top: 330px; }
+  #t3 { left: 120px; top: 340px; width: 700px; }
+  #t5 { left: 0; right: 0; top: 46px; text-align: center; }
+  #t5 .h { font-size: 80px; }
+  #t6 { right: 150px; top: 250px; }
+  #t6 .brand { display: flex; align-items: center; gap: 30px; direction: ltr; justify-content: flex-end; }
+  #t6 .brand svg { width: 150px; height: 150px; filter: drop-shadow(0 20px 30px #00000080); }
+  #t6 .word { font-weight: 900; font-size: 112px; letter-spacing: -3px; direction: ltr; }
+  #t6 .play { display: flex; justify-content: flex-end; margin-top: 56px; }
+  #t6 .btn { display: flex; align-items: center; gap: 20px; direction: ltr; background: #000; border: 2px solid #a6a6a6; border-radius: 22px; padding: 18px 36px 18px 28px; }
+  #t6 .btn svg { width: 64px; height: 64px; }
+  #t6 .btn span { display: flex; flex-direction: column; text-align: left; line-height: 1.05; }
+  #t6 .btn small { font-weight: 500; font-size: 22px; letter-spacing: 2px; }
+  #t6 .btn strong { font-weight: 800; font-size: 52px; }
+  #t6 .h2 { margin-top: 40px; font-weight: 800; font-size: 60px; }
+  #t6 .s { margin-top: 10px; }
+  #fade { background: #000; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="floor"></div>
+  <div class="layer" id="floorGlow"></div>
+  <div class="layer" id="sweepLight"></div>
+  <div class="shadow" id="shadow"></div>
+  <div id="rig">
+    <div id="logo3d"><div id="logoA"></div></div>
+    <div id="phone">
+      <div id="body"></div>
+      <div id="screen">
+        <img id="sHome" src="screens/home.png" alt="">
+        <img id="sSave" src="screens/savings.png" alt="">
+        <img id="sThink" src="screens/chat-thinking.png" alt="">
+        <img id="sChat" src="screens/chat-answer.png" alt="">
+        <div id="glare"></div>
+      </div>
+      <div id="cam"></div>
+    </div>
+  </div>
+
+  <div class="tx" id="t1"><div class="h"><span class="ln">הכסף שלכם. <span class="grad">בשליטה שלכם.</span></span></div></div>
+  <div class="tx" id="t2"><div class="h"><span class="ln">רואים את</span><span class="ln">התמונה המלאה.</span></div><div class="s">הכנסות והוצאות במקום אחד</div></div>
+  <div class="tx" id="t3"><div class="h"><span class="ln">מתקרבים</span><span class="ln">למטרה.</span></div><div class="s">מתכננים את החיסכון שלכם</div></div>
+  <div class="tx" id="t4"><div class="h"><span class="ln">שואלים</span><span class="ln">את <span style="direction:ltr;unicode-bidi:isolate">Cubey</span>.</span></div><div class="s">עוזר AI לתקציב ולחיסכון</div>
+    <div class="pill" id="disc"><i></i>צ׳אט AI זמין ברכישה בתוך האפליקציה</div></div>
+  <div class="tx" id="t5"><div class="h"><span class="ln">עושים סדר <span class="grad">בכסף.</span></span></div></div>
+  <div class="tx" id="t6">
+    <div class="brand"><div id="logoB"></div><div class="word">Cube<span class="grad">Finance</span></div></div>
+    <div class="play"><div class="btn">
+      <svg viewBox="0 0 48 48"><path fill="#00d7fe" d="M7.6 4.3c-.5.5-.8 1.3-.8 2.3v34.8c0 1 .3 1.8.8 2.3l.1.1L27.2 24.3v-.5L7.7 4.2z"/><path fill="#ffce00" d="m33.7 30.8-6.5-6.5v-.5l6.5-6.5.1.1 7.7 4.4c2.2 1.3 2.2 3.3 0 4.5l-7.7 4.4z"/><path fill="#ff3a44" d="M33.9 30.7 27.2 24 7.6 43.7c.7.8 1.9.9 3.3.1l23-13.1"/><path fill="#00f076" d="M33.9 17.3 10.9 4.2c-1.4-.8-2.6-.7-3.3.1L27.2 24z"/></svg>
+      <span><small>GET IT ON</small><strong>Google Play</strong></span></div></div>
+    <div class="h2">זמינה בגוגל פליי</div>
+    <div class="s">חפשו CubeFinance</div>
+  </div>
+  <div class="layer" id="vignette"></div>
+  <div class="layer" id="fade"></div>
+</div>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const prog = (t, a, b) => clamp((t - a) / (b - a));
+  const eOut = (x) => 1 - Math.pow(1 - x, 4);            // strong ease-out
+  const eIO = (x) => x < .5 ? 8 * x ** 4 : 1 - Math.pow(-2 * x + 2, 4) / 2;
+  const spring = (x) => x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-6 * x) * Math.cos(7 * x);   // light settle
+  const lerp = (a, b, p) => a + (b - a) * p;
+  // piecewise keyframes: [[t, value], ...] with eased interpolation between them
+  function kf(t, keys, ease = eIO) {
+    if (t <= keys[0][0]) return keys[0][1];
+    for (let i = 1; i < keys.length; i++) if (t <= keys[i][0]) {
+      const [t0, v0] = keys[i - 1], [t1, v1] = keys[i];
+      return lerp(v0, v1, ease((t - t0) / (t1 - t0)));
+    }
+    return keys[keys.length - 1][1];
+  }
+
+  // ---- cards: exact crops of the real screens (screen px, 1080 wide) ----
+  const S = 430 / 1080, BZ = 14;
+  const CARDS = {
+    income:  { img: "home",    x: 556, y: 1695, w: 476, h: 195 },
+    expense: { img: "home",    x: 40,  y: 1695, w: 490, h: 195 },
+    balance: { img: "home",    x: 40,  y: 228,  w: 1000, h: 485 },
+    emerg:   { img: "savings", x: 40,  y: 822,  w: 1000, h: 830, hl: { x: 55, y: 372, w: 905, h: 52 } },
+    question:{ img: "chat-answer", x: 196, y: 985, w: 840, h: 185 },
+    answer:  { img: "chat-answer", x: 40,  y: 1188, w: 860, h: 375 },
+  };
+  const cardEl = {};
+  for (const [k, c] of Object.entries(CARDS)) {
+    const d = document.createElement("div");
+    d.className = "card";
+    Object.assign(d.style, {
+      left: (BZ + c.x * S) + "px", top: (BZ + c.y * S) + "px", width: (c.w * S) + "px", height: (c.h * S) + "px",
+      backgroundImage: "url(screens/" + c.img + ".png)", backgroundSize: (1080 * S) + "px " + (2100 * S) + "px",
+      backgroundPosition: (-c.x * S) + "px " + (-c.y * S) + "px",
+    });
+    if (c.hl) { const h = document.createElement("div"); h.className = "hl";
+      Object.assign(h.style, { left: c.hl.x * S + "px", top: c.hl.y * S + "px", width: c.hl.w * S + "px", height: c.hl.h * S + "px" }); d.appendChild(h); }
+    $("phone").appendChild(d); cardEl[k] = d;
+  }
+  // pose a card: p = pull-out progress 0..1; target offset (dx, dy, z), scale, counter-rotation
+  function pose(k, p, dx, dy, z, sc = 1, ry = 0, extra = "") {
+    const el = cardEl[k];
+    el.style.opacity = p <= 0 ? 0 : clamp(p * 3);
+    el.style.transform = "translate3d(" + dx * p + "px," + dy * p + "px," + (z * p + .5) + "px) rotateY(" + ry * p + "deg) scale(" + lerp(1, sc, p) + ")" + extra;
+  }
+  // text block in: lines rise and unblur, staggered; out: fade up
+  function text(id, t, tin, tout) {
+    const el = $(id);
+    const show = t >= tin - .01 && t <= tout + .6;
+    el.style.display = show ? "block" : "none";
+    if (!show) return;
+    const parts = el.querySelectorAll(".ln, .s, .pill, .brand, .play, .h2");
+    parts.forEach((n, i) => {
+      const p = eOut(prog(t, tin + i * .12, tin + i * .12 + .7));
+      const o = 1 - eOut(prog(t, tout, tout + .45));
+      n.style.opacity = p * o;
+      n.style.transform = "translateY(" + (36 * (1 - p) - 24 * (1 - o)) + "px)";
+      n.style.filter = "blur(" + (12 * (1 - p) + 8 * (1 - o)) + "px)";
+      if (n.classList.contains("ln")) n.style.display = "block";
+    });
+  }
+  window.setLogo = (svg) => { $("logoA").innerHTML = svg; $("logoB").innerHTML = svg.replace(/id="(bg|coin)"/g, 'id="$1B"').replace(/url\(#(bg|coin)\)/g, "url(#$1B)"); };
+
+  window.renderAt = (t) => {
+    // ---------- background breathes gently ----------
+    $("sweepLight").style.transform = "translateX(" + Math.sin(t * .35) * 160 + "px)";
+
+    // ---------- logo (0–4) ----------
+    const lIn = eOut(prog(t, 0, 1.2)), lOut = eIO(prog(t, 2.9, 3.55));
+    $("logo3d").style.opacity = lIn * (1 - lOut);
+    $("logo3d").style.display = t < 4 ? "block" : "none";
+    $("logo3d").style.transform = "translateY(" + (Math.sin(t * 1.6) * 10 - 260 * lOut) + "px) translateZ(" + (-300 * (1 - lIn) + 260 * prog(t, 0, 3.1) - 400 * lOut) + "px)" +
+      " rotateY(" + (Math.sin(t * .9) * 18) + "deg) rotateX(" + (8 + Math.sin(t * 1.3) * 4) + "deg)";
+
+    // ---------- phone path ----------
+    const px = kf(t, [[3.3, 960], [4.0, 960], [4.8, 640], [8.8, 640], [9.7, 1290], [13.8, 1290], [14.7, 660], [20.8, 660], [21.7, 960], [25.8, 960], [26.7, 580]]);
+    const py = kf(t, [[3.45, 1420], [4.45, 545], [20.8, 545], [21.7, 610], [25.8, 610], [26.7, 545]], eOut) + Math.sin(t * 1.2) * 8;
+    const ry = kf(t, [[3.2, 0], [4.8, -16], [8.8, -12], [9.7, 16], [13.8, 13], [14.7, -16], [20.8, -11], [21.7, -3], [25.8, -3], [26.7, -14]]) + Math.sin(t * .8) * 2.5;
+    const rx = 4 + Math.sin(t * 1.1) * 1.5;
+    const pz = kf(t, [[20.8, 0], [21.7, -260], [25.8, -260], [26.7, 0]]);
+    $("phone").style.opacity = t < 3.45 ? 0 : eOut(prog(t, 3.45, 3.9));
+    $("phone").style.transform = "translate3d(" + px + "px," + py + "px," + pz + "px) rotateX(" + rx + "deg) rotateY(" + ry + "deg)";
+    // floor shadow follows the phone
+    const sh = $("shadow");
+    sh.style.left = px + "px"; sh.style.top = (py + 455) + "px";
+    sh.style.opacity = t < 3.4 ? 0 : eOut(prog(t, 3.4, 4.3)) * (.95 - Math.sin(t * 1.2) * .05);
+    sh.style.transform = "scaleX(" + (1 + Math.abs(ry) / 90) + ")";
+    if (t < 3.9) { sh.style.left = "960px"; sh.style.top = "640px"; sh.style.opacity = .7 * eOut(prog(t, .2, 1.2)) * (1 - lOut); sh.style.transform = "scale(.75)"; }
+
+    // ---------- screens (crossfade with a little blur) ----------
+    const scr = [["sHome", -1, 9.2], ["sSave", 9.2, 14.2], ["sThink", 14.2, 16.9], ["sChat", 16.9, 21.2], ["sHome", 21.2, 99]];
+    const vis = { sHome: 0, sSave: 0, sThink: 0, sChat: 0 };
+    scr.forEach(([id, a, b]) => { const v = prog(t, a - .2, a + .2) * (1 - prog(t, b - .2, b + .2)); vis[id] = Math.max(vis[id], v); });
+    for (const id in vis) { $(id).style.opacity = vis[id]; $(id).style.filter = "blur(" + (4 * (1 - vis[id])) + "px)"; }
+
+    // ---------- scene 2: income & expenses pull out ----------
+    const p2 = spring(prog(t, 5.0, 5.9)) * (1 - eIO(prog(t, 8.4, 8.9)));
+    const p2b = spring(prog(t, 5.25, 6.15)) * (1 - eIO(prog(t, 8.4, 8.9)));
+    const p2c = spring(prog(t, 5.5, 6.4)) * (1 - eIO(prog(t, 8.4, 8.9)));
+    pose("balance", p2c, 60, -20, 110, 1.04, 12);
+    pose("income", p2, 300, -40, 220, 1.55, 16);
+    pose("expense", p2b, 290, -200, 260, 1.55, 16);
+
+    // ---------- scene 3: savings goal ----------
+    const p3 = spring(prog(t, 10.1, 11.0)) * (1 - eIO(prog(t, 13.3, 13.8)));
+    pose("emerg", p3, -40, -30, 240, 1.14, -16);
+    const hl = cardEl.emerg.querySelector(".hl");
+    hl.style.opacity = prog(t, 11.1, 11.5) * (1 - prog(t, 13.0, 13.4)) * (.65 + .35 * Math.sin((t - 11.1) * 4.5));
+
+    // ---------- scene 4: chat ----------
+    const p4q = spring(prog(t, 15.0, 15.8)) * (1 - eIO(prog(t, 20.2, 20.7)));
+    const p4a = spring(prog(t, 17.2, 18.1)) * (1 - eIO(prog(t, 20.2, 20.7)));
+    pose("question", p4q, 140, -110, 170, 1.12, 14);
+    pose("answer", p4a, 170, 10, 230, 1.12, 14);
+
+    // ---------- scene 5: three cards orbit, then return into the phone ----------
+    if (t >= 21.4) {
+      const enter = eOut(prog(t, 21.4, 22.3)), back = eIO(prog(t, 24.4, 25.4));
+      const bob = (o) => Math.sin(t * 1.4 + o) * 10;
+      const f = (k, dx, dy, z, o) => {
+        const p = enter * (1 - back);
+        const el = cardEl[k];
+        el.style.opacity = p <= .001 ? 0 : clamp(p * 2.5);
+        el.style.transform = "translate3d(" + dx * p + "px," + (dy * p + bob(o) * p) + "px," + (z * p) + "px) scale(" + lerp(.7, 1.25, p) + ")";
+      };
+      f("balance", -580, -170, 260, 0);        // budget (home)
+      f("emerg", 590, -20, 300, 2);            // savings
+      f("answer", -560, 210, 280, 4);          // chat
+      if (t > 25.5) { cardEl.balance.style.opacity = 0; cardEl.emerg.style.opacity = 0; cardEl.answer.style.opacity = 0; }
+    }
+
+    // ---------- text ----------
+    text("t1", t, .7, 2.9);
+    text("t2", t, 5.2, 8.6);
+    text("t3", t, 10.2, 13.6);
+    text("t4", t, 15.2, 20.4);
+    text("t5", t, 21.9, 25.4);
+    text("t6", t, 26.7, 99);
+    $("disc").style.opacity = eOut(prog(t, 17.6, 18.2)) * (1 - eOut(prog(t, 20.4, 20.85)));
+
+    $("fade").style.opacity = Math.max(1 - prog(t, 0, .4), 0);
+  };
+  window.renderAt(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>CubeFinance — React</title>
+
+  <!-- React + Babel + Tailwind via CDN. Requires an internet connection to run.
+       (Open this file in a normal browser; it will not run offline.) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        bg: "#0d0d14", elevated: "#16161f", card: "#1c1c28", card2: "#221f3a",
+        edge: "#2a2a3a", dim: "#9a9ab0", ink: "#e7e7f2",
+        brand: "#6c5ce7", brand2: "#8072ff", danger: "#d63031",
+      }, fontFamily: { sans: ['"Segoe UI"', "system-ui", '"Noto Sans Hebrew"', "sans-serif"] } } },
+    };
+  </script>
+  <style>
+    body { background: radial-gradient(1000px 500px at 20% -10%, #1a1533 0%, transparent 55%),
+           radial-gradient(800px 460px at 110% 8%, #10233a 0%, transparent 50%), #08080d; }
+    .noscroll::-webkit-scrollbar { width: 0; }
+    .phone { box-shadow: 0 0 0 10px #101018, 0 40px 90px -30px #000, inset 0 0 0 1px #ffffff08; }
+    input::placeholder { color: #55556a; }
+    @media (max-width: 560px) { .phone { width: 100% !important; height: 100dvh !important;
+      max-height: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; } }
+  </style>
+</head>
+<body class="font-sans text-ink flex items-center justify-center min-h-screen p-6">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    /* ============================================================
+       AI budgeting logic (pure) — verified against unit tests.
+       ============================================================ */
+    const round = (n) => Math.round(n * 100) / 100;
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const fmt = (n) => Math.round(n || 0).toLocaleString("en-US");
+    const META = {
+      housing:     { name: "דיור וחשבונות", emoji: "🏠", color: "#6C5CE7" },
+      essentials:  { name: "שוטף",           emoji: "🛒", color: "#00B894" },
+      savings:     { name: "חיסכון",         emoji: "💰", color: "#0984E3" },
+      investments: { name: "השקעות",         emoji: "📈", color: "#E17055" },
+      lifestyle:   { name: "בילויים ופנאי",  emoji: "🎉", color: "#FDCB6E" },
+    };
+
+    // Independent → Housing (locked at the exact fixed sum) + Essentials/Savings/
+    // Investments/Lifestyle. With parents → no Housing; Savings/Investments/
+    // Lifestyle are boosted with the freed rent money.
+    function generateCubes(p) {
+      const income = p.works ? Number(p.income) || 0 : 0;
+      const independent = !p.withParents;
+      const housingCost = independent
+        ? (Number(p.rent)||0) + (Number(p.arnona)||0) + (Number(p.utilities)||0) + (Number(p.committee)||0) : 0;
+      const mk = (key, pct, amount, locked) => ({ key, ...META[key], pct, amount, locked: !!locked, balance: 0 });
+      const cubes = [];
+      if (independent) {
+        const base = income > 0 ? income : (Number(p.balance) || 0) || 1;
+        const housingShare = clamp(housingCost / base, 0, 0.85);
+        const disc = 1 - housingShare;
+        const W = { essentials: 0.35, savings: 0.27, investments: 0.20, lifestyle: 0.18 };
+        cubes.push(mk("housing", round(housingShare * 100), round(housingCost), true));
+        ["essentials", "savings", "investments", "lifestyle"].forEach((k) =>
+          cubes.push(mk(k, round(W[k] * disc * 100), round(W[k] * disc * income))));
+      } else {
+        const W = { essentials: 0.25, savings: 0.30, investments: 0.27, lifestyle: 0.18 };
+        ["essentials", "savings", "investments", "lifestyle"].forEach((k) =>
+          cubes.push(mk(k, round(W[k] * 100), round(W[k] * income))));
+      }
+      return { cubes, housingCost, income };
+    }
+
+    /* ============================================================
+       Persistence (localStorage) — profile, cubes and balances.
+       ============================================================ */
+    const KEY = "cubefinance_react:v1";
+    const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { return null; } };
+    const persist = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} };
+
+    /* ============================================================
+       Small UI primitives
+       ============================================================ */
+    function Field({ label, children }) {
+      return (
+        <label className="block mb-4">
+          <span className="block text-dim text-[13px] font-bold mb-2">{label}</span>
+          {children}
+        </label>
+      );
+    }
+    function TextInput(props) {
+      return <div className="flex items-center gap-2 bg-card border-[1.5px] border-edge rounded-2xl px-4 focus-within:border-brand transition-colors">
+        {props.prefix && <span className="text-dim font-extrabold">{props.prefix}</span>}
+        <input {...props} prefix={undefined}
+          className="flex-1 bg-transparent outline-none text-ink text-base font-bold py-3 tabular-nums w-full" />
+      </div>;
+    }
+    function Choice({ label, sub, active, onClick }) {
+      return (
+        <button onClick={onClick}
+          className={"flex items-center gap-3 w-full text-right rounded-2xl p-4 mb-3 border-[1.5px] transition-colors " +
+            (active ? "border-brand bg-card2" : "border-edge bg-card hover:border-[#3c3c52]")}>
+          <span className={"w-5 h-5 rounded-full border-2 grid place-items-center " + (active ? "border-brand" : "border-edge")}>
+            {active && <span className="w-2.5 h-2.5 rounded-full bg-brand" />}
+          </span>
+          <span className="flex-1">
+            <b className={"block font-extrabold " + (active ? "text-ink" : "text-dim")}>{label}</b>
+            {sub && <span className="text-dim text-xs">{sub}</span>}
+          </span>
+        </button>
+      );
+    }
+    const PrimaryBtn = ({ children, disabled, onClick }) => (
+      <button disabled={disabled} onClick={onClick}
+        className="w-full rounded-2xl py-3.5 font-extrabold text-white bg-gradient-to-br from-brand2 to-brand
+          shadow-[0_12px_26px_-12px_#6c5ce7] disabled:opacity-40 active:scale-[.99] transition">
+        {children}
+      </button>
+    );
+
+    /* ============================================================
+       Onboarding — multi-step, conditional (age / bank / work / housing).
+       ============================================================ */
+    const EMPTY = { age: "", hasBank: null, balance: "", works: null, income: "",
+                    withParents: null, rent: "", arnona: "", utilities: "", committee: "" };
+
+    function Onboarding({ onFinish }) {
+      const [d, setD] = useState(EMPTY);
+      const [i, setI] = useState(0);
+      const set = (patch) => setD((v) => ({ ...v, ...patch }));
+      const age = Number(d.age);
+      const onlyDigits = (v) => v.replace(/[^0-9]/g, "");
+
+      // Conditional step list — this IS the branching logic.
+      const steps = useMemo(() => {
+        const s = ["age"];
+        if (age >= 16) { s.push("bank"); if (d.hasBank) s.push("balance"); }
+        s.push("work"); if (d.works) s.push("income");
+        s.push("housing"); if (d.withParents === false) s.push("costs");
+        return s;
+      }, [age, d.hasBank, d.works, d.withParents]);
+
+      const idx = Math.min(i, steps.length - 1);
+      const step = steps[idx];
+      const isLast = idx === steps.length - 1;
+
+      const canNext = () => {
+        switch (step) {
+          case "age": return age >= 5 && age <= 120;
+          case "bank": return d.hasBank !== null;
+          case "balance": return d.balance !== "" && Number(d.balance) >= 0;
+          case "work": return d.works !== null;
+          case "income": return Number(d.income) > 0;
+          case "housing": return d.withParents !== null;
+          case "costs": return Number(d.rent) > 0;
+          default: return false;
+        }
+      };
+      const next = () => {
+        if (!canNext()) return;
+        if (isLast) onFinish({ ...d, age });
+        else setI(idx + 1);
+      };
+
+      const housingTotal = (Number(d.rent)||0)+(Number(d.arnona)||0)+(Number(d.utilities)||0)+(Number(d.committee)||0);
+
+      const body = () => {
+        switch (step) {
+          case "age": return <>
+            <H t="בן כמה את/ה?" s="נשאל שאלות מותאמות לגיל שלך." />
+            <Field label="גיל"><TextInput inputMode="numeric" autoFocus placeholder="17"
+              value={d.age} onChange={(e) => set({ age: onlyDigits(e.target.value) })} /></Field>
+          </>;
+          case "bank": return <>
+            <H t="יש לך חשבון בנק?" s="מגיל 16 אפשר לנהל יתרה עצמאית." />
+            <Choice label="כן, יש לי חשבון" active={d.hasBank === true} onClick={() => set({ hasBank: true })} />
+            <Choice label="לא, אין לי עדיין" sub="נדלג על שאלת היתרה" active={d.hasBank === false} onClick={() => set({ hasBank: false, balance: "" })} />
+          </>;
+          case "balance": return <>
+            <H t="מה היתרה לניהול?" s="הסכום שתרצה לעקוב אחריו ולחלק לקוביות (מדומה — ללא חיבור לבנק)." />
+            <Field label="יתרה נוכחית משוערת"><TextInput prefix="₪" inputMode="numeric" autoFocus placeholder="3000"
+              value={d.balance} onChange={(e) => set({ balance: onlyDigits(e.target.value) })} /></Field>
+          </>;
+          case "work": return <>
+            <H t="האם את/ה עובד/ת?" s="נבנה את התקציב סביב ההכנסה." />
+            <Choice label="כן, אני עובד/ת" active={d.works === true} onClick={() => set({ works: true })} />
+            <Choice label="לא כרגע" sub="נדלג על שאלת ההכנסה" active={d.works === false} onClick={() => set({ works: false, income: "" })} />
+          </>;
+          case "income": return <>
+            <H t="מהי ההכנסה החודשית המשוערת?" s="ההכנסה החודשית נטו שלך." />
+            <Field label="הכנסה חודשית"><TextInput prefix="₪" inputMode="numeric" autoFocus placeholder="10000"
+              value={d.income} onChange={(e) => set({ income: onlyDigits(e.target.value) })} /></Field>
+          </>;
+          case "housing": return <>
+            <H t="את/ה גר/ה עם ההורים?" s="זה קובע אם ניצור קוביית דיור." />
+            <Choice label="כן, גר/ה עם ההורים" sub="בלי שכירות — הכסף מופנה לחיסכון והשקעות" active={d.withParents === true} onClick={() => set({ withParents: true })} />
+            <Choice label="לא, גר/ה עצמאי/ת" sub="ניצור קוביית דיור נעולה" active={d.withParents === false} onClick={() => set({ withParents: false })} />
+          </>;
+          case "costs": return <>
+            <H t="הוצאות הדיור החודשיות" s="נסכם אותן לקוביית 'דיור וחשבונות' נעולה." />
+            <Field label="שכר דירה / משכנתא"><TextInput prefix="₪" inputMode="numeric" autoFocus placeholder="3500"
+              value={d.rent} onChange={(e) => set({ rent: onlyDigits(e.target.value) })} /></Field>
+            <Field label="ארנונה"><TextInput prefix="₪" inputMode="numeric" placeholder="300"
+              value={d.arnona} onChange={(e) => set({ arnona: onlyDigits(e.target.value) })} /></Field>
+            <Field label="חשמל ומים"><TextInput prefix="₪" inputMode="numeric" placeholder="400"
+              value={d.utilities} onChange={(e) => set({ utilities: onlyDigits(e.target.value) })} /></Field>
+            <Field label="ועד בית"><TextInput prefix="₪" inputMode="numeric" placeholder="100"
+              value={d.committee} onChange={(e) => set({ committee: onlyDigits(e.target.value) })} /></Field>
+            <div className="text-dim text-sm mt-1">סה״כ דיור קבוע: <b className="text-ink">₪{fmt(housingTotal)}</b></div>
+          </>;
+          default: return null;
+        }
+      };
+
+      return (
+        <div className="flex flex-col h-full">
+          <div className="px-5 pt-11">
+            <div className="font-extrabold text-lg mb-3">🧊 CubeFinance</div>
+            <div className="h-1.5 bg-edge rounded-full overflow-hidden">
+              <div className="h-full bg-brand rounded-full transition-all" style={{ width: ((idx + 1) / steps.length * 100) + "%" }} />
+            </div>
+            <div className="text-dim text-xs font-semibold mt-2">שלב {idx + 1} מתוך {steps.length}</div>
+          </div>
+          <div className="flex-1 overflow-y-auto noscroll px-5 pt-7 pb-4">{body()}</div>
+          <div className="px-5 pb-6 pt-2 flex flex-col gap-1">
+            <PrimaryBtn disabled={!canNext()} onClick={next}>{isLast ? "בנה את הקוביות 🧊" : "המשך"}</PrimaryBtn>
+            {idx > 0 && <button className="py-2.5 text-dim font-semibold hover:text-ink" onClick={() => setI(idx - 1)}>חזרה</button>}
+          </div>
+        </div>
+      );
+    }
+    const H = ({ t, s }) => (<><h2 className="text-[27px] font-black leading-tight tracking-tight">{t}</h2>
+      <p className="text-dim text-sm mt-1.5 mb-6 leading-snug">{s}</p></>);
+
+    /* ============================================================
+       Dashboard — renders the generated cubes + distribute action.
+       ============================================================ */
+    function Dashboard({ profile, cubes, setCubes, pool, setPool, onReset }) {
+      const total = cubes.reduce((s, c) => s + c.balance, 0);
+      const [just, setJust] = useState({});
+
+      const distribute = () => {
+        if (pool <= 0) return;
+        let dist = 0;
+        const next = cubes.map((c, i) => {
+          const give = i === cubes.length - 1 ? pool - dist : Math.round(pool * (c.pct / 100));
+          dist += give;
+          return { ...c, balance: c.balance + give };
+        });
+        setCubes(next); setPool(0);
+        setJust(Object.fromEntries(next.map((c) => [c.key, true])));
+        setTimeout(() => setJust({}), 800);
+      };
+
+      return (
+        <div className="h-full overflow-y-auto noscroll px-4 pt-11 pb-24">
+          <div className="flex items-center justify-between mb-4">
+            <span className="font-extrabold text-lg">🧊 CubeFinance</span>
+            <button onClick={onReset} className="text-[#ff8f8f] text-xs font-extrabold">↺ התחל מחדש</button>
+          </div>
+
+          <div className="rounded-3xl p-5 border-[1.5px] border-edge bg-gradient-to-b from-[#221c40] to-[#14131d] shadow-[0_20px_50px_-30px_#000]">
+            <div className="text-dim text-[13px] font-semibold">סה״כ בקוביות</div>
+            <div className="text-[40px] font-black tracking-tight tabular-nums leading-none mt-1">₪{fmt(total)}</div>
+            <div className="flex items-center gap-2 mt-4">
+              <div className="flex-1 flex items-center bg-card rounded-2xl border-[1.5px] border-edge px-3">
+                <span className="text-dim font-extrabold">₪</span>
+                <input value={pool} onChange={(e) => setPool(Number(e.target.value.replace(/[^0-9]/g, "")) || 0)}
+                  inputMode="numeric" className="flex-1 bg-transparent outline-none text-ink text-lg font-extrabold py-2.5 px-1.5 tabular-nums text-left w-full" />
+              </div>
+              <button onClick={distribute} disabled={pool <= 0}
+                className="rounded-2xl px-4 py-3 font-extrabold text-white text-sm whitespace-nowrap bg-gradient-to-br from-brand2 to-brand disabled:opacity-40 active:scale-95 transition">
+                חלק לתקציב
+              </button>
+            </div>
+          </div>
+
+          {/* Living-with-parents notice / independent notice */}
+          <div className="mt-4 rounded-2xl p-3.5 flex gap-2.5 items-start"
+               style={{ background: profile.withParents ? "#1a2733" : "#26203a", border: "1px solid " + (profile.withParents ? "#244" : "#3a3060") }}>
+            <span className="text-xl">{profile.withParents ? "💡" : "🔑"}</span>
+            <span className="text-[13px] leading-relaxed" style={{ color: profile.withParents ? "#bfe3d6" : "#cfc6ee" }}>
+              {profile.withParents
+                ? <>מגורים עם ההורים <b>משחררים את כסף השכירות</b> — הפנינו אותו כדי להגדיל את קוביות <b>החיסכון, ההשקעות והבילויים</b>.</>
+                : <>נוצרה קוביית <b>דיור וחשבונות</b> נעולה על הסכום הקבוע שהזנת, ושאר הקוביות חולקו מהתקציב שנשאר.</>}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 font-extrabold text-base mt-5 mb-3.5">
+            <span className="w-1 h-4 rounded bg-gradient-to-b from-brand to-[#46e0b4]" />הקוביות שלך
+          </div>
+
+          {cubes.map((c) => {
+            const target = pool > 0 ? pool * (c.pct / 100) : (c.balance || 1);
+            const fill = clamp(target > 0 ? c.balance / target : 0, 0, 1) * 100;
+            return (
+              <div key={c.key} className={"rounded-3xl p-4 mb-3 border-[1.5px] border-edge bg-card shadow-[0_4px_14px_-10px_#000] transition-transform " + (just[c.key] ? "scale-[1.02]" : "")}>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-[13px] grid place-items-center text-xl shrink-0" style={{ background: c.color + "22" }}>{c.emoji}</div>
+                  <div className="flex-1">
+                    <div className="font-extrabold flex items-center gap-1.5">{c.name} {c.locked && <span title="נעול">🔒</span>}</div>
+                    <div className="text-dim text-xs">{c.key === "housing" ? "הוצאה חודשית קבועה" : "יעד חודשי"}</div>
+                  </div>
+                  <div className="ms-auto text-[13px] font-extrabold px-2.5 py-1 rounded-full tabular-nums" style={{ color: c.color, background: c.color + "22" }}>{c.pct}%</div>
+                </div>
+                <div className="flex items-baseline gap-2 mt-3.5">
+                  <span className="text-2xl font-black tabular-nums">₪{fmt(c.balance)}</span>
+                  <span className="text-dim text-xs font-semibold">מתוך ₪{fmt(target)}{c.locked ? " (נעול)" : " לחודש"}</span>
+                </div>
+                <div className="h-2 bg-bg rounded-full overflow-hidden mt-3.5">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: fill + "%", background: c.color }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    /* ============================================================
+       App — routing + persistence.
+       ============================================================ */
+    function App() {
+      const saved = useMemo(() => load(), []);
+      const [done, setDone] = useState(saved ? !!saved.done : false);
+      const [profile, setProfile] = useState(saved ? saved.profile : null);
+      const [cubes, setCubes] = useState(saved ? saved.cubes || [] : []);
+      const [pool, setPool] = useState(saved ? saved.pool || 0 : 0);
+
+      useEffect(() => { persist({ done, profile, cubes, pool }); }, [done, profile, cubes, pool]);
+
+      const finish = (p) => {
+        const { cubes } = generateCubes(p);
+        setProfile(p); setCubes(cubes);
+        // Money to distribute: the tracked bank balance, else the monthly income.
+        setPool(Number(p.balance) || (p.works ? Number(p.income) || 0 : 0));
+        setDone(true);
+      };
+      const reset = () => { setDone(false); setProfile(null); setCubes([]); setPool(0);
+        try { localStorage.removeItem(KEY); } catch (e) {} };
+
+      return (
+        <div className="phone bg-bg rounded-[42px] p-3 border border-[#33334a]"
+             style={{ width: 400, maxWidth: "100%", height: 820, maxHeight: "92vh" }}>
+          <div className="w-full h-full bg-bg rounded-[32px] overflow-hidden relative">
+            {done && profile
+              ? <Dashboard profile={profile} cubes={cubes} setCubes={setCubes} pool={pool} setPool={setPool} onReset={reset} />
+              : <Onboarding onFinish={finish} />}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
