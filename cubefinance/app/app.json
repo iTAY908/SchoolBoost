@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "CubeFinance",
+    "slug": "cubefinance",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0D0D14",
+    "splash": {
+      "backgroundColor": "#0D0D14",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cubefinance.app"
+    },
+    "android": {
+      "package": "com.cubefinance.app",
+      "adaptiveIcon": { "backgroundColor": "#0D0D14" }
+    },
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-8901066122989701~1639827795",
+          "iosAppId": "ca-app-pub-8901066122989701~1639827795",
+          "delayAppMeasurementInit": true,
+          "userTrackingUsageDescription": "This identifier will be used to deliver personalised ads to you."
+        }
+      ]
+    ],
+    "extra": {
+      "note": "Set EXPO_PUBLIC_API_URL to your backend LAN address for device testing."
+    }
+  }
+}

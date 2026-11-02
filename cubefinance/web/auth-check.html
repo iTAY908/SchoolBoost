@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת קוד אימות — CubeFinance</title>
+<!-- Checks the production email-code service (Supabase Edge Function cf-auth) the way the
+     app uses it: is it deployed, is the email key set, does EmailJS accept a real email,
+     and does the code verify. Shows the server's reason code; never shows codes or keys.
+     The URL and publishable key below are public by design. -->
+<style>
+  :root { --bg:#f4f6fc; --card:#fff; --text:#171a2b; --dim:#5c6280; --primary:#4f5dff; --ok:#0d8a5f; --bad:#c92a3a; --line:#e2e6f3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b0e18; --card:#151b29; --text:#eef0ff; --dim:#9aa1c4; --primary:#8f9aff; --ok:#3fd19c; --bad:#ff7a85; --line:#262e45; } }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; }
+  .wrap { max-width:480px; margin:0 auto; }
+  h1 { font-size:22px; margin:6px 0 4px; } p.sub { color:var(--dim); margin:0 0 14px; line-height:1.6; font-size:15px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:12px; }
+  .card h2 { font-size:16px; margin:0 0 10px; }
+  input { width:100%; padding:13px; font-size:17px; border-radius:12px; border:2px solid var(--line); background:var(--bg); color:var(--text); direction:ltr; }
+  input.code { letter-spacing:8px; text-align:center; font-weight:800; font-size:22px; }
+  button { width:100%; margin-top:10px; padding:14px; font-size:16px; font-weight:800; border:0; border-radius:12px; background:var(--primary); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.55; cursor:default; }
+  .res { margin-top:12px; padding:12px; border-radius:12px; line-height:1.65; font-size:15px; white-space:pre-wrap; display:none; }
+  .res.ok { display:block; background:#0d8a5f1c; color:var(--ok); } .res.bad { display:block; background:#c92a3a17; color:var(--bad); }
+  .res.info { display:block; background:#4f5dff14; color:var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔐 בדיקת שליחת קוד אימות</h1>
+  <p class="sub">בודק את שירות הקודים בשרת בדיוק כמו שהאפליקציה משתמשת בו. שלב 2 שולח מייל אמיתי לכתובת שתכתוב.</p>
+  <div class="card"><h2>1. האם השירות מותקן?</h2><button id="ping">בדיקה</button><div class="res" id="r1"></div></div>
+  <div class="card"><h2>2. שליחת קוד</h2><input id="email" type="email" placeholder="you@gmail.com" autocomplete="email"><button id="send">שלח קוד</button><div class="res" id="r2"></div></div>
+  <div class="card"><h2>3. בדיקת הקוד שהגיע</h2><input id="code" class="code" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="one-time-code"><button id="verify">בדוק קוד</button><div class="res" id="r3"></div></div>
+</div>
+<script>
+  const URL_ = "https://sfrkenhauekqdijtunpg.supabase.co/functions/v1/cf-auth";
+  const KEY = "sb_publishable_kbdGeoyPH5Wof7yf4rnc6g_QzPSF1_q";
+  const $ = (id) => document.getElementById(id);
+  const show = (id, cls, t) => { const r = $(id); r.className = "res " + cls; r.textContent = t; };
+  async function call(body) {
+    let res; try { res = await fetch(URL_, { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify(body) }); }
+    catch (e) { return { net: true, status: 0, data: {} }; }
+    let data = {}; try { data = await res.json(); } catch (e) {}
+    return { net: false, status: res.status, data };
+  }
+  const REASON = {
+    provider_auth: "EmailJS דחה את הבקשה (401/403).\nבדוק ב-EmailJS → Account → Security שמסומן \"Allow EmailJS API for non-browser applications\", ושה-Private Key שהוזן ב-Supabase (EMAILJS_PRIVATE_KEY) זהה ל-Private Key ב-EmailJS → Account → API keys.",
+    provider_account: "חשבון הג׳ימייל שמחובר ל-EmailJS התנתק (412).\nב-EmailJS → Email Services → בחר את השירות → Reconnect, והתחבר שוב לג׳ימייל.",
+    provider_config: "EmailJS לא מצא את השירות או התבנית, או שהשדות לא תואמים (400/404/422).\nבדוק ב-EmailJS: Service ID ‏service_upg7kqp, Template ID ‏template_7q8srkg, ובתבנית To Email = {{to_email}} והקוד {{code}}.",
+    provider_rate_limited: "הגעת למכסת השליחה של EmailJS (429).\nבדוק ב-EmailJS → Account → Usage. בתוכנית החינמית יש 200 מיילים בחודש.",
+    provider_unavailable: "EmailJS לא ענה או החזיר שגיאה זמנית. נסה שוב בעוד כמה דקות.",
+  };
+  $("ping").onclick = async () => {
+    show("r1", "info", "בודק…");
+    const r = await call({ action: "ping" });
+    if (r.net) return show("r1", "bad", "❌ אין תשובה מהשרת (רשת או חסימה).");
+    if (r.status === 404) return show("r1", "bad", "❌ הפונקציה cf-auth לא מותקנת ב-Supabase (HTTP 404).\nצריך: Edge Functions → Deploy a new function → cf-auth.");
+    if (r.status === 401) return show("r1", "bad", "❌ HTTP 401: בהגדרות הפונקציה cf-auth צריך לכבות Verify JWT.");
+    if (r.status >= 500) return show("r1", "bad", "❌ HTTP " + r.status + ": הפונקציה קיימת אבל נכשלת. ייתכן שלא הורץ account_sync.sql ב-SQL Editor.");
+    if (r.data.ok && r.data.emailReady) return show("r1", "ok", "✅ השירות מותקן, והמפתח של EmailJS מוגדר בשרת.");
+    if (r.data.ok) return show("r1", "bad", "⚠️ השירות מותקן, אבל חסר הסוד EMAILJS_PRIVATE_KEY.\nSupabase → Edge Functions → Secrets → Add: EMAILJS_PRIVATE_KEY.");
+    show("r1", "bad", "❌ תשובה לא צפויה: HTTP " + r.status);
+  };
+  $("send").onclick = async () => {
+    const email = $("email").value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return show("r2", "bad", "כתובת לא תקינה.");
+    $("send").disabled = true; show("r2", "info", "שולח…");
+    const r = await call({ action: "send", email });
+    $("send").disabled = false;
+    const d = r.data || {};
+    if (!r.net && d.ok && d.accepted) return show("r2", "ok", "✅ EmailJS קיבל את המייל (קבלה אצל הספק — עוד לא הוכחה שהגיע לתיבה).\nבדוק את התיבה וגם את הספאם. הקוד תקף " + Math.round((d.expires_in || 600) / 60) + " דקות.");
+    if (d.error === "send_failed") return show("r2", "bad", "❌ הקוד לא נשלח. סיבה: " + d.reason + " (HTTP " + d.provider_status + " מ-EmailJS)\n\n" + (REASON[d.reason] || ""));
+    if (d.error === "too_soon") return show("r2", "info", "כבר נשלח קוד לפני רגע. אפשר שוב בעוד " + d.retry_after + " שניות.");
+    if (d.error === "rate_limited") return show("r2", "bad", "יותר מדי קודים לכתובת הזו בשעה האחרונה. אפשר שוב בעוד " + Math.ceil(d.retry_after / 60) + " דקות.");
+    if (d.error === "email_not_configured") return show("r2", "bad", "❌ חסר הסוד EMAILJS_PRIVATE_KEY ב-Supabase → Edge Functions → Secrets.");
+    show("r2", "bad", "❌ " + (r.net ? "אין תשובה מהשרת" : "HTTP " + r.status + " " + (d.error || "")) + "\nהרץ קודם את שלב 1.");
+  };
+  $("verify").onclick = async () => {
+    const email = $("email").value.trim().toLowerCase(), code = $("code").value.replace(/\D/g, "");
+    if (code.length !== 6) return show("r3", "bad", "הקוד צריך להיות 6 ספרות.");
+    $("verify").disabled = true; show("r3", "info", "בודק…");
+    const r = await call({ action: "verify", email, code, session: false });
+    $("verify").disabled = false;
+    const d = r.data || {};
+    if (d.ok) return show("r3", "ok", "✅ הקוד נכון ונוצל. התהליך כולו עובד — כולל קבלת מייל אמיתי.");
+    const M = { bad_code: "הקוד שגוי. נותרו " + d.attempts_left + " ניסיונות.", expired: "הקוד פג תוקף. שלח קוד חדש.", too_many_attempts: "יותר מדי ניסיונות. שלח קוד חדש.", no_code: "אין קוד פעיל לכתובת הזו. שלח קוד חדש." };
+    show("r3", "bad", "❌ " + (M[d.error] || (r.net ? "אין תשובה מהשרת" : "HTTP " + r.status)));
+  };
+</script>
+</body>
+</html>

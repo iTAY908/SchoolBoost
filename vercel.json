@@ -1,0 +1,16 @@
+{
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/cubefinance/site/index.html"
+    },
+    {
+      "src": "/auth-check",
+      "dest": "/cubefinance/web/auth-check.html"
+    },
+    {
+      "src": "/img/(.*)",
+      "dest": "/cubefinance/site/img/$1"
+    }
+  ]
+}

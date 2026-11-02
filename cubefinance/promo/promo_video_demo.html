@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CubeFinance Promo</title>
+<meta name="description" content="30-second code-drawn promo for CubeFinance (1080x1920, deterministic timeline).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<!--
+  CubeFinance — 30s promo, drawn entirely in HTML/CSS/SVG.
+
+  Everything on screen is a pure function of one clock: render(t), t in seconds (0..30).
+  That makes it seekable and frame-exact for export:
+    ?clean=1        hide the player controls (for screen recording)
+    ?t=12.5         open paused at a given second
+    ?loop=0         stop at the end instead of looping
+    window.__render(t)   draw one exact frame (used for MP4 export)
+    window.__ready       true once fonts are loaded
+
+  Figures and categories are the app's own (cubes, colours, the reviewer demo data).
+-->
+<style>
+  :root {
+    --ink: #1f2340; --ink-2: #4a4f72; --dim: #8a8fb0; --paper: #fbfafc;
+    --primary: #6472ff; --primary-2: #8f9aff; --primary-dim: #3b44a8;
+    --success: #10c088; --danger: #f0555a; --warning: #f5b544;
+    --landlord: #6C5CE7; --bills: #00CEC9; --essentials: #10c088; --emergency: #00B894;
+    --savings: #3b82f6; --investments: #e8845e; --lifestyle: #f5b544;
+    --d-bg: #0b0e18; --d-card: #151b29; --d-elev: #141a28;
+    --font: "Rubik", "Noto Sans Hebrew", "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #e7e6ef; }
+  body { font-family: var(--font); }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1080px; height: 1920px; overflow: hidden;
+    transform-origin: 50% 50%; background: var(--paper); color: var(--ink); direction: rtl; font-family: var(--font);
+    -webkit-font-smoothing: antialiased; }
+  .abs { position: absolute; }
+  .ltr { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- backgrounds ---------- */
+  #bgDots { inset: 0; background-image: radial-gradient(#1f234014 2px, transparent 2.4px); background-size: 44px 44px; }
+  .blob { border-radius: 50%; filter: blur(2px); }
+  #darkLayer { inset: 0; background:
+      radial-gradient(60% 30% at 20% 12%, #1b2350 0%, transparent 60%),
+      radial-gradient(55% 28% at 95% 70%, #10304a 0%, transparent 60%), var(--d-bg); }
+  #darkLayer .grid { inset: 0; background-image: radial-gradient(#8f9aff22 2px, transparent 2.4px); background-size: 44px 44px; }
+  #lightLayer { inset: 0; background: var(--paper); }
+  #lightLayer .grid { inset: 0; background-image: radial-gradient(#1f234014 2px, transparent 2.4px); background-size: 44px 44px; }
+
+  /* ---------- headlines ---------- */
+  .hl { left: 0; right: 0; top: 150px; text-align: center; padding: 0 60px; }
+  .hl h1 { margin: 0; font-size: 78px; line-height: 1.12; font-weight: 900; letter-spacing: -1.5px; }
+  .hl p { margin: 22px 0 0; font-size: 36px; font-weight: 500; color: var(--ink-2); }
+  .hl .w { display: inline-block; will-change: transform, opacity; }
+  .hl.dark h1 { color: #fff; } .hl.dark p { color: #b9bfe6; }
+  .mark { position: relative; display: inline-block; }
+  .mark svg { position: absolute; left: -10px; right: -10px; bottom: -6px; width: calc(100% + 20px); height: 34px; z-index: -1; overflow: visible; }
+  .mark path { fill: none; stroke-width: 22; stroke-linecap: round; }
+
+  /* ---------- phone ---------- */
+  #phone { left: 230px; top: 470px; width: 620px; height: 1290px; transform-origin: 310px 645px; }
+  #phoneSvg { position: absolute; inset: 0; overflow: visible; }
+  #screen { position: absolute; left: 40px; top: 20px; width: 540px; height: 1210px; border-radius: 66px; overflow: hidden;
+    background: #f4f6fc; isolation: isolate; }
+  #island { position: absolute; left: 50%; top: 18px; width: 150px; height: 42px; margin-left: -75px; border-radius: 22px;
+    background: #0a0c16; z-index: 50; }
+  .scr { position: absolute; inset: 0; overflow: hidden; background: #f4f6fc; color: var(--ink); will-change: transform, opacity; }
+  .sb { position: absolute; top: 0; left: 0; right: 0; height: 74px; padding: 22px 44px 0; display: flex; justify-content: space-between;
+    align-items: center; font-size: 22px; font-weight: 700; z-index: 5; direction: ltr; }
+  .sb .ic { display: flex; gap: 8px; align-items: center; }
+  .sb .bat { width: 36px; height: 18px; border: 2.5px solid currentColor; border-radius: 6px; position: relative; }
+  .sb .bat::after { content: ""; position: absolute; left: 2px; top: 2px; bottom: 2px; width: 70%; background: currentColor; border-radius: 2px; }
+  .sb .sig { display: flex; gap: 3px; align-items: flex-end; height: 18px; }
+  .sb .sig i { width: 5px; background: currentColor; border-radius: 2px; }
+  .card { position: absolute; background: #fff; border-radius: 28px; box-shadow: 0 14px 30px -18px #1f234040, 0 0 0 2px #1f23400d; }
+  .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 104px; background: #fff; display: flex; justify-content: space-around;
+    align-items: center; padding-bottom: 18px; box-shadow: 0 -2px 0 #1f23400d; font-size: 34px; }
+  .nav span { opacity: .35; filter: grayscale(1); } .nav span.on { opacity: 1; filter: none; }
+  .nav.dark { background: #0f1422; box-shadow: 0 -2px 0 #ffffff0d; }
+  .row { position: absolute; left: 26px; right: 26px; height: 112px; background: #fff; border-radius: 24px;
+    box-shadow: 0 10px 24px -18px #1f234040, 0 0 0 2px #1f23400b; display: flex; align-items: center; padding: 0 20px; gap: 16px; }
+  .ico { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 32px; flex: none; }
+  .row .t { flex: 1; min-width: 0; }
+  .row .t b { display: block; font-size: 24px; font-weight: 700; }
+  .row .t small { display: block; font-size: 18px; color: var(--dim); margin-top: 4px; }
+  .row .amt { font-size: 26px; font-weight: 800; }
+  .bar { position: absolute; left: 100px; right: 20px; bottom: 14px; height: 8px; border-radius: 4px; background: #eef0f8; overflow: hidden; }
+  .bar i { position: absolute; top: 0; bottom: 0; right: 0; border-radius: 4px; transform-origin: 100% 50%; }
+  .tag { display: inline-block; padding: 5px 13px; border-radius: 12px; font-size: 17px; font-weight: 700; margin-inline-end: 8px; }
+
+  /* ---------- floating stickers ---------- */
+  .fc { background: #fff; border: 3.5px solid var(--ink); border-radius: 26px; padding: 18px 26px; font-size: 30px; font-weight: 800;
+    box-shadow: 7px 8px 0 #1f23401f; white-space: nowrap; display: flex; align-items: center; gap: 14px; will-change: transform, opacity; }
+  .fc .e { font-size: 36px; }
+  .fc small { display: block; font-size: 20px; font-weight: 600; color: var(--dim); }
+
+  /* ---------- deco ---------- */
+  .deco { left: 0; top: 0; will-change: transform; }
+  .deco svg { display: block; overflow: visible; }
+
+  /* ---------- finale ---------- */
+  #finale { inset: 0; pointer-events: none; }
+  #logoTile { left: 390px; top: 520px; width: 300px; height: 300px; border-radius: 78px;
+    background: linear-gradient(150deg, var(--primary-2), var(--primary)); box-shadow: 0 50px 90px -40px var(--primary), inset 0 4px 0 #ffffff40;
+    display: grid; place-items: center; }
+  #wordmark { left: 0; right: 0; top: 880px; text-align: center; font-size: 124px; font-weight: 900; letter-spacing: -4px; direction: ltr; }
+  #wordmark span { display: inline-block; }
+  #valueProp { left: 0; right: 0; top: 1050px; text-align: center; font-size: 70px; font-weight: 900; letter-spacing: -1.5px; }
+  #tagline { left: 0; right: 0; top: 1150px; text-align: center; font-size: 38px; font-weight: 500; color: var(--ink-2); }
+  #cta { left: 250px; top: 1290px; width: 580px; height: 132px; border-radius: 40px; color: #fff; font-size: 48px; font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-2), var(--primary)); display: grid; place-items: center;
+    border: 4px solid var(--ink); box-shadow: 9px 10px 0 var(--ink); }
+  #ctaRing { left: 250px; top: 1290px; width: 580px; height: 132px; border-radius: 40px; border: 5px solid var(--primary); }
+  #chips { left: 0; right: 0; top: 1500px; display: flex; justify-content: center; gap: 18px; }
+  #chips span { font-size: 28px; font-weight: 700; padding: 12px 24px; border-radius: 20px; background: #fff; border: 3px solid #1f23401a; }
+
+  /* ---------- player ---------- */
+  #player { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 99; display: flex; gap: 12px; align-items: center;
+    background: #1f2340ee; color: #fff; padding: 10px 16px; border-radius: 16px; font: 600 14px var(--font); direction: ltr;
+    box-shadow: 0 10px 30px -10px #0008; }
+  #player button { background: #6472ff; color: #fff; border: 0; border-radius: 10px; padding: 8px 14px; font: 700 14px var(--font); cursor: pointer; }
+  #player input { width: min(46vw, 420px); accent-color: #8f9aff; }
+  #player .tm { min-width: 84px; text-align: center; font-variant-numeric: tabular-nums; }
+  body.clean #player { display: none; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- slight hand-drawn wobble on outlines and illustrations -->
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <linearGradient id="neonLine" x1="0" x2="1"><stop offset="0" stop-color="#00CEC9"/><stop offset="1" stop-color="#a78bfa"/></linearGradient>
+    <linearGradient id="areaL" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#6472ff" stop-opacity=".32"/><stop offset="1" stop-color="#6472ff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="areaD" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8f9aff" stop-opacity=".35"/><stop offset="1" stop-color="#8f9aff" stop-opacity="0"/></linearGradient>
+  </defs>
+</svg>
+
+<div id="stage">
+  <div id="bgDots" class="abs"></div>
+  <div class="abs blob" id="blob1" style="width:720px;height:720px;left:-260px;top:1180px;background:#e9ecff"></div>
+  <div class="abs blob" id="blob2" style="width:620px;height:620px;left:640px;top:360px;background:#e4f7ef"></div>
+  <div id="darkLayer" class="abs"><div class="abs grid"></div></div>
+  <div id="lightLayer" class="abs"><div class="abs grid"></div></div>
+
+  <div id="decoLayer" class="abs" style="inset:0"></div>
+
+  <!-- the drawn phone -->
+  <div id="phone" class="abs">
+    <svg id="phoneSvg" viewBox="0 0 620 1290" width="620" height="1290">
+      <g filter="url(#rough)">
+        <rect x="4" y="26" width="580" height="1252" rx="88" fill="#15182a"/>
+        <rect x="6" y="250" width="16" height="92" rx="7" fill="#262a45" stroke="#15182a" stroke-width="4"/>
+        <rect x="6" y="364" width="16" height="92" rx="7" fill="#262a45" stroke="#15182a" stroke-width="4"/>
+        <rect x="598" y="300" width="16" height="150" rx="7" fill="#262a45" stroke="#15182a" stroke-width="4"/>
+        <rect x="20" y="2" width="580" height="1250" rx="88" fill="#2d3250" stroke="#15182a" stroke-width="5"/>
+        <rect x="30" y="12" width="560" height="1230" rx="80" fill="none" stroke="#ffffff22" stroke-width="3"/>
+      </g>
+    </svg>
+    <div id="screen">
+      <div id="island"></div>
+
+      <!-- S1: dashboard -->
+      <div class="scr" id="s1">
+        <div class="sb"><span>9:41</span><span class="ic"><span class="sig"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></span><span class="bat"></span></span></div>
+        <div class="abs" style="top:92px;right:32px;left:32px;display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:32px;font-weight:800">בוקר טוב 👋</div><div style="font-size:20px;color:var(--dim);margin-top:4px">ספטמבר 2026 · 7 קוביות</div></div>
+          <div class="ico" style="background:linear-gradient(150deg,var(--primary-2),var(--primary));width:62px;height:62px;border-radius:18px;font-size:30px">🧊</div>
+        </div>
+        <div class="card" id="s1Bal" style="top:190px;left:26px;right:26px;height:236px;background:linear-gradient(140deg,#8f9aff,#6472ff 55%,#4f5dff);color:#fff;padding:30px 34px;box-shadow:0 30px 50px -28px #6472ff">
+          <div style="font-size:24px;font-weight:600;opacity:.9">סה״כ בקוביות</div>
+          <div style="font-size:84px;font-weight:900;letter-spacing:-2px;margin-top:6px"><span class="ltr num" id="s1Total">₪0</span></div>
+          <div style="font-size:20px;opacity:.85;margin-top:4px">מתעדכן בזמן אמת · עודכן עכשיו</div>
+          <svg class="abs" style="left:24px;top:28px" width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="48" fill="none" stroke="#ffffff30" stroke-width="12"/><circle id="s1Ring" cx="60" cy="60" r="48" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-90 60 60)"/></svg>
+        </div>
+        <div class="card" id="s1ChipA" style="top:446px;right:26px;width:236px;height:112px;padding:18px 22px">
+          <div style="font-size:19px;color:var(--dim);font-weight:600">⬆️ הכנסה</div>
+          <div style="font-size:36px;font-weight:900;color:var(--success);margin-top:6px"><span class="ltr num" id="s1Inc">₪0</span></div>
+        </div>
+        <div class="card" id="s1ChipB" style="top:446px;left:26px;width:236px;height:112px;padding:18px 22px">
+          <div style="font-size:19px;color:var(--dim);font-weight:600">⬇️ הוצאות קבועות</div>
+          <div style="font-size:36px;font-weight:900;color:var(--danger);margin-top:6px"><span class="ltr num" id="s1Exp">₪0</span></div>
+        </div>
+        <div class="abs" style="top:584px;right:32px;font-size:26px;font-weight:800">הקוביות שלי</div>
+        <div class="abs" style="top:588px;left:32px;font-size:20px;font-weight:700;color:var(--primary)">הכל ←</div>
+        <div id="s1Rows"></div>
+        <div class="nav"><span class="on">🏠</span><span>📊</span><span>💬</span><span>⚙️</span></div>
+      </div>
+
+      <!-- S2: charts -->
+      <div class="scr" id="s2">
+        <div class="sb"><span>9:41</span><span class="ic"><span class="sig"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></span><span class="bat"></span></span></div>
+        <div class="abs" style="top:92px;right:32px"><div style="font-size:32px;font-weight:800">תקציב חודשי</div><div style="font-size:20px;color:var(--dim);margin-top:4px"><span class="ltr">₪12,000</span> · חלוקה ל-7 קוביות</div></div>
+        <div class="card" style="top:190px;left:26px;right:26px;height:400px">
+          <div class="abs" style="top:22px;right:26px;font-size:22px;font-weight:700">יעדים חודשיים</div>
+          <div class="abs" style="top:24px;left:26px;font-size:18px;color:var(--dim)">% מההכנסה</div>
+          <div id="s2Bars" class="abs" style="left:18px;right:18px;top:70px;bottom:18px"></div>
+        </div>
+        <div class="card" style="top:610px;left:26px;right:26px;height:300px">
+          <div class="abs" style="top:22px;right:26px;font-size:22px;font-weight:700">סימולטור צמיחה · 12 חודשים</div>
+          <svg class="abs" style="left:0;top:0" width="488" height="300" viewBox="0 0 488 300">
+            <path id="s2Area" d="" fill="url(#areaL)"/>
+            <path id="s2Line" d="" fill="none" stroke="#6472ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+            <circle id="s2Dot" r="11" fill="#fff" stroke="#6472ff" stroke-width="6"/>
+          </svg>
+          <div class="abs" id="s2Start" style="left:26px;bottom:24px;font-size:20px;font-weight:700;color:var(--dim)"><span class="ltr">₪8,400</span></div>
+          <div class="abs" id="s2End" style="right:26px;top:64px;font-size:30px;font-weight:900;color:var(--primary);background:#eef0ff;border-radius:14px;padding:4px 14px"><span class="ltr num" id="s2EndV">₪8,400</span></div>
+        </div>
+        <div class="card" style="top:930px;left:26px;right:26px;height:160px">
+          <svg class="abs" style="left:26px;top:20px" width="120" height="120" viewBox="0 0 120 120"><circle cx="60" cy="60" r="46" fill="none" stroke="#e7f8f3" stroke-width="14"/><circle id="s2Ring" cx="60" cy="60" r="46" fill="none" stroke="#00B894" stroke-width="14" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-90 60 60)"/><text x="60" y="70" text-anchor="middle" font-size="30">🛟</text></svg>
+          <div class="abs" style="top:26px;right:28px"><div style="font-size:24px;font-weight:800">קרן חירום</div><div style="font-size:19px;color:var(--dim);margin-top:4px">יעד <span class="ltr">₪15,750</span> · <span class="ltr">₪1,050</span> בחודש</div><div style="font-size:24px;font-weight:800;color:#00B894;margin-top:10px" id="s2Eta">תוך 15 חודשים ✓</div></div>
+        </div>
+        <div class="nav"><span>🏠</span><span class="on">📊</span><span>💬</span><span>⚙️</span></div>
+      </div>
+
+      <!-- S3: live feed + insight -->
+      <div class="scr" id="s3">
+        <div class="sb"><span>9:41</span><span class="ic"><span class="sig"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></span><span class="bat"></span></span></div>
+        <div class="abs" style="top:92px;right:32px"><div style="font-size:32px;font-weight:800">פעילות אחרונה</div><div style="font-size:20px;color:var(--dim);margin-top:4px">כל הוצאה נכנסת לקובייה שלה</div></div>
+        <div class="abs" id="s3Live" style="top:100px;left:32px;font-size:20px;font-weight:800;color:var(--danger);background:#fdecec;border-radius:14px;padding:6px 14px">● חי</div>
+        <div class="card" id="s3Inc" style="top:186px;left:26px;right:26px;height:150px;background:linear-gradient(140deg,#8f9aff,#6472ff);color:#fff;padding:22px 26px">
+          <div style="font-size:23px;font-weight:700">💸 הכנסת ספטמבר חולקה אוטומטית</div>
+          <div style="font-size:34px;font-weight:900;margin-top:6px"><span class="ltr">₪12,000</span> ← 7 קוביות</div>
+          <div id="s3Seg" class="abs" style="left:26px;right:26px;bottom:18px;height:12px;display:flex;gap:4px;direction:rtl"></div>
+        </div>
+        <div id="s3Tx"></div>
+        <div class="abs" id="s3Q" style="top:760px;left:26px;max-width:380px;background:var(--primary);color:#fff;font-size:23px;font-weight:600;padding:16px 22px;border-radius:24px 24px 24px 6px">אפשר לקנות אוזניות ב-<span class="ltr">₪600</span>?</div>
+        <div class="abs" id="s3A" style="top:846px;right:26px;left:60px;background:#fff;border-radius:24px 24px 6px 24px;padding:18px 22px;box-shadow:0 14px 30px -18px #1f234050,0 0 0 2px #6472ff33">
+          <div style="display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--primary)"><span class="ico" style="width:40px;height:40px;border-radius:12px;font-size:22px;background:linear-gradient(150deg,var(--primary-2),var(--primary))">🧊</span>Cubey · תובנה חכמה</div>
+          <div id="s3Typing" style="font-size:40px;letter-spacing:6px;color:var(--dim);line-height:1;margin-top:10px">•••</div>
+          <div id="s3Ans" style="font-size:23px;line-height:1.45;margin-top:8px;font-weight:500">כן, אפשר בשקט ✅<br>יש <b class="ltr">₪763</b> בבילויים ופנאי — יישארו <b class="ltr">₪163</b></div>
+        </div>
+        <div class="nav"><span>🏠</span><span>📊</span><span class="on">💬</span><span>⚙️</span></div>
+      </div>
+
+      <!-- S4: lock screen -->
+      <div class="scr" id="s4" style="background:linear-gradient(170deg,#4a55e6 0%,#7b86ff 45%,#b3a4ff 75%,#ffd49a 100%);color:#fff">
+        <svg class="abs" style="left:0;top:0;opacity:.18" width="540" height="1210" viewBox="0 0 540 1210" id="s4Wall"></svg>
+        <div class="sb" style="color:#fff"><span></span><span class="ic"><span class="sig"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></span><span class="bat"></span></span></div>
+        <div class="abs" style="top:92px;left:0;right:0;text-align:center;font-size:30px">🔒</div>
+        <div class="abs" style="top:140px;left:0;right:0;text-align:center;font-size:27px;font-weight:600;opacity:.95">יום חמישי, 25 בספטמבר</div>
+        <div class="abs" style="top:170px;left:0;right:0;text-align:center;font-size:156px;font-weight:700;letter-spacing:-4px;direction:ltr">08:07</div>
+        <div class="abs" id="s4Widget" style="top:376px;left:30px;right:30px;height:196px;border-radius:32px;background:#ffffff3a;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:2px solid #ffffff55;padding:22px 26px">
+          <div style="display:flex;align-items:center;gap:10px;font-size:19px;font-weight:700;opacity:.92"><span class="ico" style="width:34px;height:34px;border-radius:10px;font-size:18px;background:#ffffff40">🧊</span>CubeFinance · היום</div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px">
+            <div><div style="font-size:20px;opacity:.9">הוצאות היום</div><div style="font-size:52px;font-weight:900;letter-spacing:-1px"><span class="ltr num"><span id="s4Spent">₪180</span><span style="font-size:26px;opacity:.8"> / ₪400</span></span></div></div>
+            <svg width="96" height="96" viewBox="0 0 96 96"><circle cx="48" cy="48" r="38" fill="none" stroke="#ffffff40" stroke-width="12"/><circle id="s4Ring" cx="48" cy="48" r="38" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset=".55" transform="rotate(-90 48 48)"/></svg>
+          </div>
+          <div style="height:10px;border-radius:5px;background:#ffffff38;margin-top:12px;overflow:hidden;position:relative"><i id="s4Bar" style="position:absolute;right:0;top:0;bottom:0;width:45%;background:#fff;border-radius:5px"></i></div>
+        </div>
+        <div id="s4Notes"></div>
+        <div class="abs" style="bottom:70px;left:60px;width:84px;height:84px;border-radius:50%;background:#ffffff33;display:grid;place-items:center;font-size:34px">🔦</div>
+        <div class="abs" style="bottom:70px;right:60px;width:84px;height:84px;border-radius:50%;background:#ffffff33;display:grid;place-items:center;font-size:34px">📷</div>
+        <div class="abs" style="bottom:22px;left:50%;width:170px;height:8px;margin-left:-85px;border-radius:4px;background:#fff"></div>
+      </div>
+
+      <!-- S5: dark mode with neon charts -->
+      <div class="scr" id="s5" style="background:#0b0e18;color:#e8ebff">
+        <div class="sb" style="color:#fff"><span>21:40</span><span class="ic"><span class="sig"><i style="height:6px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:18px"></i></span><span class="bat"></span></span></div>
+        <div class="abs" style="top:92px;right:32px"><div style="font-size:32px;font-weight:800">סקירה חודשית</div><div style="font-size:20px;color:#8a90b8;margin-top:4px">ספטמבר · מצב כהה 🌙</div></div>
+        <div class="card" style="top:190px;left:26px;right:26px;height:380px;background:#151b29;box-shadow:0 0 0 2px #ffffff0d">
+          <svg class="abs" style="left:50%;top:30px;margin-left:-160px" width="320" height="320" viewBox="0 0 320 320" id="s5Donut"></svg>
+          <div class="abs" style="left:0;right:0;top:160px;text-align:center"><div style="font-size:44px;font-weight:900;color:#fff"><span class="ltr">₪12,000</span></div><div style="font-size:19px;color:#8a90b8">7 קוביות</div></div>
+        </div>
+        <div class="card" style="top:590px;left:26px;right:26px;height:280px;background:#151b29;box-shadow:0 0 0 2px #ffffff0d">
+          <div class="abs" style="top:22px;right:26px;font-size:22px;font-weight:700">חיסכון מצטבר</div>
+          <div class="abs" style="top:20px;left:26px;font-size:26px;font-weight:900;color:#a5b0ff;text-shadow:0 0 18px #8f9aff"><span class="ltr num" id="s5Val">₪8,400</span></div>
+          <svg class="abs" style="left:0;top:0" width="488" height="280" viewBox="0 0 488 280">
+            <path id="s5Area" d="" fill="url(#areaD)"/>
+            <path id="s5Line" d="" fill="none" stroke="url(#neonLine)" stroke-width="6" stroke-linecap="round" filter="url(#glow)" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+          </svg>
+        </div>
+        <div class="card" style="top:890px;left:26px;right:26px;height:200px;background:#151b29;box-shadow:0 0 0 2px #ffffff0d">
+          <div class="abs" style="top:20px;right:26px;font-size:22px;font-weight:700">הוצאות השבוע</div>
+          <div id="s5Bars" class="abs" style="left:26px;right:26px;top:66px;bottom:20px;display:flex;align-items:flex-end;justify-content:space-between;direction:rtl"></div>
+        </div>
+        <div class="nav dark"><span class="on">🏠</span><span>📊</span><span>💬</span><span>⚙️</span></div>
+      </div>
+
+      <div class="abs" id="sleep" style="inset:0;background:#000;z-index:40"></div>
+    </div>
+  </div>
+
+  <div id="fcLayer" class="abs" style="inset:0"></div>
+  <div id="hlLayer" class="abs" style="inset:0"></div>
+
+  <div id="finale" class="abs">
+    <div id="logoTile" class="abs"></div>
+    <div id="wordmark" class="abs"></div>
+    <div id="valueProp" class="abs">שולטים בכסף — <span class="mark">בלי מאמץ<svg viewBox="0 0 300 34" preserveAspectRatio="none"><path id="vpMark" d="M6 22 C 80 12, 190 30, 294 16" stroke="#f5b544" stroke-opacity=".55" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg></span></div>
+    <div id="tagline" class="abs">הכסף שלך, מסודר בקוביות</div>
+    <div id="ctaRing" class="abs"></div>
+    <div id="cta" class="abs">הצטרפו עכשיו ←</div>
+    <div id="chips" class="abs"><span>🧊 7 קוביות</span><span>🤖 Cubey AI</span><span>🌙 מצב כהה</span></div>
+  </div>
+</div>
+
+<div id="player">
+  <button id="pp">❚❚</button>
+  <input id="scrub" type="range" min="0" max="30" step="0.01" value="0">
+  <span class="tm" id="tm">0.00 / 30</span>
+  <button id="rs">↺</button>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const DUR = 30;
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage");
+
+  /* ---------------- math ---------------- */
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, p) => a + (b - a) * p;
+  const smooth = (p) => { p = clamp(p); return p * p * (3 - 2 * p); };
+  const easeOut = (p) => 1 - Math.pow(1 - clamp(p), 3);
+  const ramp = (t, a, b) => clamp((t - a) / (b - a));
+  // closed-form damped spring 0 -> 1 (underdamped), deterministic for any t
+  function spring(t, w = 12, z = 0.55) {
+    if (t <= 0) return 0;
+    const wd = w * Math.sqrt(1 - z * z);
+    return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t));
+  }
+  const sp = (t, t0, w, z) => spring(t - t0, w, z);
+  // appear at a, leave at b (both springy); returns [in, out]
+  const life = (t, a, b, w = 12, z = 0.6) => [sp(t, a, w, z), b == null ? 0 : sp(t, b, 14, 0.9)];
+  const fmt = (n) => "₪" + Math.round(n).toLocaleString("en-US");
+  const bob = (t, f, a, ph = 0) => Math.sin(t * f + ph) * a;
+
+  /* ---------------- data (from the app) ---------------- */
+  const CUBES = [
+    { k: "landlord", e: "🔑", n: "בעל הדירה", c: "#6C5CE7", m: 3200 },
+    { k: "bills", e: "⚡", n: "חשבונות", c: "#00CEC9", m: 650 },
+    { k: "essentials", e: "🛒", n: "שוטף", c: "#10c088", m: 2400 },
+    { k: "emergency", e: "🛟", n: "חירום", c: "#00B894", m: 1050 },
+    { k: "savings", e: "💰", n: "חיסכון", c: "#3b82f6", m: 1800 },
+    { k: "investments", e: "📈", n: "השקעות", c: "#e8845e", m: 1200 },
+    { k: "lifestyle", e: "🎉", n: "בילויים", c: "#f5b544", m: 1700 },
+  ]; // sums to 12,000
+
+  /* ---------------- illustrations (flat isometric, like the app art) ---------------- */
+  const pt = (x, y) => x.toFixed(1) + "," + y.toFixed(1);
+  function moneyStack(layers = 3) {
+    // P(a,b) = (20,60) + a(80,-40) + b(80,40)
+    const P = (a, b, dy) => [20 + a * 80 + b * 80, 60 - a * 40 + b * 40 + dy];
+    const th = 30; let s = "";
+    s += `<ellipse cx="100" cy="${100 + th * layers - th + 44}" rx="96" ry="26" fill="#1f23401a"/>`;
+    for (let i = layers - 1; i >= 0; i--) {
+      const dy = i * th; const q = (a, b, d = 0) => pt(...P(a, b, dy + d));
+      s += `<polygon points="${q(0,0)} ${q(0,1)} ${q(0,1,th)} ${q(0,0,th)}" fill="#6FB43A"/>`;
+      s += `<polygon points="${q(0,1)} ${q(1,1)} ${q(1,1,th)} ${q(0,1,th)}" fill="#58A02A"/>`;
+      for (let j = 1; j < 4; j++) {
+        const d = j * th / 4;
+        s += `<polyline points="${q(0,0,d)} ${q(0,1,d)} ${q(1,1,d)}" fill="none" stroke="#8fcf55" stroke-width="1.6" opacity=".8"/>`;
+      }
+      s += `<polygon points="${q(0,.4)} ${q(0,.6)} ${q(0,.6,th)} ${q(0,.4,th)}" fill="#F2C67E"/>`;
+      s += `<polygon points="${q(0,0)} ${q(1,0)} ${q(1,1)} ${q(0,1)}" fill="#9CD35B"/>`;
+      s += `<polygon points="${q(.08,.08)} ${q(.92,.08)} ${q(.92,.92)} ${q(.08,.92)}" fill="none" stroke="#b9e58a" stroke-width="2.5"/>`;
+      s += `<polygon points="${q(0,.4)} ${q(1,.4)} ${q(1,.6)} ${q(0,.6)}" fill="#FBE0A8"/>`;
+      if (i === 0) {
+        const c = P(.5, .5, 0);
+        s += `<ellipse cx="${c[0] + 22}" cy="${c[1] - 11}" rx="13" ry="7" fill="#7cc242"/>`;
+      }
+    }
+    return `<svg width="200" height="${130 + th * layers}" viewBox="0 0 200 ${130 + th * layers}" filter="url(#rough)">${s}</svg>`;
+  }
+  function isoCube(top, left, right, size = 120, grid = false) {
+    // P(a,b) = (10,45) + a(50,-25) + b(50,25), height 58
+    const P = (a, b, d = 0) => [10 + a * 50 + b * 50, 45 - a * 25 + b * 25 + d];
+    const q = (a, b, d) => pt(...P(a, b, d)); const h = 58; let s = "";
+    s += `<ellipse cx="60" cy="138" rx="46" ry="12" fill="#1f23401a"/>`;
+    s += `<polygon points="${q(0,0)} ${q(0,1)} ${q(0,1,h)} ${q(0,0,h)}" fill="${left}"/>`;
+    s += `<polygon points="${q(0,1)} ${q(1,1)} ${q(1,1,h)} ${q(0,1,h)}" fill="${right}"/>`;
+    s += `<polygon points="${q(0,0)} ${q(1,0)} ${q(1,1)} ${q(0,1)}" fill="${top}"/>`;
+    if (grid) {
+      for (const g of [1 / 3, 2 / 3]) {
+        s += `<polyline points="${q(g,0)} ${q(g,1)}" stroke="#ffffff66" stroke-width="2.4" fill="none"/>`;
+        s += `<polyline points="${q(0,g)} ${q(1,g)}" stroke="#ffffff66" stroke-width="2.4" fill="none"/>`;
+        s += `<polyline points="${q(0,g)} ${q(0,g,h)}" stroke="#ffffff44" stroke-width="2.4" fill="none"/>`;
+        s += `<polyline points="${q(g,1)} ${q(g,1,h)}" stroke="#ffffff44" stroke-width="2.4" fill="none"/>`;
+        s += `<polyline points="${q(0,1,h*g)} ${q(0,0,h*g)}" stroke="#ffffff44" stroke-width="2.4" fill="none"/>`;
+        s += `<polyline points="${q(0,1,h*g)} ${q(1,1,h*g)}" stroke="#ffffff44" stroke-width="2.4" fill="none"/>`;
+      }
+    }
+    s += `<polyline points="${q(0,1)} ${q(0,1,h)}" stroke="#ffffff55" stroke-width="2.5" fill="none"/>`;
+    return `<svg width="${size}" height="${size * 1.25}" viewBox="0 0 120 150" filter="url(#rough)">${s}</svg>`;
+  }
+  function coin(size = 90) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" filter="url(#rough)">
+      <circle cx="56" cy="54" r="40" fill="#d69e2e"/><circle cx="50" cy="50" r="40" fill="#f7c948"/>
+      <circle cx="50" cy="50" r="30" fill="none" stroke="#e0a92e" stroke-width="4"/>
+      <text x="50" y="64" text-anchor="middle" font-size="40" font-weight="900" fill="#b7791f" font-family="Rubik,sans-serif">₪</text></svg>`;
+  }
+
+  /* ---------------- decorations & their per-scene layouts ---------------- */
+  // scene boundaries where everything springs to the next layout
+  const BOUNDS = [5, 10, 15, 20, 25];
+  const DECO = [
+    { html: moneyStack(3), w: 200, // [x, y, scale, rot] for S1..S6 (stage px, element centre)
+      P: [[150,1560,1,0],[945,1590,.9,4],[140,1640,.85,-3],[930,1660,.85,2],[150,1620,.9,0],[170,1640,1.0,-4]] },
+    { html: moneyStack(2), w: 200,
+      P: [[950,760,.72,0],[120,760,.62,-6],[965,860,.7,4],[120,1200,.66,-2],[960,900,.68,3],[910,1650,.85,5]] },
+    { html: isoCube("#8f9aff","#6472ff","#3b44a8"), w: 120,
+      P: [[960,1300,.95,0],[110,1250,.9,8],[970,1310,.9,-6],[980,540,.75,0],[110,1300,.9,-8],[160,850,.9,-10]] },
+    { html: isoCube("#5fe0b6","#10c088","#0a8a62"), w: 120,
+      P: [[110,880,.7,0],[980,1150,.75,-6],[100,1020,.75,6],[90,700,.7,4],[980,1350,.8,6],[920,780,.95,10]] },
+    { html: isoCube("#ffd27a","#f5b544","#c98a1c"), w: 120,
+      P: [[995,1790,.6,0],[90,1760,.6,0],[980,1780,.6,-4],[1000,1800,.55,0],[90,1810,.6,0],[980,1330,.7,0]] },
+    { html: coin(), w: 100,
+      P: [[120,1230,.8,-10],[980,1000,.8,10],[110,1380,.85,-8],[110,1480,.8,6],[985,1120,.8,-6],[330,1760,.8,-12]] },
+    { html: coin(), w: 100,
+      P: [[940,470,.7,12],[100,520,.65,-8],[960,470,.7,6],[960,1360,.7,-6],[100,560,.7,8],[740,1780,.75,14]] },
+    { html: coin(), w: 100,
+      P: [[70,1800,.6,0],[1000,1830,.55,0],[70,1840,.55,0],[60,1830,.55,0],[1000,1830,.55,0],[90,1320,.7,8]] },
+  ];
+  const decoLayer = $("decoLayer");
+  DECO.forEach((d) => {
+    const el = document.createElement("div"); el.className = "abs deco"; el.innerHTML = d.html;
+    decoLayer.appendChild(el); d.el = el;
+  });
+  // additive springs: value = P0 + sum_k (Pk - Pk-1) * spring(t - Bk)
+  function track(P, t, i, w = 7, z = 0.62, delay = 0) {
+    let v = P[0][i];
+    for (let k = 1; k < P.length; k++) v += (P[k][i] - P[k - 1][i]) * sp(t, BOUNDS[k - 1] - 0.15 + delay, w, z);
+    return v;
+  }
+
+  /* ---------------- S1 rows ---------------- */
+  const S1ROWS = [
+    { e: "🔑", n: "בעל הדירה", s: "🔒 נעול עד ה-1 לחודש", v: 3200, p: 1, c: "#6C5CE7" },
+    { e: "⚡", n: "חשבונות הבית", s: "2 מתוך 3 שולמו", v: 650, p: .66, c: "#00CEC9" },
+    { e: "🛟", n: "קרן חירום", s: "מתוך ₪15,750", v: 562, p: .04, c: "#00B894" },
+    { e: "🎉", n: "בילויים ופנאי", s: "נשאר לחודש", v: 943, p: .55, c: "#f5b544" },
+  ];
+  $("s1Rows").innerHTML = S1ROWS.map((r, i) => `
+    <div class="row" id="s1r${i}" style="top:${630 + i * 124}px">
+      <div class="ico" style="background:${r.c}22">${r.e}</div>
+      <div class="t"><b>${r.n}</b><small>${r.s.replace(/₪[\d,]+/, (m) => `<span class="ltr">${m}</span>`)}</small></div>
+      <div class="amt"><span class="ltr num" id="s1v${i}">₪0</span></div>
+      <div class="bar"><i id="s1b${i}" style="width:${Math.max(r.p, .04) * 100}%;background:${r.c}"></i></div>
+    </div>`).join("");
+
+  /* ---------------- S2 bars + simulator ---------------- */
+  const maxM = Math.max(...CUBES.map((c) => c.m));
+  $("s2Bars").innerHTML = CUBES.map((c, i) => {
+    const h = 200 * c.m / maxM; const pc = Math.round(c.m / 120);
+    return `<div class="abs" style="right:${i * 64 + 4}px;bottom:0;width:56px;height:300px">
+      <div class="abs" id="s2l${i}" style="left:-6px;right:-6px;bottom:${h + 52}px;text-align:center;font-size:19px;font-weight:800;color:${c.c}">${pc}%</div>
+      <div class="abs" id="s2b${i}" style="left:6px;right:6px;bottom:48px;height:${h}px;border-radius:14px 14px 6px 6px;background:${c.c};transform-origin:50% 100%"></div>
+      <div class="abs" style="left:0;right:0;bottom:4px;text-align:center;font-size:28px">${c.e}</div></div>`;
+  }).join("");
+  // simulator: ₪8,400 -> ₪106,212 over 12 months (compounding-ish curve)
+  function curve(x0, x1, y0, y1, n, bend) {
+    const pts = [];
+    for (let i = 0; i <= n; i++) {
+      const u = i / n; const e = (Math.exp(bend * u) - 1) / (Math.exp(bend) - 1);
+      pts.push([lerp(x0, x1, u), lerp(y0, y1, e) + Math.sin(i * 1.7) * 3 * (1 - u)]);
+    }
+    return pts;
+  }
+  const toPath = (pts) => pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const simPts = curve(40, 450, 250, 110, 12, 1.6);
+  $("s2Line").setAttribute("d", toPath(simPts));
+  $("s2Area").setAttribute("d", toPath(simPts) + " L40 290 L450 290 Z");
+  const s5Pts = curve(40, 450, 240, 90, 12, 1.4);
+  $("s5Line").setAttribute("d", toPath(s5Pts));
+  $("s5Area").setAttribute("d", toPath(s5Pts) + " L40 280 L450 280 Z");
+
+  /* ---------------- S3 feed ---------------- */
+  $("s3Seg").innerHTML = CUBES.map((c, i) => `<i id="s3g${i}" style="flex:${c.m};background:${i % 2 ? "#ffffffcc" : "#fff"};border-radius:6px;transform-origin:100% 50%"></i>`).join("");
+  const TX = [
+    { e: "🛒", n: "סופר", v: "-₪240", tags: [["שוטף", "#10c088"], ["🧱 הייתי חייב", "#6472ff"]] },
+    { e: "🍕", n: "ארוחה עם חברים", v: "-₪180", tags: [["בילויים ופנאי", "#f5b544"], ["😄 התפנקתי ושווה", "#e8845e"]] },
+    { e: "⚡", n: "חשמל", v: "-₪320", tags: [["חשבונות הבית", "#00CEC9"], ["🧾 קבוע", "#8a8fb0"]] },
+  ];
+  $("s3Tx").innerHTML = TX.map((x, i) => `
+    <div class="row" id="s3t${i}" style="top:${352 + i * 128}px;height:116px;align-items:flex-start;padding-top:16px">
+      <div class="ico" style="background:#f1f2fa">${x.e}</div>
+      <div class="t"><b>${x.n}</b><div style="margin-top:10px;white-space:nowrap">${x.tags.map((g, j) =>
+        `<span class="tag" id="s3t${i}g${j}" style="background:${g[1]}1f;color:${g[1] === "#f5b544" ? "#b7791f" : g[1]}">${g[0]}</span>`).join("")}</div></div>
+      <div class="amt" style="color:var(--danger);margin-top:4px"><span class="ltr">${x.v}</span></div>
+    </div>`).join("");
+
+  /* ---------------- S4 lock screen ---------------- */
+  // faint cubes wallpaper
+  (() => {
+    let s = "";
+    const P = (x, y, r) => `<g transform="translate(${x} ${y}) scale(${r})"><polygon points="0,-40 70,-5 0,30 -70,-5" fill="#fff"/><polygon points="-70,-5 0,30 0,100 -70,65" fill="#fff" opacity=".6"/><polygon points="0,30 70,-5 70,65 0,100" fill="#fff" opacity=".35"/></g>`;
+    s += P(90, 980, 1.1) + P(440, 860, .8) + P(300, 1120, .6) + P(470, 300, .5) + P(60, 330, .45);
+    $("s4Wall").innerHTML = s;
+  })();
+  const NOTES = [
+    { e: "💸", t: "הכנסה חדשה חולקה", b: "<span class='ltr'>₪12,000</span> נכנסו ל-7 קוביות" },
+    { e: "⚠️", t: "התראת תקציב · שוטף", b: "נוצלו 85% מתקציב השוטף לחודש" },
+    { e: "☀️", t: "תקרה יומית", b: "נשארו <span class='ltr'>₪160</span> להוצאות היום" },
+  ];
+  $("s4Notes").innerHTML = NOTES.map((n, i) => `
+    <div class="abs" id="s4n${i}" style="top:${600 + i * 138}px;left:30px;right:30px;height:124px;border-radius:28px;background:#ffffffd9;
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--ink);padding:18px 22px;display:flex;gap:16px;align-items:center;box-shadow:0 18px 30px -20px #1f234080">
+      <div class="ico" style="width:62px;height:62px;border-radius:16px;background:linear-gradient(150deg,var(--primary-2),var(--primary));font-size:30px">${n.e}</div>
+      <div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;font-size:17px;color:var(--dim);font-weight:600"><span>CubeFinance</span><span>עכשיו</span></div>
+      <div style="font-size:22px;font-weight:800;margin-top:3px">${n.t}</div><div style="font-size:20px;color:var(--ink-2);margin-top:2px">${n.b}</div></div>
+    </div>`).join("");
+
+  /* ---------------- S5 neon ---------------- */
+  (() => {
+    const R = 120, C = 2 * Math.PI * R; let off = 0; let s = "";
+    s += `<circle cx="160" cy="160" r="${R}" fill="none" stroke="#1d2436" stroke-width="30"/>`;
+    CUBES.forEach((c, i) => {
+      const len = C * c.m / 12000;
+      s += `<circle id="s5d${i}" cx="160" cy="160" r="${R}" fill="none" stroke="${c.c}" stroke-width="28" stroke-linecap="butt"
+        stroke-dasharray="0 ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 160 160)" filter="url(#glow)" data-len="${len - 5}"/>`;
+      off += len;
+    });
+    $("s5Donut").innerHTML = s;
+    const days = [["א", 180], ["ב", 95], ["ג", 240], ["ד", 60], ["ה", 150], ["ו", 310], ["ש", 120]];
+    $("s5Bars").innerHTML = days.map((d, i) => `<div style="width:44px;text-align:center">
+      <div id="s5b${i}" style="height:${d[1] / 310 * 88}px;border-radius:10px;background:linear-gradient(180deg,#a78bfa,#6472ff);box-shadow:0 0 18px #8f9aff,0 0 4px #c4b5fd;transform-origin:50% 100%"></div>
+      <div style="font-size:17px;color:#8a90b8;margin-top:8px">${d[0]}</div></div>`).join("");
+  })();
+
+  /* ---------------- floating stickers ---------------- */
+  const FC = [
+    { h: `<span class="e">💸</span><span><span class="ltr">+₪12,000</span><small>הכנסה נכנסה</small></span>`, x: 690, y: 395, r: 4, a: 1.1, b: 4.55 },
+    { h: `<span class="e">🔒</span><span>שכר דירה שמור<small>קובייה נעולה</small></span>`, x: 20, y: 1660, r: -5, a: 1.8, b: 4.6 },
+    { h: `<span class="e">🎯</span><span>יעד בעוד 15 חודשים<small>קרן חירום</small></span>`, x: 600, y: 1680, r: 3, a: 7.6, b: 9.6 },
+    { h: `<span class="e">📈</span><span class="ltr">₪106,212</span>`, x: 20, y: 1400, r: -4, a: 6.6, b: 9.55 },
+    { h: `<span class="e">✅</span><span>סווג אוטומטית<small>לפי הקובייה</small></span>`, x: 690, y: 920, r: 4, a: 11.2, b: 14.6 },
+    { h: `<span class="e">💡</span><span>תובנה חדשה<small>מ-Cubey</small></span>`, x: 20, y: 1680, r: -3, a: 13.1, b: 14.6 },
+    { h: `<span class="e">🔔</span><span>בלי לפתוח את האפליקציה</span>`, x: 560, y: 1790, r: -2, a: 17.3, b: 19.6 },
+    { h: `<span class="e" id="fcSun">☀️</span><span id="toggle" style="display:inline-block;width:92px;height:50px;border-radius:25px;background:#e7e9f5;position:relative;border:3px solid var(--ink)"><i id="knob" style="position:absolute;top:4px;right:4px;width:36px;height:36px;border-radius:50%;background:var(--warning)"></i></span>`, x: 40, y: 470, r: -4, a: 19.2, b: 22.2 },
+  ];
+  const fcLayer = $("fcLayer");
+  FC.forEach((f) => {
+    const el = document.createElement("div"); el.className = "abs fc"; el.innerHTML = f.h;
+    el.style.left = f.x + "px"; el.style.top = f.y + "px"; fcLayer.appendChild(el); f.el = el;
+  });
+
+  /* ---------------- headlines ---------------- */
+  const HL = [
+    { a: 0.35, b: 4.65, h: ["כל", "שקל", "יודע", "|לאן הוא הולך"], p: "ההכנסה מתחלקת לקוביות — אוטומטית" },
+    { a: 5.15, b: 9.65, h: ["תקציב", "חכם,", "|בלי אקסל"], p: "יעדים, תחזית חיסכון וקרן חירום במבט אחד" },
+    { a: 10.15, b: 14.65, h: ["כל", "הוצאה", "|מתויגת"], p: "ו-Cubey עונה לפני שאתם מוציאים" },
+    { a: 15.2, b: 19.6, h: ["מעקב", "חי,", "|גם בלי לפתוח"], p: "וידג׳ט והתראות תקציב במסך הנעילה" },
+    { a: 20.35, b: 24.55, h: ["נוח", "לעיניים,", "|גם בלילה"], p: "מצב כהה מלא, עם גרפים זוהרים", dark: true },
+  ];
+  const hlLayer = $("hlLayer");
+  HL.forEach((H, i) => {
+    const el = document.createElement("div"); el.className = "abs hl" + (H.dark ? " dark" : "");
+    const words = H.h.map((w) => w[0] === "|"
+      ? `<span class="w mark">${w.slice(1)}<svg viewBox="0 0 300 34" preserveAspectRatio="none"><path d="M6 20 C 80 10, 190 30, 294 14" stroke="${H.dark ? "#8f9aff" : "#f5b544"}" stroke-opacity="${H.dark ? ".6" : ".55"}" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg></span>`
+      : `<span class="w">${w}</span>`).join(" ");
+    el.innerHTML = `<h1>${words}</h1><p><span class="w">${H.p}</span></p>`;
+    hlLayer.appendChild(el); H.el = el; H.ws = [...el.querySelectorAll(".w")]; H.mk = el.querySelector(".mark path");
+  });
+
+  /* ---------------- finale ---------------- */
+  $("logoTile").innerHTML = isoCube("#ffffff", "#e4e7ff", "#c3c9ff", 190, true);
+  $("wordmark").innerHTML = [..."CubeFinance"].map((ch, i) =>
+    `<span style="color:${i < 4 ? "var(--primary)" : "var(--ink)"}">${ch}</span>`).join("");
+  const wmLetters = [...$("wordmark").children];
+
+  /* ---------------- refs ---------------- */
+  const S = [1, 2, 3, 4, 5].map((i) => $("s" + i));
+  const phone = $("phone");
+
+  const setT = (el, tf, op) => { el.style.transform = tf; if (op != null) el.style.opacity = op; };
+
+  /* ================= RENDER ================= */
+  function render(t) {
+    t = clamp(t, 0, DUR);
+
+    /* ----- global light / dark ----- */
+    const darkR = easeOut(ramp(t, 19.95, 21.0)) * 2300;          // circular reveal to dark
+    const lightR = easeOut(ramp(t, 24.75, 25.75)) * 2300;        // and back to paper for the finale
+    const dk = clamp(darkR / 1400) * (1 - clamp(lightR / 900));  // 0..1 "darkness" for glow effects
+    $("darkLayer").style.clipPath = `circle(${darkR}px at 540px 1100px)`;
+    $("lightLayer").style.clipPath = `circle(${lightR}px at 540px 820px)`;
+    $("blob1").style.transform = `translate(${bob(t, .4, 30)}px, ${bob(t, .3, 40, 1)}px)`;
+    $("blob2").style.transform = `translate(${bob(t, .35, 34, 2)}px, ${bob(t, .45, 30)}px)`;
+
+    /* ----- phone ----- */
+    const pIn = sp(t, 0.05, 9, 0.62);
+    const PH = [[0, 0, 1, -2], [0, 0, 1, 2], [0, 0, 1, -1.5], [0, -10, 1.02, 0], [0, 0, 1, 1], [0, 0, 1, 0]];
+    const px = track(PH, t, 0, 8), py = track(PH, t, 1, 8), ps = track(PH, t, 2, 8), pr = track(PH, t, 3, 8);
+    const fly = sp(t, 24.6, 9, 0.8);
+    phone.style.transform =
+      `translate(${px}px, ${py + (1 - pIn) * 1200 + fly * 1350 + bob(t, 1.3, 6)}px) rotate(${pr + (1 - pIn) * 12 + fly * -14}deg) scale(${ps * (0.85 + 0.15 * pIn) * (1 - 0.3 * fly)})`;
+    phone.style.opacity = 1 - clamp(fly * 1.4 - 0.4);
+
+    /* ----- screens ----- */
+    // S1 -> S2: push (RTL: new screen enters from the left)
+    const p12 = sp(t, 5.0, 11, 0.82);
+    const p23 = sp(t, 10.0, 11, 0.82);
+    setT(S[0], `translateX(${p12 * 180}px) scale(${1 - 0.08 * p12})`, t < 5.9 ? 1 - 0.5 * clamp(p12) : 0);
+    setT(S[1], `translateX(${(1 - p12) * -560}px) translateY(${-p23 * 90}px) scale(${1 - 0.06 * p23})`, t >= 4.9 && t < 11 ? 1 : 0);
+    // S2 -> S3: sheet slides up
+    setT(S[2], `translateY(${(1 - p23) * 1240}px)`, t >= 9.9 && t < 15.3 ? 1 : 0);
+    S[2].style.boxShadow = p23 < 0.98 ? "0 -30px 60px -20px #1f234055" : "none";
+    S[2].style.borderRadius = p23 < 0.98 ? "40px 40px 0 0" : "0";
+    // S3 -> S4: screen sleeps, wakes on the lock screen
+    const sleep = smooth(ramp(t, 14.75, 15.05)) * (1 - smooth(ramp(t, 15.2, 15.55)));
+    $("sleep").style.opacity = sleep;
+    const wake = sp(t, 15.15, 9, 0.8);
+    setT(S[3], `scale(${1.08 - 0.08 * wake})`, t >= 15.05 && t < 21.5 ? 1 : 0);
+    // S4 -> S5: circular reveal inside the screen, in step with the stage
+    S[4].style.opacity = t >= 19.9 ? 1 : 0;
+    S[4].style.clipPath = `circle(${easeOut(ramp(t, 19.95, 20.75)) * 1400}px at 270px 605px)`;
+    S[4].style.transform = "none";
+
+    /* ----- S1 content ----- */
+    const cnt = easeOut(ramp(t, 0.5, 2.0));
+    $("s1Total").textContent = fmt(8399 * cnt);
+    $("s1Ring").style.strokeDashoffset = 1 - 0.7 * cnt;
+    $("s1Inc").textContent = fmt(12000 * easeOut(ramp(t, 0.7, 1.9)));
+    $("s1Exp").textContent = fmt(3850 * easeOut(ramp(t, 0.8, 2.0)));
+    [["s1Bal", 0.35], ["s1ChipA", 0.6], ["s1ChipB", 0.72]].forEach(([id, a]) => {
+      const p = sp(t, a, 11, 0.6); setT($(id), `translateY(${(1 - p) * 60}px) scale(${0.9 + 0.1 * p})`, clamp(p * 1.6));
+    });
+    S1ROWS.forEach((r, i) => {
+      const a = 1.2 + i * 0.22; const p = sp(t, a, 12, 0.58);
+      setT($("s1r" + i), `translateX(${(1 - p) * -120}px)`, clamp(p * 1.5));
+      $("s1b" + i).style.transform = `scaleX(${clamp(sp(t, a + 0.25, 7, 0.75), 0, 1.04)})`;
+      $("s1v" + i).textContent = fmt(r.v * easeOut(ramp(t, a + 0.1, a + 1.1)));
+    });
+
+    /* ----- S2 content ----- */
+    CUBES.forEach((c, i) => {
+      const p = sp(t, 5.55 + i * 0.1, 10, 0.5);
+      $("s2b" + i).style.transform = `scaleY(${Math.max(0, p)})`;
+      $("s2l" + i).style.opacity = clamp((p - 0.6) * 3);
+    });
+    const lp = easeOut(ramp(t, 6.4, 8.2));
+    $("s2Line").style.strokeDashoffset = 1 - lp;
+    $("s2Area").style.opacity = lp;
+    const di = Math.min(12, Math.floor(lp * 12)), df = lp * 12 - di;
+    const dp = di >= 12 ? simPts[12] : [lerp(simPts[di][0], simPts[di + 1][0], df), lerp(simPts[di][1], simPts[di + 1][1], df)];
+    $("s2Dot").setAttribute("cx", dp[0]); $("s2Dot").setAttribute("cy", dp[1]);
+    $("s2Dot").style.opacity = lp > 0.01 ? 1 : 0;
+    $("s2EndV").textContent = fmt(lerp(8400, 106212, Math.pow(lp, 1.6)));
+    $("s2Ring").style.strokeDashoffset = 1 - easeOut(ramp(t, 7.2, 8.8));
+    const eta = sp(t, 8.6, 12, 0.5); setT($("s2Eta"), `scale(${0.6 + 0.4 * eta})`, clamp(eta * 1.5));
+    $("s2Eta").style.transformOrigin = "100% 50%";
+
+    /* ----- S3 content ----- */
+    const ip = sp(t, 10.35, 11, 0.62); setT($("s3Inc"), `translateY(${(1 - ip) * -80}px) scale(${0.92 + 0.08 * ip})`, clamp(ip * 1.5));
+    CUBES.forEach((c, i) => { $("s3g" + i).style.transform = `scaleX(${clamp(sp(t, 10.7 + i * 0.07, 12, 0.7), 0, 1.1)})`; });
+    $("s3Live").style.opacity = 0.55 + 0.45 * Math.abs(Math.sin(t * 3));
+    TX.forEach((x, i) => {
+      const a = 11.0 + i * 0.5; const p = sp(t, a, 12, 0.6);
+      setT($("s3t" + i), `translateX(${(1 - p) * -500}px)`, clamp(p * 2));
+      x.tags.forEach((g, j) => {
+        const q = sp(t, a + 0.35 + j * 0.2, 14, 0.45);
+        setT($("s3t" + i + "g" + j), `scale(${Math.max(0, q)})`, clamp(q * 2));
+      });
+    });
+    const qp = sp(t, 12.5, 12, 0.6); setT($("s3Q"), `translateY(${(1 - qp) * 40}px) scale(${0.8 + 0.2 * qp})`, clamp(qp * 1.6));
+    $("s3Q").style.transformOrigin = "0 100%";
+    const ap = sp(t, 12.95, 11, 0.62); setT($("s3A"), `translateY(${(1 - ap) * 50}px) scale(${0.85 + 0.15 * ap})`, clamp(ap * 1.6));
+    $("s3A").style.transformOrigin = "100% 100%";
+    const typing = t >= 12.95 && t < 13.75;
+    $("s3Typing").style.display = typing ? "block" : "none";
+    $("s3Typing").style.opacity = 0.5 + 0.5 * Math.abs(Math.sin(t * 7));
+    $("s3Ans").style.display = typing ? "none" : "block";
+    $("s3Ans").style.opacity = clamp((t - 13.75) * 4);
+
+    /* ----- S4 content ----- */
+    const wp = sp(t, 15.6, 10, 0.62); setT($("s4Widget"), `translateY(${(1 - wp) * 60}px) scale(${0.9 + 0.1 * wp})`, clamp(wp * 1.5));
+    const live = easeOut(ramp(t, 17.4, 18.2));   // a live update: ₪180 -> ₪240
+    $("s4Spent").textContent = fmt(lerp(180, 240, live));
+    $("s4Ring").style.strokeDashoffset = 1 - lerp(0.45, 0.6, live);
+    $("s4Bar").style.width = lerp(45, 60, live) + "%";
+    NOTES.forEach((n, i) => {
+      const p = sp(t, 16.2 + i * 0.75, 11, 0.55);
+      setT($("s4n" + i), `translateY(${(1 - p) * -160}px) scale(${0.85 + 0.15 * p})`, clamp(p * 1.6));
+    });
+
+    /* ----- S5 content ----- */
+    const donut = easeOut(ramp(t, 20.3, 21.8));
+    CUBES.forEach((c, i) => {
+      const el = $("s5d" + i); const len = +el.dataset.len;
+      const p = clamp(donut * 7 - i * 0.8, 0, 1);
+      el.setAttribute("stroke-dasharray", `${(len * p).toFixed(1)} 2000`);
+    });
+    const nl = easeOut(ramp(t, 20.9, 22.6));
+    $("s5Line").style.strokeDashoffset = 1 - nl; $("s5Area").style.opacity = nl;
+    $("s5Val").textContent = fmt(lerp(8400, 106212, Math.pow(nl, 1.6)));
+    for (let i = 0; i < 7; i++) {
+      const p = sp(t, 21.3 + i * 0.08, 10, 0.5); $("s5b" + i).style.transform = `scaleY(${Math.max(0, p)})`;
+    }
+
+    /* ----- decorations ----- */
+    DECO.forEach((d, i) => {
+      const x = track(d.P, t, 0, 6.5, 0.6, i * 0.04), y = track(d.P, t, 1, 6.5, 0.6, i * 0.04);
+      const s = track(d.P, t, 2, 6.5, 0.6), r = track(d.P, t, 3, 6.5, 0.6);
+      const pop = sp(t, 0.4 + i * 0.12, 10, 0.5);
+      const fin = sp(t, 25.2 + i * 0.06, 9, 0.5);     // finale pop from the centre
+      const sc = s * Math.max(0, pop) * (t > 24.9 ? Math.max(0.001, fin) : 1);
+      const hy = bob(t, 1.1 + i * 0.13, 12, i);
+      const spin = i >= 5 ? `scaleX(${0.75 + 0.25 * Math.cos(t * 2 + i)})` : "";
+      d.el.style.transform = `translate(${x - d.w / 2}px, ${y - d.w / 2 + hy}px) rotate(${r + bob(t, .8, 3, i)}deg) scale(${sc}) ${spin}`;
+      d.el.style.filter = dk > 0.01 ? `drop-shadow(0 0 ${22 * dk}px rgba(143,154,255,${0.7 * dk}))` : "none";
+    });
+
+    /* ----- stickers ----- */
+    FC.forEach((f, i) => {
+      const [pi, po] = life(t, f.a, f.b, 12, 0.5);
+      const s = Math.max(0, pi) * (1 - po);
+      f.el.style.transform = `translateY(${bob(t, 1.4, 8, i) - po * 40}px) rotate(${f.r * (2 - pi)}deg) scale(${s})`;
+      f.el.style.opacity = clamp(pi * 2) * (1 - clamp(po * 1.2));
+    });
+    // dark-mode toggle flips right before the reveal
+    const kn = smooth(ramp(t, 19.6, 19.9));
+    $("knob").style.transform = `translateX(${-42 * kn}px)`;
+    $("knob").style.background = kn > 0.5 ? "#6472ff" : "#f5b544";
+    $("toggle").style.background = kn > 0.5 ? "#1f2340" : "#e7e9f5";
+    $("fcSun").textContent = kn > 0.5 ? "🌙" : "☀️";
+    FC[7].el.style.background = dk > 0.5 ? "#151b29" : "#fff";
+    FC[7].el.style.borderColor = dk > 0.5 ? "#8f9aff" : "var(--ink)";
+
+    /* ----- headlines ----- */
+    HL.forEach((H) => {
+      const vis = t > H.a - 0.1 && t < H.b + 0.6;
+      H.el.style.display = vis ? "block" : "none";
+      if (!vis) return;
+      const out = sp(t, H.b, 14, 0.9);
+      H.ws.forEach((w, j) => {
+        const p = sp(t, H.a + j * 0.09, 13, 0.55);
+        w.style.transform = `translateY(${(1 - p) * 70 - out * 50}px) scale(${0.8 + 0.2 * p})`;
+        w.style.opacity = clamp(p * 1.8) * (1 - clamp(out * 1.3));
+      });
+      H.mk.style.strokeDashoffset = 1 - easeOut(ramp(t, H.a + 0.5, H.a + 1.1));
+    });
+
+    /* ----- finale ----- */
+    const fOn = t > 25.0;
+    $("finale").style.display = fOn ? "block" : "none";
+    if (fOn) {
+      const lg = sp(t, 25.35, 10, 0.42);
+      setT($("logoTile"), `translateY(${(1 - lg) * 120 + bob(t, 1.6, 8)}px) rotate(${(1 - lg) * -40 + bob(t, 1.2, 2)}deg) scale(${Math.max(0, lg)})`, clamp(lg * 3));
+      wmLetters.forEach((l, i) => {
+        const p = sp(t, 25.75 + i * 0.045, 13, 0.5);
+        l.style.transform = `translateY(${(1 - p) * 90}px) scale(${Math.max(0, p)})`; l.style.opacity = clamp(p * 2);
+      });
+      const vp = sp(t, 26.35, 11, 0.6); setT($("valueProp"), `translateY(${(1 - vp) * 60}px)`, clamp(vp * 1.6));
+      $("vpMark").style.strokeDashoffset = 1 - easeOut(ramp(t, 26.8, 27.4));
+      const tg = sp(t, 26.75, 11, 0.7); setT($("tagline"), `translateY(${(1 - tg) * 40}px)`, clamp(tg * 1.5));
+      const cp = sp(t, 27.25, 11, 0.45);
+      const pulse = t > 28 ? 1 + 0.035 * Math.sin((t - 28) * 6) : 1;
+      setT($("cta"), `scale(${Math.max(0, cp) * pulse})`, clamp(cp * 2));
+      const rp = ((t - 27.9) % 1.1) / 1.1;
+      setT($("ctaRing"), `scale(${1 + 0.18 * rp}, ${1 + 0.5 * rp})`, t > 27.9 ? (1 - rp) * 0.8 : 0);
+      [...$("chips").children].forEach((c, i) => {
+        const p = sp(t, 27.7 + i * 0.12, 12, 0.55);
+        setT(c, `translateY(${(1 - p) * 40}px) scale(${Math.max(0, p)})`, clamp(p * 2));
+      });
+    }
+  }
+
+  /* ================= player ================= */
+  const q = new URLSearchParams(location.search);
+  if (q.get("clean") === "1") document.body.classList.add("clean");
+  const loop = q.get("loop") !== "0";
+  function fit() {
+    const s = Math.min(innerWidth / 1080, innerHeight / 1920);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  addEventListener("resize", fit); fit();
+
+  let playing = !q.has("t"), cur = +q.get("t") || 0, last = null;
+  const pp = $("pp"), scrub = $("scrub"), tm = $("tm");
+  function draw() { render(cur); scrub.value = cur; tm.textContent = cur.toFixed(2) + " / 30"; pp.textContent = playing ? "❚❚" : "▶"; }
+  function frame(now) {
+    if (playing) {
+      if (last != null) cur += (now - last) / 1000;
+      if (cur >= DUR) { if (loop) cur = 0; else { cur = DUR; playing = false; } }
+    }
+    last = now; draw(); requestAnimationFrame(frame);
+  }
+  pp.onclick = () => { if (cur >= DUR) cur = 0; playing = !playing; };
+  $("rs").onclick = () => { cur = 0; playing = true; };
+  scrub.oninput = () => { cur = +scrub.value; playing = false; };
+  addEventListener("keydown", (e) => {
+    if (e.code === "Space") { e.preventDefault(); pp.onclick(); }
+    if (e.code === "ArrowRight") cur = clamp(cur - 1, 0, DUR); // RTL: right = back
+    if (e.code === "ArrowLeft") cur = clamp(cur + 1, 0, DUR);
+  });
+
+  window.__render = (t) => { playing = false; cur = t; render(t); };
+  window.__ready = false;
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => { window.__ready = true; });
+  render(cur);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

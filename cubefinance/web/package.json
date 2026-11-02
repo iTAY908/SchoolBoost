@@ -1,0 +1,9 @@
+{
+  "name": "cubefinance-web",
+  "private": true,
+  "description": "CubeFinance web version — static page plus the email-verification functions in api/",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "nodemailer": "^9.0.3"
+  }
+}

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בדיקת מייל — CubeFinance</title>
+<!-- Sends one real verification email through the same EmailJS account the
+     app uses, and shows EmailJS's exact answer. Open it in any browser. -->
+<style>
+  :root { --bg:#f4f6fc; --card:#fff; --text:#171a2b; --dim:#5c6280; --primary:#4f5dff; --ok:#10a873; --bad:#e0434a; --line:#e2e6f3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b0e18; --card:#151b29; --text:#eef0ff; --dim:#9aa1c4; --primary:#8f9aff; --line:#262e45; } }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; padding:16px; background:var(--bg); color:var(--text);
+    font-family:"Segoe UI",-apple-system,"Noto Sans Hebrew",Arial,sans-serif; }
+  .card { width:100%; max-width:420px; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px; }
+  h1 { margin:0 0 6px; font-size:22px; }
+  p { color:var(--dim); line-height:1.6; margin:0 0 16px; font-size:15px; }
+  input { width:100%; padding:14px; font-size:17px; border-radius:12px; border:2px solid var(--line); background:var(--bg); color:var(--text); direction:ltr; }
+  button { width:100%; margin-top:12px; padding:15px; font-size:17px; font-weight:800; border:0; border-radius:12px; background:var(--primary); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.6; }
+  .res { margin-top:16px; padding:14px; border-radius:12px; line-height:1.6; font-size:15px; display:none; white-space:pre-wrap; }
+  .res.ok { display:block; background:#10a87322; color:var(--ok); }
+  .res.bad { display:block; background:#e0434a1f; color:var(--bad); }
+  code { direction:ltr; unicode-bidi:isolate; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📧 בדיקת שליחת קוד</h1>
+  <p>כתבו מייל, לחצו "שלח", ובדקו אם הגיע קוד. ככה יודעים שהאימות באפליקציה עובד, בלי לבנות גרסה לגוגל פליי.</p>
+  <input id="email" type="email" placeholder="you@gmail.com" autocomplete="email">
+  <button id="send">שלח קוד בדיקה</button>
+  <div class="res" id="res"></div>
+</div>
+<script>
+  // Same values as EMAILJS in cubefinance-web.html (public by design).
+  const EMAILJS = { serviceId: "service_upg7kqp", templateId: "template_7q8srkg", publicKey: "g7STyZwRjLgIMZXrA" };
+  const $ = (id) => document.getElementById(id);
+  const show = (cls, text) => { const r = $("res"); r.className = "res " + cls; r.textContent = text; };
+
+  function hint(status, body) {
+    const t = (body || "").toLowerCase();
+    if (t.includes("public key")) return "ה-Public Key לא נכון. בדקו ב-EmailJS: Account ← General.";
+    if (t.includes("template")) return "ה-Template ID לא נמצא. בדקו ב-Email Templates.";
+    if (t.includes("service")) return "ה-Service ID לא נמצא, או שהג׳ימייל התנתק. בדקו ב-Email Services.";
+    if (t.includes("recipient") || t.includes("to_email") || t.includes("address is empty"))
+      return "בתבנית, השדה To Email חייב להיות בדיוק {{to_email}}.";
+    if (t.includes("non-browser") || status === 403)
+      return "ב-EmailJS: Account ← Security ← לסמן \"Allow EmailJS API for non-browser applications\" ולשמור.";
+    if (status === 429) return "יותר מדי שליחות ברגע אחד. חכו דקה ונסו שוב.";
+    if (t.includes("gmail") || t.includes("invalid grant") || t.includes("reconnect"))
+      return "החיבור לג׳ימייל פג. ב-Email Services לחצו על Gmail ← Reconnect.";
+    return "שלחו צילום מסך של ההודעה הזו.";
+  }
+
+  $("send").onclick = async () => {
+    const email = $("email").value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { show("bad", "כתובת המייל לא תקינה."); return; }
+    const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
+    $("send").disabled = true; $("send").textContent = "שולח…"; show("", "");
+    try {
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ service_id: EMAILJS.serviceId, template_id: EMAILJS.templateId, user_id: EMAILJS.publicKey,
+          template_params: { to_email: email, code: code } }),
+      });
+      const body = await res.text();
+      if (res.ok) show("ok", "✅ עובד! EmailJS שלח את המייל.\n\nבמייל אמור להופיע הקוד: " + code + "\nלא הגיע תוך דקה? בדקו בספאם / קידומי מכירות.");
+      else show("bad", "❌ EmailJS ענה: " + res.status + "\n" + body + "\n\nמה לעשות: " + hint(res.status, body));
+    } catch (e) {
+      show("bad", "❌ לא הצלחתי להגיע ל-EmailJS (" + e.message + ").\nבדקו שיש אינטרנט. אם זה חוזר, שלחו צילום מסך.");
+    }
+    $("send").disabled = false; $("send").textContent = "שלח קוד בדיקה";
+  };
+</script>
+</body>
+</html>
