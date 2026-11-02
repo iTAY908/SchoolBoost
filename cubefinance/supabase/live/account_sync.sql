@@ -164,10 +164,13 @@ begin
     return json_build_object('ok', false, 'error', 'too_soon',
       'retry_after', ceil(extract(epoch from (v_last + interval '30 seconds' - now()))));
   end if;
-  if v_hour >= 6 then return json_build_object('ok', false, 'error', 'rate_limited'); end if;
+  if v_hour >= 6 then
+    return json_build_object('ok', false, 'error', 'rate_limited', 'retry_after',
+      ceil(extract(epoch from ((select min(at) from public.cf_code_sends where email = v_email and at > now() - interval '1 hour') + interval '1 hour' - now()))));
+  end if;
   if p_ip is not null then
     select count(*) into v_ip_hour from public.cf_code_sends where ip = p_ip and at > now() - interval '1 hour';
-    if v_ip_hour >= 30 then return json_build_object('ok', false, 'error', 'rate_limited'); end if;
+    if v_ip_hour >= 30 then return json_build_object('ok', false, 'error', 'rate_limited', 'retry_after', 600); end if;
   end if;
   insert into public.cf_code_sends (email, ip) values (v_email, p_ip);
   insert into public.cf_codes (email, code_hash, salt, expires_at, attempts)
@@ -176,7 +179,7 @@ begin
     set code_hash = excluded.code_hash, salt = excluded.salt,
         expires_at = excluded.expires_at, attempts = 0, created_at = now();
   delete from public.cf_code_sends where at < now() - interval '1 day';
-  return json_build_object('ok', true);
+  return json_build_object('ok', true, 'expires_in', 600, 'resend_in', 30);
 end;
 $$;
 

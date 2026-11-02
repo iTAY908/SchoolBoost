@@ -725,6 +725,14 @@
       cursor: pointer; font-family: var(--font); padding: 6px; }
     .otpresend:disabled { color: var(--dim); cursor: default; }
     .otpresend:not(:disabled):hover { text-decoration: underline; }
+    .otpsending { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 34px 6px; color: var(--dim); font-size: 15px; text-align: center; }
+    .otpsending b { color: var(--text); unicode-bidi: plaintext; }
+    .otpspin { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; border: 3px solid rgba(143,154,255,.25); border-top-color: var(--primary-2); animation: otpspin .8s linear infinite; }
+    @keyframes otpspin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .otpspin { animation-duration: 2.4s; } }
+    .otpfail { margin: 6px 0 12px; padding: 14px; border-radius: 14px; background: rgba(229,72,77,.12); border: 1px solid rgba(229,72,77,.45); color: #e5484d; font-weight: 700; font-size: 14px; line-height: 1.6; text-align: center; }
+    .otpinfo { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(100,114,255,.1); color: var(--text); font-size: 13px; line-height: 1.6; text-align: center; }
+    .otpedit { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
     .devcode { margin-top: 14px; background: rgba(245,181,68,.10); border: 1px solid rgba(245,181,68,.4);
       border-radius: 12px; padding: 11px 13px; font-size: 12.5px; line-height: 1.6; color: var(--warning); }
     .devcode b { font-size: 17px; letter-spacing: 4px; unicode-bidi: plaintext; }
@@ -2974,7 +2982,7 @@
     const VERIFY_TTL_MS = 10 * 60 * 1000;      // must match the server (10 min)
     const RESEND_COOLDOWN_MS = 30 * 1000;
     const MAX_CODE_ATTEMPTS = 5;
-    let vf = null; // { email, digits[], token, error, expiresAt, resendAt, localCode, attempts, busy }
+    let vf = null; // { email, purpose, phase: idle|sending|sent|failed, digits[], error, info, expiresAt, resendAt, retryAt, verifying, locked, editing, renameFrom }
 
     // ---- Android wrapper bridge -------------------------------------------
     // When this page runs inside the CubeFinance Android app, a small native
@@ -3923,6 +3931,7 @@
       v.appendChild(wrap);
       bindLangSwitch(v);
       const email = v.querySelector("#aEmail"), pass = v.querySelector("#aPass");
+      if (state.prefillEmail) { email.value = state.prefillEmail; state.prefillEmail = null; }   // after "wrong address?" on the code screen
 
       // real-time password strength meter (signup only)
       if (isSignup) {
@@ -3965,7 +3974,7 @@
         if (lockTimer) { clearInterval(lockTimer); lockTimer = null; }
         // An address has to prove it is real before the app opens: new accounts
         // always, existing ones until they have done it once.
-        if (needsEmailCheck(res.user)) { startVerification(res.user.email); return; }
+        if (needsEmailCheck(res.user)) { startVerification(res.user.email, isSignup ? "signup" : "login", { created: isSignup }); return; }
         enterApp(res.user); // login -> dashboard or onboarding
       };
       v.querySelector("#aSubmit").onclick = submit;
@@ -4030,7 +4039,7 @@
       vf = null; fpState = null; resetEmail = null;
       // Same rule as the email form: a code to this inbox before the app opens,
       // until the address has been verified once.
-      if (needsEmailCheck(u)) { startVerification(u.email, "signup"); return; }
+      if (needsEmailCheck(u)) { startVerification(u.email, isNew ? "signup" : "google", { created: isNew }); return; }
       showToast("✅ נכנסת עם Google");
       enterApp({ id: u.id, email: u.email });
     }
@@ -4225,118 +4234,174 @@
     }
 
     /** Ask for a code — via the backend when configured, locally otherwise. */
-    async function requestCode(email, isResend) {
-      vf.busy = true; vf.error = ""; renderVerify();
+    // =====================================================================
+    // Email codes — generated, mailed and checked ONLY by the server.
+    // The Supabase Edge Function cf-auth (supabase/live/functions/cf-auth)
+    // creates the 6-digit code, stores only a salted hash, mails it through
+    // EmailJS with the private key, and checks it: 10-minute expiry, 5 tries,
+    // single use, at most one code per 30 s and 6 per hour per address.
+    // The app never sees or keeps a code, and never shows "sent" unless the
+    // server confirmed the email provider ACCEPTED the message. Acceptance is
+    // not inbox delivery, and the screen says so.
+    // =====================================================================
+    const authFnUrl = () => CLOUD.url + "/functions/v1/cf-auth";
+    async function authCall(payload) {
+      let res;
       try {
-        // Preferred: Supabase Auth emails the code and checks it on the server.
-        // That is what gives the account a real server identity — and with it
-        // a profile friends can find in shared savings. If Supabase cannot send
-        // right now, the code goes out through EmailJS as before.
-        if (SERVER_FEATURES && vf.mode !== "emailjs" && await sbRequestCodeFor(email)) {
-          vf.mode = "supabase";
-          vf.mailedCode = null; vf.localCode = null;
-        } else if (useEmailJS()) {
-          vf.mode = "emailjs";
-          const code = randomCode(CODE_LEN);
-          try { await sendViaEmailJS(email, code); }
-          catch (err) {
-            secLog("ERROR", "שליחת קוד דרך EmailJS נכשלה: " + err.message);
-            vf.error = "שליחת המייל נכשלה. נסו שוב בעוד רגע.";
-            vf.busy = false; renderVerify(); return false;
-          }
-          vf.mailedCode = code;                    // kept in memory only, never shown
-          vf.localCode = null;
-        } else {
-          const r = await apiPost(isResend ? "/api/auth/resend" : "/api/auth/register", { email: email });
-          if (r.status === 429) {
-            vf.error = (r.data && r.data.message) || "נשלחו יותר מדי קודים. נסו שוב מאוחר יותר.";
-            vf.busy = false; renderVerify(); return false;
-          }
-          if (!r.data || r.data.ok !== true) {
-            vf.error = (r.data && r.data.message) || "שליחת הקוד נכשלה. נסו שוב.";
-            vf.busy = false; renderVerify(); return false;
-          }
-          vf.localCode = r.data.devCode || null;   // only present in dev
-          vf.token = r.data.token || null;         // signed by the server; carries no code
-        }
-        vf.expiresAt = Date.now() + VERIFY_TTL_MS;
-        vf.resendAt = Date.now() + RESEND_COOLDOWN_MS;
-        vf.attempts = 0;
-        vf.digits = blankDigits();
-        vf.busy = false;
-        renderVerify();
-        showToast(isResend ? "📧 נשלח קוד חדש למייל" : "📧 שלחנו לך קוד למייל");
-        return true;
-      } catch (e) {
-        vf.error = "אין חיבור לשרת. בדקו את החיבור ונסו שוב.";
-        vf.busy = false; renderVerify(); return false;
-      }
+        res = await fetch(authFnUrl(), {
+          method: "POST",
+          headers: { apikey: CLOUD.key, "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch (e) { return { net: true, status: 0, data: {} }; }
+      let data = null;
+      try { data = await res.json(); } catch (e) {}
+      return { net: false, status: res.status, data: data || {} };
+    }
+    const secs = (n, fallback) => Math.max(1, Math.round(Number(n) || fallback));
+    function minutesText(s) { const m = Math.ceil(s / 60); return m <= 1 ? "דקה" : m + " דקות"; }
+
+    // Hebrew text for a send that did not happen.
+    function sendErrorText(r) {
+      if (r.net) return "אין חיבור לאינטרנט. בדקו את החיבור ונסו שוב.";
+      const d = r.data || {};
+      if (d.error === "bad_email") return "כתובת המייל לא תקינה. בדקו אותה ותקנו למטה.";
+      if (d.error === "rate_limited") return "ביקשתם יותר מדי קודים. אפשר לבקש שוב בעוד " + minutesText(secs(d.retry_after, 600)) + ".";
+      if (d.error === "send_failed" && d.retryable) return "שליחת המייל נכשלה זמנית. לא נשלח קוד — נסו שוב בעוד רגע.";
+      if (d.error === "send_failed") return "ספק המייל לא קיבל את ההודעה, ולכן לא נשלח קוד. אנחנו מטפלים בזה — נסו שוב מאוחר יותר.";
+      if (r.status >= 500 || r.status === 404 || r.status === 401 || r.status === 403 || d.error === "email_not_configured" || d.error === "server_not_configured")
+        return "שירות שליחת הקודים לא זמין כרגע, ולכן לא נשלח קוד. נסו שוב מאוחר יותר.";
+      return "לא הצלחנו לשלוח קוד כרגע. נסו שוב בעוד רגע.";
     }
 
-    function startVerification(email, purpose) {
-      vf = { email: email, purpose: purpose || "signup", digits: blankDigits(), token: null, error: "", expiresAt: 0,
-             resendAt: 0, localCode: null, attempts: 0, busy: false };
+    // Ask the server for a code. Returns true only when one was really issued.
+    async function requestCode(isResend) {
+      if (!vf || vf.phase === "sending" || vf.verifying) return false;     // one request at a time
+      const email = vf.email;
+      const hadChallenge = vf.phase === "sent" && Date.now() < vf.expiresAt;
+      vf.phase = "sending"; vf.error = ""; vf.info = ""; vf.digits = blankDigits();
+      renderVerify();
+      const r = await authCall({ action: "send", email: email });
+      if (!vf || vf.email !== email) return false;                           // the address was changed meanwhile
+      const d = r.data || {};
+      const now = Date.now();
+      if (!r.net && r.status === 200 && d.ok === true && d.accepted === true) {
+        vf.phase = "sent"; vf.locked = false;
+        vf.expiresAt = now + secs(d.expires_in, 600) * 1000;
+        vf.resendAt = now + secs(d.resend_in, 30) * 1000;
+        renderVerify();
+        showToast(isResend ? "📧 נשלח קוד חדש" : "📧 שלחנו קוד למייל");
+        secLog("INFO", "השרת אישר ששירות המייל קיבל את הודעת הקוד");
+        return true;
+      }
+      if (!r.net && d.error === "too_soon") {
+        // A code went out less than 30 s ago and is still valid: keep waiting for it.
+        const wait = secs(d.retry_after, 30);
+        vf.phase = "sent"; vf.locked = false;
+        if (!hadChallenge) vf.expiresAt = now + (600 - (30 - wait)) * 1000;
+        vf.resendAt = now + wait * 1000;
+        vf.info = "כבר שלחנו קוד לפני רגע — בדקו את המייל. אפשר לבקש קוד חדש בעוד " + wait + " שניות.";
+        renderVerify();
+        return true;
+      }
+      // Nothing was issued (a failed send also withdraws the previous code on the server).
+      try { clearToasts(); } catch (e) {}   // no leftover "we sent you a code" over a failure
+      vf.phase = "failed";
+      vf.error = sendErrorText(r);
+      const wait = d.error === "rate_limited" ? secs(d.retry_after, 600) : (d.retryable || r.net || r.status >= 500 ? 5 : 30);
+      vf.retryAt = now + wait * 1000;
+      secLog("ERROR", "שליחת קוד נכשלה" + (d.reason ? " (" + d.reason + ")" : r.net ? " (רשת)" : ""));
+      renderVerify();
+      return false;
+    }
+
+    // purpose: signup | login | google | existing | reset
+    // opts.created: the local record was created by this sign-up (it holds no data yet)
+    function startVerification(email, purpose, opts) {
+      vf = { email: normEmail(email), purpose: purpose || "signup", opts: opts || {}, phase: "idle",
+             digits: blankDigits(), error: "", info: "", expiresAt: 0, resendAt: 0, retryAt: 0,
+             verifying: false, locked: false, editing: false, renameFrom: null };
       state.screen = "verify";
       render();
-      requestCode(email, false);
+      requestCode(false);
+    }
+
+    // Move a local account to a corrected address, keeping its id (and so all its data).
+    function renameLocalAccount(from, to) {
+      const users = loadUsers();
+      if (!users[from] || users[to]) return false;
+      users[to] = Object.assign({}, users[from], { email: to });
+      delete users[from];
+      saveUsers(users);
+      if (getSession() === from) setSession(to);
+      return true;
+    }
+
+    // "Wrong address?" — fix it without losing anything.
+    function changeVerifyEmail(newEmail) {
+      const e = normEmail(newEmail);
+      if (!validEmail(e)) { vf.error = "כתובת המייל לא תקינה"; renderVerify(); return; }
+      if (e === vf.email) { vf.editing = false; renderVerify(); return; }
+      const p = vf.purpose;
+      if (p === "signup" || p === "existing") {
+        // Same account, corrected address. The record moves only after the new
+        // address proves itself, so an unfinished change touches nothing.
+        if (loadUsers()[e]) { vf.error = "כבר יש במכשיר חשבון עם המייל הזה. היכנסו אליו במקום."; renderVerify(); return; }
+        vf.renameFrom = vf.renameFrom || vf.email;
+        vf.email = e; vf.editing = false; vf.phase = "idle"; vf.expiresAt = 0;
+        requestCode(false);
+        return;
+      }
+      // Login / Google / reset: another address means another account — back to its form.
+      const purpose = p; vf = null;
+      if (purpose === "reset") { fpState = { email: e, error: "" }; state.screen = "forgot"; }
+      else { state.screen = "auth"; state.authMode = "login"; state.prefillEmail = e; }
+      render();
     }
 
     async function submitCode() {
+      if (!vf || vf.phase !== "sent" || vf.verifying || vf.locked) return;
       const code = vf.digits.join("");
       if (code.length !== CODE_LEN) return;
-      vf.busy = true; vf.error = ""; renderVerify();
-
-      let ok = false, msg = "";
-      if (vf.mode === "supabase") {
-        if (Date.now() > vf.expiresAt) msg = "הקוד פג תוקף. בקשו קוד חדש.";
-        else if (vf.attempts >= MAX_CODE_ATTEMPTS) msg = "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
-        else {
-          const r = await sbVerifyCodeFor(vf.email, code);
-          if (r === true) ok = true;
-          else if (r === "network") msg = "אין חיבור לשרת. בדקו את החיבור ונסו שוב.";
-          else {
-            vf.attempts++;
-            const left = MAX_CODE_ATTEMPTS - vf.attempts;
-            msg = left > 0 ? "הקוד שגוי. נותרו " + left + " ניסיונות." : "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
-          }
-        }
-      } else if (!useEmailJS()) {
-        try {
-          const r = await apiPost("/api/auth/verify", { email: vf.email, code: code, token: vf.token });
-          ok = !!(r.data && r.data.ok);
-          msg = (r.data && r.data.message) || "";
-          if (!ok && r.data && typeof r.data.attemptsLeft === "number") vf.attempts = MAX_CODE_ATTEMPTS - r.data.attemptsLeft;
-        } catch (e) { msg = "אין חיבור לשרת."; }
-      } else {
-        // EmailJS mode checks here, with the server's rules: expiry + attempt cap.
-        if (Date.now() > vf.expiresAt) { msg = "הקוד פג תוקף. בקשו קוד חדש."; }
-        else if (vf.attempts >= MAX_CODE_ATTEMPTS) { msg = "יותר מדי ניסיונות שגויים. בקשו קוד חדש."; }
-        else if (vf.mailedCode && code === vf.mailedCode) { ok = true; vf.mailedCode = null; }
-        else {
-          vf.attempts++;
-          const left = MAX_CODE_ATTEMPTS - vf.attempts;
-          msg = left > 0 ? "הקוד שגוי. נותרו " + left + " ניסיונות." : "יותר מדי ניסיונות שגויים. בקשו קוד חדש.";
-        }
+      if (Date.now() > vf.expiresAt) {
+        vf.error = "הקוד פג תוקף. בקשו קוד חדש."; vf.digits = blankDigits(); renderVerify(); return;
       }
+      vf.verifying = true; vf.error = ""; vf.info = ""; renderVerify();
+      const email = vf.email;
+      const r = await authCall({ action: "verify", email: email, code: code, session: false });
+      if (!vf || vf.email !== email) return;
+      vf.verifying = false;
+      const d = r.data || {};
 
-      vf.busy = false;
-      if (ok) {
-        secLog("INFO", "האימייל אומת בהצלחה עם קוד חד-פעמי");
-        markEmailVerified(vf.email);
+      if (!r.net && r.status === 200 && d.ok === true) {
+        secLog("INFO", "האימייל אומת בשרת עם קוד חד-פעמי");
+        if (vf.renameFrom && !renameLocalAccount(vf.renameFrom, email)) {
+          vf.error = "כבר יש במכשיר חשבון עם המייל הזה. היכנסו אליו במקום."; vf.locked = true; renderVerify(); return;
+        }
+        markEmailVerified(email);
         if (vf.purpose === "reset") {        // the code proved it — now pick a new password
-          resetEmail = vf.email; vf = null;
+          resetEmail = email; vf = null;
           state.screen = "newpw"; render();
           return;
         }
-        const users = loadUsers();
-        const u = users[vf.email];
+        const u = loadUsers()[email];
         vf = null;
         showToast("✅ האימייל אומת!");
-        if (u) enterApp({ id: u.id, email: u.email });   // → the survey (onboarding)
+        if (u) enterApp({ id: u.id, email: u.email });   // → the survey (onboarding) or the dashboard
         else { state.screen = "auth"; render(); }
         return;
       }
-      vf.error = msg || "הקוד שגוי. בדקו את הספרות ונסו שוב.";
+
+      if (r.net) vf.error = "אין חיבור לאינטרנט, והקוד לא נבדק. נסו שוב.";
+      else if (d.error === "bad_code") {
+        const left = Number(d.attempts_left);
+        if (left > 0) vf.error = "הקוד שגוי. נותרו " + left + " ניסיונות.";
+        else { vf.error = "יותר מדי ניסיונות שגויים. בקשו קוד חדש."; vf.locked = true; vf.resendAt = Math.min(vf.resendAt, Date.now()); }
+      }
+      else if (d.error === "expired") { vf.error = "הקוד פג תוקף. בקשו קוד חדש."; vf.expiresAt = Date.now(); vf.resendAt = Date.now(); }
+      else if (d.error === "too_many_attempts") { vf.error = "יותר מדי ניסיונות שגויים. בקשו קוד חדש."; vf.locked = true; vf.resendAt = Math.min(vf.resendAt, Date.now()); }
+      else if (d.error === "no_code") { vf.error = "הקוד הזה כבר לא בתוקף. בקשו קוד חדש."; vf.locked = true; vf.resendAt = Date.now(); }
+      else vf.error = "לא הצלחנו לבדוק את הקוד כרגע. נסו שוב בעוד רגע.";
       vf.digits = blankDigits();
       renderVerify();
       const w = document.querySelector(".otpwrap");
@@ -4360,103 +4425,139 @@
       if (!vf) return;
       const v = $("view"); v.innerHTML = "";
       if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
-
+      const now = Date.now();
       const wrap = el("div", "authwrap");
-      const secsLeft = Math.max(0, Math.ceil((vf.expiresAt - Date.now()) / 1000));
-      const mm = String(Math.floor(secsLeft / 60)).padStart(2, "0");
-      const ss = String(secsLeft % 60).padStart(2, "0");
-      const canResend = Date.now() >= vf.resendAt && !vf.busy;
-      const resendIn = Math.max(0, Math.ceil((vf.resendAt - Date.now()) / 1000));
+      const isReset = vf.purpose === "reset";
+      const mm = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+      const secsLeft = Math.max(0, Math.ceil((vf.expiresAt - now) / 1000));
+      const resendIn = Math.max(0, Math.ceil((vf.resendAt - now) / 1000));
+      const retryIn = Math.max(0, Math.ceil((vf.retryAt - now) / 1000));
+      const sent = vf.phase === "sent", sending = vf.phase === "sending" || vf.phase === "idle", failed = vf.phase === "failed";
+      const backLabel = vf.purpose === "existing" ? "← התנתקות" : "← חזרה למסך הכניסה";
 
-      wrap.innerHTML =
-        '<div class="authcard">' +
-          '<div class="authbrand">' + (vf.purpose === "reset" ? "🔑 איפוס סיסמה" : "📧 אימות אימייל") + '</div>' +
+      let body = "";
+      if (sending) {
+        body =
+          '<div class="otpsending"><span class="otpspin"></span><span>שולחים קוד אל <b dir="ltr">' + esc(vf.email) + '</b>…</span></div>';
+      } else if (failed) {
+        body =
+          '<h2 class="authtitle">הקוד לא נשלח</h2>' +
+          '<div class="otpfail">' + esc(vf.error) + '</div>' +
+          '<p class="otpmail">כתובת: <b dir="ltr">' + esc(vf.email) + '</b></p>' +
+          '<button class="distbtn wide" id="otpRetry"' + (retryIn > 0 ? " disabled" : "") + '>' +
+            (retryIn > 0 ? "נסו שוב (" + retryIn + ")" : "נסו שוב") + '</button>';
+      } else {
+        body =
           '<h2 class="authtitle">הזינו את הקוד</h2>' +
           (vf.purpose === "existing"
-            ? '<div class="otpnote">🔒 <b>עדכון אבטחה:</b> כדי להמשיך להשתמש באפליקציה, אשרו פעם אחת שזה המייל שלכם. הנתונים שלכם נשמרו.</div>'
-            : "") +
-          '<p class="otpmail">שלחנו קוד בן ' + CODE_LEN + ' ספרות אל<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
-          '<p class="otpmail" style="font-size:12.5px;margin-top:4px">לא מוצאים? בדקו גם בתיקיית הספאם / קידומי מכירות</p>' +
+            ? '<div class="otpnote">🔒 <b>עדכון אבטחה:</b> כדי להמשיך להשתמש באפליקציה, אשרו פעם אחת שזה המייל שלכם. הנתונים שלכם נשמרו.</div>' : "") +
+          '<p class="otpmail">שירות המייל קיבל קוד בן ' + CODE_LEN + ' ספרות עבור<br><b dir="ltr">' + esc(vf.email) + '</b></p>' +
+          '<p class="otpmail" style="font-size:12.5px;margin-top:4px">המייל מגיע בדרך כלל תוך דקה. לא מוצאים? בדקו בספאם / קידומי מכירות</p>' +
+          (vf.info ? '<div class="otpinfo">' + esc(vf.info) + '</div>' : "") +
           '<div class="otpwrap" id="otpWrap">' +
             blankDigits().map((_, i) =>
               '<input class="otpbox' + (vf.digits[i] ? " filled" : "") + '" id="otp' + i + '" inputmode="numeric" ' +
               'autocomplete="one-time-code" maxlength="1" value="' + esc(vf.digits[i]) + '"' +
-              (vf.busy ? " disabled" : "") + '>').join("") +
+              (vf.verifying || vf.locked || secsLeft === 0 ? " disabled" : "") + '>').join("") +
           '</div>' +
-          '<div class="otperr">' + esc(vf.error || "") + '</div>' +
-          (vf.localCode ? '<div class="devcode">🧪 <b>' + esc(vf.localCode) + '</b><br>' +
-             'מצב מקומי ללא שרת דואר — הקוד מוצג כאן במקום להישלח במייל. ' +
-             'בחיבור לשרת (API_BASE) הקוד יישלח לתיבה האמיתית ולא יוצג.</div>' : "") +
+          '<div class="otperr">' + (vf.verifying ? "בודקים את הקוד…" : esc(vf.error || "")) + '</div>' +
           '<div class="otpmeta">' +
-            '<span class="otptimer" id="otpTimer">' + (secsLeft > 0 ? "הקוד תקף עוד " + mm + ":" + ss : "הקוד פג תוקף") + '</span>' +
-            '<button class="otpresend" id="otpResend"' + (canResend ? "" : " disabled") + '>' +
-              (canResend ? "שלח קוד חדש" : "שלח קוד חדש (" + resendIn + ")") + '</button>' +
-          '</div>' +
-          (vf.mode === "supabase" ? '<button class="otpresend" id="otpAlt" style="display:block;margin:8px auto 0">לא הגיע קוד? שליחה בדרך אחרת</button>' : "") +
-          '<button class="obexit" id="otpBack">' + (vf.purpose === "existing" ? "← התנתקות" : "← חזרה למסך הכניסה") + '</button>' +
+            '<span class="otptimer" id="otpTimer">' + (secsLeft > 0 ? "הקוד תקף עוד " + mm(secsLeft) : "הקוד פג תוקף — בקשו קוד חדש") + '</span>' +
+            '<button class="otpresend" id="otpResend"' + (resendIn > 0 || vf.verifying ? " disabled" : "") + '>' +
+              (resendIn > 0 ? "שלח קוד חדש (" + resendIn + ")" : "שלח קוד חדש") + '</button>' +
+          '</div>';
+      }
+      const edit = vf.editing
+        ? '<div class="otpedit"><label class="flbl">כתובת המייל הנכונה</label>' +
+            '<div class="fld"><input id="otpNewEmail" type="email" dir="ltr" autocomplete="email" value="' + esc(vf.email) + '"></div>' +
+            '<button class="distbtn wide" id="otpEditSave">שליחה לכתובת הזו</button>' +
+            '<button class="otpresend" id="otpEditCancel" style="display:block;margin:8px auto 0">ביטול</button></div>'
+        : (sending ? "" : '<button class="otpresend" id="otpEdit" style="display:block;margin:12px auto 0">✏️ טעות בכתובת? שינוי המייל</button>');
+
+      wrap.innerHTML =
+        '<div class="authcard">' +
+          '<div class="authbrand">' + (isReset ? "🔑 איפוס סיסמה" : "📧 אימות אימייל") + '</div>' +
+          body + edit +
+          '<button class="obexit" id="otpBack">' + backLabel + '</button>' +
         '</div>';
       v.appendChild(wrap);
 
-      const boxes = blankDigits().map((_, i) => wrap.querySelector("#otp" + i));
-      const focusFirstEmpty = () => {
-        const idx = vf.digits.findIndex((d) => !d);
-        (boxes[idx === -1 ? CODE_LEN - 1 : idx] || boxes[0]).focus();
-      };
-      boxes.forEach((box, i) => {
-        box.oninput = () => {
-          const digits = box.value.replace(/\D/g, "");
-          if (digits.length > 1) { spread(digits, i); return; }   // handles paste
-          vf.digits[i] = digits;
-          box.value = digits;
-          box.classList.toggle("filled", !!digits);
-          if (digits && i < CODE_LEN - 1) boxes[i + 1].focus();
-          if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
-        };
-        box.onkeydown = (e) => {
-          if (e.key === "Backspace" && !box.value && i > 0) { boxes[i - 1].focus(); vf.digits[i - 1] = ""; boxes[i - 1].value = ""; }
-          if (e.key === "ArrowLeft" && i > 0) boxes[i - 1].focus();
-          if (e.key === "ArrowRight" && i < CODE_LEN - 1) boxes[i + 1].focus();
-          if (e.key === "Enter" && vf.digits.every((d) => d)) submitCode();
-        };
-        box.onpaste = (e) => {
-          e.preventDefault();
-          const t = (e.clipboardData || window.clipboardData).getData("text") || "";
-          spread(t.replace(/\D/g, ""), 0);
-        };
-      });
-      function spread(digits, from) {
-        for (let k = 0; k < digits.length && from + k < CODE_LEN; k++) {
-          vf.digits[from + k] = digits[k];
-          boxes[from + k].value = digits[k];
-          boxes[from + k].classList.add("filled");
-        }
-        focusFirstEmpty();
-        if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
-      }
-
-      wrap.querySelector("#otpResend").onclick = () => { if (Date.now() >= vf.resendAt) requestCode(vf.email, true); };
-      const alt = wrap.querySelector("#otpAlt");
-      if (alt) alt.onclick = () => { vf.mode = "emailjs"; vf.resendAt = 0; requestCode(vf.email, true); };
-      wrap.querySelector("#otpBack").onclick = () => {
+      const back = wrap.querySelector("#otpBack");
+      back.onclick = () => {
         if (vfTimer) { clearInterval(vfTimer); vfTimer = null; }
         if (vf.purpose === "existing") clearSession(); // leaving means logging out
         vf = null; state.screen = "auth"; state.authMode = "login"; render();
       };
-      if (!vf.busy) setTimeout(focusFirstEmpty, 60);
+      const editBtn = wrap.querySelector("#otpEdit");
+      if (editBtn) editBtn.onclick = () => { vf.editing = true; renderVerify(); setTimeout(() => { const i = $("otpNewEmail"); if (i) i.focus(); }, 30); };
+      const editSave = wrap.querySelector("#otpEditSave");
+      if (editSave) {
+        const inp = wrap.querySelector("#otpNewEmail");
+        editSave.onclick = () => changeVerifyEmail(inp.value);
+        inp.onkeydown = (e) => { if (e.key === "Enter") changeVerifyEmail(inp.value); };
+        wrap.querySelector("#otpEditCancel").onclick = () => { vf.editing = false; renderVerify(); };
+      }
+      const retry = wrap.querySelector("#otpRetry");
+      if (retry) retry.onclick = () => { if (Date.now() >= vf.retryAt) requestCode(true); };
 
-      // live countdown + resend cooldown, without re-rendering the whole screen
+      if (sent) {
+        const boxes = blankDigits().map((_, i) => wrap.querySelector("#otp" + i));
+        const focusFirstEmpty = () => {
+          const idx = vf.digits.findIndex((d) => !d);
+          (boxes[idx === -1 ? CODE_LEN - 1 : idx] || boxes[0]).focus();
+        };
+        const spread = (digits, from) => {
+          for (let k = 0; k < digits.length && from + k < CODE_LEN; k++) {
+            vf.digits[from + k] = digits[k]; boxes[from + k].value = digits[k]; boxes[from + k].classList.add("filled");
+          }
+          focusFirstEmpty();
+          if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
+        };
+        boxes.forEach((box, i) => {
+          box.oninput = () => {
+            const digits = box.value.replace(/\D/g, "");
+            if (digits.length > 1) { spread(digits, i); return; }   // handles paste / autofill
+            vf.digits[i] = digits; box.value = digits; box.classList.toggle("filled", !!digits);
+            if (digits && i < CODE_LEN - 1) boxes[i + 1].focus();
+            if (vf.digits.every((d) => d)) setTimeout(submitCode, 120);
+          };
+          box.onkeydown = (e) => {
+            if (e.key === "Backspace" && !box.value && i > 0) { boxes[i - 1].focus(); vf.digits[i - 1] = ""; boxes[i - 1].value = ""; }
+            if (e.key === "ArrowLeft" && i > 0) boxes[i - 1].focus();
+            if (e.key === "ArrowRight" && i < CODE_LEN - 1) boxes[i + 1].focus();
+            if (e.key === "Enter" && vf.digits.every((d) => d)) submitCode();
+          };
+          box.onpaste = (e) => {
+            e.preventDefault();
+            spread(((e.clipboardData || window.clipboardData).getData("text") || "").replace(/\D/g, ""), 0);
+          };
+        });
+        wrap.querySelector("#otpResend").onclick = () => { if (Date.now() >= vf.resendAt && !vf.verifying) requestCode(true); };
+        if (!vf.verifying && !vf.locked && !vf.editing && secsLeft > 0) setTimeout(focusFirstEmpty, 60);
+      }
+
+      // Live countdowns without re-rendering the screen; re-render once when something flips.
       vfTimer = setInterval(() => {
         if (!vf || state.screen !== "verify") { clearInterval(vfTimer); vfTimer = null; return; }
-        const left = Math.max(0, Math.ceil((vf.expiresAt - Date.now()) / 1000));
-        const t = $("otpTimer");
-        if (t) t.textContent = left > 0
-          ? "הקוד תקף עוד " + String(Math.floor(left / 60)).padStart(2, "0") + ":" + String(left % 60).padStart(2, "0")
-          : "הקוד פג תוקף";
-        const rb = $("otpResend");
-        if (rb) {
-          const wait = Math.max(0, Math.ceil((vf.resendAt - Date.now()) / 1000));
-          rb.disabled = wait > 0 || vf.busy;
-          rb.textContent = wait > 0 ? "שלח קוד חדש (" + wait + ")" : "שלח קוד חדש";
+        const n = Date.now();
+        if (vf.phase === "sent") {
+          const left = Math.max(0, Math.ceil((vf.expiresAt - n) / 1000));
+          const t = $("otpTimer");
+          if (t) t.textContent = left > 0 ? "הקוד תקף עוד " + mm(left) : "הקוד פג תוקף — בקשו קוד חדש";
+          if (left === 0 && !vf.editing && document.querySelector(".otpbox:not([disabled])")) renderVerify();
+          const rb = $("otpResend");
+          if (rb) {
+            const wait = Math.max(0, Math.ceil((vf.resendAt - n) / 1000));
+            rb.disabled = wait > 0 || vf.verifying;
+            rb.textContent = wait > 0 ? "שלח קוד חדש (" + wait + ")" : "שלח קוד חדש";
+          }
+        } else if (vf.phase === "failed") {
+          const rb = $("otpRetry");
+          if (rb) {
+            const wait = Math.max(0, Math.ceil((vf.retryAt - n) / 1000));
+            rb.disabled = wait > 0;
+            rb.textContent = wait > 0 ? "נסו שוב (" + wait + ")" : "נסו שוב";
+          }
         }
       }, 1000);
     }

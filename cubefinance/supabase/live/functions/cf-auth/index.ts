@@ -5,7 +5,11 @@
 //   { action: "ping" }
 //       → { ok, emailReady }   is the function deployed and the email key set?
 //   { action: "send", email }
-//       → { ok }               a 6-digit code goes to that inbox through EmailJS
+//       → { ok, accepted, expires_in, resend_in }   EmailJS accepted the email
+//       → { ok:false, error:"send_failed", reason, retryable }   it did not; no code exists
+//       → { ok:false, error:"too_soon"|"rate_limited", retry_after }
+//   { action: "verify", email, code, session: false }
+//       → { ok, verified }     code right and used up (apps that keep accounts on the device)
 //   { action: "verify", email, code, device_id, device_name, platform, replace_device? }
 //       → { ok, session, existing }      signed in on this device
 //       → { ok:false, error:"device_limit", devices, max }   2 devices already
@@ -87,6 +91,22 @@ function randomHex(bytes: number): string {
   return Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 
+// What went wrong at the email provider, from its status code and message.
+//   provider_auth         401/403 — wrong private key, or "API calls are disabled for
+//                         non-browser applications" (EmailJS → Account → Security)
+//   provider_account      412 — the connected Gmail/Outlook service needs reconnecting
+//   provider_config       400/404/422 — wrong service/template id or template fields
+//   provider_rate_limited 429 — monthly quota used up or too many requests
+//   provider_unavailable  5xx or no answer — try again later
+export function providerReason(status: number, text: string): string {
+  const t = (text || "").toLowerCase();
+  if (status === 401 || status === 403 || t.includes("non-browser") || t.includes("public key") || t.includes("private key")) return "provider_auth";
+  if (status === 412 || t.includes("gmail") || t.includes("invalid grant") || t.includes("reconnect")) return "provider_account";
+  if (status === 429 || t.includes("limit")) return "provider_rate_limited";
+  if (status === 400 || status === 404 || status === 422) return "provider_config";
+  return "provider_unavailable";
+}
+
 export async function handle(req: Request, env: Env, fetchImpl: typeof fetch = fetch): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return reply({ ok: false, error: "method" }, 405);
@@ -133,34 +153,55 @@ export async function handle(req: Request, env: Env, fetchImpl: typeof fetch = f
       const issued = await rpc("cf3_code_issue", { p_email: email, p_ip: ip, p_code_hash: await sha256hex(salt + code), p_salt: salt });
       if (!issued || issued.ok !== true) return reply(issued || { ok: false, error: "server" });
 
-      const sent = await fetchImpl("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service_id: env.get("EMAILJS_SERVICE_ID") || EMAILJS.serviceId,
-          template_id: env.get("EMAILJS_TEMPLATE_ID") || EMAILJS.templateId,
-          user_id: env.get("EMAILJS_PUBLIC_KEY") || EMAILJS.publicKey,
-          accessToken: emailKey,
-          template_params: { to_email: email, code },
-        }),
-      });
-      if (!sent.ok) {
-        const detail = (await sent.text()).slice(0, 200);
-        await rpc("cf3_code_cancel", { p_email: email }).catch(() => null);
-        console.error("EmailJS refused:", sent.status, detail);
-        return reply({ ok: false, error: "send_failed", status: sent.status, detail });
+      // Hand the email to EmailJS. Only HTTP 200 with the body "OK" counts as
+      // accepted; anything else (or no answer) withdraws the code, so the app
+      // never shows a countdown for a code nobody was sent. "Accepted" means
+      // EmailJS took the message — it does not prove it reached the inbox.
+      let sentStatus = 0, sentText = "";
+      try {
+        const sent = await fetchImpl("https://api.emailjs.com/api/v1.0/email/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            service_id: env.get("EMAILJS_SERVICE_ID") || EMAILJS.serviceId,
+            template_id: env.get("EMAILJS_TEMPLATE_ID") || EMAILJS.templateId,
+            user_id: env.get("EMAILJS_PUBLIC_KEY") || EMAILJS.publicKey,
+            accessToken: emailKey,
+            template_params: { to_email: email, code },
+          }),
+        });
+        sentStatus = sent.status;
+        sentText = (await sent.text()).slice(0, 300);
+      } catch (e) {
+        sentStatus = 0;
+        sentText = String((e as Error)?.message || e).slice(0, 200);
       }
-      return reply({ ok: true });
+      if (sentStatus === 200 && sentText.trim().toUpperCase() === "OK") {
+        return reply({ ok: true, accepted: true, expires_in: issued.expires_in ?? 600, resend_in: issued.resend_in ?? 30 });
+      }
+      await rpc("cf3_code_cancel", { p_email: email }).catch(() => null);
+      const reason = providerReason(sentStatus, sentText);
+      // The provider's own words go to the function log (no code, no key in them).
+      console.error("EmailJS did not accept the email:", sentStatus, reason, sentText);
+      return reply({ ok: false, error: "send_failed", reason, provider_status: sentStatus,
+        retryable: reason === "provider_unavailable" || reason === "provider_rate_limited" });
     }
 
     if (action === "verify") {
       const code = String(body.code ?? "").replace(/\D/g, "");
       const device = String(body.device_id ?? "");
       if (code.length !== 6) return reply({ ok: false, error: "bad_code", attempts_left: null });
-      if (device.length < 8 || device.length > 128) return reply({ ok: false, error: "bad_device" });
+      if (body.session !== false && (device.length < 8 || device.length > 128)) return reply({ ok: false, error: "bad_device" });
 
       const check = await rpc("cf3_code_check", { p_email: email, p_code: code });
       if (!check || check.ok !== true) return reply(check || { ok: false, error: "server" });
+
+      // Verification only (the app keeps its accounts on the device): the code
+      // is right, so use it up and say so. No server account, no device slot.
+      if (body.session === false) {
+        await rpc("cf3_code_consume", { p_email: email });
+        return reply({ ok: true, verified: true });
+      }
 
       // The address is proven. Make sure it has a Supabase user, then get a
       // one-time sign-in token for it (no email is sent by Supabase).
