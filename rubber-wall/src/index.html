@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rubber Wall</title>
+<style>
+  @font-face { font-family: "HebFont"; src: url("LiberationSans-Bold.ttf") format("truetype"); font-weight: 700; }
+  :root { --bg:#111; --fg:#eee; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--fg); font-family: system-ui, sans-serif; }
+  body.render { background:#fff; }
+  #wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:12px 16px; box-sizing:border-box; height:100%; }
+  canvas { height: calc(100% - 70px); max-width:100%; aspect-ratio:9/16; background:#fff; box-shadow:0 8px 40px rgba(0,0,0,.5); }
+  body.render canvas { height:auto; width:1080px; box-shadow:none; }
+  .bar { display:flex; gap:10px; align-items:center; width:min(560px,100%); }
+  button { background:#2f5fa8; color:#fff; border:0; border-radius:6px; padding:8px 16px; font-size:15px; cursor:pointer; }
+  input[type=range] { flex:1; }
+  #tc { font-variant-numeric: tabular-nums; min-width:56px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c" width="1080" height="1920"></canvas>
+  <div class="bar" id="bar">
+    <button id="play">▶ Play</button>
+    <input id="scrub" type="range" min="0" max="449" value="0">
+    <span id="tc">0.00s</span>
+  </div>
+</div>
+<audio id="aud" src="soundtrack.wav" preload="auto"></audio>
+<script src="scene.js"></script>
+<script>
+  const RW = window.RubberWall;
+  const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+  const isRender = new URLSearchParams(location.search).has('render');
+  if (isRender) { document.body.classList.add('render'); document.getElementById('bar').style.display = 'none'; }
+  window.renderFrameData = async (f, type) => { RW.renderFrame(ctx, f); return cv.toDataURL(type || 'image/png'); };
+  window.ready = document.fonts.load('700 84px HebFont').then(() => true);
+  if (!isRender) {
+    const aud = document.getElementById('aud'), scrub = document.getElementById('scrub'), tc = document.getElementById('tc'), btn = document.getElementById('play');
+    let playing = false, t0 = 0, start = 0;
+    const draw = (f) => { RW.renderFrame(ctx, f); scrub.value = f; tc.textContent = (f / RW.FPS).toFixed(2) + 's'; };
+    window.ready.then(() => draw(0));
+    function loop() {
+      if (!playing) return;
+      const t = aud.readyState >= 2 && !aud.paused ? aud.currentTime : t0 + (performance.now() - start) / 1000;
+      const f = Math.floor(t * RW.FPS);
+      if (f >= RW.NF) { playing = false; btn.textContent = '▶ Play'; draw(RW.NF - 1); return; }
+      draw(f); requestAnimationFrame(loop);
+    }
+    btn.onclick = () => {
+      if (playing) { playing = false; aud.pause(); btn.textContent = '▶ Play'; return; }
+      let f = +scrub.value; if (f >= RW.NF - 1) f = 0;
+      t0 = f / RW.FPS; start = performance.now();
+      try { aud.currentTime = t0; aud.play().catch(() => {}); } catch (e) {}
+      playing = true; btn.textContent = '❚❚ Pause'; loop();
+    };
+    scrub.oninput = () => { if (playing) { playing = false; aud.pause(); btn.textContent = '▶ Play'; } draw(+scrub.value); };
+  }
+</script>
+</body>
+</html>
