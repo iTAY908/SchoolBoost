@@ -27,11 +27,11 @@ Preview: after one full render, `src/soundtrack.wav` exists. Open `src/index.htm
 | Time | Picture | Sound |
 |---|---|---|
 | 0–3 s | Running through the white void, scribbles of thought circling | Soft piano, running footsteps |
-| 3–6 s | Hands and head meet the rubber, which wraps around him | Soft impact, low drone, gentle pulses, effort breaths |
-| 6–10 s | Deep stretch with tension lines and folds. The rubber pulls him back twice. Scribbles crowd in. | Strings in a measured crescendo, rubber creaks |
+| 3–6 s | Hands and head meet the anchored rubber sheet, which dents and clings to him. The camera swings from behind to a diagonal side view. | Soft impact, low drone, gentle pulses, effort breaths |
+| 6–10 s | A deep cone-shaped bulge (~1.5 m) pokes out past the wall's original plane and its edge post, with his head and arms visible through the thin rubber and tension lines running from the anchored edges. It pulls him back twice, and the scribbles crowd behind him. | Strings in a measured crescendo, rubber creaks |
 | 10.15–10.5 s | A crack of light opens above his head | Riser, high "ping" |
 | 10.5 s | The rubber tears and its edges snap back to the sides | Musical climax plus rip, then a ~0.4 s pause |
-| 10.95 s | Trees and open space appear | Warm C-major (add9) chord |
+| 10.95 s | The camera swings back behind him as he goes through. Trees appear only now. | Warm C-major (add9) chord |
 | 12–15 s | He slows, straightens and takes a deep breath. The caption fades in. | Calm piano, steps on grass, faint leaves |
 
 To tweak the timing, edit `VK` (speed), `T_CRACK`/`T_BURST` and the camera keys in `camera()` in `scene.js`. Then run `node render.mjs` again, which also rebuilds the audio in sync.

@@ -46,10 +46,10 @@
 
   // ------------------------------------------------------------- timeline
   // speed of the boy (m/s) — run, impact, push (slowing as rubber resists), burst, slow down, stop
-  const VK = [[0, 3.0], [2.9, 3.0], [3.05, 1.25], [3.35, 0.72], [4.5, 0.55], [6, 0.42], [8, 0.32],
-    [10.0, 0.2], [10.5, 0.18], [10.75, 1.6], [11.1, 2.4], [11.9, 1.85], [12.7, 1.05], [13.5, 0.45], [14.2, 0.0], [15, 0]];
+  const VK = [[0, 3.0], [2.9, 3.0], [3.05, 0.6], [3.35, 0.36], [4.5, 0.2], [6, 0.17], [8, 0.13],
+    [10.0, 0.1], [10.5, 0.08], [10.75, 1.3], [11.1, 2.0], [11.9, 1.75], [12.7, 1.0], [13.5, 0.45], [14.2, 0.0], [15, 0]];
   // stride frequency (rad/s of the gait phase)
-  const OK = [[0, 7.6], [2.85, 7.6], [3.25, 4.1], [4, 3.6], [10.3, 3.4], [10.6, 6.0], [11.1, 7.3],
+  const OK = [[0, 7.6], [2.85, 7.6], [3.25, 4.0], [4, 3.4], [10.3, 3.2], [10.6, 6.0], [11.1, 7.3],
     [12.0, 6.4], [12.8, 5.0], [13.6, 4.3], [14.3, 3.8], [15, 3.8]];
   const stall = (t) => gauss(t, 7.3, 0.32) + gauss(t, 8.9, 0.3);   // rubber pulls him back
 
@@ -71,7 +71,7 @@
       const P = sstep(2.7, 3.0, t) * (1 - sstep(10.5, 11.0, t));
       const A = om > 0.2 ? clamp(vb / (om * 0.85), 0, 0.5) : 0;
       TL.z[i] = z; TL.ph[i] = ph; TL.v[i] = v; TL.A[i] = A;
-      TL.K[i] = Math.max(clamp(vb / 3, 0, 1), 0.55 * P);
+      TL.K[i] = Math.max(clamp(vb / 3, 0, 1), 0.45 * P);
       ph += om * DT; z += v * DT;
     }
   })();
@@ -100,7 +100,7 @@
     for (const s of [-1, 1]) {
       const phs = ph + (s > 0 ? Math.PI : 0);
       let [th, kf] = legAngles(phs, A, K);
-      th += crouch * 0.35; kf += crouch * 0.6;
+      th -= crouch * 1.35; kf += crouch * 0.7;   // pushing stance: legs driven back, knees bent
       th *= (1 - SB); kf = lerp(kf, 0.04, SB);
       const hip = v3(s * 0.1, 0, 0);
       const knee = add(hip, v3(s * 0.012, -LT * Math.cos(th), LT * Math.sin(th)));
@@ -113,7 +113,7 @@
     }
     const hipY = -lowest + 0.075;
     // torso
-    let lean = keyf([[0, 0.2], [2.7, 0.22], [3.0, 0.42], [3.6, 0.62], [10.4, 0.66], [10.7, 0.5], [11.3, 0.3],
+    let lean = keyf([[0, 0.2], [2.7, 0.25], [3.0, 0.45], [3.6, 0.68], [6, 0.82], [10.3, 0.95], [10.65, 0.7], [11.3, 0.32],
       [12.6, 0.15], [13.4, 0.03], [14.2, -0.05], [15, -0.03]], t);
     lean -= 0.22 * st;
     lean += 0.025 * Math.sin(t * 8.3) * P;
@@ -142,8 +142,8 @@
       const be = al + 1.35 + 0.2 * Math.sin(phs);
       const haR = add(elR, v3(-s * 0.04, -0.27 * Math.cos(be), 0.27 * Math.sin(be)));
       // pushing the rubber
-      const reach = 0.5 - 0.16 * st + 0.012 * Math.sin(t * 21 + s * 2) * P;
-      const haP = add(sh, v3(s * 0.07, -0.17 + 0.01 * Math.sin(t * 17 + s), reach));
+      const reach = 0.42 + 0.3 * sstep(3.5, 10.2, t) - 0.14 * st + 0.012 * Math.sin(t * 21 + s * 2) * P;
+      const haP = add(sh, v3(s * 0.08, 0.06 + 0.01 * Math.sin(t * 17 + s), reach));
       const elP = add(mix3(sh, haP, 0.5), v3(s * 0.08, -0.12, -0.04 + 0.08 * st));
       // relaxed, hanging
       const elX = add(sh, v3(s * 0.045, -0.285, 0.015));
@@ -182,22 +182,34 @@
   })();
 
   // --------------------------------------------------------------- camera
+  // Orbit camera: behind the boy (3/4) -> diagonal side view of the bulge -> back behind him outside.
+  const SIDE_T = [[0, 0], [2.7, 0], [3.2, 0.12], [5.6, 1], [10.45, 1], [11.0, 0.75], [12.3, 0], [15, 0]];
   function camera(t, p) {
-    const dcam = keyf([[0, 4.0], [2.8, 4.0], [4, 4.2], [7, 4.55], [10.3, 4.85], [10.7, 4.8], [11.5, 4.25], [12.5, 3.85], [15, 3.55]], t);
-    const camH = keyf([[0, 3.0], [3, 3.0], [7, 3.1], [10.5, 3.15], [12.5, 2.95], [15, 2.85]], t);
-    const shake = 0.012 * Math.sin(2 * p.ph) * p.runAmt * (1 - sstep(12.5, 14, t));
-    return { x: 0, y: camH + shake, z: p.zb - dcam };
+    const k = keyf(SIDE_T, t);
+    const yaw = lerp(0.3, 1.43, k) + 0.02 * Math.sin(t * 0.6);
+    const dist = lerp(keyf([[0, 4.2], [10.5, 4.2], [12.3, 4.3], [15, 3.9]], t), 8.4, k);
+    const h = lerp(keyf([[0, 3.0], [10.5, 2.95], [12.3, 2.8], [15, 2.7]], t), 1.95, k);
+    const py = lerp(keyf([[0, 470], [10.5, 480], [12.3, 520], [15, 520]], t), 840, k);
+    const tz = lerp(p.zb + 0.9, WALL + 0.25, k), tx = lerp(p.P0.x, 0, k);
+    const shake = 0.012 * Math.sin(2 * p.ph) * p.runAmt * (1 - sstep(12.5, 14, t)) * (1 - k);
+    const F = 1340 / 4.2 * dist;
+    const px = lerp(540, 640, k);
+    return { x: tx - dist * Math.sin(yaw), y: h + shake, z: tz - dist * Math.cos(yaw), yaw, F, py, px,
+      cy: Math.cos(yaw), sy: Math.sin(yaw), k };
   }
+  // returns [screenX, screenY, effectiveDepth]; effectiveDepth is scaled so that FOC/d = pixels per metre
   function proj(cam, X, Y, Z) {
-    const d = Z - cam.z;
-    return [CXS + FOC * (X - cam.x) / d, HZ + FOC * (cam.y - Y) / d, d];
+    const vx = X - cam.x, vy = Y - cam.y, vz = Z - cam.z;
+    const xc = vx * cam.cy - vz * cam.sy;
+    const zc = vx * cam.sy + vz * cam.cy;
+    return [cam.px + cam.F * xc / zc, cam.py - cam.F * vy / zc, zc * FOC / cam.F];
   }
 
   // ------------------------------------------------------ rubber wall mesh
-  const NU = 121, NV = 72;
+  const NU = 125, NV = 66;
   const RX = new Float64Array(NU), RY = new Float64Array(NV);
-  for (let i = 0; i < NU; i++) { const u = -1 + 2 * i / (NU - 1); RX[i] = Math.sign(u) * 14 * Math.pow(Math.abs(u), 1.8); }
-  for (let j = 0; j < NV; j++) { const v = j / (NV - 1); RY[j] = 11 * Math.pow(v, 1.6); }
+  for (let i = 0; i < NU; i++) { const u = -1 + 2 * i / (NU - 1); RX[i] = (u < 0 ? -3.2 : 10) * Math.pow(Math.abs(u), 1.6); }
+  for (let j = 0; j < NV; j++) { const v = j / (NV - 1); RY[j] = 6 * Math.pow(v, 1.3); }
 
   function capsulesFromPose(p) {
     const caps = [];
@@ -337,14 +349,14 @@
       if (Math.abs(ox) < 0.5 && s.oy < 2.2) ox = Math.sign(ox || 1) * 0.5;
       let oy = lerp(s.oy + dy, (Math.abs(ox) < 0.5 ? 2.05 : 1.2) + s.rr * 1.0, 0.5 * CC);
       let oz = lerp(s.oz + dz, -0.6 - 0.6 * s.rr, CC);
-      return v3(pp.P0.x + ox, oy, pp.zb + oz);
+      return v3(pp.P0.x + ox, oy, Math.min(pp.zb + oz, WALL - 0.2));
     };
     if (t <= T_BURST) return rel(t, C, p);
     const pb = pose(T_BURST);
     const w0 = rel(T_BURST, sstep(5.5, 9.6, T_BURST), pb);
-    const u = sstep(T_BURST, T_BURST + 0.6, t);
+    const u = sstep(T_BURST, T_BURST + 1.2, t);
     const side = w0.x >= 0 ? 1 : -1;
-    return v3(w0.x * (1 + 3.5 * u) + side * 2.0 * u, w0.y + (w0.y - 1.3) * 0.9 * u, lerp(w0.z, WALL + 0.2, u));
+    return v3(w0.x + side * 0.4 * u, w0.y + 0.15 * Math.sin(t * 0.8 + s.ph), lerp(w0.z, WALL - 0.6 - 0.6 * s.rr, u));
   }
   function drawScribble(ctx, cam, s, t, p, boil, wantNear) {
     const C = sstep(5.5, 9.6, t);
@@ -356,7 +368,7 @@
     const near = w.z < p.zb - 0.05;
     if (near !== wantNear) return;
     alpha *= clamp((d - 0.8) / 1.2, 0, 1);
-    if (t > T_BURST) alpha *= 1 - sstep(T_BURST + 0.05, T_BURST + 0.55, t);
+    if (t > T_BURST) alpha *= 1 - 0.75 * sstep(T_BURST + 0.2, T_BURST + 2.2, t);
     if (alpha <= 0.01) return;
     const size = s.size * (1 + 0.3 * C) * FOC / d;
     const rot = s.rot + s.spin * t * (1 + 1.6 * C);
@@ -389,7 +401,7 @@
   const TREES = (function () {
     const r = rng(777);
     // [x, distance beyond wall, height]
-    const spec = [[-4.5, 9, 7.6], [6.0, 13, 8.2], [-6.2, 21, 7.2], [8.6, 27, 7.6], [-3.4, 44, 5.2], [4.0, 52, 5.0], [-9.5, 36, 7.0], [-1.6, 70, 3.6], [2.0, 78, 3.4]];
+    const spec = [[6.5, 3.5, 7.4], [13, 5.5, 7.8], [19, 3.0, 6.8], [-5.6, 9, 7.6], [7.6, 13, 8.2], [-6.2, 21, 7.2], [8.6, 27, 7.6], [-3.4, 44, 5.2], [4.0, 52, 5.0], [-9.5, 36, 7.0], [-1.6, 70, 3.6], [2.0, 78, 3.4]];
     return spec.map(([x, dz, h], k) => {
       const blobs = [];
       const n = 46;
@@ -411,20 +423,20 @@
   })();
   const BUSHES = [[-3.6, 15], [4.4, 18], [-1.8, 26], [2.2, 31]].map(([x, dz], k) => ({ x, z: WALL + dz, k }));
 
-  function drawOutside(ctx0, cam, t) {
+  function drawOutside(ctx0, cam, t, reveal = 1) {
     const OL = layer('o'), ctx = OL.getContext('2d');
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W_, H_);
     // sky & light
-    const g = ctx.createLinearGradient(0, 0, 0, HZ + 40);
+    const g = ctx.createLinearGradient(0, 0, 0, cam.py + 40);
     g.addColorStop(0, '#fbfbf9'); g.addColorStop(0.7, '#f3f3f0'); g.addColorStop(1, '#e6e6e2');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W_, HZ + 2);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W_, cam.py + 2);
     const sun = ctx.createRadialGradient(560, 260, 10, 560, 260, 700);
     sun.addColorStop(0, 'rgba(255,255,255,0.95)'); sun.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sun; ctx.fillRect(0, 0, W_, HZ);
+    ctx.fillStyle = sun; ctx.fillRect(0, 0, W_, cam.py);
     // ground
-    const gg = ctx.createLinearGradient(0, HZ, 0, H_);
+    const gg = ctx.createLinearGradient(0, cam.py, 0, H_);
     gg.addColorStop(0, '#d9d9d4'); gg.addColorStop(0.25, '#e3e3df'); gg.addColorStop(1, '#efefec');
-    ctx.fillStyle = gg; ctx.fillRect(0, HZ, W_, H_ - HZ);
+    ctx.fillStyle = gg; ctx.fillRect(0, cam.py, W_, H_ - cam.py);
     // distant soft tree-line haze
     const r = rng(5);
     for (let i = 0; i < 26; i++) {
@@ -543,7 +555,7 @@
       ctx.fillStyle = 'rgba(80,80,80,0.6)';
       ctx.beginPath(); ctx.ellipse(sx, sy, 0.06 * s, 0.025 * s, tt * 2 + ph, 0, Math.PI * 2); ctx.fill();
     }
-      ctx0.save(); ctx0.filter = 'blur(0.7px)'; ctx0.drawImage(OL, 0, 0); ctx0.restore();
+      ctx0.save(); ctx0.globalAlpha = reveal; ctx0.filter = 'blur(0.7px)'; ctx0.drawImage(OL, 0, 0); ctx0.restore();
   }
 
   // ------------------------------------------------------------ draw boy
@@ -571,22 +583,13 @@
       const heel = add(l.ankle, v3(0, -0.035, -0.04));
       limb(heel, l.toe, 0.075, 0.07);
     }
-    // torso (shoulders → hips), slightly tapered
+    // torso as rounded masses so it reads from behind and from the side
     const sL = p.arms[0].sh, sR = p.arms[1].sh;
-    const hL = add(p.P0, v3(-0.15, 0.02, 0)), hR = add(p.P0, v3(0.15, 0.02, 0));
-    const wL = add(mix3(p.P0, p.SC, 0.55), v3(-0.15, 0, 0)), wR = add(mix3(p.P0, p.SC, 0.55), v3(0.15, 0, 0));
-    const a = P(add(sL, v3(-0.04, -0.02, 0))), b = P(add(sR, v3(0.04, -0.02, 0)));
-    const c = P(wR), d = P(hR), e = P(hL), f = P(wL);
-    const top = P(add(p.SC, v3(0, 0.07, -0.02)));
-    ctx.beginPath();
-    ctx.moveTo(a[0], a[1]);
-    ctx.quadraticCurveTo(top[0], top[1] - (b[0] - a[0]) * 0.08, b[0], b[1]);
-    ctx.quadraticCurveTo(c[0] + (b[0] - a[0]) * 0.05, (b[1] + c[1]) / 2, c[0], c[1]);
-    ctx.lineTo(d[0], d[1]);
-    ctx.quadraticCurveTo((d[0] + e[0]) / 2, Math.max(d[1], e[1]) + (b[0] - a[0]) * 0.1, e[0], e[1]);
-    ctx.lineTo(f[0], f[1]);
-    ctx.quadraticCurveTo(f[0] - (b[0] - a[0]) * 0.05, (a[1] + f[1]) / 2, a[0], a[1]);
-    ctx.closePath(); ctx.fill();
+    const chest = mix3(p.P0, p.SC, 0.68);
+    limb(add(p.P0, v3(-0.07, 0, 0)), add(p.P0, v3(0.07, 0, 0)), 0.24, 0.24);
+    limb(p.P0, chest, 0.29, 0.33);
+    limb(chest, p.SC, 0.33, 0.27);
+    limb(sL, sR, 0.15, 0.15);
     // shoulders (deltoids)
     for (const s of [sL, sR]) { const q = P(s); ctx.beginPath(); ctx.arc(q[0], q[1], FOC * 0.065 / q[2], 0, 7); ctx.fill(); }
     // arms
@@ -654,6 +657,13 @@
   }
 
   // ------------------------------------------------------------ the wall
+  // anchored edges: posts at X_L / X_R, a bar along the top, hem pinned to the floor
+  const X_L = -3.2, X_R = 10, Y_T = 6;
+  function anchorWin(X, Y) {
+    return sstep(X_L, X_L + 1.9, X) * (1 - sstep(X_R - 2.5, X_R, X)) * (1 - sstep(Y_T - 2.2, Y_T, Y)) * sstep(0, 0.35, Y);
+  }
+  function depthAt(caps, X, Y, S) { return sheetDepth(caps, X, Y) * S * anchorWin(X, Y); }
+
   function drawWall(ctx, cam, t, p, hs, boil) {
     const S = relax(t);
     const caps = capsulesFromPose(t <= T_BURST ? p : pose(T_BURST));
@@ -663,11 +673,11 @@
     let maxDep = 0;
     for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) {
       const X = RX[i], Y = RY[j];
-      const dep = sheetDepth(caps, X, Y) * S;
+      const dep = depthAt(caps, X, Y, S);
       let xx = X, yy = Y;
-      if (hs && t > T_BURST) {   // rim recoil: material snaps outward from the tear
+      if (hs && t > T_BURST) {   // torn edges recoil away from the opening
         const dx = X - hs.cx, dy = Y - hs.cy, r = Math.hypot(dx, dy) + 1e-6;
-        const push = 0.55 * Math.max(hs.rx, 0.1) * Math.exp(-Math.max(0, r - hs.rx) / 1.1) * (1 - sstep(T_BURST + 0.6, T_BURST + 1.6, t));
+        const push = 0.5 * Math.max(hs.rx, 0.1) * Math.exp(-Math.max(0, r - hs.rx) / 1.1) * (1 - sstep(T_BURST + 0.6, T_BURST + 1.6, t)) * anchorWin(X, Math.max(Y, 0.4));
         const wgt = sstep(hs.rx * 0.4, hs.rx * 0.95, r) * 0.35;
         xx += dx / r * push * wgt; if (Y > 0) yy = Math.max(0, yy + dy / r * push * wgt);
       }
@@ -677,161 +687,149 @@
       const pr = proj(cam, xx, yy, WALL + dep);
       PX[k] = pr[0]; PY[k] = pr[1]; PD[k] = pr[2];
     }
-    // ---- floor: inside (white paper) below the rubber's bottom edge, tunnel floor shadow
-    const bottom = [];
-    for (let i = 0; i < NU; i++) if (PD[i] > 0.06) bottom.push([PX[i], PY[i], RX[i]]);
-    if (hs) {
-      const fl = new Path2D();
-      fl.moveTo(-400, H_ + 400);
-      for (const b of bottom) fl.lineTo(b[0], b[1]);
-      fl.lineTo(W_ + 400, H_ + 400); fl.closePath();
-      ctx.fillStyle = '#fbfbfa'; ctx.fill(fl);
-    }
-    // soft depth gradient on the white floor toward the wall
-    {
-      const yb = proj(cam, 0, 0, WALL)[1];
-      const fg = ctx.createLinearGradient(0, yb - 10, 0, H_);
-      fg.addColorStop(0, 'rgba(120,120,125,0.16)'); fg.addColorStop(0.18, 'rgba(120,120,125,0.05)'); fg.addColorStop(1, 'rgba(120,120,125,0)');
-      ctx.fillStyle = fg; ctx.fillRect(0, yb - 10, W_, H_ - yb + 10);
-    }
-    if (maxDep > 0.02) {   // floor inside the stretched tunnel is shadowed by the rubber
-      ctx.save();
-      ctx.filter = 'blur(6px)';
-      const sp = new Path2D();
-      let first = true;
-      for (let i = 0; i < NU; i++) { const pr = proj(cam, RX[i], 0, WALL); if (pr[2] < 0.06) continue; first ? sp.moveTo(pr[0], pr[1]) : sp.lineTo(pr[0], pr[1]); first = false; }
-      for (let i = NU - 1; i >= 0; i--) if (PD[i] > 0.06) sp.lineTo(PX[i], PY[i]);
-      sp.closePath();
-      const yb0 = proj(cam, 0, 0, WALL)[1], yb1 = PY[(NU - 1) >> 1];
-      const tg = ctx.createLinearGradient(0, yb0, 0, Math.min(yb0 - 1, yb1));
-      const ta = 0.5 * clamp(maxDep, 0, 1) * clamp(S + 0.1, 0, 1);
-      tg.addColorStop(0, `rgba(40,60,110,${ta * 0.35})`); tg.addColorStop(1, `rgba(20,35,80,${ta})`);
-      ctx.fillStyle = tg; ctx.fill(sp);
-      ctx.restore();
-    }
-
-    // ---- rubber quads into an offscreen layer
-    const QC = layer('q'), qx = QC.getContext('2d');
-    qx.setTransform(1, 0, 0, 1, 0, 0); qx.clearRect(0, 0, W_, H_);
-    const quads = [];
-    const L = [-0.35, 0.55, -0.76].map((v, _, a) => v / Math.hypot(...a));
+    const boyD = proj(cam, p.neck.x, p.neck.y, p.neck.z)[2];
+    const QC = layer('q'), qx = QC.getContext('2d'), QF = layer('f'), fx = QF.getContext('2d');
+    for (const c of [qx, fx]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W_, H_); c.lineJoin = 'round'; }
+    const back = [], front = [];
+    const L = [-0.45, 0.6, -0.66].map((v, _, a) => v / Math.hypot(...a));
     for (let j = 0; j < NV - 1; j++) for (let i = 0; i < NU - 1; i++) {
       const k0 = j * NU + i, k1 = k0 + 1, k2 = k0 + NU + 1, k3 = k0 + NU;
       if (PD[k0] < 0.06 || PD[k1] < 0.06 || PD[k2] < 0.06 || PD[k3] < 0.06) continue;
       const xs = [PX[k0], PX[k1], PX[k2], PX[k3]], ys = [PY[k0], PY[k1], PY[k2], PY[k3]];
       if (Math.max(...xs) < -20 || Math.min(...xs) > W_ + 20 || Math.max(...ys) < -20 || Math.min(...ys) > H_ + 20) continue;
+      if (hs && inHole(hs, (RX[i] + RX[i + 1]) / 2, (RY[j] + RY[j + 1]) / 2)) continue;
       const ax = WX[k2] - WX[k0], ay = WY[k2] - WY[k0], az = WZ[k2] - WZ[k0];
       const bx = WX[k3] - WX[k1], by = WY[k3] - WY[k1], bz = WZ[k3] - WZ[k1];
       let nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
       const nl = Math.hypot(nx, ny, nz) || 1; nx /= nl; ny /= nl; nz /= nl;
-      if (nz > 0) { nx = -nx; ny = -ny; nz = -nz; }
+      const tx = cam.x - WX[k0], ty = cam.y - WY[k0], tz = cam.z - WZ[k0];
+      const facing = nx * tx + ny * ty + nz * tz;
+      if (facing < 0) { nx = -nx; ny = -ny; nz = -nz; }
+      const outerSide = nz > 0;   // we are looking at the outside face of the bulge
       const lam = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]);
       const restA = (RX[i + 1] - RX[i]) * (RY[j + 1] - RY[j]);
-      const stretch = clamp((nl * 0.5 / restA - 1) * 0.06, 0, 0.3);
+      const stretch = clamp((nl * 0.5 / restA - 1) * 0.07, 0, 0.42);
       const dep = (DEP[k0] + DEP[k2]) / 2;
-      const ao = 1 - 0.3 * clamp(dep / 3.2, 0, 1);
-      const sh = (0.32 + 0.9 * lam) * ao;
+      const ao = outerSide ? 1 : 1 - 0.3 * clamp(dep / 2, 0, 1);
+      const sh = (0.34 + 0.85 * lam) * ao;
       let r = 44 * sh, g = 92 * sh, b = 176 * sh + 6;
-      r = lerp(r, 150, stretch); g = lerp(g, 186, stretch); b = lerp(b, 236, stretch);
-      quads.push({ d: (PD[k0] + PD[k2]) / 2, xs, ys, c: `rgb(${r | 0},${g | 0},${b | 0})` });
+      r = lerp(r, 150, stretch); g = lerp(g, 188, stretch); b = lerp(b, 238, stretch);
+      const q = { d: (PD[k0] + PD[k2]) / 2, xs, ys, c: `rgb(${r | 0},${g | 0},${b | 0})` };
+      (dep > 0.2 && q.d < boyD ? front : back).push(q);
     }
-    quads.sort((a, b) => b.d - a.d);
-    qx.lineJoin = 'round';
-    for (const q of quads) {
-      qx.fillStyle = q.c; qx.strokeStyle = q.c; qx.lineWidth = 1;
-      qx.beginPath(); qx.moveTo(q.xs[0], q.ys[0]); qx.lineTo(q.xs[1], q.ys[1]); qx.lineTo(q.xs[2], q.ys[2]); qx.lineTo(q.xs[3], q.ys[3]); qx.closePath();
-      qx.fill(); qx.stroke();
-    }
+    const paint = (c, list) => {
+      list.sort((a, b) => b.d - a.d);
+      for (const q of list) {
+        c.fillStyle = q.c; c.strokeStyle = q.c; c.lineWidth = 1;
+        c.beginPath(); c.moveTo(q.xs[0], q.ys[0]); c.lineTo(q.xs[1], q.ys[1]); c.lineTo(q.xs[2], q.ys[2]); c.lineTo(q.xs[3], q.ys[3]); c.closePath();
+        c.fill(); c.stroke();
+      }
+    };
+    paint(qx, back); paint(fx, front);
     const WC = layer('w'), wx = WC.getContext('2d');
     wx.setTransform(1, 0, 0, 1, 0, 0); wx.clearRect(0, 0, W_, H_);
-    wx.filter = 'blur(1.6px)'; wx.drawImage(QC, 0, 0); wx.filter = 'none';
-    // charcoal hatch texture, only on rubber pixels
-    wx.globalCompositeOperation = 'source-atop';
-    wx.globalAlpha = 0.5;
-    wx.fillStyle = wx.createPattern(HATCH, 'repeat');
-    wx.save(); wx.translate((boil % 3) * 7, (boil % 2) * 5); wx.fillRect(-50, -50, W_ + 100, H_ + 100); wx.restore();
-    wx.globalAlpha = 1;
-    // ink grid + tension lines
+    wx.filter = 'blur(1.5px)'; wx.drawImage(QC, 0, 0); wx.filter = 'none';
+    const FC = layer('fc'), fcx = FC.getContext('2d');
+    fcx.setTransform(1, 0, 0, 1, 0, 0); fcx.clearRect(0, 0, W_, H_);
+    fcx.filter = 'blur(1.5px)'; fcx.drawImage(QF, 0, 0); fcx.filter = 'none';
+    for (const c of [wx, fcx]) {   // charcoal hatch on rubber pixels only
+      c.globalCompositeOperation = 'source-atop'; c.globalAlpha = 0.5;
+      c.fillStyle = c.createPattern(HATCH, 'repeat');
+      c.save(); c.translate((boil % 3) * 7, (boil % 2) * 5); c.fillRect(-50, -50, W_ + 100, H_ + 100); c.restore();
+      c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+    }
+    // ink grid & tension lines (drawn atop rubber only)
     const jr = rng(boil * 13 + 5);
-    wx.lineCap = 'round'; wx.lineJoin = 'round';
-    const line = (pts, style, w) => {
-      wx.strokeStyle = style; wx.lineWidth = w; wx.beginPath();
+    const line = (c, pts, style, w) => {
+      c.strokeStyle = style; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath();
       let pen = false;
       for (const [x, y, d] of pts) {
         if (d < 0.08) { pen = false; continue; }
         const jx = x + (jr() - 0.5) * 1.4, jy = y + (jr() - 0.5) * 1.4;
-        if (!pen) { wx.moveTo(jx, jy); pen = true; } else wx.lineTo(jx, jy);
+        if (!pen) { c.moveTo(jx, jy); pen = true; } else c.lineTo(jx, jy);
       }
-      wx.stroke();
+      c.stroke();
     };
-    for (let i = 3; i < NU; i += 6) { const pts = []; for (let j = 0; j < NV; j++) { const k = j * NU + i; pts.push([PX[k], PY[k], PD[k]]); } line(pts, 'rgba(10,28,70,0.22)', 1.3); }
-    for (let j = 2; j < NV; j += 5) { const pts = []; for (let i = 0; i < NU; i++) { const k = j * NU + i; pts.push([PX[k], PY[k], PD[k]]); } line(pts, 'rgba(10,28,70,0.22)', 1.3); }
-    const ten = clamp(maxDep / 1.4, 0, 1);
-    if (ten > 0.02) {
-      const cx = p.P0.x * 0.5, cy = 1.3;
-      for (let k = 0; k < 24; k++) {
-        const th = k / 24 * Math.PI * 2 + 0.13 * Math.sin(k * 3.7);
+    for (const c of [wx, fcx]) {
+      c.globalCompositeOperation = 'source-atop';
+      for (let i = 3; i < NU; i += 6) { const pts = []; for (let j = 0; j < NV; j++) { const k = j * NU + i; pts.push([PX[k], PY[k], PD[k]]); } line(c, pts, 'rgba(10,28,70,0.22)', 1.3); }
+      for (let j = 2; j < NV; j += 5) { const pts = []; for (let i = 0; i < NU; i++) { const k = j * NU + i; pts.push([PX[k], PY[k], PD[k]]); } line(c, pts, 'rgba(10,28,70,0.22)', 1.3); }
+      c.globalCompositeOperation = 'source-over';
+    }
+    const ten = clamp(maxDep / 1.0, 0, 1);
+    if (ten > 0.02) {   // tension lines from the anchored edges to the contact zone
+      const cx = p.P0.x * 0.3, cy = 1.15;
+      for (let k = 0; k < 26; k++) {
+        const th = k / 26 * Math.PI * 2 + 0.13 * Math.sin(k * 3.7);
         const pts = [], pts2 = [];
-        for (let m = 0; m < 40; m++) {
-          const rr = 0.2 + Math.pow(m / 39, 1.4) * 4.4;
-          const X = cx + Math.cos(th) * rr, Y = cy + Math.sin(th) * rr * 0.9;
-          if (Y < 0) break;
-          const dep = sheetDepth(caps, X, Y) * S;
-          const pr = proj(cam, X, Y, WALL + dep), pr2 = proj(cam, X + 0.035, Y + 0.035, WALL + dep);
-          pts.push(pr); pts2.push(pr2);
+        for (let m = 0; m < 44; m++) {
+          const rr = 0.15 + Math.pow(m / 43, 1.3) * 6.5;
+          const X = cx + Math.cos(th) * rr, Y = cy + Math.sin(th) * rr * 0.85;
+          if (Y < 0 || Y > Y_T || X < X_L || X > X_R) break;
+          if (hs && inHole(hs, X, Y)) { pts.push([0, 0, -1]); pts2.push([0, 0, -1]); continue; }
+          const dep = depthAt(caps, X, Y, S);
+          pts.push(proj(cam, X, Y, WALL + dep)); pts2.push(proj(cam, X + 0.035, Y + 0.035, WALL + dep));
         }
-        line(pts, `rgba(6,18,52,${0.4 * ten})`, 1.8);
-        line(pts2, `rgba(190,215,255,${0.28 * ten})`, 1.1);
+        for (const c of [wx, fcx]) {
+          c.globalCompositeOperation = 'source-atop';
+          line(c, pts, `rgba(6,18,52,${0.42 * ten})`, 1.8);
+          line(c, pts2, `rgba(195,218,255,${0.32 * ten})`, 1.1);
+          c.globalCompositeOperation = 'source-over';
+        }
       }
     }
-    wx.globalCompositeOperation = 'source-over';
-    // bottom contact line
-    wx.strokeStyle = 'rgba(8,20,50,0.55)'; wx.lineWidth = 1.8; wx.beginPath();
-    bottom.forEach((b, n) => n ? wx.lineTo(b[0], b[1]) : wx.moveTo(b[0], b[1])); wx.stroke();
-    // tear the hole out of the rubber layer
+    // bottom hem line + soft contact shadow
+    const bottom = [];
+    for (let i = 0; i < NU; i++) if (PD[i] > 0.06 && !(hs && inHole(hs, RX[i], 0.05))) bottom.push([PX[i], PY[i]]); else bottom.push(null);
+    const strokeList = (c, list, dy) => { c.beginPath(); let pen = false; for (const b of list) { if (!b) { pen = false; continue; } pen ? c.lineTo(b[0], b[1] + dy) : c.moveTo(b[0], b[1] + dy); pen = true; } c.stroke(); };
+    ctx.save(); ctx.strokeStyle = 'rgba(40,40,55,0.3)'; ctx.lineWidth = 10; ctx.filter = 'blur(7px)'; strokeList(ctx, bottom, 4); ctx.restore();
+    ctx.drawImage(WC, 0, 0);
+    ctx.strokeStyle = 'rgba(8,20,50,0.55)'; ctx.lineWidth = 1.8; strokeList(ctx, bottom, 0);
+    // anchor posts & top bar (charcoal)
+    const pole = (a, b, w, col) => {
+      const A = proj(cam, a.x, a.y, a.z), B = proj(cam, b.x, b.y, b.z);
+      if (A[2] < 0.1 || B[2] < 0.1) return;
+      ctx.strokeStyle = col; ctx.lineCap = 'round';
+      ctx.lineWidth = Math.max(1.5, FOC * w / ((A[2] + B[2]) / 2));
+      ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+    };
+    for (const X of [X_L - 0.06, X_R + 0.06]) pole(v3(X, 0, WALL), v3(X, Y_T + 0.25, WALL), 0.11, '#2a2a2a');
+    for (let m = 0; m < 12; m++) {
+      const x0 = lerp(X_L, X_R, m / 12), x1 = lerp(X_L, X_R, (m + 1) / 12);
+      pole(v3(x0, Y_T + 0.04, WALL), v3(x1, Y_T + 0.04, WALL), 0.07, '#333');
+    }
+    // torn rubber edge
     let rim = null;
     if (hs) {
       rim = holeRim(cam, hs, caps, S);
-      if (rim) {
-        wx.globalCompositeOperation = 'destination-out';
-        wx.fillStyle = '#000'; wx.fill(rim.path);
-        wx.globalCompositeOperation = 'source-over';
-      }
-    }
-    // soft wall shadow on the floor
-    ctx.save(); ctx.strokeStyle = 'rgba(40,40,55,0.3)'; ctx.lineWidth = 10; ctx.filter = 'blur(7px)';
-    ctx.beginPath(); bottom.forEach((b, n) => n ? ctx.lineTo(b[0], b[1] + 4) : ctx.moveTo(b[0], b[1] + 4)); ctx.stroke(); ctx.restore();
-    ctx.drawImage(WC, 0, 0);
-    if (rim) {   // torn rubber edge: thickness + ink line (not along the floor)
       ctx.save(); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      for (const [style, w] of [['rgba(6,16,45,0.85)', 14], ['rgba(130,170,228,1)', 9], ['rgba(6,16,45,0.95)', 2.6]]) {
+      for (const [style, w] of [['rgba(6,16,45,0.85)', 12], ['rgba(130,170,228,1)', 7], ['rgba(6,16,45,0.95)', 2.4]]) {
         ctx.strokeStyle = style; ctx.lineWidth = w; ctx.beginPath();
         let pen = false;
-        for (const q of rim.pts) { if (q[3]) { pen = false; continue; } if (!pen) { ctx.moveTo(q[0], q[1]); pen = true; } else ctx.lineTo(q[0], q[1]); }
+        ctx.globalAlpha = 1 - sstep(T_BURST + 0.45, T_BURST + 0.8, t);
+        for (const q of rim.pts) { if (q[3] || q[2] < 0.08) { pen = false; continue; } if (!pen) { ctx.moveTo(q[0], q[1]); pen = true; } else ctx.lineTo(q[0], q[1]); }
         ctx.stroke();
       }
       ctx.restore();
     }
-    return { caps, S, rim };
+    ctx.globalAlpha = 1;
+    return { caps, S, rim, front: front.length ? FC : null };
   }
 
   function holeRim(cam, hs, caps, S) {
-    const N = 160, path = new Path2D(), pts = [];
+    const N = 160, pts = [];
     for (let k = 0; k <= N; k++) {
       const th = k / N * Math.PI * 2;
       const rr = holeR(th);
       const X = hs.cx + Math.cos(th) * hs.rx * rr;
       let Y = hs.cy + Math.sin(th) * hs.ry * rr;
-      const onFloor = Y < 0.02;
-      Y = Math.max(0, Y);
-      const dep = sheetDepth(caps, X, Y) * S;
+      const off = Y < 0.02 || X < X_L || X > X_R || Y > Y_T;
+      Y = clamp(Y, 0, Y_T);
+      const dep = depthAt(caps, clamp(X, X_L, X_R), Y, S);
       const [sx, sy, d] = proj(cam, X, Y, WALL + dep);
-      if (d < 0.06) return null;
-      if (k === 0) path.moveTo(sx, sy); else path.lineTo(sx, sy);
-      pts.push([sx, sy, d, onFloor]);
+      pts.push([sx, sy, d, off]);
     }
-    path.closePath();
-    return { path, pts };
+    return { pts };
   }
   const LAYERS = {};
   function layer(name) {
@@ -847,7 +845,6 @@
     const p = pose(t);
     const cam = camera(t, p);
     const hs = holeShape(t, p);
-    const fullyOut = cam.z > WALL - 0.25;
 
     // inner void: white paper floor
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -855,31 +852,28 @@
     ctx.globalAlpha = 1; ctx.filter = 'none';
     ctx.fillStyle = '#fbfbfa'; ctx.fillRect(0, 0, W_, H_);
 
-    if (fullyOut) {
-      drawOutside(ctx, cam, t);
-    } else {
-      if (hs) drawOutside(ctx, cam, t);
-      const wr = drawWall(ctx, cam, t, p, hs, boil);
-      if (wr.rim) {
-        // light pouring through the opening
-        const lp = t < T_BURST ? 0.85 : Math.max(0, 0.45 - (t - T_BURST) * 0.9);
-        ctx.save(); ctx.clip(wr.rim.path);
-        if (lp > 0) { ctx.fillStyle = `rgba(255,255,255,${lp})`; ctx.fillRect(0, 0, W_, H_); }
-        ctx.restore();
-        if (t < T_BURST + 0.4) {
-          const hb = proj(cam, hs.cx, hs.cy, WALL + sheetDepth(wr.caps, hs.cx, hs.cy) * wr.S);
-          const gl = ctx.createRadialGradient(hb[0], hb[1], 0, hb[0], hb[1], 200);
-          const ga = t < T_BURST ? 0.6 * sstep(T_CRACK, T_BURST, t) : 0.6 * (1 - (t - T_BURST) / 0.4);
-          gl.addColorStop(0, `rgba(255,255,255,${ga})`); gl.addColorStop(1, 'rgba(255,255,255,0)');
-          ctx.fillStyle = gl; ctx.fillRect(hb[0] - 210, hb[1] - 210, 420, 420);
-        }
+    // soft floor shading from the horizon toward the camera
+    const fgr = ctx.createLinearGradient(0, cam.py, 0, H_);
+    fgr.addColorStop(0, 'rgba(120,120,125,0.14)'); fgr.addColorStop(0.3, 'rgba(120,120,125,0.04)'); fgr.addColorStop(1, 'rgba(120,120,125,0)');
+    ctx.fillStyle = fgr; ctx.fillRect(0, cam.py, W_, H_ - cam.py);
+    // the outside world exists only once the rubber tears
+    if (t >= T_BURST) drawOutside(ctx, cam, t, sstep(T_BURST, T_BURST + 0.9, t));
+    const wr = drawWall(ctx, cam, t, p, hs, boil);
+    if (hs && t < T_BURST + 0.4) {   // light through the crack
+      const hb = proj(cam, hs.cx, hs.cy, WALL + depthAt(wr.caps, hs.cx, hs.cy, wr.S) + 0.05);
+      if (hb[2] > 0.1) {
+        const gl = ctx.createRadialGradient(hb[0], hb[1], 0, hb[0], hb[1], 230);
+        const ga = t < T_BURST ? 0.75 * sstep(T_CRACK, T_BURST, t) : 0.75 * (1 - (t - T_BURST) / 0.4);
+        gl.addColorStop(0, `rgba(255,255,255,${ga})`); gl.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gl; ctx.fillRect(hb[0] - 240, hb[1] - 240, 480, 480);
       }
     }
     drawDust(ctx, cam, t);
-    // scribbles behind the boy (further from camera), then boy, then nearer scribbles
+    // scribbles behind the boy (further from camera), then boy, then rubber wrapped over him, then nearer scribbles
     for (const s of SCRIB) drawScribble(ctx, cam, s, t, p, boil, false);
-    drawShadow(ctx, cam, p, fullyOut || t > T_BURST + 0.4);
+    drawShadow(ctx, cam, p, t > T_BURST + 0.4);
     drawBoy(ctx, cam, p, boil);
+    if (wr.front) { ctx.globalAlpha = 0.68; ctx.drawImage(wr.front, 0, 0); ctx.globalAlpha = 1; }
     for (const s of SCRIB) drawScribble(ctx, cam, s, t, p, boil, true);
 
     // flash at the burst
@@ -910,8 +904,8 @@
       const dy = (1 - u) * 16;
       ctx.shadowColor = 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 26;
       ctx.fillStyle = '#0b0b0b';
-      ctx.fillText(TEXT_LINES[0], W_ / 2, 330 + dy);
-      ctx.fillText(TEXT_LINES[1], W_ / 2, 440 + dy);
+      ctx.fillText(TEXT_LINES[0], W_ / 2, 370 + dy);
+      ctx.fillText(TEXT_LINES[1], W_ / 2, 470 + dy);
       ctx.restore();
     }
   }
